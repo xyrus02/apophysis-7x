@@ -10,6 +10,17 @@ type
   TCalcMethod = procedure of object;
 
 type
+  TCPpoint = record
+    x, y, c: double;
+  end;
+  PCPpoint = ^TCPpoint;
+
+  TXYpoint = record
+    x, y: double;
+  end;
+  PXYpoint = ^TXYpoint;
+
+type
   TXForm = class
   private
     FNrFunctions: Integer;
@@ -18,9 +29,12 @@ type
     FTx, FTy: double;
     FPx, FPy: double;
     FAngle: double;
+    FSinA: double;
+    FCosA: double;
     FLength: double;
     CalculateAngle: boolean;
     CalculateLength: boolean;
+    CalculateSinCos: boolean;
 
     procedure Linear;              // var[0]
     procedure Sinusoidal;          // var[1]
@@ -51,6 +65,7 @@ type
     c: array[0..2, 0..1] of double;      // the coefs to the affine part of the function
     density: double;                     // prob is this function is chosen. 0 - 1
     color: double;                       // color coord for this function. 0 - 1
+    color2: double;                      // Second color coord for this function. 0 - 1
     symmetry: double;
     c00, c01, c10, c11, c20, c21: double;
 
@@ -62,7 +77,11 @@ type
     procedure Prepare;
 
     procedure NextPoint(var px, py, pc: double); overload;
+    procedure NextPoint(var CPpoint: TCPpoint); overload;
     procedure NextPoint(var px, py, pz, pc: double); overload;
+    procedure NextPointXY(var px, py: double);
+    procedure NextPoint2C(var px, py, pc1, pc2: double);
+
   end;
 
 implementation
@@ -216,41 +235,12 @@ begin
   end;
 
   CalculateAngle := (vars[5] <> 0.0) or (vars[6] <> 0.0) or (vars[7] <> 0.0) or (vars[8] <> 0.0) or
-                    (vars[9] <> 0.0) or (vars[10] <> 0.0) or (vars[11] <> 0.0) or (vars[12] <> 0.0) or
-                    (vars[13] <> 0.0) or (vars[19] <> 0.0) or (vars[21] <> 0.0);
+                    (vars[12] <> 0.0) or (vars[13] <> 0.0);
   CalculateLength := False;
+  CalculateSinCos := (vars[4] <> 0.0) or (vars[9] <> 0.0) or (vars[10] <> 0.0) or
+                     (vars[11] <> 0.0) or (vars[16] <> 0.0) or (vars[19] <> 0.0) or
+                     (vars[21] <> 0.0);
 
-end;
-
-///////////////////////////////////////////////////////////////////////////////
-procedure TXForm.NextPoint(var px,py,pc: double);
-var
-  i: Integer;
-begin
-  // first compute the color coord
-  pc := (pc + color) * 0.5 * (1 - symmetry) + symmetry * pc;
-
-  FTx := c00 * px + c10 * py + c20;
-  FTy := c01 * px + c11 * py + c21;
-
-  if CalculateAngle then begin
-    if (FTx < -EPS) or (FTx > EPS) or (FTy < -EPS) or (FTy > EPS) then
-       FAngle := arctan2(FTx, FTy)
-    else
-       FAngle := 0.0;
-  end;
-//  if CalculateLength then begin
-//    FLength := sqrt(FTx * FTx + FTy * FTy);
-//  end;
-
-  Fpx := 0;
-  Fpy := 0;
-
-  for i:= 0 to FNrFunctions-1 do
-    FFunctionList[i];
-
-  px := FPx;
-  py := FPy;
 end;
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -291,17 +281,17 @@ end;
 
 ///////////////////////////////////////////////////////////////////////////////
 procedure TXForm.Horseshoe;
-var
-  a, c1, c2: double;
+//var
+//  a, c1, c2: double;
 begin
-  if (FTx < -EPS) or (FTx > EPS) or (FTy < -EPS) or (FTy > EPS) then
-    a := arctan2(FTx, FTy)
-  else
-    a := 0.0;
-  c1 := sin(a);
-  c2 := cos(a);
-  FPx := FPx + vars[4] * (c1 * FTx - c2 * FTy);
-  FPy := FPy + vars[4] * (c2 * FTx + c1 * FTy);
+//  if (FTx < -EPS) or (FTx > EPS) or (FTy < -EPS) or (FTy > EPS) then
+//    a := arctan2(FTx, FTy)
+//  else
+//    a := 0.0;
+//  c1 := sin(FAngle);
+//  c2 := cos(FAngle);
+  FPx := FPx + vars[4] * (FSinA * FTx - FCosA * FTy);
+  FPy := FPy + vars[4] * (FCosA* FTx + FSinA * FTy);
 end;
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -354,9 +344,10 @@ procedure TXForm.Spiral;
 var
   r: double;
 begin
-  r := sqrt(FTx * FTx + FTy * FTy) + 1E-6;
-  FPx := FPx + vars[9] * (cos(FAngle) + sin(r)) / r;
-  FPy := FPy + vars[9] * (sin(FAngle) - cos(r)) / r;
+//  r := sqrt(FTx * FTx + FTy * FTy) + 1E-6;
+  r := Flength + 1E-6;
+  FPx := FPx + vars[9] * (FCosA + sin(r)) / r;
+  FPy := FPy + vars[9] * (FsinA - cos(r)) / r;
 end;
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -364,19 +355,20 @@ procedure TXForm.hyperbolic;
 var
   r: double;
 begin
-  r := sqrt(FTx * FTx + FTy * FTy) + 1E-6;
-  FPx := FPx + vars[10] * sin(FAngle) / r;
-  FPy := FPy + vars[10] * cos(FAngle) * r;
+//  r := sqrt(FTx * FTx + FTy * FTy) + 1E-6;
+  r := Flength + 1E-6;
+  FPx := FPx + vars[10] * FSinA / r;
+  FPy := FPy + vars[10] * FCosA * r;
 end;
 
 ///////////////////////////////////////////////////////////////////////////////
 procedure TXForm.Square;
-var
-  r: double;
+//var
+//  r: double;
 begin
-  r := sqrt(FTx * FTx + FTy * FTy);
-  FPx := FPx + vars[11] * sin(FAngle) * cos(r);
-  FPy := FPy + vars[11] * cos(FAngle) * sin(r);
+//  r := sqrt(FTx * FTx + FTy * FTy);
+  FPx := FPx + vars[11] * FSinA * cos(Flength);
+  FPy := FPy + vars[11] * FCosA * sin(Flength);
 end;
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -436,13 +428,14 @@ end;
 ///////////////////////////////////////////////////////////////////////////////
 procedure TXForm.Fisheye;
 var
-  a, r: double;
+ { a,} r: double;
 begin
-  r := sqrt(FTx * FTx + FTy * FTy);
-  a := arctan2(FTx, FTy);
-  r := 2 * r / (r + 1);
-  FPx := FPx + vars[16] * r * cos(a);
-  FPy := FPy + vars[16] * r * sin(a);
+//  r := sqrt(FTx * FTx + FTy * FTy);
+//  a := arctan2(FTx, FTy);
+//  r := 2 * r / (r + 1);
+  r := 2 * Flength / (Flength + 1);
+  FPx := FPx + vars[16] * r * FCosA;
+  FPy := FPy + vars[16] * r * FSinA;
 
 end;
 
@@ -478,16 +471,16 @@ end;
 ///////////////////////////////////////////////////////////////////////////////
 procedure TXForm.Power;
 var
-  r,sa: double;
-  nx, ny: double;
+  r: double;
+//  nx, ny: double;
 begin
-  r := sqrt(FTx * FTx + FTy * FTy);
-  sa := sin(FAngle);
-  r := Math.power(r, sa);
-  nx := r * cos(FAngle);
-  ny := r * sa;
-  FPx := FPx + vars[19] * nx;
-  FPy := FPy + vars[19] * ny;
+//  r := sqrt(FTx * FTx + FTy * FTy);
+//  sa := sin(FAngle);
+  r := Math.Power(FLength, FSinA);
+//  nx := r * FCosA;
+//  ny := r * FSinA;
+  FPx := FPx + vars[19] * r * FCosA;
+  FPy := FPy + vars[19] * r * FSinA;
 end;
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -495,8 +488,8 @@ procedure TXForm.Cosine;
 var
   nx, ny: double;
 begin
-  nx := cos(Ftx * PI) * cosh(Fty);
-  ny := -sin(Ftx * PI) * sinh(Fty);
+  nx := cos(FTx * PI) * cosh(FTy);
+  ny := -sin(FTx * PI) * sinh(FTy);
   FPx := FPx + vars[20] * nx;
   FPy := FPy + vars[20] * ny;
 end;
@@ -505,19 +498,106 @@ end;
 procedure TXForm.SawTooth;
 var
   r: double;
-  nx, ny: double;
+//  nx, ny: double;
 begin
-  r := sqrt(FTx * FTx + FTy * FTy);
+//  r := sqrt(FTx * FTx + FTy * FTy);
 //  r := fmod(r + 1.0, 2.0) - 1.0;
-  r := r + 1;
+  r := FLength + 1;
   r := r - System.Int(r/2) * 2.0 - 1;
 
-  nx := cos(FAngle) * r;
-  ny := sin(FAngle) * r;
+//  nx := cos(FAngle) * r;
+//  ny := sin(FAngle) * r;
 
-  FPx := FPx + vars[21] * nx;
-  FPy := FPy + vars[21] * ny;
+  FPx := FPx + vars[21] * r * FCosA;
+  FPy := FPy + vars[21] * r * FSinA;
 end;
+
+///////////////////////////////////////////////////////////////////////////////
+procedure TXForm.NextPoint(var px,py,pc: double);
+var
+  i: Integer;
+begin
+  // first compute the color coord
+  pc := (pc + color) * 0.5 * (1 - symmetry) + symmetry * pc;
+
+  FTx := c00 * px + c10 * py + c20;
+  FTy := c01 * px + c11 * py + c21;
+
+  if CalculateAngle then begin
+    if (FTx < -EPS) or (FTx > EPS) or (FTy < -EPS) or (FTy > EPS) then
+       FAngle := arctan2(FTx, FTy)
+    else
+       FAngle := 0.0;
+  end;
+
+  if CalculateSinCos then begin
+    Flength := sqrt(FTx * FTx + FTy * FTy);
+    if FLength = 0 then begin
+      FSinA := 0;
+      FCosA := 0;
+    end else begin
+      FSinA := FTx/FLength;
+      FCosA := FTy/FLength;
+    end;
+  end;
+
+//  if CalculateLength then begin
+//    FLength := sqrt(FTx * FTx + FTy * FTy);
+//  end;
+
+  Fpx := 0;
+  Fpy := 0;
+
+  for i := 0 to FNrFunctions - 1 do
+    FFunctionList[i];
+
+  px := FPx;
+  py := FPy;
+end;
+
+///////////////////////////////////////////////////////////////////////////////
+procedure TXForm.NextPoint(var CPpoint: TCPpoint);
+var
+  i: Integer;
+begin
+  // first compute the color coord
+  CPpoint.c := (CPpoint.c + color) * 0.5 * (1 - symmetry) + symmetry * CPpoint.c;
+
+  FTx := c00 * CPpoint.x + c10 * CPpoint.y + c20;
+  FTy := c01 * CPpoint.x + c11 * CPpoint.y + c21;
+
+  if CalculateAngle then begin
+    if (FTx < -EPS) or (FTx > EPS) or (FTy < -EPS) or (FTy > EPS) then
+       FAngle := arctan2(FTx, FTy)
+    else
+       FAngle := 0.0;
+  end;
+
+  if CalculateSinCos then begin
+    Flength := sqrt(FTx * FTx + FTy * FTy);
+    if FLength = 0 then begin
+      FSinA := 0;
+      FCosA := 1;
+    end else begin
+      FSinA := FTx/FLength;
+      FCosA := FTy/FLength;
+    end;
+  end;
+
+//  if CalculateLength then begin
+//    FLength := sqrt(FTx * FTx + FTy * FTy);
+//  end;
+
+  Fpx := 0;
+  Fpy := 0;
+
+  for i:= 0 to FNrFunctions-1 do
+    FFunctionList[i];
+
+  CPpoint.x := FPx;
+  CPpoint.y := FPy;
+end;
+
 
 ///////////////////////////////////////////////////////////////////////////////
 procedure TXForm.NextPoint(var px, py, pz, pc: double);
@@ -581,4 +661,71 @@ begin
 end;
 
 ///////////////////////////////////////////////////////////////////////////////
+procedure TXForm.NextPoint2C(var px, py, pc1, pc2: double);
+var
+  i: Integer;
+begin
+  // first compute the color coord
+  pc1 := (pc1 + color) * 0.5 * (1 - symmetry) + symmetry * pc1;
+  pc2 := (pc2 + color) * 0.5 * (1 - symmetry) + symmetry * pc2;
+
+  FTx := c00 * px + c10 * py + c20;
+  FTy := c01 * px + c11 * py + c21;
+
+  if CalculateAngle then begin
+    if (FTx < -EPS) or (FTx > EPS) or (FTy < -EPS) or (FTy > EPS) then
+       FAngle := arctan2(FTx, FTy)
+    else
+       FAngle := 0.0;
+  end;
+//  if CalculateLength then begin
+//    FLength := sqrt(FTx * FTx + FTy * FTy);
+//  end;
+
+  Fpx := 0;
+  Fpy := 0;
+
+  for i:= 0 to FNrFunctions-1 do
+    FFunctionList[i];
+
+  px := FPx;
+  py := FPy;
+end;
+
+///////////////////////////////////////////////////////////////////////////////
+procedure TXForm.NextPointXY(var px, py: double);
+var
+  i: integer;
+begin
+  FTx := c00 * px + c10 * py + c20;
+  FTy := c01 * px + c11 * py + c21;
+
+  if CalculateAngle then begin
+    if (FTx < -EPS) or (FTx > EPS) or (FTy < -EPS) or (FTy > EPS) then
+       FAngle := arctan2(FTx, FTy)
+    else
+       FAngle := 0.0;
+  end;
+
+  if CalculateSinCos then begin
+    Flength := sqrt(FTx * FTx + FTy * FTy);
+    if FLength = 0 then begin
+      FSinA := 0;
+      FCosA := 0;
+    end else begin
+      FSinA := FTx/FLength;
+      FCosA := FTy/FLength;
+    end;
+  end;
+
+  Fpx := 0;
+  Fpy := 0;
+
+  for i:= 0 to FNrFunctions-1 do
+    FFunctionList[i];
+
+  px := FPx;
+  py := FPy;
+end;
+
 end.
