@@ -56,7 +56,8 @@ uses
   Render64 in '..\..\Source\Render64.pas',
   RenderMM in '..\..\Source\RenderMM.pas',
   ImageColoring in '..\..\Source\ImageColoring.pas' {frmImageColoring},
-  GradientHlpr in '..\..\Source\GradientHlpr.pas';
+  GradientHlpr in '..\..\Source\GradientHlpr.pas',
+  RndFlame in '..\..\Source\RndFlame.pas';
 
 //  ImageColoring in '..\..\Source\ImageColoring.pas' {frmImageColoring};
 
