@@ -157,7 +157,7 @@ begin
   scrollBrightness.Position := trunc(cp.Brightness * 100);
   scrollVibrancy.Position := trunc(cp.vibrancy * 100);
   scrollZoom.Position := trunc(cp.zoom * 100);
-  if (abs(cp.Center[0]) < 1000) and (abs(cp.Center[0]) < 1000) then begin
+  if (abs(cp.Center[0]) < 1000) and (abs(cp.Center[1]) < 1000) then begin
     scrollCenterX.Position := trunc(cp.Center[0] * 100);
     scrollCenterY.Position := trunc(cp.Center[1] * 100);
   end else begin
