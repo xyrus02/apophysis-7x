@@ -10,4 +10,6 @@ B1115635 Menu Item 'Stop Script' now has the shortcut (ctrl-T)
 + Rotation export for flame2.3
 + added new variants
 + Bugfix filter difference between Apo and Flame3
-+ Added an end date
++ Added an end date (20/06/2005)
+B1162083 problem with sliced render to disk
++ Fixed some floating point problems
