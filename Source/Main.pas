@@ -3964,15 +3964,15 @@ var
   ResponseStream: TMemoryStream;
   MultiPartFormDataStream: TmsMultiPartFormDataStream;
 begin
-  if MainCp.HasNewVariants then begin
-    showMessage('The posting of sheep with new variants (exponential, power, cosine and sawtooth) is disabled in this version.');
-    Exit;
-  end;
+//  if MainCp.HasNewVariants then begin
+//    showMessage('The posting of sheep with new variants (exponential, power, cosine and sawtooth) is disabled in this version.');
+//    Exit;
+//  end;
 
-  if MainCp.FAngle <> 0 then begin
-    showMessage('The posting of sheep with are rotated is disabled in this version.');
-    Exit;
-  end;
+//  if MainCp.FAngle <> 0 then begin
+//    showMessage('The posting of sheep with are rotated is disabled in this version.');
+//    Exit;
+//  end;
 
   if SheepDialog.ShowModal = mrOK then
   begin
