@@ -57,6 +57,9 @@ object AdjustForm: TAdjustForm
     BevelOuter = bvLowered
     Color = clAppWorkSpace
     TabOrder = 0
+    DesignSize = (
+      162
+      122)
     object PreviewImage: TImage
       Left = 1
       Top = 1
@@ -312,7 +315,6 @@ object AdjustForm: TAdjustForm
     end
   end
   object ColorDialog: TColorDialog
-    Ctl3D = True
     Options = [cdFullOpen]
     Left = 376
     Top = 8

@@ -878,18 +878,17 @@ begin
       xform[i].vars[j] := 0;
     end;
 
-    if rv < 0 then
-    begin
+    if rv < 0 then begin
       repeat
         v := Mixed_var_distrib[random(Length(mixed_var_distrib))];
       until Variations[v]; // use only variations set in options
       xform[i].vars[v] := 1
-    end
-    else
+    end else
       xform[i].vars[rv] := 1;
 
   end;
-  if calc then CalcBoundbox;
+  if calc then
+    CalcBoundbox;
 end;
 
 procedure TControlPoint.RandomCP1;
@@ -927,10 +926,10 @@ begin
 
     LimitOutSidePoints := Round(0.05 * SUB_BATCH_SIZE);
 
-    minx := 1E10;
-    maxx := -1E10;
-    miny := 1E10;
-    maxy := -1E10;
+    minx := 1E99;
+    maxx := -1E99;
+    miny := 1E99;
+    maxy := -1E99;
     for i := 0 to SUB_BATCH_SIZE - 1 do begin
       minx := min(minx, Points[i].x);
       maxx := max(maxx, Points[i].x);
@@ -986,6 +985,11 @@ begin
 
       deltay := deltay / 2;
     end;
+
+    if ((maxx - minx) > 1000) or
+       ((maxy - miny) > 1000) then
+      raise Exception.Create('Flame area to large');
+
     center[0] := (minx + maxx) / 2;
     center[1] := (miny + maxy) / 2;
     if ((maxx - minx) > 0.001) and ((maxy - miny) > 0.001) then
@@ -1018,10 +1022,10 @@ begin
 
     LimitOutSidePoints := Round(0.05 * SUB_BATCH_SIZE);
 
-    minx := 1E10;
-    maxx := -1E10;
-    miny := 1E10;
-    maxy := -1E10;
+    minx := 1E99;
+    maxx := -1E99;
+    miny := 1E99;
+    maxy := -1E99;
     for i := 0 to SUB_BATCH_SIZE - 1 do begin
       minx := min(minx, Points[i].x);
       maxx := max(maxx, Points[i].x);
@@ -1077,6 +1081,11 @@ begin
 
       deltay := deltay / 2;
     end;
+
+    if ((maxx - minx) > 1000) or
+       ((maxy - miny) > 1000) then
+      raise Exception.Create('Flame area to large');
+
     cp.center[0] := (minx + maxx) / 2;
     cp.center[1] := (miny + maxy) / 2;
     if ((maxx - minx) > 0.001) and ((maxy - miny) > 0.001) then
@@ -1097,7 +1106,12 @@ begin
     end;
 
   except on E: EMathError do
-    raise Exception.Create('CalcUPRMagn: ' +e.Message);
+    begin// default
+      cp.center[0] := 0;
+      cp.center[1] := 0;
+      cp.pixels_per_unit := 10;
+      raise Exception.Create('CalcUPRMagn: ' +e.Message);
+    end;
   end;
 end;
 

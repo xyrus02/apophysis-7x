@@ -157,8 +157,13 @@ begin
   scrollBrightness.Position := trunc(cp.Brightness * 100);
   scrollVibrancy.Position := trunc(cp.vibrancy * 100);
   scrollZoom.Position := trunc(cp.zoom * 100);
-  scrollCenterX.Position := trunc(cp.Center[0] * 100);
-  scrollCenterY.Position := trunc(cp.Center[1] * 100);
+  if (abs(cp.Center[0]) < 1000) and (abs(cp.Center[0]) < 1000) then begin
+    scrollCenterX.Position := trunc(cp.Center[0] * 100);
+    scrollCenterY.Position := trunc(cp.Center[1] * 100);
+  end else begin
+    scrollCenterX.Position := 0;
+    scrollCenterY.Position := 0;
+  end;
   ColorPanel.color := cp.background[2] shl 16 +
     cp.background[1] shl 8 + cp.background[0];
   Resetting := False;
