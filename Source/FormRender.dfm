@@ -54,8 +54,6 @@ object RenderForm: TRenderForm
     Top = 330
     Width = 409
     Height = 13
-    Min = 0
-    Max = 100
     TabOrder = 0
   end
   object btnRender: TButton
@@ -280,7 +278,6 @@ object RenderForm: TRenderForm
       Max = 4
       Position = 2
       TabOrder = 3
-      Wrap = False
     end
   end
   object GroupBox4: TGroupBox
@@ -324,7 +321,9 @@ object RenderForm: TRenderForm
         '64'
         '128'
         '256'
-        '512')
+        '512'
+        '1024'
+        '1536')
     end
     object chkLimitMem: TCheckBox
       Left = 8
@@ -402,7 +401,7 @@ object RenderForm: TRenderForm
       Width = 327
       Height = 21
       Style = csDropDownList
-      ItemHeight = 13
+      ItemHeight = 0
       TabOrder = 0
       OnChange = cmbPresetChange
     end
@@ -422,7 +421,6 @@ object RenderForm: TRenderForm
       item
         Width = 50
       end>
-    SimplePanel = False
   end
   object SaveDialog: TSaveDialog
     Left = 368

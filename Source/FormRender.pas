@@ -243,11 +243,11 @@ begin
   if (not chkLimitMem.checked) and (ApproxMemory > PhysicalMemory) then
   begin
     Application.MessageBox('You do not have enough memory for this render. Please use memory limiting.', 'Apophysis', 48);
-    exit;
+//    exit;
   end;
   if chkLimitMem.checked and (PhysicalMemory < StrToInt(cbMaxMemory.text)) and (Approxmemory > PhysicalMemory) then begin
     Application.MessageBox('You do not have enough memory for this render. Please use a lower Maximum memory setting.', 'Apophysis', 48);
-    exit;
+//    exit;
   end;
   t := txtFilename.Text;
   if t = '' then
@@ -320,13 +320,6 @@ begin
       MainForm.SaveXMLFlame(cp, ExtractFileName(FileName), renderPath + 'renders.flame');
     Renderer := TRenderThread.Create;
     if chkLimitMem.checked then
-(*
-    if cbMaxMemory.ItemIndex = 0 then Renderer.MaxMem := 32
-    else if cbMaxMemory.ItemIndex = 1 then Renderer.MaxMem := 64
-    else if cbMaxMemory.ItemIndex = 2 then Renderer.MaxMem := 128
-    else if cbMaxMemory.ItemIndex = 3 then Renderer.MaxMem := 256
-    else if cbMaxMemory.ItemIndex = 4 then Renderer.MaxMem := 512;
-*)
       Renderer.MaxMem := StrToInt(cbMaxMemory.text);
     Renderer.OnProgress := OnProgress;
     Renderer.TargetHandle := RenderForm.Handle;

@@ -2709,7 +2709,7 @@ begin
   Scripter.AddVariable('LimitVibrancy', LimitVibrancy);
   Scripter.AddLibrary(TMathLibrary);
   Scripter.AddLibrary(TatMathLibrary);
-  Scripter.AddLibrary(TatWindowsLibrary);
+//  Scripter.AddLibrary(TatWindowsLibrary);
   Scripter.AddLibrary(TatSysUtilsLibrary);
   Scripter.AddLibrary(TatFileCtrlLibrary);
   { Nonsense - it's the only way to get the last real

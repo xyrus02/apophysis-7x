@@ -155,6 +155,9 @@ object ScriptEditor: TScriptEditor
         '  RotateReference(3.6);'
         '  Preview;'
         'end;')
+      MarkerList.UseDefaultMarkerImageIndex = False
+      MarkerList.DefaultMarkerImageIndex = -1
+      MarkerList.ImageTransparentColor = 33554432
       PrintOptions.MarginLeft = 0
       PrintOptions.MarginRight = 0
       PrintOptions.MarginTop = 0
