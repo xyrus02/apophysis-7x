@@ -562,7 +562,6 @@ begin
     Inc(bucketpos, 2 * gutter_width);
     Inc(bucketpos, (oversample - 1) * BucketWidth);
   end;
-  bm.PixelFormat := pf24bit;
 
   Progress(1);
 end;
