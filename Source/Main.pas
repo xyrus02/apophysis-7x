@@ -221,6 +221,8 @@ type
     tbzoomwindow: TToolButton;
     tbDrag: TToolButton;
     tbRotate: TToolButton;
+    mnuimage: TMenuItem;
+    procedure mnuimageClick(Sender: TObject);
     procedure mnuExitClick(Sender: TObject);
     procedure mnuSaveUPRClick(Sender: TObject);
     procedure ListViewChange(Sender: TObject; Item: TListItem;
@@ -906,8 +908,9 @@ begin
     Trunc((Elapsed * 24 - Trunc(Elapsed * 24)) * 60),
       Trunc((Elapsed * 24 * 60 - Trunc(Elapsed * 24 * 60)) * 60),
       Trunc((Elapsed * 24 * 60 * 60 - Trunc(Elapsed * 24 * 60 * 60)) * 100)]);
-  if prog > 0 then
+  if prog > 0 then 
     Remainder := Min(Remainder, Elapsed * (power(1 / prog, 1.2) - 1));
+
   StatusBar.Panels[1].Text := Format('Remaining %2.2d:%2.2d:%2.2d.%2.2d',
     [Trunc(Remainder * 24),
     Trunc((Remainder * 24 - Trunc(Remainder * 24)) * 60),
@@ -3100,6 +3103,12 @@ begin
   GradientForm.Show;
 end;
 
+///////////////////////////////////////////////////////////////////////////////
+procedure TMainForm.mnuimageClick(Sender: TObject);
+begin
+//  frmImageColoring.Show;
+end;
+
 procedure swapcolor(var clist: array of cardinal; i, j: integer);
 var
   t: cardinal;
@@ -4377,7 +4386,9 @@ begin
         StopThread;
         UpdateUndo;
         MainCp.ZoomtoRect(FSelectRect);
-        DrawFlame;
+
+        RedrawTimer.Enabled := True;
+        UpdateWindows;
       end;
     msDragMove:
       begin
@@ -4393,7 +4404,9 @@ begin
         StopThread;
         UpdateUndo;
         MainCp.MoveRect(FSelectRect);
-        DrawFlame;
+
+        RedrawTimer.Enabled := True;
+        UpdateWindows;
       end;
     msRotateMove:
       begin
@@ -4407,7 +4420,9 @@ begin
         StopThread;
         UpdateUndo;
         MainCp.Rotate(FRotateAngle);
-        DrawFlame;
+
+        RedrawTimer.Enabled := True;
+        UpdateWindows;
       end;
   end;
 end;
@@ -4488,6 +4503,7 @@ procedure TMainForm.tbRotateClick(Sender: TObject);
 begin
   FMouseMoveState := msRotate;
 end;
+
 
 ///////////////////////////////////////////////////////////////////////////////
 end.

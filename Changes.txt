@@ -1,0 +1,4 @@
++ Delphi2005 Project
+B fixed remainder not on 00:00:00 when finished
++ Extra performance in Xform 
++ 32-bits renderer

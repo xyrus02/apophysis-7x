@@ -2,7 +2,7 @@ object MainForm: TMainForm
   Left = 316
   Top = 424
   Width = 574
-  Height = 395
+  Height = 415
   Caption = 'Apophysis'
   Color = clBtnFace
   Font.Charset = ANSI_CHARSET
@@ -27,7 +27,7 @@ object MainForm: TMainForm
     Left = 160
     Top = 28
     Width = 4
-    Height = 294
+    Height = 314
   end
   object ToolBar: TToolBar
     Left = 0
@@ -251,7 +251,7 @@ object MainForm: TMainForm
     Left = 0
     Top = 28
     Width = 160
-    Height = 294
+    Height = 314
     Align = alLeft
     Columns = <
       item
@@ -270,7 +270,7 @@ object MainForm: TMainForm
     Left = 164
     Top = 28
     Width = 402
-    Height = 294
+    Height = 314
     Align = alClient
     BevelInner = bvLowered
     BevelOuter = bvNone
@@ -281,7 +281,7 @@ object MainForm: TMainForm
       Left = 1
       Top = 1
       Width = 400
-      Height = 292
+      Height = 312
       Align = alClient
       AutoSize = True
       PopupMenu = DisplayPopup
@@ -293,7 +293,7 @@ object MainForm: TMainForm
   end
   object StatusBar: TStatusBar
     Left = 0
-    Top = 322
+    Top = 342
     Width = 566
     Height = 19
     Panels = <
@@ -2615,6 +2615,10 @@ object MainForm: TMainForm
         ImageIndex = 11
         ShortCut = 16455
         OnClick = mnuGradClick
+      end
+      object mnuimage: TMenuItem
+        Caption = 'Image '
+        OnClick = mnuimageClick
       end
       object N4: TMenuItem
         Caption = '-'

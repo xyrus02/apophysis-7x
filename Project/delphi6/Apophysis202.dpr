@@ -15,7 +15,6 @@
      along with this program; if not, write to the Free Software
      Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
 }
-{$D-,L-,O+,Q-,R-,Y-,S-}
 program Apophysis202;
 
 {%File 'HtmlHlp.inc'}
@@ -33,6 +32,7 @@ uses
   MyTypes in '..\..\Source\MyTypes.pas',
   Fullscreen in '..\..\Source\Fullscreen.pas' {FullscreenForm},
   Render in '..\..\Source\Render.pas',
+  Render32 in '..\..\Source\Render32.pas',
   RenderThread in '..\..\Source\RenderThread.pas',
   FormRender in '..\..\Source\FormRender.pas' {RenderForm},
   Mutate in '..\..\Source\Mutate.pas' {MutateForm},

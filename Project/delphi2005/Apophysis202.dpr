@@ -17,8 +17,8 @@
 }
 program Apophysis202;
 
-{%File '..\..\HtmlHlp.inc'}
-{%File 'readme.txt'}
+{%File '..\..\readme.txt'}
+{%File '..\..\Changes.txt'}
 
 uses
   Forms,
@@ -30,8 +30,6 @@ uses
   Regstry in '..\..\Source\Regstry.pas',
   MyTypes in '..\..\Source\MyTypes.pas',
   Fullscreen in '..\..\Source\Fullscreen.pas' {FullscreenForm},
-  Render in '..\..\Source\Render.pas',
-  RenderThread in '..\..\Source\RenderThread.pas',
   FormRender in '..\..\Source\FormRender.pas' {RenderForm},
   Mutate in '..\..\Source\Mutate.pas' {MutateForm},
   Adjust in '..\..\Source\Adjust.pas' {AdjustForm},
@@ -40,23 +38,24 @@ uses
   Save in '..\..\Source\Save.pas' {SaveForm},
   About in '..\..\Source\About.pas' {AboutForm},
   cmap in '..\..\Source\cmap.pas',
+  cmapData in '..\..\Source\cmapData.pas',
   SavePreset in '..\..\Source\SavePreset.pas' {SavePresetForm},
   ControlPoint in '..\..\Source\ControlPoint.pas',
   HtmlHlp in '..\..\Source\HtmlHlp.pas',
   ScriptForm in '..\..\Source\ScriptForm.pas' {ScriptEditor},
   Preview in '..\..\Source\Preview.pas' {PreviewForm},
   ScriptRender in '..\..\Source\ScriptRender.pas' {ScriptRenderForm},
-  ap_Math in '..\..\Source\ap_Math.pas',
-  ap_SysUtils in '..\..\Source\ap_SysUtils.pas',
   FormFavorites in '..\..\Source\FormFavorites.pas' {FavoritesForm},
   Size in '..\..\Source\Size.pas' {SizeTool},
   FormExport in '..\..\Source\FormExport.pas' {ExportDialog},
   MsMultiPartFormData in '..\..\Source\MsMultiPartFormData.pas',
   Sheep in '..\..\Source\Sheep.pas' {SheepDialog},
-  ap_FileCtrl in '..\..\Source\ap_FileCtrl.pas',
   XForm in '..\..\Source\XForm.pas',
-  cmapdata in '..\..\Source\cmapdata.pas',
-  Render32 in '..\..\Source\Render32.pas';
+  RenderThread in '..\..\Source\RenderThread.pas',
+  Render in '..\..\Source\Render.pas',
+  Render32 in '..\..\Source\Render32.pas',
+  Render64 in '..\..\Source\Render64.pas';
+//  ImageColoring in '..\..\Source\ImageColoring.pas' {frmImageColoring};
 
 {$R *.RES}
 
@@ -83,6 +82,7 @@ begin
   Application.CreateForm(TSizeTool, SizeTool);
   Application.CreateForm(TExportDialog, ExportDialog);
   Application.CreateForm(TSheepDialog, SheepDialog);
+//  Application.CreateForm(TfrmImageColoring, frmImageColoring);
   Application.UpdateFormatSettings := False;
   DecimalSeparator := '.';
   Application.Run;

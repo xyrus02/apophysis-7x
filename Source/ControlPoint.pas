@@ -39,11 +39,15 @@ type
     vHandkerchief, vHeart, vDisc, vSpiral, vHyperbolic, vSquare, vEx, vJulia,
     vBent, vWaves, vFisheye, vPopcorn, vExponential, vPower, vCosine, vSawTooth, vRandom);
 type
-  TCPpoint = record
-    x, y, c: double;
-  end;
-  PCPpoint = ^TCPpoint;
+
   TPointsArray = array of TCPpoint;
+  TPointsXYArray = array of TXYpoint;
+
+  T2Cpoint = record
+    x, y, c1, c2: double;
+  end;
+  P2Cpoint = ^T2Cpoint;
+  T2CPointsArray = array of T2Cpoint;
 
   TControlPoint = class
   public
@@ -81,6 +85,7 @@ type
     PropTable: array of Integer;
     jpeg: TJPegImage;
     FAngle: Double;
+    FTwoColorDimensions: Boolean;
   private
     procedure PreparePropTable;
 
@@ -90,9 +95,7 @@ type
 
     procedure ParseString(aString: string);
     procedure ParseStringList(sl: TStringlist);
-//    procedure RandomCP(calc: boolean = true);
     procedure RandomCP(min: integer = 2; max: integer = NXFORMS; calc: boolean = true);
-//    procedure RandomCP;
     procedure RandomCP1;
     procedure CalcBoundbox;
     function BlowsUp(NrPoints: integer): boolean;
@@ -102,8 +105,10 @@ type
 
     class function interpolate(cp1, cp2: TControlPoint; Time: double): TControlPoint; /// just for now
     procedure InterpolateX(cp1, cp2: TControlPoint; Tm: double);
-    procedure Iterate(NrPoints: integer; var Points: TPointsArray);
-    procedure Iterate_d(NrPoints: integer; var Points: TPointsArray);
+    procedure Iterate_Old(NrPoints: integer; var Points: TPointsArray);
+    procedure IterateXY(NrPoints: integer; var Points: TPointsXYArray);
+    procedure IterateXYC(NrPoints: integer; var Points: TPointsArray);
+    procedure IterateXYCC(NrPoints: integer; var Points: T2CPointsArray);
 
     function Clone: TControlPoint;
     procedure Copy(cp1: TControlPoint);
@@ -180,6 +185,8 @@ begin
   nbatches := 1;
 
   white_level := 200;
+
+  FTwoColorDimensions := False;
 end;
 
 destructor TControlPoint.Destroy;
@@ -221,7 +228,7 @@ begin
   end;
 end;
 
-procedure TControlPoint.Iterate(NrPoints: integer; var Points: TPointsArray);
+procedure TControlPoint.Iterate_Old(NrPoints: integer; var Points: TPointsArray);
 var
   i: Integer;
   px, py, pc: double;
@@ -452,7 +459,38 @@ begin
   end;
 end;
 
-procedure TControlPoint.Iterate_d(NrPoints: integer; var Points: TPointsArray);
+procedure TControlPoint.IterateXY(NrPoints: integer; var Points: TPointsXYArray);
+var
+  i: Integer;
+  px, py: double;
+  CurrentPoint: PXYPoint;
+begin
+  px := 2 * random - 1;
+  py := 2 * random - 1;
+
+  PreparePropTable;
+
+  for i := 0 to NXFORMS - 1 do
+    xform[i].prepare;
+
+  for i := -100 to NrPoints - 1 do begin
+    try
+      xform[PropTable[Random(1024)]].NextPointXY(px,py);
+    except
+      on EMathError do begin
+        exit;
+      end;
+    end;
+    // store points
+    if i >= 0 then begin
+      CurrentPoint := @Points[i];
+      CurrentPoint.X := px;
+      CurrentPoint.Y := py;
+    end
+  end;
+end;
+
+procedure TControlPoint.IterateXYC(NrPoints: integer; var Points: TPointsArray);
 { Variations for Draves conpatibility }
 var
   i: Integer;
@@ -473,7 +511,6 @@ begin
       xform[PropTable[Random(1024)]].NextPoint(px,py,pc);
     except
       on EMathError do begin
-//      raise Exception.Create('Iteration blows up');
         exit;
       end;
     end;
@@ -487,21 +524,16 @@ begin
   end;
 end;
 
-function TControlPoint.BlowsUp(NrPoints: integer): boolean;
+procedure TControlPoint.IterateXYCC(NrPoints: integer; var Points: T2CPointsArray);
 var
   i: Integer;
-  px, py, pc: double;
-  minx, maxx, miny, maxy: double;
-  Points: TPointsArray;
-  CurrentPoint: PCPPoint;
+  px, py, pc1, pc2: double;
+  CurrentPoint: P2Cpoint;
 begin
-  Result := false;
-
-  SetLength(Points, SUB_BATCH_SIZE);
-  
   px := 2 * random - 1;
   py := 2 * random - 1;
-  pc := random;
+  pc1 := random;
+  pc2 := random;
 
   PreparePropTable;
 
@@ -510,12 +542,51 @@ begin
 
   for i := -100 to NrPoints - 1 do begin
     try
-      xform[PropTable[Random(1024)]].NextPoint(px,py,pc);
+      xform[PropTable[Random(1024)]].NextPoint2C(px, py, pc1, pc2);
+    except
+      on EMathError do begin
+        exit;
+      end;
+    end;
+    // store points
+    if i >= 0 then begin
+      CurrentPoint := @Points[i];
+      CurrentPoint.X  := px;
+      CurrentPoint.Y  := py;
+      CurrentPoint.C1 := pc1;
+      CurrentPoint.C2 := pc2;
+    end
+  end;
+end;
+
+
+function TControlPoint.BlowsUp(NrPoints: integer): boolean;
+var
+  i: Integer;
+  px, py: double;
+  minx, maxx, miny, maxy: double;
+  Points: TPointsXYArray;
+  CurrentPoint: PXYPoint;
+begin
+  Result := false;
+
+  SetLength(Points, SUB_BATCH_SIZE);
+
+  px := 2 * random - 1;
+  py := 2 * random - 1;
+
+  PreparePropTable;
+
+  for i := 0 to NXFORMS - 1 do
+    xform[i].prepare;
+
+  for i := -100 to NrPoints - 1 do begin
+    try
+      xform[PropTable[Random(1024)]].NextPointXY(px,py);
       if i >= 0 then begin
         CurrentPoint := @Points[i];
         CurrentPoint.X := px;
         CurrentPoint.Y := py;
-        CurrentPoint.C := pc;
       end
     except
       on EMathError do begin
@@ -849,8 +920,8 @@ begin
   try
     SetLength(Points, SUB_BATCH_SIZE);
     case compatibility of
-      0: iterate(SUB_BATCH_SIZE, points);
-      1: iterate_d(SUB_BATCH_SIZE, points);
+      0: iterate_Old(SUB_BATCH_SIZE, points);
+      1: iterateXYC(SUB_BATCH_SIZE, points);
     end;
 
     LimitOutSidePoints := Round(0.05 * SUB_BATCH_SIZE);
@@ -921,14 +992,17 @@ begin
     else
       pixels_per_unit := 10;
   except on E: EMathError do
-    pixels_per_unit := 10;
+    begin// default
+      center[0] := 0;
+      center[1] := 0;
+      pixels_per_unit := 10;
+    end;
   end;
-
 end;
 
 function CalcUPRMagn(const cp: TControlPoint): double;
 var
-  Points: TPointsArray;
+  Points: TPointsXYArray;
   i, j: integer;
   deltax, minx, maxx: double;
   cntminx, cntmaxx: integer;
@@ -937,10 +1011,9 @@ var
   LimitOutSidePoints: integer;
   xLength, yLength: double;
 begin
-  result := 1.0;
   try
     SetLength(Points, SUB_BATCH_SIZE);
-    cp.iterate_d(SUB_BATCH_SIZE, Points);
+    cp.iterateXY(SUB_BATCH_SIZE, Points);
 
     LimitOutSidePoints := Round(0.05 * SUB_BATCH_SIZE);
 
@@ -1023,8 +1096,8 @@ begin
     end;
 
   except on E: EMathError do
+    raise Exception.Create('CalcUPRMagn: ' +e.Message);
   end;
-
 end;
 
 
@@ -1234,8 +1307,6 @@ begin
   cmap := Result.cmap;
   result.free;
 end;
-
-
 
 procedure TControlPoint.SaveToFile(Filename: string);
 var
