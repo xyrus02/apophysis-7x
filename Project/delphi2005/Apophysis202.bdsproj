@@ -121,7 +121,7 @@
 			<Directories Name="PackageDCPOutputDir"></Directories>
 			<Directories Name="SearchPath">..\..\Source;..\..\..\Apolibstuff9\libxml;..\..\..\Apolibstuff9\imglib;..\..\..\Apolibstuff9\SCRIPTSTUDIOD2005\Imports\Delphi2005;..\..\..\Apolibstuff9\SCRIPTSTUDIOD2005</Directories>
 			<Directories Name="Packages">vcl;rtl;dbrtl;adortl;vcldb;vclx;bdertl;vcldbx;dsnap;cds;bdecds;teeui;teedb;tee;dss;visualclx;visualdbclx;dsnapcrba;dsnapcon;VclSmp;vclie;xmlrtl;inet;inetdbbde;inetdbxpress;inetdb;nmfast;webdsnap;websnap;soaprtl;dbexpress;dbxcds;dclOffice2k;FlatStyle_D6;S303_R60;RzLPDB60;RzLPND60;vclshlctrls;B302vr60;VirtualTreesD6;o403_r60;ibxpress;CSP20I60;Rz30Ctls60;Rz30DBCtls60;indy;Indy60</Directories>
-			<Directories Name="Conditionals"></Directories>
+			<Directories Name="Conditionals">xTESTVARIANT</Directories>
 			<Directories Name="DebugSourceDirs">X:\Code\Delphi\Apophysis\Apolibstuff9\ScripterStudio\</Directories>
 			<Directories Name="UsePackages">False</Directories>
 		</Directories>
