@@ -45,7 +45,6 @@ object OptionsForm: TOptionsForm
     Width = 449
     Height = 249
     ActivePage = GeneralPage
-    TabIndex = 0
     TabOrder = 0
     TabStop = False
     object GeneralPage: TTabSheet
@@ -152,7 +151,6 @@ object OptionsForm: TOptionsForm
           Position = 100
           TabOrder = 1
           Thousands = False
-          Wrap = False
         end
       end
       object chkResize: TCheckBox
@@ -374,7 +372,6 @@ object OptionsForm: TOptionsForm
           Max = 12
           Position = 2
           TabOrder = 2
-          Wrap = False
         end
         object udMaxXForms: TUpDown
           Left = 157
@@ -386,7 +383,6 @@ object OptionsForm: TOptionsForm
           Max = 12
           Position = 6
           TabOrder = 3
-          Wrap = False
         end
       end
       object chkKeepBackground: TCheckBox
@@ -466,7 +462,6 @@ object OptionsForm: TOptionsForm
           Max = 12
           Position = 2
           TabOrder = 2
-          Wrap = False
         end
         object udMaxMutate: TUpDown
           Left = 157
@@ -478,7 +473,6 @@ object OptionsForm: TOptionsForm
           Max = 12
           Position = 6
           TabOrder = 3
-          Wrap = False
         end
       end
       object gpForcedSymmetry: TGroupBox
@@ -542,7 +536,6 @@ object OptionsForm: TOptionsForm
           Position = 4
           TabOrder = 2
           Thousands = False
-          Wrap = False
         end
       end
     end
@@ -759,7 +752,6 @@ object OptionsForm: TOptionsForm
           Max = 64
           Position = 2
           TabOrder = 8
-          Wrap = False
         end
         object udMaxNodes: TUpDown
           Left = 209
@@ -772,7 +764,6 @@ object OptionsForm: TOptionsForm
           Max = 64
           Position = 2
           TabOrder = 9
-          Wrap = False
         end
         object udMinHue: TUpDown
           Left = 161
@@ -781,11 +772,8 @@ object OptionsForm: TOptionsForm
           Height = 21
           HelpContext = 1032
           Associate = txtMinHue
-          Min = 0
           Max = 600
-          Position = 0
           TabOrder = 10
-          Wrap = False
         end
         object udMaxHue: TUpDown
           Left = 257
@@ -794,11 +782,9 @@ object OptionsForm: TOptionsForm
           Height = 21
           HelpContext = 1033
           Associate = txtMaxHue
-          Min = 0
           Max = 600
           Position = 600
           TabOrder = 11
-          Wrap = False
         end
         object udMinSat: TUpDown
           Left = 161
@@ -807,10 +793,7 @@ object OptionsForm: TOptionsForm
           Height = 21
           HelpContext = 1034
           Associate = txtMinSat
-          Min = 0
-          Position = 0
           TabOrder = 12
-          Wrap = False
         end
         object udmaxSat: TUpDown
           Left = 257
@@ -819,10 +802,8 @@ object OptionsForm: TOptionsForm
           Height = 21
           HelpContext = 1035
           Associate = txtMaxSat
-          Min = 0
           Position = 100
           TabOrder = 13
-          Wrap = False
         end
         object udMinLum: TUpDown
           Left = 161
@@ -831,10 +812,7 @@ object OptionsForm: TOptionsForm
           Height = 21
           HelpContext = 1036
           Associate = txtMinLum
-          Min = 0
-          Position = 0
           TabOrder = 14
-          Wrap = False
         end
         object udMaxLum: TUpDown
           Left = 257
@@ -843,10 +821,8 @@ object OptionsForm: TOptionsForm
           Height = 21
           HelpContext = 1037
           Associate = txtMaxLum
-          Min = 0
           Position = 100
           TabOrder = 15
-          Wrap = False
         end
       end
     end

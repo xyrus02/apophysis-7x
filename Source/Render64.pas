@@ -166,12 +166,21 @@ procedure TRenderer64.CreateColorMap;
 var
   i: integer;
 begin
+{$IFDEF TESTVARIANT}
+  for i := 0 to 255 do begin
+    ColorMap[i].Red   := i;
+    ColorMap[i].Green := i;
+    ColorMap[i].Blue  := i;
+//    cmap[i][3] := fcp.white_level;
+  end;
+{$ELSE}
   for i := 0 to 255 do begin
     ColorMap[i].Red   := (fcp.CMap[i][0] * fcp.white_level) div 256;
     ColorMap[i].Green := (fcp.CMap[i][1] * fcp.white_level) div 256;
     ColorMap[i].Blue  := (fcp.CMap[i][2] * fcp.white_level) div 256;
 //    cmap[i][3] := fcp.white_level;
   end;
+{$ENDIF}
 end;
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -396,10 +405,16 @@ begin
       Progress(i / nrbatches);
 
     // generate points
+{$IFDEF TESTVARIANT}
+//    if i > 10 then
+//      break;
+    fcp.Testiterate(SUB_BATCH_SIZE, points);
+{$ELSE}
     case Compatibility of
       0: fcp.iterate_Old(SUB_BATCH_SIZE, points);
       1: fcp.iterateXYC(SUB_BATCH_SIZE, points);
     end;
+{$ENDIF}
 
 //    for j := SUB_BATCH_SIZE - 1 downto 0 do
 //      Writeln(f,  FloatTostr(points[j].x) + #9 + FloatTostr(points[j].y) + #9 + FloatTostr(points[j].c));

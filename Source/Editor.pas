@@ -213,7 +213,8 @@ procedure ScaleAll;
 
 implementation
 
-uses Main, Global, Adjust, Mutate;
+uses
+  Main, Global, Adjust, Mutate, Xform;
 
 const
   SUB_BATCH_SIZE = 1000;

@@ -109,7 +109,8 @@ var
 
 implementation
 
-uses Main, Global, Registry, Editor, Adjust;
+uses
+  Main, Global, Registry, Editor, Adjust, XForm;
 
 {$R *.DFM}
 

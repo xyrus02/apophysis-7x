@@ -41,7 +41,6 @@ object EditForm: TEditForm
     0000800100008001000080010000800100008001000080010000FFFF0000}
   KeyPreview = True
   OldCreateOrder = True
-  Position = poDefaultPosOnly
   OnClose = FormClose
   OnCreate = FormCreate
   OnDestroy = FormDestroy
@@ -86,7 +85,6 @@ object EditForm: TEditForm
       item
         Width = 150
       end>
-    SimplePanel = False
   end
   object ControlPanel: TPanel
     Left = 394
@@ -138,7 +136,7 @@ object EditForm: TEditForm
       Width = 57
       Height = 21
       Style = csDropDownList
-      ItemHeight = 13
+      ItemHeight = 0
       TabOrder = 1
       OnChange = cbTransformsChange
     end
@@ -150,7 +148,6 @@ object EditForm: TEditForm
       ActivePage = TabSheet2
       Anchors = [akLeft, akTop, akRight, akBottom]
       MultiLine = True
-      TabIndex = 3
       TabOrder = 2
       TabStop = False
       object TabSheet1: TTabSheet

@@ -1665,24 +1665,10 @@ begin
     if (i < 0) or (i >= NVARS) then
       i := NVARS;
     Variation := TVariation(i);
-    case i of
-      0: MainForm.mnuVLinear.checked := True;
-      1: MainForm.mnuSinusoidal.checked := True;
-      2: MainForm.mnuSpherical.checked := True;
-      3: MainForm.mnuSwirl.checked := True;
-      4: MainForm.mnuHorseshoe.checked := True;
-      5: MainForm.mnuPolar.checked := True;
-      6: MainForm.mnuVar6.checked := True;
-      7: MainForm.mnuVar7.checked := True;
-      8: MainForm.mnuVar8.checked := True;
-      9: MainForm.mnuVar9.checked := True;
-      10: MainForm.mnuVar10.checked := True;
-      11: MainForm.mnuVar11.checked := True;
-      12: MainForm.mnuVar12.checked := True;
-      13: MainForm.mnuVar13.checked := True;
+    if i = -1 then
+      MainForm.mnuVRandom.checked := True
     else
-      MainForm.mnuVRandom.checked := True;
-    end;
+      MainForm.VarMenus[i].Checked := True;
   end
 end;
 

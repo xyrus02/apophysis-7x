@@ -3,8 +3,42 @@ unit XForm;
 interface
 
 const
-  NVARS = 23;
-  EPS = 1E-10;
+{$IFDEF TESTVARIANT}
+  NVARS = 26;
+{$ELSE}
+  NVARS = 25;
+{$ENDIF}
+
+  varnames: array[0..NVARS -1] of PChar = (
+    'linear',
+    'sinusoidal',
+    'spherical',
+    'swirl',
+    'horseshoe',
+    'polar',
+    'handkerchief',
+    'heart',
+    'disc',
+    'spiral',
+    'hyperbolic',
+    'diamond',
+    'ex',
+    'julia',
+    'bent',
+    'waves',
+    'fisheye',
+    'popcorn',
+    'exponential',
+    'power',
+    'cosine',
+    'rings',
+    'fan',
+    'triblob',
+    'daisy'
+{$IFDEF TESTVARIANT}
+    ,'test'
+{$ENDIF}
+    );
 
 type
   TCalcMethod = procedure of object;
@@ -61,7 +95,9 @@ type
     procedure Cosine;              // var[20]
     procedure Rings;               // var[21]
     procedure Fan;                 // var[22]
-
+    procedure Triblob;             // var[23]
+    procedure Daisy;               // var[24]
+    procedure TestVar;             // var[NVARS - 1]
 
     function Mul33(const M1, M2: TMatrix): TMatrix;
     function Identity: TMatrix;
@@ -98,6 +134,9 @@ implementation
 
 uses
   SysUtils, Math;
+
+const
+  EPS = 1E-10;
 
 { TXForm }
 
@@ -248,6 +287,23 @@ begin
     FFunctionList[FNrFunctions] := Fan;
     Inc(FNrFunctions);
   end;
+
+  if (vars[23] <> 0.0) then begin
+    FFunctionList[FNrFunctions] := Triblob;
+    Inc(FNrFunctions);
+  end;
+
+  if (vars[24] <> 0.0) then begin
+    FFunctionList[FNrFunctions] := Daisy;
+    Inc(FNrFunctions);
+  end;
+
+{$IFDEF TESTVARIANT}
+  if (vars[NVARS -1] <> 0.0) then begin
+    FFunctionList[FNrFunctions] := TestVar;
+    Inc(FNrFunctions);
+  end;
+{$ENDIF}
 
   CalculateAngle := (vars[5] <> 0.0) or (vars[6] <> 0.0) or (vars[7] <> 0.0) or (vars[8] <> 0.0) or
                     (vars[12] <> 0.0) or (vars[13] <> 0.0) or (vars[21] <> 0.0) or (vars[22] <> 0.0);
@@ -543,6 +599,64 @@ begin
 
   FPx := FPx + vars[22] * r * cos(a);
   FPy := FPy + vars[22] * r * sin(a);
+end;
+
+
+///////////////////////////////////////////////////////////////////////////////
+procedure TXForm.Triblob;
+var
+  r : double;
+  Angle: double;
+begin
+  r := sqrt(FTx * FTx + FTy * FTy);
+  if (FTx < -EPS) or (FTx > EPS) or (FTy < -EPS) or (FTy > EPS) then
+     Angle := arctan2(FTx, FTy)
+  else
+    Angle := 0.0;
+
+  r := r * (0.6 + 0.4 * sin(3 * Angle));
+
+  FPx := FPx + vars[23] * r * cos(Angle);
+  FPy := FPy + vars[23] * r * sin(Angle);
+end;
+
+///////////////////////////////////////////////////////////////////////////////
+procedure TXForm.Daisy;
+var
+  r : double;
+  Angle: double;
+begin
+  r := sqrt(FTx * FTx + FTy * FTy);
+  if (FTx < -EPS) or (FTx > EPS) or (FTy < -EPS) or (FTy > EPS) then
+     Angle := arctan2(FTx, FTy)
+  else
+    Angle := 0.0;
+
+//  r := r * (0.6 + 0.4 * sin(3 * Angle));
+  r := r * sin(5 * Angle);
+
+  FPx := FPx + vars[24] * r * cos(Angle);
+  FPy := FPy + vars[24] * r * sin(Angle);
+end;
+
+///////////////////////////////////////////////////////////////////////////////
+procedure TXForm.TestVar;
+var
+  r : double;
+//  dx, dy, dx2: double;
+  Angle: double;
+begin
+  r := sqrt(FTx * FTx + FTy * FTy);
+  if (FTx < -EPS) or (FTx > EPS) or (FTy < -EPS) or (FTy > EPS) then
+     Angle := arctan2(FTx, FTy)
+  else
+    Angle := 0.0;
+
+//  r := r * (0.6 + 0.4 * sin(3 * Angle));
+  r := r * sin(5 * Angle);
+
+  FPx := FPx + vars[NVARS-1] * r * cos(Angle);
+  FPy := FPy + vars[NVARS-1] * r * sin(Angle);
 end;
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -891,6 +1005,7 @@ begin
   c[2, 0] := Matrix[0][2];
   c[2, 1] := Matrix[1][2];
 end;
+
 
 ///////////////////////////////////////////////////////////////////////////////
 end.

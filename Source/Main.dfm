@@ -2,7 +2,7 @@ object MainForm: TMainForm
   Left = 316
   Top = 424
   Width = 574
-  Height = 535
+  Height = 575
   Caption = 'Apophysis'
   Color = clBtnFace
   Font.Charset = ANSI_CHARSET
@@ -27,7 +27,7 @@ object MainForm: TMainForm
     Left = 160
     Top = 28
     Width = 4
-    Height = 454
+    Height = 494
   end
   object ToolBar: TToolBar
     Left = 0
@@ -251,7 +251,7 @@ object MainForm: TMainForm
     Left = 0
     Top = 28
     Width = 160
-    Height = 454
+    Height = 494
     Align = alLeft
     Columns = <
       item
@@ -270,7 +270,7 @@ object MainForm: TMainForm
     Left = 164
     Top = 28
     Width = 402
-    Height = 454
+    Height = 494
     Align = alClient
     BevelInner = bvLowered
     BevelOuter = bvNone
@@ -281,7 +281,7 @@ object MainForm: TMainForm
       Left = 1
       Top = 1
       Width = 400
-      Height = 432
+      Height = 472
       Align = alClient
       AutoSize = True
       PopupMenu = DisplayPopup
@@ -293,7 +293,7 @@ object MainForm: TMainForm
   end
   object StatusBar: TStatusBar
     Left = 0
-    Top = 482
+    Top = 522
     Width = 566
     Height = 19
     Panels = <
@@ -2705,148 +2705,6 @@ object MainForm: TMainForm
       object N8: TMenuItem
         Caption = '-'
         GroupIndex = 1
-      end
-      object mnuVLinear: TMenuItem
-        Caption = 'Linear'
-        GroupIndex = 1
-        RadioItem = True
-        OnClick = mnuVLinearClick
-      end
-      object mnuSinusoidal: TMenuItem
-        AutoLineReduction = maManual
-        Caption = 'Sinusoidal'
-        GroupIndex = 1
-        RadioItem = True
-        OnClick = mnuSinusoidalClick
-      end
-      object mnuSpherical: TMenuItem
-        Caption = 'Spherical'
-        GroupIndex = 1
-        RadioItem = True
-        OnClick = mnuSphericalClick
-      end
-      object mnuSwirl: TMenuItem
-        Caption = 'Swirl'
-        GroupIndex = 1
-        RadioItem = True
-        OnClick = mnuSwirlClick
-      end
-      object mnuHorseshoe: TMenuItem
-        Caption = 'Horseshoe'
-        GroupIndex = 1
-        RadioItem = True
-        OnClick = mnuHorseshoeClick
-      end
-      object mnuPolar: TMenuItem
-        Caption = 'Polar'
-        GroupIndex = 1
-        RadioItem = True
-        OnClick = mnuPolarClick
-      end
-      object mnuVar14: TMenuItem
-        Caption = 'Bent'
-        GroupIndex = 1
-        RadioItem = True
-        OnClick = mnuVar14Click
-      end
-      object N17: TMenuItem
-        Caption = '-'
-        GroupIndex = 1
-      end
-      object mnuVar6: TMenuItem
-        Caption = 'Handkerchief'
-        GroupIndex = 1
-        RadioItem = True
-        OnClick = mnuVar6Click
-      end
-      object mnuVar7: TMenuItem
-        Caption = 'Heart'
-        GroupIndex = 1
-        RadioItem = True
-        OnClick = mnuVar7Click
-      end
-      object mnuVar8: TMenuItem
-        Caption = 'Disc'
-        GroupIndex = 1
-        RadioItem = True
-        OnClick = mnuVar8Click
-      end
-      object mnuVar9: TMenuItem
-        Caption = 'Spiral'
-        GroupIndex = 1
-        RadioItem = True
-        OnClick = mnuVar9Click
-      end
-      object mnuVar10: TMenuItem
-        Caption = 'Hyperbolic'
-        GroupIndex = 1
-        RadioItem = True
-        OnClick = mnuVar10Click
-      end
-      object mnuVar11: TMenuItem
-        Caption = 'Diamond'
-        GroupIndex = 1
-        RadioItem = True
-        OnClick = mnuVar11Click
-      end
-      object mnuVar12: TMenuItem
-        Caption = 'Ex'
-        GroupIndex = 1
-        RadioItem = True
-        OnClick = mnuVar12Click
-      end
-      object mnuVar13: TMenuItem
-        Caption = 'Julia'
-        GroupIndex = 1
-        RadioItem = True
-        OnClick = mnuVar13Click
-      end
-      object mnuWaves: TMenuItem
-        Caption = 'Waves'
-        GroupIndex = 1
-        RadioItem = True
-        OnClick = mnuWavesClick
-      end
-      object mnuFisheye: TMenuItem
-        Caption = 'Fisheye'
-        GroupIndex = 1
-        RadioItem = True
-        OnClick = mnuFisheyeClick
-      end
-      object mnuPopcorn: TMenuItem
-        Caption = 'Popcorn'
-        GroupIndex = 1
-        RadioItem = True
-        OnClick = mnuPopcornClick
-      end
-      object MnuExponential: TMenuItem
-        Caption = 'Exponential'
-        GroupIndex = 1
-        RadioItem = True
-        OnClick = MnuExponentialClick
-      end
-      object mnuPower: TMenuItem
-        Caption = 'Power'
-        GroupIndex = 1
-        RadioItem = True
-        OnClick = mnuPowerClick
-      end
-      object mnuCosine: TMenuItem
-        Caption = 'Cosine'
-        GroupIndex = 1
-        RadioItem = True
-        OnClick = mnuCosineClick
-      end
-      object mnuRings: TMenuItem
-        Caption = 'Rings'
-        GroupIndex = 1
-        RadioItem = True
-        OnClick = mnuRingsClick
-      end
-      object mnuFan: TMenuItem
-        Caption = 'Fan'
-        GroupIndex = 1
-        OnClick = mnuFanClick
       end
     end
     object mnuScript: TMenuItem

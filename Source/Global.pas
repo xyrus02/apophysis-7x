@@ -129,15 +129,22 @@ var
   DefaultPalette: TColorMap;
 
 
-implementation
+function Round6(x: double): double;
 
-uses dialogs, Main;
+implementation
 
 { IFS }
 
 function det(a, b, c, d: double): double;
 begin
   Result := (a * d - b * c);
+end;
+
+
+function Round6(x: double): double;
+// Really ugly, but it works
+begin
+  Result := StrToFloat(Format('%.6f', [x]));
 end;
 
 function solve3(x1, x2, x1h, y1, y2, y1h, z1, z2, z1h: double;

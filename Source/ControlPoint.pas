@@ -21,7 +21,7 @@ unit ControlPoint;
 interface
 
 uses
-  Classes, jpeg, ComCtrls, Windows, Graphics, Cmap, Dialogs, Xform;
+  Classes, Windows, Cmap, Xform;
 
 const
   EPS = 1E-10;
@@ -39,8 +39,8 @@ type
     vHandkerchief, vHeart, vDisc, vSpiral, vHyperbolic, vSquare, vEx, vJulia,
     vBent, vWaves, vFisheye, vPopcorn, vExponential, vPower, vCosine,
     vRings, vFan, vRandom);
-type
 
+type
   TPointsArray = array of TCPpoint;
   TPointsXYArray = array of TXYpoint;
 
@@ -84,7 +84,6 @@ type
     wiggle: array[0..1, 0..1] of double; // frequency is /minute, assuming 30 frames/s */
 
     PropTable: array of Integer;
-    jpeg: TJPegImage;
     FAngle: Double;
     FTwoColorDimensions: Boolean;
   private
@@ -111,6 +110,8 @@ type
     procedure IterateXYC(NrPoints: integer; var Points: TPointsArray);
     procedure IterateXYCC(NrPoints: integer; var Points: T2CPointsArray);
 
+    procedure Testiterate(NrPoints: integer; var Points: TPointsArray);
+
     function Clone: TControlPoint;
     procedure Copy(cp1: TControlPoint);
 
@@ -127,11 +128,17 @@ type
 
 function add_symmetry_to_control_point(var cp: TControlPoint; sym: integer): integer;
 function CalcUPRMagn(const cp: TControlPoint): double;
+
 implementation
 
 
 uses
   SysUtils, math, global;
+
+var
+  var_distrib: array[0..NVARS + 18] of integer;
+  mixed_var_distrib: array[0..NVARS + 8] of integer;
+
 
 { TControlPoint }
 
@@ -194,9 +201,8 @@ destructor TControlPoint.Destroy;
 var
   i: Integer;
 begin
-  for i := 0 to NXFORMS - 1 do begin
+  for i := 0 to NXFORMS - 1 do
     xform[i].Free;
-  end;
 
   inherited;
 end;
@@ -525,6 +531,53 @@ begin
   end;
 end;
 
+///////////////////////////////////////////////////////////////////////////////
+procedure TControlPoint.Testiterate(NrPoints: integer; var Points: TPointsArray);
+var
+  i: Integer;
+  px, py, pc, pt: double;
+  CurrentPoint: PCPPoint;
+begin
+
+  PreparePropTable;
+
+  for i := 0 to NXFORMS - 1 do
+    xform[i].prepare;
+
+  for i := 0 to NrPoints - 1 do begin
+    px := 4 * (-1 + 2 * random);
+    py := 4 * (-1 + 2 * random);
+
+    pc := 0.1 + 0.5 * sqrt(sqr(px/4)+ sqr(py/4)) ;
+    if abs(px)< 0.02 then
+      pc := 1 ;
+    if abs(py)< 0.02 then
+      pc := 1 ;
+    if abs(frac(px))< 0.01 then
+      pc := 1 ;
+    if abs(frac(py))< 0.01 then
+      pc := 1 ;
+    if abs(sqrt(sqr(px/4)+ sqr(py/4)) - 0.9) < 0.02 then
+      pc := 0;
+    try
+
+      xform[PropTable[Random(1024)]].NextPoint(px,py,pt);
+    except
+      on EMathError do begin
+        exit;
+      end;
+    end;
+    // store points
+    if i >= 0 then begin
+      CurrentPoint := @Points[i];
+      CurrentPoint.X := px;
+      CurrentPoint.Y := py;
+      CurrentPoint.C := pc;
+    end
+  end;
+end;
+
+
 procedure TControlPoint.IterateXYCC(NrPoints: integer; var Points: T2CPointsArray);
 var
   i: Integer;
@@ -799,10 +852,6 @@ end;
 
 
 procedure TControlPoint.SetVariation(vari: TVariation);
-const
-  xform_distrib: array[0..12] of integer = (2, 2, 2, 3, 3, 3, 4, 4, 5, 5, 6, 7, 8);
-  var_distrib: array[0..41] of integer = (-1, -1, -1, -1, -1, -1, -1, 0, 0, 0, 0, 1, 1, 1, 2, 2, 2, 3, 3, 4, 4, 5, 5, 6, 6, 7, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22);
-  mixed_var_distrib: array[0..31] of integer = (0, 0, 0, 1, 1, 1, 2, 2, 2, 3, 3, 4, 4, 5, 6, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22);
 var
   i, j, v: integer;
   rv: integer;
@@ -834,10 +883,6 @@ begin
 end;
 
 procedure TControlPoint.RandomCP(min: integer = 2; max: integer = NXFORMS; calc: boolean = true);
-const
-  xform_distrib: array[0..12] of integer = (2, 2, 2, 3, 3, 3, 4, 4, 5, 5, 6, 7, 8);
-  var_distrib: array[0..41] of integer = (-1, -1, -1, -1, -1, -1, -1, 0, 0, 0, 0, 1, 1, 1, 2, 2, 2, 3, 3, 4, 4, 5, 5, 6, 6, 7, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22);
-  mixed_var_distrib: array[0..31] of integer = (0, 0, 0, 1, 1, 1, 2, 2, 2, 3, 3, 4, 4, 5, 6, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22);
 var
   nrXforms: integer;
   i, j: integer;
@@ -916,6 +961,13 @@ var
   cntminy, cntmaxy: integer;
   LimitOutSidePoints: integer;
 begin
+{$IFDEF TESTVARIANT}
+  center[0] := 0;
+  center[1] := 0;
+  pixels_per_unit := 0.7 * Min(width / (6), Height / (6));
+  Exit;
+{$ENDIF}
+
 //  RandSeed := 1234567;
   try
     SetLength(Points, SUB_BATCH_SIZE);
@@ -1611,5 +1663,28 @@ begin
 end;
 
 ///////////////////////////////////////////////////////////////////////////////
+procedure FillVarDisturb;
+const
+  startvar_distrib: array[0..26] of integer = (-1, -1, -1, -1, -1, -1, -1, 0, 0, 0, 0, 1, 1, 1, 2, 2, 2, 3, 3, 4, 4, 5, 5, 6, 6, 7, 7);
+  startmixed_var_distrib: array[0..16] of integer = (0, 0, 0, 1, 1, 1, 2, 2, 2, 3, 3, 4, 4, 5, 6, 6, 7);
+var
+  i: integer;
+begin
+  for i := 0 to High(startvar_distrib) do
+    var_distrib[i] := startvar_distrib[i];
+
+  for i := High(startvar_distrib) + 1 to high(var_distrib) do
+    var_distrib[i] := 8 + i - High(startvar_distrib) - 1;
+
+  for i := 0 to High(startmixed_var_distrib) do
+    mixed_var_distrib[i] := startmixed_var_distrib[i];
+
+  for i := High(startmixed_var_distrib) + 1 to high(mixed_var_distrib) do
+    mixed_var_distrib[i] := 8 + i - High(startmixed_var_distrib) - 1;
+end;
+
+///////////////////////////////////////////////////////////////////////////////
+initialization
+  FillVarDisturb
 end.
 

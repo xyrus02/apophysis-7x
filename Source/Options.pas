@@ -15,7 +15,7 @@
      along with this program; if not, write to the Free Software
      Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
 }
-{$D-,L-,O+,Q-,R-,Y-,S-}
+//{$D-,L-,O+,Q-,R-,Y-,S-}
 unit Options;
 
 interface
@@ -209,7 +209,8 @@ var
 
 implementation
 
-uses Main, Global, Editor, ControlPoint;
+uses
+  Main, Global, Editor, ControlPoint, XForm;
 {$R *.DFM}
 
 procedure TOptionsForm.btnCancelClick(Sender: TObject);
@@ -582,7 +583,7 @@ var
   i: integer;
 begin
   for i:= 0 to NVARS - 1 do begin
-    clbVarEnabled.AddItem(Main.varnames[i],nil);
+    clbVarEnabled.AddItem(varnames[i],nil);
   end;
 end;
 

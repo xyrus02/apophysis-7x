@@ -37,31 +37,6 @@ const
   RS_DR = 1;
   RS_XO = 2;
   RS_VO = 3;
-  varnames: array[0..NVARS -1] of PChar = (
-    'linear',
-    'sinusoidal',
-    'spherical',
-    'swirl',
-    'horseshoe',
-    'polar',
-    'handkerchief',
-    'heart',
-    'disc',
-    'spiral',
-    'hyperbolic',
-    'diamond',
-    'ex',
-    'julia',
-    'bent',
-    'waves',
-    'fisheye',
-    'popcorn',
-    'exponential',
-    'power',
-    'cosine',
-    'rings',
-    'fan'
-    );
 
 type
   TMouseMoveState = (msUsual, msZoomWindow, msZoomWindowMove, msDrag, msDragMove, msRotate, msRotateMove);
@@ -104,13 +79,6 @@ type
     RedrawTimer: TTimer;
     mnuVar: TMenuItem;
     mnuVRandom: TMenuItem;
-    mnuVLinear: TMenuItem;
-    mnuSinusoidal: TMenuItem;
-    mnuSpherical: TMenuItem;
-    mnuHorseshoe: TMenuItem;
-    mnuSwirl: TMenuItem;
-    mnuPolar: TMenuItem;
-    mnuVar6: TMenuItem;
     N3: TMenuItem;
     mnuOpen: TMenuItem;
     mnuSaveAs: TMenuItem;
@@ -169,14 +137,6 @@ type
     mnuCalculateColors: TMenuItem;
     mnuRandomizeColorValues: TMenuItem;
     N7: TMenuItem;
-    N17: TMenuItem;
-    mnuVar7: TMenuItem;
-    mnuVar8: TMenuItem;
-    mnuVar9: TMenuItem;
-    mnuVar10: TMenuItem;
-    mnuVar11: TMenuItem;
-    mnuVar12: TMenuItem;
-    mnuVar13: TMenuItem;
     N18: TMenuItem;
     N19: TMenuItem;
     btnDefine: TToolButton;
@@ -194,7 +154,6 @@ type
     N10: TMenuItem;
     mnuManageFavorites: TMenuItem;
     mnuShowFull: TMenuItem;
-    mnuVar14: TMenuItem;
     mnuImageSize: TMenuItem;
     N13: TMenuItem;
     ApplicationEvents: TApplicationEvents;
@@ -209,22 +168,13 @@ type
     HTTP: TIdHTTP;
     ListXmlScanner: TEasyXmlScanner;
     N21: TMenuItem;
-    mnuWaves: TMenuItem;
-    mnuFisheye: TMenuItem;
-    mnuPopcorn: TMenuItem;
     XmlScanner: TXmlScanner;
     mnuFlamepdf: TMenuItem;
-    MnuExponential: TMenuItem;
-    mnuPower: TMenuItem;
-    mnuCosine: TMenuItem;
-    mnuRings: TMenuItem;
     ToolButton4: TToolButton;
     tbzoomwindow: TToolButton;
     tbDrag: TToolButton;
     tbRotate: TToolButton;
     mnuimage: TMenuItem;
-    mnuFan: TMenuItem;
-    procedure mnuFanClick(Sender: TObject);
     procedure mnuimageClick(Sender: TObject);
     procedure mnuExitClick(Sender: TObject);
     procedure mnuSaveUPRClick(Sender: TObject);
@@ -258,13 +208,6 @@ type
     procedure MainViewClick(Sender: TObject);
     procedure MainToolsClick(Sender: TObject);
     procedure MainHelpClick(Sender: TObject);
-    procedure mnuVLinearClick(Sender: TObject);
-    procedure mnuSinusoidalClick(Sender: TObject);
-    procedure mnuSphericalClick(Sender: TObject);
-    procedure mnuSwirlClick(Sender: TObject);
-    procedure mnuHorseshoeClick(Sender: TObject);
-    procedure mnuPolarClick(Sender: TObject);
-    procedure mnuVar6Click(Sender: TObject);
     procedure mnuVRandomClick(Sender: TObject);
     procedure mnuSaveAsClick(Sender: TObject);
     procedure mnuOpenClick(Sender: TObject);
@@ -292,13 +235,6 @@ type
     procedure FormDeactivate(Sender: TObject);
     procedure mnuCalculateColorsClick(Sender: TObject);
     procedure mnuRandomizeColorValuesClick(Sender: TObject);
-    procedure mnuVar7Click(Sender: TObject);
-    procedure mnuVar8Click(Sender: TObject);
-    procedure mnuVar9Click(Sender: TObject);
-    procedure mnuVar10Click(Sender: TObject);
-    procedure mnuVar11Click(Sender: TObject);
-    procedure mnuVar12Click(Sender: TObject);
-    procedure mnuVar13Click(Sender: TObject);
     procedure mnuEditScriptClick(Sender: TObject);
     procedure btnRunClick(Sender: TObject);
     procedure mnuRunClick(Sender: TObject);
@@ -307,7 +243,6 @@ type
     procedure mnuImportGimpClick(Sender: TObject);
     procedure mnuManageFavoritesClick(Sender: TObject);
     procedure mnuShowFullClick(Sender: TObject);
-    procedure mnuVar14Click(Sender: TObject);
     procedure mnuImageSizeClick(Sender: TObject);
     procedure ApplicationEventsActivate(Sender: TObject);
     procedure mnuPasteClick(Sender: TObject);
@@ -325,14 +260,7 @@ type
       Attributes: TAttrList);
     procedure XMLScannerEmptyTag(Sender: TObject; TagName: string;
       Attributes: TAttrList);
-    procedure mnuWavesClick(Sender: TObject);
-    procedure mnuFisheyeClick(Sender: TObject);
-    procedure mnuPopcornClick(Sender: TObject);
     procedure mnuFlamepdfClick(Sender: TObject);
-    procedure MnuExponentialClick(Sender: TObject);
-    procedure mnuPowerClick(Sender: TObject);
-    procedure mnuCosineClick(Sender: TObject);
-    procedure mnuRingsClick(Sender: TObject);
     procedure ImageMouseDown(Sender: TObject; Button: TMouseButton;
       Shift: TShiftState; X, Y: Integer);
     procedure ImageMouseMove(Sender: TObject; Shift: TShiftState; X,
@@ -353,6 +281,9 @@ type
     procedure DrawZoomWindow(ARect: TRect);
     procedure DrawRotatelines(Angle: double);
 
+    procedure FillVariantMenu;
+    procedure VariantMenuClick(Sender: TObject);
+
     procedure FavoriteClick(Sender: TObject);
     procedure HandleThreadCompletion(var Message: TMessage);
       message WM_THREAD_COMPLETE;
@@ -366,6 +297,9 @@ type
     StartTime: TDateTime;
     Remainder: TDateTime;
     AnimPal: TColorMap;
+
+    VarMenus: array[0..NVARS] of TMenuItem;
+
     procedure LoadXMLFlame(filename, name: string);
     procedure DisableFavorites;
     procedure EnableFavorites;
@@ -406,7 +340,6 @@ function NumXForms(const cp: TControlPoint): integer;
 procedure NormalizeWeights(var cp: TControlPoint);
 procedure EqualizeWeights(var cp: TControlPoint);
 procedure MultMatrix(var s: TMatrix; const m: TMatrix);
-function Round6(x: double): double;
 procedure ListFlames(FileName: string; sel: integer);
 procedure ListIFS(FileName: string; sel: integer);
 procedure AdjustScale(var cp1: TControlPoint; width, height: integer);
@@ -425,7 +358,7 @@ implementation
 uses Editor, Options, Regstry, Gradient, Render,
   FullScreen, FormRender, Mutate, Adjust, Browser, Save, About, CmapData,
   HtmlHlp, ScriptForm, FormFavorites, Size, FormExport, msMultiPartFormData,
-  Sheep, ImageColoring, RndFlame;
+  Sheep, ImageColoring, RndFlame, XForm;
 
 {$R *.DFM}
 
@@ -479,13 +412,6 @@ begin
   cp1.width := width;
   cp1.height := height;
 end;
-
-function Round6(x: double): double;
-// Really ugly, but it works
-begin
-  Result := StrToFloat(Format('%.6f', [x]));
-end;
-
 
 procedure MultMatrix(var s: TMatrix; const m: TMatrix);
 var
@@ -703,12 +629,14 @@ begin
 end;
 
 procedure TMainForm.RandomizeCP(var cp1: TControlPoint; alg: integer = 0);
+(*
 var
   vrnd, Min, Max, i, j, rnd: integer;
   Triangles: TTriangles;
   cmap: TColorMap;
   r, s, theta, phi: double;
   skip: boolean;
+*)
 begin
   cp1.Free;
   cp1 := RandomFlame(MainCP, alg);
@@ -2088,7 +2016,7 @@ begin
     begin
       OpenFileType := ftIfs;
       Variation := vLinear;
-      mnuvLinear.Checked := True;
+      VarMenus[0].Checked := True;
     end;
     if (UpperCase(ExtractFileExt(OpenDialog.FileName)) = '.FLA') or
       (UpperCase(ExtractFileExt(OpenDialog.FileName)) = '.APO') then
@@ -2512,6 +2440,7 @@ begin
   mnuExit.ShortCut := TextToShortCut('Alt+F4');
   if VariationOptions = 0 then VariationOptions := 16383; // it shouldn't hapen but just in case;
   UnpackVariations(VariationOptions);
+  FillVariantMenu;
 end;
 
 procedure TMainForm.FormShow(Sender: TObject);
@@ -2845,7 +2774,7 @@ begin
         begin
         { Open *.ifs File }
           Variation := vLinear;
-          mnuVLinear.Checked := True;
+          VarMenus[0].Checked := True;
           StringToIFS(IFSStrings.Text);
           SetVariation(maincp);
           maincp.CalcBoundBox;
@@ -3007,83 +2936,6 @@ begin
   DrawFlame;
 end;
 
-procedure TMainForm.mnuVLinearClick(Sender: TObject);
-begin
-  mnuVLinear.Checked := True;
-  UpdateUndo;
-  Variation := vLinear;
-  SetVariation(maincp);
-  ResetLocation;
-  RedrawTimer.Enabled := True;
-  UpdateWindows;
-end;
-
-procedure TMainForm.mnuSinusoidalClick(Sender: TObject);
-begin
-  mnuSinusoidal.Checked := True;
-  UpdateUndo;
-  Variation := vSinusoidal;
-  SetVariation(maincp);
-  ResetLocation;
-  RedrawTimer.Enabled := True;
-  UpdateWindows;
-end;
-
-procedure TMainForm.mnuSphericalClick(Sender: TObject);
-begin
-  mnuSpherical.Checked := True;
-  UpdateUndo;
-  Variation := vSpherical;
-  SetVariation(maincp);
-  ResetLocation;
-  RedrawTimer.Enabled := True;
-  UpdateWindows;
-end;
-
-procedure TMainForm.mnuSwirlClick(Sender: TObject);
-begin
-  mnuSwirl.Checked := True;
-  UpdateUndo;
-  Variation := vSwirl;
-  SetVariation(maincp);
-  ResetLocation;
-  RedrawTimer.Enabled := True;
-  UpdateWindows;
-end;
-
-procedure TMainForm.mnuHorseshoeClick(Sender: TObject);
-begin
-  mnuHorseshoe.Checked := True;
-  UpdateUndo;
-  Variation := vHorseshoe;
-  SetVariation(maincp);
-  ResetLocation;
-  RedrawTimer.Enabled := True;
-  UpdateWindows;
-end;
-
-procedure TMainForm.mnuPolarClick(Sender: TObject);
-begin
-  mnuPolar.Checked := True;
-  UpdateUndo;
-  Variation := vPolar;
-  SetVariation(maincp);
-  ResetLocation;
-  RedrawTimer.Enabled := True;
-  UpdateWindows;
-end;
-
-procedure TMainForm.mnuVar6Click(Sender: TObject);
-begin
-  mnuVar6.Checked := True;
-  UpdateUndo;
-  Variation := vHandkerchief;
-  SetVariation(maincp);
-  ResetLocation;
-  RedrawTimer.Enabled := True;
-  UpdateWindows;
-end;
-
 procedure TMainForm.mnuVRandomClick(Sender: TObject);
 begin
   mnuVRandom.Checked := True;
@@ -3146,15 +2998,14 @@ end;
 procedure TMainForm.SmoothPalette;
 { From Draves' Smooth palette Gimp plug-in }
 var
-  r, g, b: byte;
   Bitmap: TBitMap;
   JPEG: TJPEGImage;
   pal: TColorMap;
   strings: TStringlist;
-  ident, gradient, FileName: string;
-  len, len_best, color, as_is, swapd: cardinal;
+  ident, FileName: string;
+  len, len_best, as_is, swapd: cardinal;
   cmap_best, original, clist: array[0..255] of cardinal;
-  c, p, total, j, rand, tryit, i0, i1, t, x, y, i, iw, ih: integer;
+  p, total, j, rand, tryit, i0, i1, x, y, i, iw, ih: integer;
 begin
   Total := Trunc(NumTries * TryLength / 100);
   p := 0;
@@ -3530,82 +3381,6 @@ begin
   UpdateWindows;
 end;
 
-procedure TMainForm.mnuVar7Click(Sender: TObject);
-begin
-  mnuVar7.Checked := True;
-  UpdateUndo;
-  Variation := vHeart;
-  SetVariation(maincp);
-  ResetLocation;
-  RedrawTimer.Enabled := True;
-  UpdateWindows;
-end;
-
-procedure TMainForm.mnuVar8Click(Sender: TObject);
-begin
-  mnuVar8.Checked := True;
-  UpdateUndo;
-  Variation := vDisc;
-  SetVariation(maincp);
-  ResetLocation;
-  RedrawTimer.Enabled := True;
-  UpdateWindows;
-end;
-
-procedure TMainForm.mnuVar9Click(Sender: TObject);
-begin
-  mnuVar9.Checked := True;
-  UpdateUndo;
-  Variation := vSpiral;
-  SetVariation(maincp);
-  ResetLocation;
-  RedrawTimer.Enabled := True;
-  UpdateWindows;
-end;
-
-procedure TMainForm.mnuVar10Click(Sender: TObject);
-begin
-  mnuVar10.Checked := True;
-  UpdateUndo;
-  Variation := vHyperbolic;
-  SetVariation(maincp);
-  ResetLocation;
-  RedrawTimer.Enabled := True;
-  UpdateWindows;
-end;
-
-procedure TMainForm.mnuVar11Click(Sender: TObject);
-begin
-  mnuVar11.Checked := True;
-  UpdateUndo;
-  Variation := vSquare;
-  SetVariation(maincp);
-  ResetLocation;
-  RedrawTimer.Enabled := True;
-  UpdateWindows;
-end;
-
-procedure TMainForm.mnuVar12Click(Sender: TObject);
-begin
-  mnuVar12.Checked := True;
-  UpdateUndo;
-  Variation := vEx;
-  SetVariation(maincp);
-  ResetLocation;
-  RedrawTimer.Enabled := True;
-  UpdateWindows;
-end;
-
-procedure TMainForm.mnuVar13Click(Sender: TObject);
-begin
-  mnuVar13.Checked := True;
-  UpdateUndo;
-  Variation := vJulia;
-  SetVariation(maincp);
-  ResetLocation;
-  RedrawTimer.Enabled := True;
-  UpdateWindows;
-end;
 
 procedure TMainForm.mnuEditScriptClick(Sender: TObject);
 begin
@@ -3720,17 +3495,6 @@ procedure TMainForm.mnuShowFullClick(Sender: TObject);
 begin
   FullScreenForm.Calculate := False;
   FullScreenForm.Show;
-end;
-
-procedure TMainForm.mnuVar14Click(Sender: TObject);
-begin
-  mnuVar14.Checked := True;
-  UpdateUndo;
-  Variation := vBent;
-  SetVariation(maincp);
-  ResetLocation;
-  RedrawTimer.Enabled := True;
-  UpdateWindows;
 end;
 
 procedure TMainForm.mnuImageSizeClick(Sender: TObject);
@@ -4199,101 +3963,12 @@ begin
   end;
 end;
 
-procedure TMainForm.mnuWavesClick(Sender: TObject);
-begin
-  mnuWaves.Checked := True;
-  UpdateUndo;
-  Variation := vWaves;
-  SetVariation(maincp);
-  ResetLocation;
-  RedrawTimer.Enabled := True;
-  UpdateWindows;
-end;
-
-procedure TMainForm.mnuFisheyeClick(Sender: TObject);
-begin
-  mnuFisheye.Checked := True;
-  UpdateUndo;
-  Variation := vFisheye;
-  SetVariation(maincp);
-  ResetLocation;
-  RedrawTimer.Enabled := True;
-  UpdateWindows;
-end;
-
-procedure TMainForm.mnuPopcornClick(Sender: TObject);
-begin
-  mnuPopcorn.Checked := True;
-  UpdateUndo;
-  Variation := vPopcorn;
-  SetVariation(maincp);
-  ResetLocation;
-  RedrawTimer.Enabled := True;
-  UpdateWindows;
-end;
-
 procedure TMainForm.mnuFlamepdfClick(Sender: TObject);
 begin
   WinShellOpen('flame.pdf');
 end;
 
-procedure TMainForm.MnuExponentialClick(Sender: TObject);
-begin
-  mnuExponential.Checked := True;
-  UpdateUndo;
-  Variation := vExponential;
-  SetVariation(maincp);
-  ResetLocation;
-  RedrawTimer.Enabled := True;
-  UpdateWindows;
-end;
-
-procedure TMainForm.mnuPowerClick(Sender: TObject);
-begin
-  mnuPower.Checked := True;
-  UpdateUndo;
-  Variation := vPower;
-  SetVariation(maincp);
-  ResetLocation;
-  RedrawTimer.Enabled := True;
-  UpdateWindows;
-end;
-
-procedure TMainForm.mnuCosineClick(Sender: TObject);
-begin
-  mnuCosine.Checked := True;
-  UpdateUndo;
-  Variation := vCosine;
-  SetVariation(maincp);
-  ResetLocation;
-  RedrawTimer.Enabled := True;
-  UpdateWindows;
-end;
-
-procedure TMainForm.mnuRingsClick(Sender: TObject);
-begin
-  mnuRings.Checked := True;
-  UpdateUndo;
-  Variation := vRings;
-  SetVariation(maincp);
-  ResetLocation;
-  RedrawTimer.Enabled := True;
-  UpdateWindows;
-end;
-
-
 ///////////////////////////////////////////////////////////////////////////////
-procedure TMainForm.mnuFanClick(Sender: TObject);
-begin
-  mnuFan.Checked := True;
-  UpdateUndo;
-  Variation := vFan;
-  SetVariation(maincp);
-  ResetLocation;
-  RedrawTimer.Enabled := True;
-  UpdateWindows;
-end;
-
 procedure TMainForm.ImageMouseDown(Sender: TObject; Button: TMouseButton;
   Shift: TShiftState; X, Y: Integer);
 var
@@ -4348,6 +4023,7 @@ begin
   end;
 end;
 
+///////////////////////////////////////////////////////////////////////////////
 procedure TMainForm.ImageMouseMove(Sender: TObject; Shift: TShiftState; X,
   Y: Integer);
 var
@@ -4391,6 +4067,7 @@ begin
   end;
 end;
 
+///////////////////////////////////////////////////////////////////////////////
 procedure TMainForm.ImageMouseUp(Sender: TObject; Button: TMouseButton;
   Shift: TShiftState; X, Y: Integer);
 begin
@@ -4525,6 +4202,37 @@ begin
   FMouseMoveState := msRotate;
 end;
 
+///////////////////////////////////////////////////////////////////////////////
+procedure TMainForm.FillVariantMenu;
+var
+  i: integer;
+  NewMenuItem : TMenuItem;
+begin
+  for i := 0 to NVARS - 1 do begin
+    NewMenuItem := TMenuItem.Create(self);
+    NewMenuItem.Caption    := uppercase(varnames[i][0]) + copy(varnames[i], 2, length(varnames[i])-1);
+    NewMenuItem.OnClick    := VariantMenuClick;
+    NewMenuItem.Enabled    := True;
+    NewMenuItem.Name       := 'var' + intTostr(i);
+    NewMenuItem.Tag        := i;
+    NewMenuItem.GroupIndex := 2;
+    NewMenuItem.RadioItem  := True;
+    VarMenus[i] := NewMenuItem;
+    mnuvar.Add(NewMenuItem);
+  end;
+end;
+
+///////////////////////////////////////////////////////////////////////////////
+procedure TMainForm.VariantMenuClick(Sender: TObject);
+begin
+  TMenuItem(Sender).Checked := True;
+  UpdateUndo;
+  Variation := TVariation(TMenuItem(Sender).Tag);
+  SetVariation(maincp);
+  ResetLocation;
+  RedrawTimer.Enabled := True;
+  UpdateWindows;
+end;
 
 ///////////////////////////////////////////////////////////////////////////////
 end.
