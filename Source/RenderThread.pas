@@ -22,7 +22,7 @@ interface
 
 uses
   Classes, windows, Messages, Graphics,
-   controlPoint, Render, Render32, Render64;
+   controlPoint, Render, Render32, Render64, RenderMM;
 
 const
   WM_THREAD_COMPLETE = WM_APP + 5437;
@@ -35,25 +35,40 @@ type
 
     FOnProgress: TOnProgress;
     FCP: TControlPoint;
+    Fcompatibility: Integer;
+    FMaxMem: int64;
+
+    procedure Render;
+    function GetNrSlices: integer;
+    function GetSlice: integer;
+    procedure Setcompatibility(const Value: Integer);
+    procedure SetMaxMem(const Value: int64);
   public
-    MaxMem: int64;
     TargetHandle: HWND;
-    nrSlices: int64;
-    Slice: int64;
-    compatibility: integer;
-    procedure Execute; override;
+
     constructor Create;
     destructor Destroy; override;
 
     procedure SetCP(CP: TControlPoint);
     function GetImage: TBitmap;
+    procedure Execute; override;
 
-    procedure Render; overload;
     procedure Terminate;
 
     property OnProgress: TOnProgress
       read FOnProgress
       write FOnProgress;
+
+    property Slice: integer
+        read GetSlice;
+    property NrSlices: integer
+        read GetNrSlices;
+    property MaxMem: int64
+        read FMaxMem
+       write SetMaxMem;
+    property compatibility: Integer
+        read Fcompatibility
+       write Setcompatibility;
   end;
 
 implementation
@@ -63,7 +78,7 @@ uses
 
 { TRenderThread }
 
-
+///////////////////////////////////////////////////////////////////////////////
 destructor TRenderThread.Destroy;
 begin
   if assigned(FRenderer) then
@@ -72,6 +87,7 @@ begin
   inherited;
 end;
 
+///////////////////////////////////////////////////////////////////////////////
 function TRenderThread.GetImage: TBitmap;
 begin
   Result := nil;
@@ -79,39 +95,43 @@ begin
     Result := FRenderer.GetImage;
 end;
 
+///////////////////////////////////////////////////////////////////////////////
 procedure TRenderThread.SetCP(CP: TControlPoint);
 begin
   FCP := CP;
 end;
 
+///////////////////////////////////////////////////////////////////////////////
 constructor TRenderThread.Create;
 begin
-  MaxMem := 0;                          // mt
-  Slice := 0;
-  NrSlices := 1;
+  MaxMem := 0;
   FreeOnTerminate := False;
   inherited Create(True);               // Create Suspended;
 end;
 
-
+///////////////////////////////////////////////////////////////////////////////
 procedure TRenderThread.Render;
 begin
   if assigned(FRenderer) then
     FRenderer.Free;
 
-  FRenderer := TRenderer64.Create;
+  if MaxMem = 0 then begin
+    FRenderer := TRenderer64.Create;
+  end else begin
+    FRenderer := TRendererMM64.Create;
+    FRenderer.MaxMem := MaxMem
+  end;
+
   FRenderer.SetCP(FCP);
   FRenderer.compatibility := compatibility;
   FRenderer.OnProgress := FOnProgress;
   Frenderer.Render;
 end;
 
+///////////////////////////////////////////////////////////////////////////////
 procedure TRenderThread.Execute;
 begin
-//  if MaxMem = 0 then
-    Render;
-//  else
-//    RenderMaxMem(MaxMem);
+  Render;
 
   if Terminated then
     PostMessage(TargetHandle, WM_THREAD_TERMINATE, 0, 0)
@@ -119,13 +139,45 @@ begin
     PostMessage(TargetHandle, WM_THREAD_COMPLETE, 0, 0);
 end;
 
+///////////////////////////////////////////////////////////////////////////////
 procedure TRenderThread.Terminate;
 begin
   inherited Terminate;
 
   if assigned(FRenderer) then
-    FRenderer.Stop; 
+    FRenderer.Stop;
 end;
 
+///////////////////////////////////////////////////////////////////////////////
+function TRenderThread.GetNrSlices: integer;
+begin
+  if assigned(FRenderer) then
+    Result := FRenderer.Nrslices
+  else
+    Result := 1;
+end;
+
+///////////////////////////////////////////////////////////////////////////////
+function TRenderThread.GetSlice: integer;
+begin
+  if assigned(FRenderer) then
+    Result := FRenderer.Slice
+  else
+    Result := 1;
+end;
+
+///////////////////////////////////////////////////////////////////////////////
+procedure TRenderThread.Setcompatibility(const Value: Integer);
+begin
+  Fcompatibility := Value;
+end;
+
+///////////////////////////////////////////////////////////////////////////////
+procedure TRenderThread.SetMaxMem(const Value: int64);
+begin
+  FMaxMem := Value;
+end;
+
+///////////////////////////////////////////////////////////////////////////////
 end.
 

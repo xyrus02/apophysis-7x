@@ -16,7 +16,7 @@
      along with this program; if not, write to the Free Software
      Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
 }
-unit Render64;
+unit RenderMM;
 
 interface
 
@@ -47,19 +47,19 @@ type
   TBucketArray = array of TBucket;
 
 type
-  TRenderer64 = class(TBaseRenderer)
+  TRendererMM64 = class(TBaseRenderer)
   private
     bm: TBitmap;
 
-    oversample: Int64;
+    oversample: Integer;
     filter_width: Integer;
     filter: array of array of extended;
 
     image_Width: Integer;
     image_Height: Integer;
-    BucketWidth: Int64;
-    BucketHeight: Int64;
-    BucketSize: Int64;
+    BucketWidth: Integer;
+    BucketHeight: Integer;
+    BucketSize: Integer;
     gutter_width: Integer;
 
     sample_density: extended;
@@ -75,6 +75,8 @@ type
     bounds: array[0..3] of extended;
     size: array[0..1] of extended;
     ppux, ppuy: extended;
+    nrSlices: int64;
+    Slice: int64;
 
     procedure CreateFilter;
     procedure NormalizeFilter;
@@ -93,6 +95,10 @@ type
     procedure SetPixels;
     procedure CreateBMFromBuckets(YOffset: Integer = 0);
 
+  protected
+    function GetSlice: integer; override;
+    function GetNrSlices: integer; override;
+
   public
     constructor Create; override;
     destructor Destroy; override;
@@ -108,10 +114,10 @@ implementation
 uses
   Math, Sysutils;
 
-{ TRenderer64 }
+{ TRendererMM64 }
 
 ///////////////////////////////////////////////////////////////////////////////
-procedure TRenderer64.ClearBuckets;
+procedure TRendererMM64.ClearBuckets;
 var
   i: integer;
 begin
@@ -124,13 +130,13 @@ begin
 end;
 
 ///////////////////////////////////////////////////////////////////////////////
-procedure TRenderer64.ClearBuffers;
+procedure TRendererMM64.ClearBuffers;
 begin
   ClearBuckets;
 end;
 
 ///////////////////////////////////////////////////////////////////////////////
-procedure TRenderer64.CreateCamera;
+procedure TRendererMM64.CreateCamera;
 var
   scale: double;
   t0, t1: double;
@@ -162,7 +168,7 @@ begin
 end;
 
 ///////////////////////////////////////////////////////////////////////////////
-procedure TRenderer64.CreateColorMap;
+procedure TRendererMM64.CreateColorMap;
 var
   i: integer;
 begin
@@ -175,7 +181,7 @@ begin
 end;
 
 ///////////////////////////////////////////////////////////////////////////////
-procedure TRenderer64.CreateFilter;
+procedure TRendererMM64.CreateFilter;
 var
   i, j: integer;
 begin
@@ -196,7 +202,7 @@ begin
 end;
 
 ///////////////////////////////////////////////////////////////////////////////
-destructor TRenderer64.Destroy;
+destructor TRendererMM64.Destroy;
 begin
   if assigned(bm) then
     bm.Free;
@@ -205,13 +211,13 @@ begin
 end;
 
 ///////////////////////////////////////////////////////////////////////////////
-function TRenderer64.GetImage: TBitmap;
+function TRendererMM64.GetImage: TBitmap;
 begin
   Result := bm;
 end;
 
 ///////////////////////////////////////////////////////////////////////////////
-procedure TRenderer64.InitBuffers;
+procedure TRendererMM64.InitBuffers;
 begin
   gutter_width := (filter_width - oversample) div 2;
   BucketHeight := oversample * image_height + 2 * gutter_width;
@@ -224,7 +230,7 @@ begin
 end;
 
 ///////////////////////////////////////////////////////////////////////////////
-procedure TRenderer64.InitValues;
+procedure TRendererMM64.InitValues;
 begin
   image_height := fcp.Height;
   image_Width := fcp.Width;
@@ -245,7 +251,7 @@ begin
 end;
 
 ///////////////////////////////////////////////////////////////////////////////
-procedure TRenderer64.NormalizeFilter;
+procedure TRendererMM64.NormalizeFilter;
 var
   i, j: integer;
   t: double;
@@ -261,7 +267,7 @@ begin
 end;
 
 ///////////////////////////////////////////////////////////////////////////////
-procedure TRenderer64.AddPointsToBuckets(const points: TPointsArray);
+procedure TRendererMM64.AddPointsToBuckets(const points: TPointsArray);
 var
   i: integer;
   px, py: double;
@@ -302,7 +308,7 @@ begin
 end;
 
 ///////////////////////////////////////////////////////////////////////////////
-procedure TRenderer64.AddPointsToBucketsAngle(const points: TPointsArray);
+procedure TRendererMM64.AddPointsToBucketsAngle(const points: TPointsArray);
 var
   i: integer;
   px, py: double;
@@ -355,7 +361,7 @@ begin
 end;
 
 ///////////////////////////////////////////////////////////////////////////////
-procedure TRenderer64.SetPixels;
+procedure TRendererMM64.SetPixels;
 var
   i: integer;
   nsamples: Int64;
@@ -391,7 +397,7 @@ begin
 end;
 
 ///////////////////////////////////////////////////////////////////////////////
-procedure TRenderer64.CreateBMFromBuckets(YOffset: Integer);
+procedure TRendererMM64.CreateBMFromBuckets(YOffset: Integer);
 var
   i, j: integer;
 
@@ -537,19 +543,18 @@ begin
       else if (bi > 255) then
         bi := 255;
 
-      Row[j] := RGB(bi, gi, ri) + (ai shl 24);
+      Row[j] := RGB(bi, gi, ri);
     end;
 
     Inc(bucketpos, 2 * gutter_width);
     Inc(bucketpos, (oversample - 1) * BucketWidth);
   end;
-  bm.PixelFormat := pf24bit;
 
   Progress(1);
 end;
 
 ///////////////////////////////////////////////////////////////////////////////
-procedure TRenderer64.InitBitmap(w, h: Integer);
+procedure TRendererMM64.InitBitmap(w, h: Integer);
 begin
   if not Assigned(bm) then
     bm := TBitmap.Create;
@@ -566,21 +571,87 @@ begin
 end;
 
 ///////////////////////////////////////////////////////////////////////////////
-constructor TRenderer64.Create;
+constructor TRendererMM64.Create;
 begin
   inherited Create;
 end;
 
 ///////////////////////////////////////////////////////////////////////////////
-procedure TRenderer64.Render;
+procedure TRendererMM64.Render;
+const
+  Dividers: array[0..15] of integer = (1, 2, 3, 4, 5, 6, 7, 8, 10, 16, 20, 32, 64, 128, 256, 512);
+var
+  ApproxMemory, MaxMemory: int64;
+  i: integer;
+  zoom_scale, center_base, center_y: double;
 begin
   FStop := False;
 
+  image_height := fcp.Height;
+  image_Width := fcp.Width;
+  oversample := fcp.spatial_oversample;
+
+  // entered memory - imagesize
+  MaxMemory := FMaxMem * 1024 * 1024 - 4 * image_height * image_width;
+
+  ApproxMemory := 32 * oversample * oversample * image_height * image_width;
+
+  if (MaxMemory < 0) then
+    Exit;
+
+  nrSlices := 1 + ApproxMemory div MaxMemory;
+
+  if nrSlices > Dividers[High(Dividers)] then begin
+    for i := High(Dividers) downto 0 do begin
+      if image_height <> (image_height div dividers[i]) * dividers[i] then begin
+        nrSlices := dividers[i];
+        break;
+      end;
+    end;
+  end else begin
+    for i := 0 to High(Dividers) do begin
+      if image_height <> (image_height div dividers[i]) * dividers[i] then
+        continue;
+      if nrslices <= dividers[i] then begin
+        nrSlices := dividers[i];
+        break;
+      end;
+    end;
+  end;
+
+  fcp.sample_density := fcp.sample_density * nrslices;
+  fcp.height := fcp.height div nrslices;
+  center_y := fcp.center[1];
+  zoom_scale := power(2.0, fcp.zoom);
+  center_base := center_y - ((nrslices - 1) * fcp.height) /  (2 * fcp.pixels_per_unit * zoom_scale);
+
   InitValues;
-  InitBitmap;
-  ClearBuffers;
-  SetPixels;
-  CreateBMFromBuckets;
+  InitBitmap(fcp.Width, NrSlices * fcp.Height);
+
+  for i := 0 to NrSlices - 1 do begin
+    Slice := i;
+    fcp.center[1] := center_base + fcp.height * slice / (fcp.pixels_per_unit * zoom_scale);
+    CreateCamera;
+    ClearBuffers;
+    SetPixels;
+    CreateBMFromBuckets(Slice * fcp.height);
+  end;
+  bm.PixelFormat := pf24bit;
+
+  fcp.sample_density := fcp.sample_density / nrslices;
+  fcp.height := fcp.height * nrslices;
+end;
+
+///////////////////////////////////////////////////////////////////////////////
+function TRendererMM64.GetSlice: integer;
+begin
+  Result := Slice;
+end;
+
+///////////////////////////////////////////////////////////////////////////////
+function TRendererMM64.GetNrSlices: integer;
+begin
+  Result := NrSlices;
 end;
 
 ///////////////////////////////////////////////////////////////////////////////

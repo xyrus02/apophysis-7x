@@ -358,7 +358,7 @@ end;
 procedure TRenderer32.SetPixels;
 var
   i: integer;
-  nsamples: Integer;
+  nsamples: Int64;
   nrbatches: Integer;
   points: TPointsArray;
 begin
@@ -372,8 +372,8 @@ begin
     if FStop then
       Exit;
 
-    if (i and $F = 0) and assigned(FOnProgress) then
-      FOnProgress(i / nrbatches);
+    if (i and $F = 0) then
+      Progress(i / nrbatches);
 
     // generate points
     case Compatibility of
@@ -387,8 +387,7 @@ begin
       AddPointsToBucketsAngle(points);
   end;
 
-  if assigned(FOnProgress) then
-    FOnProgress(1);
+  Progress(1);
 end;
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -456,8 +455,7 @@ begin
     if FStop then
       Break;
 
-    if assigned(FOnProgress) then
-      FOnProgress(i / Image_Height);
+    Progress(i / Image_Height);
 
     Row := PLongintArray(bm.scanline[YOffset + i]);
     for j := 0 to Image_Width - 1 do begin
@@ -545,10 +543,10 @@ begin
     Inc(bucketpos, 2 * gutter_width);
     Inc(bucketpos, (oversample - 1) * BucketWidth);
   end;
-//  bm.PixelFormat := pf24bit;
 
-  if assigned(FOnProgress) then
-    FOnProgress(1);
+  bm.PixelFormat := pf24bit;
+
+  Progress(1);
 end;
 
 ///////////////////////////////////////////////////////////////////////////////
