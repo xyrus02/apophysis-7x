@@ -19,7 +19,7 @@
 unit cmapdata;
 
 // updated on 2004-12-10 by Ralf Lehmann to match Flam3's color maps from:
-// "@(#) $Id: cmapdata.pas,v 1.1 2005/01/09 18:00:20 ronaldhordijk Exp $"
+// "@(#) $Id: cmapdata.pas,v 1.1 2005/03/25 08:35:39 ronaldhordijk Exp $"
 
 interface
 

@@ -11,7 +11,6 @@ object ScriptEditor: TScriptEditor
   Font.Name = 'MS Sans Serif'
   Font.Style = []
   OldCreateOrder = False
-  Position = poDefaultPosOnly
   OnClose = FormClose
   OnCreate = FormCreate
   OnDestroy = FormDestroy
@@ -101,7 +100,6 @@ object ScriptEditor: TScriptEditor
     Height = 19
     Anchors = [akLeft, akRight]
     Panels = <>
-    SimplePanel = False
   end
   object BackPanel: TPanel
     Left = 0
@@ -120,6 +118,8 @@ object ScriptEditor: TScriptEditor
       Height = 240
       Cursor = crIBeam
       PopupMenu = PopupMenu
+      ActiveLineSettings.ShowActiveLine = False
+      ActiveLineSettings.ShowActiveLineIndicator = False
       Align = alClient
       AutoCompletion.Active = False
       AutoCompletion.Font.Charset = DEFAULT_CHARSET
@@ -127,8 +127,8 @@ object ScriptEditor: TScriptEditor
       AutoCompletion.Font.Height = -11
       AutoCompletion.Font.Name = 'MS Sans Serif'
       AutoCompletion.Font.Style = []
+      AutoCorrect.Active = True
       AutoHintParameterPosition = hpBelowCode
-      AutoIndent = True
       BlockShow = False
       BlockColor = clWindow
       BlockLineColor = clGray
@@ -136,16 +136,24 @@ object ScriptEditor: TScriptEditor
       BorderStyle = bsNone
       Ctl3D = False
       DelErase = True
-      GutterColorTo = clBtnFace
-      GutterWidth = 35
+      EnhancedHomeKey = False
+      Gutter.DigitCount = 4
+      Gutter.Font.Charset = DEFAULT_CHARSET
+      Gutter.Font.Color = clWindowText
+      Gutter.Font.Height = -13
+      Gutter.Font.Name = 'Courier New'
+      Gutter.Font.Style = []
+      Gutter.LineNumberStart = 1
+      Gutter.LineNumberTextColor = clBlack
+      Gutter.ShowLineNumbers = True
+      Gutter.Visible = True
+      Gutter.ShowLeadingZeros = False
       Font.Charset = DEFAULT_CHARSET
       Font.Color = clBlack
       Font.Height = -13
       Font.Name = 'COURIER NEW'
       Font.Style = []
       HiddenCaret = False
-      LineNumbers = True
-      LineNumberStart = 1
       Lines.Strings = (
         '{ Rotate the reference triangle continuously }'
         '{ Hit any key to stop }'
@@ -163,19 +171,25 @@ object ScriptEditor: TScriptEditor
       PrintOptions.MarginTop = 0
       PrintOptions.MarginBottom = 0
       PrintOptions.PageNr = False
+      PrintOptions.PrintLineNumbers = False
       RightMarginColor = 14869218
+      ScrollHint = False
       SelColor = clWhite
       SelBkColor = clHighlight
+      ShowRightMargin = True
+      SmartTabs = False
       SyntaxStyles = PascalStyler
       TabOrder = 0
       TabSize = 4
       TabStop = True
+      TrimTrailingSpaces = False
       UndoLimit = 100
       UrlAware = False
       UrlStyle.TextColor = clBlue
       UrlStyle.BkColor = clWhite
       UrlStyle.Style = [fsUnderline]
-      Version = '1.5.0.8'
+      UseStyler = True
+      Version = '1.6.0.8'
       WordWrap = wwNone
       OnChange = EditorChange
     end
@@ -303,7 +317,8 @@ object ScriptEditor: TScriptEditor
         Font.Style = [fsBold]
         BGColor = clWindow
         StyleType = stKeyword
-        Bracket = #0
+        BracketStart = #0
+        BracketEnd = #0
         Info = 'Pascal Standard Default'
       end
       item
@@ -314,7 +329,8 @@ object ScriptEditor: TScriptEditor
         Font.Style = []
         BGColor = clWindow
         StyleType = stBracket
-        Bracket = #39
+        BracketStart = #0
+        BracketEnd = #0
         Info = 'Simple Quote'
       end
       item
@@ -325,7 +341,8 @@ object ScriptEditor: TScriptEditor
         Font.Style = []
         BGColor = clWindowText
         StyleType = stBracket
-        Bracket = '"'
+        BracketStart = #0
+        BracketEnd = #0
         Info = 'Double Quote'
       end
       item
@@ -336,7 +353,8 @@ object ScriptEditor: TScriptEditor
         Font.Style = []
         BGColor = clWindow
         StyleType = stSymbol
-        Bracket = #0
+        BracketStart = #0
+        BracketEnd = #0
         Symbols = ' ,;:.(){}[]=-*/^%<>#'#13#10
         Info = 'Symbols Delimiters'
       end>
@@ -355,28 +373,23 @@ object ScriptEditor: TScriptEditor
         'MessageDlg(const Msg: string; DlgType: TMsgDlgType; Buttons: TMs' +
         'gDlgButtons; HelpCtx: Longint): Integer);')
     HexIdentifier = '$'
+    Description = 'Pascal'
+    Filter = 'Pascal Files (*.pas,*.dpr,*.dpk,*.inc)|*.pas;*.dpr;*.dpk;*.inc'
+    DefaultExtension = '.pas'
+    StylerName = 'Pascal'
+    Extensions = 'pas;dpr;dpk;inc'
     Left = 328
     Top = 32
   end
   object Scripter: TatPascalScripter
     SourceCode.Strings = (
       '')
-    Compiled = True
+    SaveCompiledCode = False
     EventSupport = False
     OnCompileError = ScripterCompileError
     ShortBooleanEval = False
     Left = 360
     Top = 32
-    PCode = {
-      1B010000617450617363616C2045786563757461626C652046696C651A040F01
-      0000000000000000790000000000000000000000000000000000000000000000
-      0000000000000000545046300D546174536372697074496E666F025F3108526F
-      7574696E65730E01044E616D6506044D41494E095661726961626C65730E000A
-      497346756E6374696F6E0808417267436F756E7402000C42795265664172674D
-      61736B02000B526573756C74496E6465780200000007476C6F62616C730E0000
-      001C0000000000000003000000010000000000000000000000000000004D4149
-      4E1E000000330000000200000000000000000000000000000000000000526573
-      756C7418000000410000000200000000000000000000000000000000000000}
   end
   object OpenDialog: TOpenDialog
     DefaultExt = 'fla'

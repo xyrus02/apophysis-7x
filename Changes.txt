@@ -1,3 +1,6 @@
+2.02h
+
+2.02g
 + Delphi2005 Project
 + Extra performance in transformations
 + 32-bits renderer
