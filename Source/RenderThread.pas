@@ -83,6 +83,7 @@ destructor TRenderThread.Destroy;
 begin
   if assigned(FRenderer) then
     FRenderer.Free;
+  FRenderer := nil;
 
   inherited;
 end;
@@ -142,10 +143,10 @@ end;
 ///////////////////////////////////////////////////////////////////////////////
 procedure TRenderThread.Terminate;
 begin
-  inherited Terminate;
-
   if assigned(FRenderer) then
     FRenderer.Stop;
+
+  inherited Terminate;
 end;
 
 ///////////////////////////////////////////////////////////////////////////////
