@@ -38,7 +38,6 @@ uses
   Save in '..\..\Source\Save.pas' {SaveForm},
   About in '..\..\Source\About.pas' {AboutForm},
   cmap in '..\..\Source\cmap.pas',
-  cmapData in '..\..\Source\cmapData.pas',
   SavePreset in '..\..\Source\SavePreset.pas' {SavePresetForm},
   ControlPoint in '..\..\Source\ControlPoint.pas',
   HtmlHlp in '..\..\Source\HtmlHlp.pas',
@@ -54,7 +53,11 @@ uses
   RenderThread in '..\..\Source\RenderThread.pas',
   Render in '..\..\Source\Render.pas',
   Render32 in '..\..\Source\Render32.pas',
-  Render64 in '..\..\Source\Render64.pas';
+  Render64 in '..\..\Source\Render64.pas',
+  RenderMM in '..\..\Source\RenderMM.pas',
+  ImageColoring in '..\..\Source\ImageColoring.pas' {frmImageColoring},
+  GradientHlpr in '..\..\Source\GradientHlpr.pas';
+
 //  ImageColoring in '..\..\Source\ImageColoring.pas' {frmImageColoring};
 
 {$R *.RES}
@@ -82,7 +85,7 @@ begin
   Application.CreateForm(TSizeTool, SizeTool);
   Application.CreateForm(TExportDialog, ExportDialog);
   Application.CreateForm(TSheepDialog, SheepDialog);
-//  Application.CreateForm(TfrmImageColoring, frmImageColoring);
+  //  Application.CreateForm(TfrmImageColoring, frmImageColoring);
   Application.UpdateFormatSettings := False;
   DecimalSeparator := '.';
   Application.Run;

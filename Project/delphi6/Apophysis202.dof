@@ -86,6 +86,7 @@ ProductName=
 ProductVersion=2.02
 Comments=
 [Excluded Packages]
+W:\Lib\dgmr_60.bpl=Dgmr bibliotheek 6.1
 C:\Program Files\Indy 10 for Delphi 6\LibD6\dclIndyCore60.bpl=Indy 10 Core Design Time
 C:\Program Files\Indy 10 for Delphi 6\LibD6\dclIndyProtocols60.bpl=Indy 10 Protocols Design Time
 [HistoryLists\hlDebugSourcePath]

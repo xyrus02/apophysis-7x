@@ -1,8 +1,8 @@
 [Closed Files]
-File_0=SourceModule,'X:\Code\Delphi\Apophysis\2.02g\Source\About.pas',0,1,1,31,9,1,0
-File_1=SourceModule,'X:\Code\Delphi\Apophysis\2.02g\Source\Adjust.pas',0,1,1,16,27,1,0
-File_2=SourceModule,'X:\Code\Delphi\Apophysis\2.02f\Source\Main.pas',0,1,4354,45,4394,0,0
-File_3=SourceModule,'X:\Code\Delphi\Apophysis\2.02g\Source\RenderThread.pas',0,1,64,17,81,0,0
+File_0=SourceModule,'X:\Code\Delphi\Apophysis\2.02g\Source\FormRender.pas',0,1,551,60,588,1,0
+File_1=SourceModule,'X:\Code\Delphi\Apophysis\2.02g\Source\About.pas',0,1,1,31,9,1,0
+File_2=SourceModule,'X:\Code\Delphi\Apophysis\2.02g\Source\Adjust.pas',0,1,1,16,27,1,0
+File_3=SourceModule,'X:\Code\Delphi\Apophysis\2.02f\Source\Main.pas',0,1,4354,45,4394,0,0
 File_4=SourceModule,'X:\Code\Delphi\Apophysis\Apolibstuff\imglib\ImageDLLLoader.pas',0,1,101,55,120,0,0
 File_5=SourceModule,'X:\Code\Delphi\Apophysis\2.02f\Source\About.pas',0,1,1,1,1,0,0
 File_6=SourceModule,'X:\Code\Delphi\Apophysis\2.02f\Source\cmapdata.pas',0,1,47709,1,47737,0,0
@@ -11,26 +11,77 @@ File_8=SourceModule,'X:\Code\Delphi\Apophysis\2.02f\Source\ap_FileCtrl.pas',0,1,
 File_9=SourceModule,'X:\Code\Delphi\Apophysis\2.02f\Source\ap_SysUtils.pas',0,1,1,3,20,0,0
 
 [Modules]
-Module0=X:\Code\Delphi\Apophysis\2.02g\Source\Size.pas
-Module1=X:\Code\Delphi\Apophysis\2.02g\Source\Sheep.pas
-Module2=X:\Code\Delphi\Apophysis\2.02g\Source\ScriptRender.pas
-Module3=X:\Code\Delphi\Apophysis\2.02g\Source\ScriptForm.pas
-Module4=X:\Code\Delphi\Apophysis\2.02g\Source\SavePreset.pas
-Module5=X:\Code\Delphi\Apophysis\2.02g\Source\Save.pas
-Module6=X:\Code\Delphi\Apophysis\2.02g\Source\Preview.pas
-Module7=X:\Code\Delphi\Apophysis\2.02g\Source\Options.pas
-Module8=X:\Code\Delphi\Apophysis\2.02g\Source\Mutate.pas
-Module9=X:\Code\Delphi\Apophysis\2.02g\Source\Main.pas
-Module10=X:\Code\Delphi\Apophysis\2.02g\Source\Gradient.pas
-Module11=X:\Code\Delphi\Apophysis\2.02g\Source\Fullscreen.pas
-Module12=X:\Code\Delphi\Apophysis\2.02g\Source\FormRender.pas
-Module13=X:\Code\Delphi\Apophysis\2.02g\Source\FormFavorites.pas
-Module14=X:\Code\Delphi\Apophysis\2.02g\Source\FormExport.pas
-Module15=X:\Code\Delphi\Apophysis\2.02g\Source\Editor.pas
-Module16=X:\Code\Delphi\Apophysis\2.02g\Source\Browser.pas
-Module17=X:\Code\Delphi\Apophysis\2.02f\Project\delphi6\Apophysis202.dpr
-Count=18
+Module0=X:\Code\Delphi\Apophysis\2.02g\Project\delphi6\Apophysis202.dpr
+Module1=X:\Code\Delphi\Apophysis\2.02g\Source\Render64.pas
+Module2=X:\Code\Delphi\Apophysis\2.02g\Source\GradientHlpr.pas
+Module3=X:\Code\Delphi\Apophysis\2.02g\Source\ImageColoring.pas
+Module4=X:\Code\Delphi\Apophysis\2.02g\Source\Main.pas
+Module5=X:\Code\Delphi\Apophysis\2.02g\Source\RenderMM.pas
+Module6=X:\Code\Delphi\Apophysis\2.02g\Source\Render.pas
+Module7=X:\Code\Delphi\Apophysis\2.02g\Source\FormFavorites.pas
+Module8=X:\Code\Delphi\Apophysis\2.02g\Source\RenderThread.pas
+Module9=X:\Code\Delphi\Apophysis\2.02g\Source\Size.pas
+Module10=X:\Code\Delphi\Apophysis\2.02g\Source\Sheep.pas
+Module11=X:\Code\Delphi\Apophysis\2.02g\Source\ScriptRender.pas
+Module12=X:\Code\Delphi\Apophysis\2.02g\Source\ScriptForm.pas
+Module13=X:\Code\Delphi\Apophysis\2.02g\Source\SavePreset.pas
+Module14=X:\Code\Delphi\Apophysis\2.02g\Source\Save.pas
+Module15=X:\Code\Delphi\Apophysis\2.02g\Source\Preview.pas
+Module16=X:\Code\Delphi\Apophysis\2.02g\Source\Options.pas
+Module17=X:\Code\Delphi\Apophysis\2.02g\Source\Mutate.pas
+Module18=X:\Code\Delphi\Apophysis\2.02g\Source\Gradient.pas
+Module19=X:\Code\Delphi\Apophysis\2.02g\Source\Fullscreen.pas
+Module20=X:\Code\Delphi\Apophysis\2.02g\Source\FormExport.pas
+Module21=X:\Code\Delphi\Apophysis\2.02g\Source\Editor.pas
+Module22=X:\Code\Delphi\Apophysis\2.02g\Source\Browser.pas
+Module23=X:\Code\Delphi\Apophysis\2.02f\Project\delphi6\Apophysis202.dpr
+Count=24
 EditWindowCount=1
+
+[X:\Code\Delphi\Apophysis\2.02g\Project\delphi6\Apophysis202.dpr]
+ModuleType=SourceModule
+FormState=0
+FormOnTop=0
+
+[X:\Code\Delphi\Apophysis\2.02g\Source\Render64.pas]
+ModuleType=SourceModule
+FormState=0
+FormOnTop=0
+
+[X:\Code\Delphi\Apophysis\2.02g\Source\GradientHlpr.pas]
+ModuleType=SourceModule
+FormState=0
+FormOnTop=0
+
+[X:\Code\Delphi\Apophysis\2.02g\Source\ImageColoring.pas]
+ModuleType=SourceModule
+FormState=0
+FormOnTop=0
+
+[X:\Code\Delphi\Apophysis\2.02g\Source\Main.pas]
+ModuleType=SourceModule
+FormState=0
+FormOnTop=0
+
+[X:\Code\Delphi\Apophysis\2.02g\Source\RenderMM.pas]
+ModuleType=SourceModule
+FormState=0
+FormOnTop=0
+
+[X:\Code\Delphi\Apophysis\2.02g\Source\Render.pas]
+ModuleType=SourceModule
+FormState=0
+FormOnTop=0
+
+[X:\Code\Delphi\Apophysis\2.02g\Source\FormFavorites.pas]
+ModuleType=SourceModule
+FormState=0
+FormOnTop=0
+
+[X:\Code\Delphi\Apophysis\2.02g\Source\RenderThread.pas]
+ModuleType=SourceModule
+FormState=0
+FormOnTop=0
 
 [X:\Code\Delphi\Apophysis\2.02g\Source\Size.pas]
 ModuleType=SourceModule
@@ -77,27 +128,12 @@ ModuleType=SourceModule
 FormState=0
 FormOnTop=0
 
-[X:\Code\Delphi\Apophysis\2.02g\Source\Main.pas]
-ModuleType=SourceModule
-FormState=0
-FormOnTop=0
-
 [X:\Code\Delphi\Apophysis\2.02g\Source\Gradient.pas]
 ModuleType=SourceModule
 FormState=0
 FormOnTop=0
 
 [X:\Code\Delphi\Apophysis\2.02g\Source\Fullscreen.pas]
-ModuleType=SourceModule
-FormState=0
-FormOnTop=0
-
-[X:\Code\Delphi\Apophysis\2.02g\Source\FormRender.pas]
-ModuleType=SourceModule
-FormState=0
-FormOnTop=0
-
-[X:\Code\Delphi\Apophysis\2.02g\Source\FormFavorites.pas]
 ModuleType=SourceModule
 FormState=0
 FormOnTop=0
@@ -126,17 +162,13 @@ FormOnTop=0
 FormState=0
 FormOnTop=0
 
-[X:\Code\Delphi\Apophysis\2.02g\Project\delphi6\Apophysis202.dpr]
-FormState=0
-FormOnTop=0
-
 [X:\Code\Delphi\Apophysis\2.02g\Project\delphi6\Apophysis202.todo]
 FormState=0
 FormOnTop=0
 
 [EditWindow0]
-ViewCount=18
-CurrentView=17
+ViewCount=24
+CurrentView=23
 View0=0
 View1=1
 View2=2
@@ -155,6 +187,12 @@ View14=14
 View15=15
 View16=16
 View17=17
+View18=18
+View19=19
+View20=20
+View21=21
+View22=22
+View23=23
 CodeExplorer=CodeExplorer@EditWindow0
 MessageView=MessageView@EditWindow0
 Create=1
@@ -170,9 +208,9 @@ ClientWidth=1008
 ClientHeight=846
 LeftPanelSize=0
 RightPanelSize=0
-BottomPanelSize=0
+BottomPanelSize=52
 BottomPanelClients=MessageView@EditWindow0
-BottomPanelData=00000400010000000B0000004D6573736167655669657700000000000000000000000000000000000100000000000000000B0000004D65737361676556696577FFFFFFFF
+BottomPanelData=000004000000000000000000000000000000000000000000000100000000000000000B0000004D65737361676556696577FFFFFFFF
 
 [View0]
 Module=X:\Code\Delphi\Apophysis\2.02f\Project\delphi6\Apophysis202.dpr
@@ -204,100 +242,142 @@ LeftCol=1
 
 [View4]
 Module=X:\Code\Delphi\Apophysis\2.02g\Source\FormFavorites.pas
-CursorX=1
-CursorY=1
+CursorX=26
+CursorY=6
 TopLine=1
 LeftCol=1
 
 [View5]
-Module=X:\Code\Delphi\Apophysis\2.02g\Source\FormRender.pas
-CursorX=1
-CursorY=1
-TopLine=1
+Module=X:\Code\Delphi\Apophysis\2.02g\Source\Render.pas
+CursorX=29
+CursorY=134
+TopLine=106
 LeftCol=1
 
 [View6]
-Module=X:\Code\Delphi\Apophysis\2.02g\Source\Fullscreen.pas
+Module=X:\Code\Delphi\Apophysis\2.02g\Source\RenderMM.pas
 CursorX=1
 CursorY=1
 TopLine=1
 LeftCol=1
 
 [View7]
-Module=X:\Code\Delphi\Apophysis\2.02g\Source\Gradient.pas
+Module=X:\Code\Delphi\Apophysis\2.02g\Source\Fullscreen.pas
 CursorX=1
 CursorY=1
 TopLine=1
 LeftCol=1
 
 [View8]
-Module=X:\Code\Delphi\Apophysis\2.02g\Source\Main.pas
+Module=X:\Code\Delphi\Apophysis\2.02g\Source\Gradient.pas
 CursorX=1
 CursorY=1
 TopLine=1
 LeftCol=1
 
 [View9]
-Module=X:\Code\Delphi\Apophysis\2.02g\Source\Mutate.pas
-CursorX=1
-CursorY=1
-TopLine=1
+Module=X:\Code\Delphi\Apophysis\2.02g\Source\Main.pas
+CursorX=10
+CursorY=431
+TopLine=403
 LeftCol=1
 
 [View10]
-Module=X:\Code\Delphi\Apophysis\2.02g\Source\Options.pas
-CursorX=1
-CursorY=1
+Module=X:\Code\Delphi\Apophysis\2.02g\Source\ImageColoring.pas
+CursorX=25
+CursorY=51
 TopLine=1
 LeftCol=1
 
 [View11]
-Module=X:\Code\Delphi\Apophysis\2.02g\Source\Preview.pas
+Module=X:\Code\Delphi\Apophysis\2.02g\Source\GradientHlpr.pas
 CursorX=1
 CursorY=1
 TopLine=1
 LeftCol=1
 
 [View12]
-Module=X:\Code\Delphi\Apophysis\2.02g\Source\Save.pas
-CursorX=1
-CursorY=1
-TopLine=1
+Module=X:\Code\Delphi\Apophysis\2.02g\Source\Render64.pas
+CursorX=21
+CursorY=393
+TopLine=345
 LeftCol=1
 
 [View13]
-Module=X:\Code\Delphi\Apophysis\2.02g\Source\SavePreset.pas
+Module=X:\Code\Delphi\Apophysis\2.02g\Source\Mutate.pas
 CursorX=1
 CursorY=1
 TopLine=1
 LeftCol=1
 
 [View14]
-Module=X:\Code\Delphi\Apophysis\2.02g\Source\ScriptForm.pas
+Module=X:\Code\Delphi\Apophysis\2.02g\Source\Options.pas
 CursorX=1
 CursorY=1
 TopLine=1
 LeftCol=1
 
 [View15]
-Module=X:\Code\Delphi\Apophysis\2.02g\Source\ScriptRender.pas
+Module=X:\Code\Delphi\Apophysis\2.02g\Source\Preview.pas
 CursorX=1
 CursorY=1
 TopLine=1
 LeftCol=1
 
 [View16]
-Module=X:\Code\Delphi\Apophysis\2.02g\Source\Sheep.pas
+Module=X:\Code\Delphi\Apophysis\2.02g\Source\Save.pas
 CursorX=1
 CursorY=1
 TopLine=1
 LeftCol=1
 
 [View17]
+Module=X:\Code\Delphi\Apophysis\2.02g\Source\SavePreset.pas
+CursorX=1
+CursorY=1
+TopLine=1
+LeftCol=1
+
+[View18]
+Module=X:\Code\Delphi\Apophysis\2.02g\Source\ScriptForm.pas
+CursorX=1
+CursorY=1
+TopLine=1
+LeftCol=1
+
+[View19]
+Module=X:\Code\Delphi\Apophysis\2.02g\Source\ScriptRender.pas
+CursorX=1
+CursorY=1
+TopLine=1
+LeftCol=1
+
+[View20]
+Module=X:\Code\Delphi\Apophysis\2.02g\Source\Sheep.pas
+CursorX=1
+CursorY=1
+TopLine=1
+LeftCol=1
+
+[View21]
 Module=X:\Code\Delphi\Apophysis\2.02g\Source\Size.pas
 CursorX=1
 CursorY=1
 TopLine=1
+LeftCol=1
+
+[View22]
+Module=X:\Code\Delphi\Apophysis\2.02g\Source\RenderThread.pas
+CursorX=36
+CursorY=25
+TopLine=1
+LeftCol=1
+
+[View23]
+Module=X:\Code\Delphi\Apophysis\2.02g\Project\delphi6\Apophysis202.dpr
+CursorX=11
+CursorY=70
+TopLine=43
 LeftCol=1
 
 [Watches]
@@ -386,7 +466,7 @@ LRDockWidth=190
 Dockable=1
 SplitPos=85
 ArrangeBy=Name
-SelectedItem=Caption
+SelectedItem=
 ExpandedItems=
 HiddenCategories=
 
@@ -488,17 +568,17 @@ Dockable=1
 
 [MessageView@EditWindow0]
 Create=1
-Visible=0
+Visible=1
 State=0
 Left=12
 Top=0
 Width=996
-Height=285
+Height=52
 MaxLeft=-1
 MaxTop=-1
 ClientWidth=996
-ClientHeight=285
-TBDockHeight=285
+ClientHeight=52
+TBDockHeight=52
 LRDockWidth=443
 Dockable=1
 
@@ -522,6 +602,6 @@ TBDockHeight=451
 LRDockWidth=177
 Dockable=1
 TabPosition=2
-ActiveTab=Object Inspector
+ActiveTab=Project Manager
 TabDockClients=ProjectManager,CodeExplorer@EditWindow0,CallStackWindow,PropertyInspector
 

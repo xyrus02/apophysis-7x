@@ -23,6 +23,7 @@ program Apophysis202;
 
 uses
   Forms,
+  Dialogs, 
   SysUtils,
   Main in '..\..\Source\Main.pas' {MainForm},
   Editor in '..\..\Source\Editor.pas' {EditForm},
@@ -33,6 +34,7 @@ uses
   Fullscreen in '..\..\Source\Fullscreen.pas' {FullscreenForm},
   Render in '..\..\Source\Render.pas',
   Render32 in '..\..\Source\Render32.pas',
+  Render64 in '..\..\Source\Render64.pas',
   RenderThread in '..\..\Source\RenderThread.pas',
   FormRender in '..\..\Source\FormRender.pas' {RenderForm},
   Mutate in '..\..\Source\Mutate.pas' {MutateForm},
@@ -57,11 +59,19 @@ uses
   Sheep in '..\..\Source\Sheep.pas' {SheepDialog},
   ap_FileCtrl in '..\..\Source\ap_FileCtrl.pas',
   XForm in '..\..\Source\XForm.pas',
-  cmapdata in '..\..\Source\cmapdata.pas';
+  cmapdata in '..\..\Source\cmapdata.pas',
+  RenderMM in '..\..\Source\RenderMM.pas',
+  ImageColoring in '..\..\Source\ImageColoring.pas' {frmImageColoring},
+  GradientHlpr in '..\..\Source\GradientHlpr.pas';
 
 {$R *.RES}
 
 begin
+  if now > EncodeDate(2005,6,20) then begin
+    ShowMessage('This version has expired. Please go to http://sourceforge.net/project/apophysis and download the latest version.');
+    Halt
+  end;
+
   Application.Initialize;
   Application.Title := 'Apophysis';
   Application.HelpFile := 'Apophysis 2.0.chm';
@@ -84,6 +94,7 @@ begin
   Application.CreateForm(TSizeTool, SizeTool);
   Application.CreateForm(TExportDialog, ExportDialog);
   Application.CreateForm(TSheepDialog, SheepDialog);
+  Application.CreateForm(TfrmImageColoring, frmImageColoring);
   Application.UpdateFormatSettings := False;
   DecimalSeparator := '.';
   Application.Run;
