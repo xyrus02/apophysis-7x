@@ -40,7 +40,7 @@ type
     vBent, vWaves, vFisheye, vPopcorn, vExponential, vPower, vCosine, vSawTooth, vRandom);
 type
   TCPpoint = record
-    x, y, c: double
+    x, y, c: double;
   end;
   PCPpoint = ^TCPpoint;
   TPointsArray = array of TCPpoint;
