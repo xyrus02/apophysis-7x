@@ -8,4 +8,6 @@ B1115635 Menu Item 'Stop Script' now has the shortcut (ctrl-T)
 + Menu Item 'Open Script' now has the shortcut (ctrl-E)
 + Script function CopyFile works as in 2.02, with 2 parameters
 + Rotation export for flame2.3
++ added new variants
 + Bugfix filter difference between Apo and Flame3
++ Added an end date
