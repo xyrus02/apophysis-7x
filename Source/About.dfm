@@ -1879,9 +1879,9 @@ object AboutForm: TAboutForm
   object Label2: TLabel
     Left = 120
     Top = 56
-    Width = 62
+    Width = 65
     Height = 13
-    Caption = 'Version 2.02f'
+    Caption = 'Version 2.02g'
   end
   object Label3: TLabel
     Left = 120
