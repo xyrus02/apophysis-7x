@@ -1,4 +1,10 @@
 + Delphi2005 Project
-B fixed remainder not on 00:00:00 when finished
-+ Extra performance in Xform 
++ Extra performance in transformations
 + 32-bits renderer
+B1105518 writing large jpeg fails
+B1102823 Renderer still hangs
+B1111184 fixed remainder of clock not on 00:00:00 when finished
+B1115635 Menu Item 'Stop Script' now has the shortcut (ctrl-T)
++ Menu Item 'Open Script' now has the shortcut (ctrl-E)
++ Script function CopyFile works as in 2.02, with 2 parameters
++ Rotation export for flame2.3
