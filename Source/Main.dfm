@@ -2,7 +2,7 @@ object MainForm: TMainForm
   Left = 316
   Top = 424
   Width = 574
-  Height = 415
+  Height = 435
   Caption = 'Apophysis'
   Color = clBtnFace
   Font.Charset = ANSI_CHARSET
@@ -27,7 +27,7 @@ object MainForm: TMainForm
     Left = 160
     Top = 28
     Width = 4
-    Height = 314
+    Height = 334
   end
   object ToolBar: TToolBar
     Left = 0
@@ -251,7 +251,7 @@ object MainForm: TMainForm
     Left = 0
     Top = 28
     Width = 160
-    Height = 314
+    Height = 334
     Align = alLeft
     Columns = <
       item
@@ -270,7 +270,7 @@ object MainForm: TMainForm
     Left = 164
     Top = 28
     Width = 402
-    Height = 314
+    Height = 334
     Align = alClient
     BevelInner = bvLowered
     BevelOuter = bvNone
@@ -281,7 +281,7 @@ object MainForm: TMainForm
       Left = 1
       Top = 1
       Width = 400
-      Height = 312
+      Height = 332
       Align = alClient
       AutoSize = True
       PopupMenu = DisplayPopup
@@ -293,7 +293,7 @@ object MainForm: TMainForm
   end
   object StatusBar: TStatusBar
     Left = 0
-    Top = 342
+    Top = 362
     Width = 566
     Height = 19
     Panels = <
@@ -2855,7 +2855,7 @@ object MainForm: TMainForm
       object mnuStop: TMenuItem
         Caption = 'Stop'
         ImageIndex = 36
-        ShortCut = 16456
+        ShortCut = 16468
         OnClick = mnuStopClick
       end
       object N15: TMenuItem
@@ -2865,6 +2865,7 @@ object MainForm: TMainForm
         Caption = 'Open...'
         Hint = 'Opens a script file.'
         ImageIndex = 1
+        ShortCut = 16453
         OnClick = mnuOpenScriptClick
       end
       object mnuEditScript: TMenuItem
