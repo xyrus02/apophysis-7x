@@ -15,12 +15,14 @@
      along with this program; if not, write to the Free Software
      Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
 }
-{$D-,L-,O+,Q-,R-,Y-,S-}
 unit Global;
 
 interface
 
-uses SysUtils, Classes, SyncObjs, Controls, Graphics, Math, MyTypes, controlpoint;
+uses
+  SysUtils, Classes, SyncObjs, Controls, Graphics, Math,
+  cmap, MyTypes, controlpoint;
+
 type
   EFormatInvalid = class(Exception);
 
@@ -52,6 +54,7 @@ const
   FT_BMP = 1; FT_PNG = 2; FT_JPG = 3;
 
 var
+  MainSeed: integer;
   MainTriangles: TTriangles;
   ConfirmDelete: boolean; // Flag confirmation of entry deletion
 //  FlameTitle: string;
@@ -123,6 +126,9 @@ var
   ShowProgress: Boolean;
   defLibrary: string;
   LimitVibrancy: Boolean;
+  DefaultPalette: TColorMap;
+
+
 implementation
 
 uses dialogs, Main;

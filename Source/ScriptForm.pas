@@ -308,10 +308,6 @@ var
   FileList: TStringList;
 
 function Mul33(M1, M2: TMatrix): TMatrix;
-procedure Rotate(xform: TXForm; const degrees: double);
-procedure Scale(xform: TXForm; const s: double);
-procedure translate(xform: TXForm; const x, y: double);
-procedure multiply(var xform: TXform; const a, b, c, d: double);
 procedure Normalize(var cp: TControlPoint);
 
 implementation
@@ -1291,7 +1287,7 @@ begin
   try
     if (ActiveTransform < 0) or (ActiveTransform > NXFORMS - 1) then raise EFormatInvalid.Create('Transform out of range.');
     with AMachine do
-      Rotate(ScriptEditor.cp.xform[ActiveTransform], GetInputArgAsFloat(0));
+      ScriptEditor.cp.xform[ActiveTransform].Rotate(GetInputArgAsFloat(0));
   except on E: EFormatInvalid do
     begin
       ScriptEditor.Console.Lines.Add('Rotate: ' + E.message);
@@ -1306,10 +1302,10 @@ begin
   try
     if (ActiveTransform < 0) or (ActiveTransform > NXFORMS - 1) then raise EFormatInvalid.Create('Transform out of range.');
     with AMachine do
-      Multiply(ScriptEditor.cp.xform[ActiveTransform], GetInputArgAsFloat(0), GetInputArgAsFloat(1), GetInputArgAsFloat(2), GetInputArgAsFloat(3));
+      ScriptEditor.cp.xform[ActiveTransform].Multiply(GetInputArgAsFloat(0), GetInputArgAsFloat(1), GetInputArgAsFloat(2), GetInputArgAsFloat(3));
   except on E: EFormatInvalid do
     begin
-      ScriptEditor.Console.Lines.Add('Rotate: ' + E.message);
+      ScriptEditor.Console.Lines.Add('Multiply: ' + E.message);
       Application.ProcessMessages;
       LastError := E.Message;
     end;
@@ -1624,7 +1620,7 @@ begin
   try
     if (ActiveTransform < 0) or (ActiveTransform > NXFORMS - 1) then raise EFormatInvalid.Create('Transform out of range.');
     with AMachine do
-      Scale(ScriptEditor.cp.xform[ActiveTransform], GetInputArgAsFloat(0));
+      ScriptEditor.cp.xform[ActiveTransform].Scale(GetInputArgAsFloat(0));
   except on E: EFormatInvalid do
     begin
       ScriptEditor.Console.Lines.Add('Scale: ' + E.message);
@@ -1881,7 +1877,7 @@ begin
   try
     if (ActiveTransform < 0) or (ActiveTransform > NXFORMS - 1) then raise EFormatInvalid.Create('Transform out of range.');
     with AMachine do
-      Translate(ScriptEditor.cp.xform[ActiveTransform], GetInputArgAsFloat(0), GetInputArgAsFloat(1));
+      ScriptEditor.cp.xform[ActiveTransform].Translate(GetInputArgAsFloat(0), GetInputArgAsFloat(1));
   except on E: EFormatInvalid do
     begin
       Application.ProcessMessages;
@@ -2948,116 +2944,6 @@ end;
 
 { ******************************* functions ********************************** }
 
-procedure Rotate(xform: TXForm; const degrees: double);
-var
-  r: double;
-  Matrix, M1: TMatrix;
-begin
-  r := degrees * pi / 180;
-  M1 := Identity;
-  M1[0, 0] := cos(r);
-  M1[0, 1] := -sin(r);
-  M1[1, 0] := sin(r);
-  M1[1, 1] := cos(r);
-  Matrix := Identity;
-  with xform do
-  begin
-    Matrix[0][0] := c[0, 0];
-    Matrix[0][1] := c[0, 1];
-    Matrix[1][0] := c[1, 0];
-    Matrix[1][1] := c[1, 1];
-    Matrix[0][2] := c[2, 0];
-    Matrix[1][2] := c[2, 1];
-    Matrix := Mul33(Matrix, M1);
-    c[0, 0] := Matrix[0][0];
-    c[0, 1] := Matrix[0][1];
-    c[1, 0] := Matrix[1][0];
-    c[1, 1] := Matrix[1][1];
-    c[2, 0] := Matrix[0][2];
-    c[2, 1] := Matrix[1][2];
-  end;
-
-end;
-
-procedure Scale(xform: TXform; const s: double);
-var
-  Matrix, M1: TMatrix;
-begin
-  M1 := Identity;
-  M1[0, 0] := s;
-  M1[1, 1] := s;
-  Matrix := Identity;
-  with xform do
-  begin
-    Matrix[0][0] := c[0, 0];
-    Matrix[0][1] := c[0, 1];
-    Matrix[1][0] := c[1, 0];
-    Matrix[1][1] := c[1, 1];
-    Matrix[0][2] := c[2, 0];
-    Matrix[1][2] := c[2, 1];
-    Matrix := Mul33(Matrix, M1);
-    c[0, 0] := Matrix[0][0];
-    c[0, 1] := Matrix[0][1];
-    c[1, 0] := Matrix[1][0];
-    c[1, 1] := Matrix[1][1];
-    c[2, 0] := Matrix[0][2];
-    c[2, 1] := Matrix[1][2];
-  end;
-
-end;
-
-procedure translate(xform: TXForm; const x, y: double);
-var
-  Matrix, M1: TMatrix;
-begin
-  M1 := Identity;
-  M1[0, 2] := x;
-  M1[1, 2] := y;
-  Matrix := Identity;
-  with xform do
-  begin
-    Matrix[0][0] := c[0, 0];
-    Matrix[0][1] := c[0, 1];
-    Matrix[1][0] := c[1, 0];
-    Matrix[1][1] := c[1, 1];
-    Matrix[0][2] := c[2, 0];
-    Matrix[1][2] := c[2, 1];
-    Matrix := Mul33(Matrix, M1);
-    c[0, 0] := Matrix[0][0];
-    c[0, 1] := Matrix[0][1];
-    c[1, 0] := Matrix[1][0];
-    c[1, 1] := Matrix[1][1];
-    c[2, 0] := Matrix[0][2];
-    c[2, 1] := Matrix[1][2];
-  end;
-end;
-
-procedure multiply(var xform: TXform; const a, b, c, d: double);
-var
-  Matrix, M1: TMatrix;
-begin
-  M1 := Identity;
-  M1[0, 0] := a;
-  M1[0, 1] := b;
-  M1[1, 0] := c;
-  M1[1, 1] := d;
-//  M1[0, 2] := e;
-//  M1[1, 2] := f;
-  Matrix := Identity;
-  Matrix[0][0] := xform.c[0, 0];
-  Matrix[0][1] := xform.c[0, 1];
-  Matrix[1][0] := xform.c[1, 0];
-  Matrix[1][1] := xform.c[1, 1];
-  Matrix[0][2] := xform.c[2, 0];
-  Matrix[1][2] := xform.c[2, 1];
-  Matrix := Mul33(Matrix, M1);
-  xform.c[0, 0] := Matrix[0][0];
-  xform.c[0, 1] := Matrix[0][1];
-  xform.c[1, 0] := Matrix[1][0];
-  xform.c[1, 1] := Matrix[1][1];
-  xform.c[2, 0] := Matrix[0][2];
-  xform.c[2, 1] := Matrix[1][2];
-end;
 
 { ******************************* Parseing *********************************** }
 

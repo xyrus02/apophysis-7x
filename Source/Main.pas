@@ -353,7 +353,6 @@ type
     procedure DrawZoomWindow(ARect: TRect);
     procedure DrawRotatelines(Angle: double);
 
-
     procedure FavoriteClick(Sender: TObject);
     procedure HandleThreadCompletion(var Message: TMessage);
       message WM_THREAD_COMPLETE;
@@ -361,14 +360,12 @@ type
       message WM_THREAD_TERMINATE;
   public
     { Public declarations }
-    Seed: Integer;
     UndoIndex, UndoMax: integer;
     Center: array[0..1] of double;
     MainZoom: double;
     StartTime: TDateTime;
     Remainder: TDateTime;
     AnimPal: TColorMap;
-    DefaultPalette: TColorMap;
     procedure LoadXMLFlame(filename, name: string);
     procedure DisableFavorites;
     procedure EnableFavorites;
@@ -428,7 +425,7 @@ implementation
 uses Editor, Options, Regstry, Gradient, Render,
   FullScreen, FormRender, Mutate, Adjust, Browser, Save, About, CmapData,
   HtmlHlp, ScriptForm, FormFavorites, Size, FormExport, msMultiPartFormData,
-  Sheep, ImageColoring;
+  Sheep, ImageColoring, RndFlame;
 
 {$R *.DFM}
 
@@ -663,8 +660,8 @@ procedure RandomVariation(cp: TControlPoint);
 var
   a, b, i, j: integer;
 begin
-  inc(MainForm.seed);
-  RandSeed := MainForm.seed;
+  inc(MainSeed);
+  RandSeed := MainSeed;
   for i := 0 to NumXForms(cp) - 1 do
   begin
     for j := 0 to NVARS - 1 do
@@ -713,6 +710,9 @@ var
   r, s, theta, phi: double;
   skip: boolean;
 begin
+  cp1.Free;
+  cp1 := RandomFlame(MainCP, alg);
+(*
   Min := randMinTransforms;
   Max := randMaxTransforms;
   case randGradient of
@@ -726,18 +726,18 @@ begin
     2: cmap := MainCp.cmap;
     3: cmap := GradientForm.RandomGradient;
   end;
-  inc(Seed);
-  RandSeed := Seed;
+  inc(MainSeed);
+  RandSeed := MainSeed;
   transforms := random(Max - (Min - 1)) + Min;
   repeat
     try
-      inc(Seed);
-      RandSeed := Seed;
+      inc(MainSeed);
+      RandSeed := MainSeed;
       cp1.clear;
       cp1.RandomCP(transforms, transforms, false);
       cp1.SetVariation(Variation);
-      inc(Seed);
-      RandSeed := Seed;
+      inc(MainSeed);
+      RandSeed := MainSeed;
 
       case alg of
         1: rnd := 0;
@@ -861,6 +861,7 @@ begin
   cp1.zoom := 0;
   cp1.Nick := SheepNick;
   cp1.URl := SheepURL;
+*)
 end;
 
 function TMainForm.GradientFromPalette(const pal: TColorMap; const title: string): string;
@@ -1984,8 +1985,8 @@ var
   b, RandFile: string;
 begin
   b := IntToStr(BatchSize);
-  inc(seed);
-  RandSeed := Seed;
+  inc(MainSeed);
+  RandSeed := MainSeed;
   try
     AssignFile(F, AppPath + 'apophysis.rand');
     OpenFile := AppPath + 'apophysis.rand';
@@ -1995,10 +1996,10 @@ begin
     begin
       inc(RandomIndex);
       Statusbar.SimpleText := 'Generating ' + IntToStr(i + 1) + ' of ' + b;
-      RandSeed := Seed;
+      RandSeed := MainSeed;
       if randGradient = 0 then cmap_index := random(NRCMAPS);
-      inc(Seed);
-      RandSeed := Seed;
+      inc(MainSeed);
+      RandSeed := MainSeed;
       RandomizeCP(MainCp);
       MainCp.CalcBoundbox;
 
@@ -2181,8 +2182,8 @@ procedure TMainForm.mnuRWeightsClick(Sender: TObject);
 begin
   StopThread;
   UpdateUndo;
-  inc(seed);
-  RandSeed := Seed;
+  inc(MainSeed);
+  RandSeed := MainSeed;
   RandomWeights(MainCp);
   RedrawTimer.Enabled := True;
   UpdateWindows;
@@ -2191,8 +2192,8 @@ end;
 procedure TMainForm.mnuRandomBatchClick(Sender: TObject);
 begin
   ScriptEditor.Stopped := True;
-  inc(seed);
-  RandSeed := Seed;
+  inc(MainSeed);
+  RandSeed := MainSeed;
   RandomBatch;
   OpenFile := AppPath + 'apophysis.rand';
   OpenFileType := ftXML;
@@ -2305,7 +2306,7 @@ procedure TMainForm.mnuRandomClick(Sender: TObject);
 begin
   StopThread;
   UpdateUndo;
-  inc(seed);
+  inc(MainSeed);
   RandomizeCP(MainCp);
   inc(RandomIndex);
   MainCp.name := RandomPrefix + RandomDate + '-' +
@@ -2495,7 +2496,7 @@ begin
   GetScripts;
   Compatibility := 1; // for Drave's compatibility
   Randomize;
-  Seed := Random(1234567890);
+  MainSeed := Random(1234567890);
   maincp := TControlPoint.Create;
   ParseCp := TControlPoint.create;
   OpenFileType := ftXML;
@@ -2542,8 +2543,8 @@ begin
   UndoIndex := 0;
   UndoMax := 0;
   ListView.RowSelect := True;
-  inc(seed);
-  RandSeed := Seed;
+  inc(MainSeed);
+  RandSeed := MainSeed;
   Variation := vRandom;
   Maincp.brightness := defBrightness;
   maincp.gamma := defGamma;
@@ -2551,8 +2552,8 @@ begin
   maincp.sample_density := defSampleDensity;
   maincp.spatial_oversample := defOversample;
   maincp.spatial_filter_radius := defFilterRadius;
-  inc(seed);
-  RandSeed := Seed;
+  inc(MainSeed);
+  RandSeed := MainSeed;
   if FileExists(AppPath + 'default.map') then
   begin
     DefaultPalette := GradientBrowser.LoadFractintMap(AppPath + 'default.map');
@@ -2564,7 +2565,8 @@ begin
     GetCMap(cmap_index, 1, maincp.cmap);
     DefaultPalette := maincp.cmap;
   end;
-  if FileExists(AppPath + 'apophysis.rand') then DeleteFile(AppPath + 'apophysis.rand');
+  if FileExists(AppPath + 'apophysis.rand') then
+    DeleteFile(AppPath + 'apophysis.rand');
   if (defFlameFile = '') or (not FileExists(defFlameFile)) then
   begin
     MainCp.Width := image.width;
@@ -3087,8 +3089,8 @@ begin
   mnuVRandom.Checked := True;
   StopThread;
   UpdateUndo;
-  inc(seed);
-  RandSeed := Seed;
+  inc(MainSeed);
+  RandSeed := MainSeed;
   repeat
     Variation := vRandom;
     SetVariation(maincp);
@@ -3161,8 +3163,8 @@ begin
   strings := TStringList.Create;
   try
     begin
-      inc(seed);
-      RandSeed := Seed;
+      inc(MainSeed);
+      RandSeed := MainSeed;
       OpenDialog.Filter := 'All (*.bmp;*.jpg;*.jpeg)|*.bmp;*.jpg;*.jpeg|JPEG images (*.jpg;*.jpeg)|*.jpg;*.jpeg|BMP images (*.bmp)|*.bmp';
       OpenDialog.InitialDir := ImageFolder;
       OpenDialog.Title := 'Select Image File';
@@ -3518,8 +3520,8 @@ procedure TMainForm.mnuRandomizeColorValuesClick(Sender: TObject);
 var
   i: integer;
 begin
-  inc(seed);
-  RandSeed := seed;
+  inc(MainSeed);
+  RandSeed := MainSeed;
   StopThread;
   UpdateUndo;
   for i := 0 to Transforms - 1 do

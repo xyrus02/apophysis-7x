@@ -20,6 +20,8 @@ type
   end;
   PXYpoint = ^TXYpoint;
 
+  TMatrix = array[0..2, 0..2] of double;
+
 type
   TXForm = class
   private
@@ -61,6 +63,9 @@ type
     procedure Fan;                 // var[22]
 
 
+    function Mul33(const M1, M2: TMatrix): TMatrix;
+    function Identity: TMatrix;
+
   public
     vars: array[0..NVARS - 1] of double; // normalized interp coefs between variations
     c: array[0..2, 0..1] of double;      // the coefs to the affine part of the function
@@ -83,6 +88,10 @@ type
     procedure NextPointXY(var px, py: double);
     procedure NextPoint2C(var px, py, pc1, pc2: double);
 
+    procedure Rotate(const degrees: double);
+    procedure Translate(const x, y: double);
+    procedure Multiply(const a, b, c, d: double);
+    procedure Scale(const s: double);
   end;
 
 implementation
@@ -752,4 +761,136 @@ begin
   py := FPy;
 end;
 
+///////////////////////////////////////////////////////////////////////////////
+function TXForm.Mul33(const M1, M2: TMatrix): TMatrix;
+begin
+  result[0, 0] := M1[0][0] * M2[0][0] + M1[0][1] * M2[1][0] + M1[0][2] * M2[2][0];
+  result[0, 1] := M1[0][0] * M2[0][1] + M1[0][1] * M2[1][1] + M1[0][2] * M2[2][1];
+  result[0, 2] := M1[0][0] * M2[0][2] + M1[0][1] * M2[1][2] + M1[0][2] * M2[2][2];
+  result[1, 0] := M1[1][0] * M2[0][0] + M1[1][1] * M2[1][0] + M1[1][2] * M2[2][0];
+  result[1, 1] := M1[1][0] * M2[0][1] + M1[1][1] * M2[1][1] + M1[1][2] * M2[2][1];
+  result[1, 2] := M1[1][0] * M2[0][2] + M1[1][1] * M2[1][2] + M1[1][2] * M2[2][2];
+  result[2, 0] := M1[2][0] * M2[0][0] + M1[2][1] * M2[1][0] + M1[2][2] * M2[2][0];
+  result[2, 0] := M1[2][0] * M2[0][1] + M1[2][1] * M2[1][1] + M1[2][2] * M2[2][1];
+  result[2, 0] := M1[2][0] * M2[0][2] + M1[2][1] * M2[1][2] + M1[2][2] * M2[2][2];
+end;
+
+///////////////////////////////////////////////////////////////////////////////
+function TXForm.Identity: TMatrix;
+var
+  i, j: integer;
+begin
+  for i := 0 to 2 do
+    for j := 0 to 2 do
+      Result[i, j] := 0;
+  Result[0][0] := 1;
+  Result[1][1] := 1;
+  Result[2][2] := 1;
+end;
+
+///////////////////////////////////////////////////////////////////////////////
+procedure TXForm.Rotate(const degrees: double);
+var
+  r: double;
+  Matrix, M1: TMatrix;
+begin
+  r := degrees * pi / 180;
+  M1 := Identity;
+  M1[0, 0] := cos(r);
+  M1[0, 1] := -sin(r);
+  M1[1, 0] := sin(r);
+  M1[1, 1] := cos(r);
+  Matrix := Identity;
+
+  Matrix[0][0] := c[0, 0];
+  Matrix[0][1] := c[0, 1];
+  Matrix[1][0] := c[1, 0];
+  Matrix[1][1] := c[1, 1];
+  Matrix[0][2] := c[2, 0];
+  Matrix[1][2] := c[2, 1];
+  Matrix := Mul33(Matrix, M1);
+  c[0, 0] := Matrix[0][0];
+  c[0, 1] := Matrix[0][1];
+  c[1, 0] := Matrix[1][0];
+  c[1, 1] := Matrix[1][1];
+  c[2, 0] := Matrix[0][2];
+  c[2, 1] := Matrix[1][2];
+end;
+
+///////////////////////////////////////////////////////////////////////////////
+procedure TXForm.Translate(const x, y: double);
+var
+  Matrix, M1: TMatrix;
+begin
+  M1 := Identity;
+  M1[0, 2] := x;
+  M1[1, 2] := y;
+  Matrix := Identity;
+
+  Matrix[0][0] := c[0, 0];
+  Matrix[0][1] := c[0, 1];
+  Matrix[1][0] := c[1, 0];
+  Matrix[1][1] := c[1, 1];
+  Matrix[0][2] := c[2, 0];
+  Matrix[1][2] := c[2, 1];
+  Matrix := Mul33(Matrix, M1);
+  c[0, 0] := Matrix[0][0];
+  c[0, 1] := Matrix[0][1];
+  c[1, 0] := Matrix[1][0];
+  c[1, 1] := Matrix[1][1];
+  c[2, 0] := Matrix[0][2];
+  c[2, 1] := Matrix[1][2];
+end;
+
+///////////////////////////////////////////////////////////////////////////////
+procedure TXForm.Multiply(const a, b, c, d: double);
+var
+  Matrix, M1: TMatrix;
+begin
+  M1 := Identity;
+  M1[0, 0] := a;
+  M1[0, 1] := b;
+  M1[1, 0] := c;
+  M1[1, 1] := d;
+  Matrix := Identity;
+  Matrix[0][0] := Self.c[0, 0];
+  Matrix[0][1] := Self.c[0, 1];
+  Matrix[1][0] := Self.c[1, 0];
+  Matrix[1][1] := Self.c[1, 1];
+  Matrix[0][2] := Self.c[2, 0];
+  Matrix[1][2] := Self.c[2, 1];
+  Matrix := Mul33(Matrix, M1);
+  Self.c[0, 0] := Matrix[0][0];
+  Self.c[0, 1] := Matrix[0][1];
+  Self.c[1, 0] := Matrix[1][0];
+  Self.c[1, 1] := Matrix[1][1];
+  Self.c[2, 0] := Matrix[0][2];
+  Self.c[2, 1] := Matrix[1][2];
+end;
+
+///////////////////////////////////////////////////////////////////////////////
+procedure TXForm.Scale(const s: double);
+var
+  Matrix, M1: TMatrix;
+begin
+  M1 := Identity;
+  M1[0, 0] := s;
+  M1[1, 1] := s;
+  Matrix := Identity;
+  Matrix[0][0] := c[0, 0];
+  Matrix[0][1] := c[0, 1];
+  Matrix[1][0] := c[1, 0];
+  Matrix[1][1] := c[1, 1];
+  Matrix[0][2] := c[2, 0];
+  Matrix[1][2] := c[2, 1];
+  Matrix := Mul33(Matrix, M1);
+  c[0, 0] := Matrix[0][0];
+  c[0, 1] := Matrix[0][1];
+  c[1, 0] := Matrix[1][0];
+  c[1, 1] := Matrix[1][1];
+  c[2, 0] := Matrix[0][2];
+  c[2, 1] := Matrix[1][2];
+end;
+
+///////////////////////////////////////////////////////////////////////////////
 end.

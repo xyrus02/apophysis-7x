@@ -988,7 +988,7 @@ begin
 
     if ((maxx - minx) > 1000) or
        ((maxy - miny) > 1000) then
-      raise Exception.Create('Flame area to large');
+      raise EMathError.Create('Flame area to large');
 
     center[0] := (minx + maxx) / 2;
     center[1] := (miny + maxy) / 2;
@@ -1084,7 +1084,7 @@ begin
 
     if ((maxx - minx) > 1000) or
        ((maxy - miny) > 1000) then
-      raise Exception.Create('Flame area to large');
+      raise EMathError.Create('Flame area to large');
 
     cp.center[0] := (minx + maxx) / 2;
     cp.center[1] := (miny + maxy) / 2;
@@ -1536,6 +1536,7 @@ begin
   end;
 end;
 
+///////////////////////////////////////////////////////////////////////////////
 function TControlPoint.HasNewVariants: boolean;
 var
   i: integer;
