@@ -55,8 +55,8 @@ type
     filter_width: Integer;
     filter: array of array of extended;
 
-    image_Width: Integer;
-    image_Height: Integer;
+    image_Width: Int64;
+    image_Height: Int64;
     BucketWidth: Integer;
     BucketHeight: Integer;
     BucketSize: Integer;
@@ -74,6 +74,7 @@ type
 
     bounds: array[0..3] of extended;
     size: array[0..1] of extended;
+    FRotationCenter: array[0..1] of extended;
     ppux, ppuy: extended;
     nrSlices: int64;
     Slice: int64;
@@ -350,14 +351,14 @@ begin
     if FStop then
       Exit;
 
-    px := points[i].x - FCP.Center[0];
-    py := points[i].y - FCP.Center[1];
+    px := points[i].x - FRotationCenter[0];
+    py := points[i].y - FRotationCenter[1];
 
     nx := px * ca + py * sa;
     ny := -px * sa + py * ca;
 
-    px := nx + FCP.Center[0] - bx;
-    py := ny + FCP.Center[1] - by;
+    px := nx + FRotationCenter[0] - bx;
+    py := ny + FRotationCenter[1] - by;
 
     if ((px < 0) or (px > wx) or
         (py < 0) or (py > wy)) then
@@ -413,7 +414,6 @@ end;
 procedure TRendererMM64.CreateBMFromBuckets(YOffset: Integer);
 var
   i, j: integer;
-
   alpha: double;
 //  r,g,b: double;
   ai, ri, gi, bi: Integer;
@@ -599,6 +599,9 @@ var
   zoom_scale, center_base, center_y: double;
 begin
   FStop := False;
+
+  FRotationCenter[0] := fcp.center[0];
+  FRotationCenter[1] := fcp.center[1];
 
   image_height := fcp.Height;
   image_Width := fcp.Width;
