@@ -578,22 +578,19 @@ var
   Title: string;
   FStrings: TStringList;
 begin
-  FStrings := TStringList.Create;
-  if fileExists(AppPath + 'render presets') then
   try
-    FStrings.LoadFromFile(AppPath + 'render presets');
-    cmbPreset.Clear;
-    if (Pos('{', FStrings.Text) <> 0) then
-    begin
-      for i := 0 to FStrings.Count - 1 do
-      begin
-        p := Pos('{', FStrings[i]);
-        if (p <> 0) then
-        begin
-          Title := Trim(Copy(FStrings[i], 1, p - 1));
-          if Title <> '' then
-          begin
-            cmbPreset.Items.add(Copy(FStrings[i], 1, p - 1));
+    FStrings := TStringList.Create;
+    if fileExists(AppPath + 'render presets') then begin
+      FStrings.LoadFromFile(AppPath + 'render presets');
+      cmbPreset.Clear;
+      if (Pos('{', FStrings.Text) <> 0) then begin
+        for i := 0 to FStrings.Count - 1 do begin
+          p := Pos('{', FStrings[i]);
+          if (p <> 0) then  begin
+            Title := Trim(Copy(FStrings[i], 1, p - 1));
+            if Title <> '' then begin
+              cmbPreset.Items.add(Copy(FStrings[i], 1, p - 1));
+            end;
           end;
         end;
       end;
