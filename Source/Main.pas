@@ -1356,6 +1356,7 @@ begin
       format('" center="%g %g" ', [x, y]) +
       format('scale="%g" ', [cp1.pixels_per_unit]) +
       format('angle="%g" ', [cp1.FAngle]) +
+      format('rotate="%g" ', [-180 * cp1.FAngle/Pi]) +
       format('zoom="%g" ', [cp1.zoom]) +
       'oversample="' + IntToStr(cp1.spatial_oversample) +
       format('" filter="%g" ', [cp1.spatial_filter_radius]) +
@@ -3846,16 +3847,16 @@ begin
 end;
 
 
-procedure TMainForm.mnuExportFLameClick(Sender: TObject);
+procedure TMainForm.mnuExportFlameClick(Sender: TObject);
 var
   FileList: Tstringlist;
   Ext, ex, Path: string;
   cp1: TControlPoint;
 begin
-  if MainCp.FAngle <> 0 then begin
-    showMessage('This flame is rotated. It cannot be correctly rendered this way');
-    Exit;
-  end;
+//  if MainCp.FAngle <> 0 then begin
+//    showMessage('This flame is rotated. It cannot be correctly rendered this way');
+//    Exit;
+//  end;
 
   if not FileExists(HqiPath) then
   begin
@@ -4070,6 +4071,8 @@ begin
     if v <> '' then Parsecp.zoom := StrToFloat(v);
     v := Attributes.Value('scale');
     if v <> '' then Parsecp.pixels_per_unit := StrToFloat(v);
+    v := Attributes.Value('rotate');
+    if v <> '' then Parsecp.FAngle := -PI * StrToFloat(v)/180;
     v := Attributes.Value('angle');
     if v <> '' then Parsecp.FAngle := StrToFloat(v);
 
