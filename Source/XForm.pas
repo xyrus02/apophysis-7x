@@ -3,7 +3,7 @@ unit XForm;
 interface
 
 const
-  NVARS = 22;
+  NVARS = 23;
   EPS = 1E-10;
 
 type
@@ -57,7 +57,8 @@ type
     procedure Exponential;         // var[18]
     procedure Power;               // var[19]
     procedure Cosine;              // var[20]
-    procedure SawTooth;            // var[21]
+    procedure Rings;               // var[21]
+    procedure Fan;                 // var[22]
 
 
   public
@@ -230,12 +231,17 @@ begin
   end;
 
   if (vars[21] <> 0.0) then begin
-    FFunctionList[FNrFunctions] := SawTooth;
+    FFunctionList[FNrFunctions] := Rings;
+    Inc(FNrFunctions);
+  end;
+
+  if (vars[22] <> 0.0) then begin
+    FFunctionList[FNrFunctions] := Fan;
     Inc(FNrFunctions);
   end;
 
   CalculateAngle := (vars[5] <> 0.0) or (vars[6] <> 0.0) or (vars[7] <> 0.0) or (vars[8] <> 0.0) or
-                    (vars[12] <> 0.0) or (vars[13] <> 0.0);
+                    (vars[12] <> 0.0) or (vars[13] <> 0.0) or (vars[21] <> 0.0) or (vars[22] <> 0.0);
   CalculateLength := False;
   CalculateSinCos := (vars[4] <> 0.0) or (vars[9] <> 0.0) or (vars[10] <> 0.0) or
                      (vars[11] <> 0.0) or (vars[16] <> 0.0) or (vars[19] <> 0.0) or
@@ -495,21 +501,39 @@ begin
 end;
 
 ///////////////////////////////////////////////////////////////////////////////
-procedure TXForm.SawTooth;
+procedure TXForm.Rings;
 var
   r: double;
-//  nx, ny: double;
+  dx: double;
 begin
-//  r := sqrt(FTx * FTx + FTy * FTy);
-//  r := fmod(r + 1.0, 2.0) - 1.0;
-  r := FLength + 1;
-  r := r - System.Int(r/2) * 2.0 - 1;
+  dx := sqr(c20) + EPS;
+  r := FLength;
+  r := r + dx - System.Int((r + dx)/(2 * dx)) * 2 * dx - dx + r * (1-dx);
 
-//  nx := cos(FAngle) * r;
-//  ny := sin(FAngle) * r;
+  FPx := FPx + vars[21] * r * cos(FAngle);
+  FPy := FPy + vars[21] * r * sin(FAngle);
+end;
 
-  FPx := FPx + vars[21] * r * FCosA;
-  FPy := FPy + vars[21] * r * FSinA;
+///////////////////////////////////////////////////////////////////////////////
+procedure TXForm.Fan;
+var
+  r,t,a : double;
+  dx, dy, dx2: double;
+begin
+  dy := c21;
+  dx := PI * (sqr(c20) + EPS);
+  dx2 := dx/2;
+
+  r := sqrt(FTx * FTx + FTy * FTy);
+
+  t := FAngle+dy - System.Int((FAngle + dy)/dx) * dx;
+  if (t > dx2) then
+    a := FAngle - dx2
+  else
+    a := FAngle + dx2;
+
+  FPx := FPx + vars[22] * r * cos(a);
+  FPy := FPy + vars[22] * r * sin(a);
 end;
 
 ///////////////////////////////////////////////////////////////////////////////

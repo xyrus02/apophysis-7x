@@ -184,20 +184,33 @@ end;
 procedure TRendererMM64.CreateFilter;
 var
   i, j: integer;
+  fw: integer;
+  adjust: double;
+  ii, jj: double;
 begin
   oversample := fcp.spatial_oversample;
-  filter_width := Round(2.0 * FILTER_CUTOFF * oversample * fcp.spatial_filter_radius);
+  fw := Trunc(2.0 * FILTER_CUTOFF * oversample * fcp.spatial_filter_radius);
+  filter_width := fw + 1;
+
   // make sure it has same parity as oversample
   if odd(filter_width + oversample) then
     inc(filter_width);
 
+  if (fw > 0.0) then
+  	adjust := (1.0 * FILTER_CUTOFF * filter_width) / fw
+  else
+  	adjust := 1.0;
+
   setLength(filter, filter_width, filter_width);
   for i := 0 to filter_width - 1 do begin
     for j := 0 to filter_width - 1 do begin
-      filter[i, j] := exp(-2.0 * power(((2.0 * i + 1.0) / filter_width - 1.0) * FILTER_CUTOFF, 2) *
-        power(((2.0 * j + 1.0) / filter_width - 1.0) * FILTER_CUTOFF, 2));
+      ii := ((2.0 * i + 1.0)/ filter_width - 1.0) * adjust;
+      jj := ((2.0 * j + 1.0)/ filter_width - 1.0) * adjust;
+
+      filter[i, j] :=  exp(-2.0 * (ii * ii + jj * jj));
     end;
   end;
+
   Normalizefilter;
 end;
 
@@ -549,6 +562,7 @@ begin
     Inc(bucketpos, 2 * gutter_width);
     Inc(bucketpos, (oversample - 1) * BucketWidth);
   end;
+  bm.PixelFormat := pf24bit;
 
   Progress(1);
 end;

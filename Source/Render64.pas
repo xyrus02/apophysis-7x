@@ -178,20 +178,33 @@ end;
 procedure TRenderer64.CreateFilter;
 var
   i, j: integer;
+  fw: integer;
+  adjust: double;
+  ii, jj: double;
 begin
   oversample := fcp.spatial_oversample;
-  filter_width := Round(2.0 * FILTER_CUTOFF * oversample * fcp.spatial_filter_radius);
+  fw := Trunc(2.0 * FILTER_CUTOFF * oversample * fcp.spatial_filter_radius);
+  filter_width := fw + 1;
+
   // make sure it has same parity as oversample
   if odd(filter_width + oversample) then
     inc(filter_width);
 
+  if (fw > 0.0) then
+  	adjust := (1.0 * FILTER_CUTOFF * filter_width) / fw
+  else
+  	adjust := 1.0;
+
   setLength(filter, filter_width, filter_width);
   for i := 0 to filter_width - 1 do begin
     for j := 0 to filter_width - 1 do begin
-      filter[i, j] := exp(-2.0 * power(((2.0 * i + 1.0) / filter_width - 1.0) * FILTER_CUTOFF, 2) *
-        power(((2.0 * j + 1.0) / filter_width - 1.0) * FILTER_CUTOFF, 2));
+      ii := ((2.0 * i + 1.0)/ filter_width - 1.0) * adjust;
+      jj := ((2.0 * j + 1.0)/ filter_width - 1.0) * adjust;
+
+      filter[i, j] :=  exp(-2.0 * (ii * ii + jj * jj));
     end;
   end;
+
   Normalizefilter;
 end;
 
@@ -357,11 +370,18 @@ end;
 ///////////////////////////////////////////////////////////////////////////////
 procedure TRenderer64.SetPixels;
 var
-  i: integer;
+  i{,j}: integer;
   nsamples: Int64;
   nrbatches: Integer;
   points: TPointsArray;
+//  f: text;
 begin
+//  if FileExists('c:\temp\flame.txt') then
+//    Deletefile('c:\temp\flame.txt');
+
+//  AssignFile(F, 'c:\temp\flame.txt');
+//  Rewrite(F);
+
   SetLength(Points, SUB_BATCH_SIZE);
 
   nsamples := Round(sample_density * bucketSize / (oversample * oversample));
@@ -381,11 +401,16 @@ begin
       1: fcp.iterateXYC(SUB_BATCH_SIZE, points);
     end;
 
+//    for j := SUB_BATCH_SIZE - 1 downto 0 do
+//      Writeln(f,  FloatTostr(points[j].x) + #9 + FloatTostr(points[j].y) + #9 + FloatTostr(points[j].c));
+
     if FCP.FAngle = 0 then
       AddPointsToBuckets(points)
     else
       AddPointsToBucketsAngle(points);
   end;
+
+//  closefile(f);
 
   Progress(1);
 end;
@@ -537,7 +562,7 @@ begin
       else if (bi > 255) then
         bi := 255;
 
-      Row[j] := RGB(bi, gi, ri) + (ai shl 24);
+      Row[j] := RGB(bi, gi, ri);// + (ai shl 24);
     end;
 
     Inc(bucketpos, 2 * gutter_width);

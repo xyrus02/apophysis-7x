@@ -25,11 +25,11 @@ uses
 
 const
   EPS = 1E-10;
-  NVARS = 22;
+  NVARS = Xform.NVARS;
   NXFORMS = 12;
   SUB_BATCH_SIZE = 10000;
   PREFILTER_WHITE = (1 shl 26);
-  FILTER_CUTOFF = 2.5;
+  FILTER_CUTOFF = 1.8;
   BRIGHT_ADJUST = 2.3;
 
 type
@@ -37,7 +37,8 @@ type
   TLongintArray = array[0..8192] of Longint;
   TVariation = (vLinear, vSinusoidal, vSpherical, vSwirl, vHorseshoe, vPolar,
     vHandkerchief, vHeart, vDisc, vSpiral, vHyperbolic, vSquare, vEx, vJulia,
-    vBent, vWaves, vFisheye, vPopcorn, vExponential, vPower, vCosine, vSawTooth, vRandom);
+    vBent, vWaves, vFisheye, vPopcorn, vExponential, vPower, vCosine,
+    vRings, vFan, vRandom);
 type
 
   TPointsArray = array of TCPpoint;
@@ -800,14 +801,14 @@ end;
 procedure TControlPoint.SetVariation(vari: TVariation);
 const
   xform_distrib: array[0..12] of integer = (2, 2, 2, 3, 3, 3, 4, 4, 5, 5, 6, 7, 8);
-  var_distrib: array[0..40] of integer = (-1, -1, -1, -1, -1, -1, -1, 0, 0, 0, 0, 1, 1, 1, 2, 2, 2, 3, 3, 4, 4, 5, 5, 6, 6, 7, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21);
-  mixed_var_distrib: array[0..30] of integer = (0, 0, 0, 1, 1, 1, 2, 2, 2, 3, 3, 4, 4, 5, 6, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21);
+  var_distrib: array[0..41] of integer = (-1, -1, -1, -1, -1, -1, -1, 0, 0, 0, 0, 1, 1, 1, 2, 2, 2, 3, 3, 4, 4, 5, 5, 6, 6, 7, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22);
+  mixed_var_distrib: array[0..31] of integer = (0, 0, 0, 1, 1, 1, 2, 2, 2, 3, 3, 4, 4, 5, 6, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22);
 var
   i, j, v: integer;
   rv: integer;
 begin
   repeat
-    rv := var_distrib[random(41)];
+    rv := var_distrib[random(Length(var_distrib))];
   until Variations[rv];
 
   for i := 0 to NXFORMS - 1 do begin
@@ -820,7 +821,7 @@ begin
       if rv < 0 then
       begin
         repeat
-          v := Mixed_var_distrib[random(31)];
+          v := Mixed_var_distrib[random(Length(mixed_var_distrib))];
         until Variations[v]; // Use only Variations set in options
         xform[i].vars[v] := 1
       end
@@ -835,8 +836,8 @@ end;
 procedure TControlPoint.RandomCP(min: integer = 2; max: integer = NXFORMS; calc: boolean = true);
 const
   xform_distrib: array[0..12] of integer = (2, 2, 2, 3, 3, 3, 4, 4, 5, 5, 6, 7, 8);
-  var_distrib: array[0..40] of integer = (-1, -1, -1, -1, -1, -1, -1, 0, 0, 0, 0, 1, 1, 1, 2, 2, 2, 3, 3, 4, 4, 5, 5, 6, 6, 7, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21);
-  mixed_var_distrib: array[0..30] of integer = (0, 0, 0, 1, 1, 1, 2, 2, 2, 3, 3, 4, 4, 5, 6, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21);
+  var_distrib: array[0..41] of integer = (-1, -1, -1, -1, -1, -1, -1, 0, 0, 0, 0, 1, 1, 1, 2, 2, 2, 3, 3, 4, 4, 5, 5, 6, 6, 7, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22);
+  mixed_var_distrib: array[0..31] of integer = (0, 0, 0, 1, 1, 1, 2, 2, 2, 3, 3, 4, 4, 5, 6, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22);
 var
   nrXforms: integer;
   i, j: integer;
@@ -851,7 +852,7 @@ begin
 //nrXforms := xform_distrib[random(13)];
   nrXforms := random(Max - (Min - 1)) + Min;
   repeat
-    rv := var_distrib[random(41)];
+    rv := var_distrib[random(Length(var_distrib))];
   until Variations[rv];
 
   for i := 0 to NXFORMS - 1 do begin
@@ -880,7 +881,7 @@ begin
     if rv < 0 then
     begin
       repeat
-        v := Mixed_var_distrib[random(31)];
+        v := Mixed_var_distrib[random(Length(mixed_var_distrib))];
       until Variations[v]; // use only variations set in options
       xform[i].vars[v] := 1
     end

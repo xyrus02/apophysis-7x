@@ -2693,7 +2693,8 @@ begin
   Scripter.AddConstant('V_EXPONENTIAL', 18);
   Scripter.AddConstant('V_POWER', 19);
   Scripter.AddConstant('V_COSINE', 20);
-  Scripter.AddConstant('V_SAWTOOTH', 21);
+  Scripter.AddConstant('V_RINGS', 21);
+  Scripter.AddConstant('V_FAN', 22);
   Scripter.AddConstant('V_RANDOM', -1);
   { Variables }
   Scripter.AddVariable('SelectedTransform', SelectedTriangle);

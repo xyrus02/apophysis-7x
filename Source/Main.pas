@@ -37,7 +37,7 @@ const
   RS_DR = 1;
   RS_XO = 2;
   RS_VO = 3;
-  varnames: array[0..21] of PChar = (
+  varnames: array[0..NVARS -1] of PChar = (
     'linear',
     'sinusoidal',
     'spherical',
@@ -59,7 +59,8 @@ const
     'exponential',
     'power',
     'cosine',
-    'sawtooth'
+    'rings',
+    'fan'
     );
 
 type
@@ -216,12 +217,14 @@ type
     MnuExponential: TMenuItem;
     mnuPower: TMenuItem;
     mnuCosine: TMenuItem;
-    mnuSawtooth: TMenuItem;
+    mnuRings: TMenuItem;
     ToolButton4: TToolButton;
     tbzoomwindow: TToolButton;
     tbDrag: TToolButton;
     tbRotate: TToolButton;
     mnuimage: TMenuItem;
+    mnuFan: TMenuItem;
+    procedure mnuFanClick(Sender: TObject);
     procedure mnuimageClick(Sender: TObject);
     procedure mnuExitClick(Sender: TObject);
     procedure mnuSaveUPRClick(Sender: TObject);
@@ -329,7 +332,7 @@ type
     procedure MnuExponentialClick(Sender: TObject);
     procedure mnuPowerClick(Sender: TObject);
     procedure mnuCosineClick(Sender: TObject);
-    procedure mnuSawtoothClick(Sender: TObject);
+    procedure mnuRingsClick(Sender: TObject);
     procedure ImageMouseDown(Sender: TObject; Button: TMouseButton;
       Shift: TShiftState; X, Y: Integer);
     procedure ImageMouseMove(Sender: TObject; Shift: TShiftState; X,
@@ -425,7 +428,7 @@ implementation
 uses Editor, Options, Regstry, Gradient, Render,
   FullScreen, FormRender, Mutate, Adjust, Browser, Save, About, CmapData,
   HtmlHlp, ScriptForm, FormFavorites, Size, FormExport, msMultiPartFormData,
-  Sheep;
+  Sheep, ImageColoring;
 
 {$R *.DFM}
 
@@ -3107,7 +3110,7 @@ end;
 ///////////////////////////////////////////////////////////////////////////////
 procedure TMainForm.mnuimageClick(Sender: TObject);
 begin
-//  frmImageColoring.Show;
+  frmImageColoring.Show;
 end;
 
 procedure swapcolor(var clist: array of cardinal; i, j: integer);
@@ -4265,11 +4268,24 @@ begin
   UpdateWindows;
 end;
 
-procedure TMainForm.mnuSawtoothClick(Sender: TObject);
+procedure TMainForm.mnuRingsClick(Sender: TObject);
 begin
-  mnuSawtooth.Checked := True;
+  mnuRings.Checked := True;
   UpdateUndo;
-  Variation := vSawtooth;
+  Variation := vRings;
+  SetVariation(maincp);
+  ResetLocation;
+  RedrawTimer.Enabled := True;
+  UpdateWindows;
+end;
+
+
+///////////////////////////////////////////////////////////////////////////////
+procedure TMainForm.mnuFanClick(Sender: TObject);
+begin
+  mnuFan.Checked := True;
+  UpdateUndo;
+  Variation := vFan;
   SetVariation(maincp);
   ResetLocation;
   RedrawTimer.Enabled := True;

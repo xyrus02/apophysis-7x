@@ -2,7 +2,7 @@ object MainForm: TMainForm
   Left = 316
   Top = 424
   Width = 574
-  Height = 455
+  Height = 515
   Caption = 'Apophysis'
   Color = clBtnFace
   Font.Charset = ANSI_CHARSET
@@ -27,7 +27,7 @@ object MainForm: TMainForm
     Left = 160
     Top = 28
     Width = 4
-    Height = 354
+    Height = 414
   end
   object ToolBar: TToolBar
     Left = 0
@@ -251,7 +251,7 @@ object MainForm: TMainForm
     Left = 0
     Top = 28
     Width = 160
-    Height = 354
+    Height = 414
     Align = alLeft
     Columns = <
       item
@@ -270,7 +270,7 @@ object MainForm: TMainForm
     Left = 164
     Top = 28
     Width = 402
-    Height = 354
+    Height = 414
     Align = alClient
     BevelInner = bvLowered
     BevelOuter = bvNone
@@ -281,7 +281,7 @@ object MainForm: TMainForm
       Left = 1
       Top = 1
       Width = 400
-      Height = 352
+      Height = 412
       Align = alClient
       AutoSize = True
       PopupMenu = DisplayPopup
@@ -293,7 +293,7 @@ object MainForm: TMainForm
   end
   object StatusBar: TStatusBar
     Left = 0
-    Top = 382
+    Top = 442
     Width = 566
     Height = 19
     Panels = <
@@ -2618,6 +2618,7 @@ object MainForm: TMainForm
       end
       object mnuimage: TMenuItem
         Caption = 'Image '
+        Visible = False
         OnClick = mnuimageClick
       end
       object N4: TMenuItem
@@ -2836,11 +2837,16 @@ object MainForm: TMainForm
         RadioItem = True
         OnClick = mnuCosineClick
       end
-      object mnuSawtooth: TMenuItem
-        Caption = 'Sawtooth'
+      object mnuRings: TMenuItem
+        Caption = 'Rings'
         GroupIndex = 1
         RadioItem = True
-        OnClick = mnuSawtoothClick
+        OnClick = mnuRingsClick
+      end
+      object mnuFan: TMenuItem
+        Caption = 'Fan'
+        GroupIndex = 1
+        OnClick = mnuFanClick
       end
     end
     object mnuScript: TMenuItem
