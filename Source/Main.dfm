@@ -13,7 +13,6 @@ object MainForm: TMainForm
   KeyPreview = True
   Menu = MainMenu
   OldCreateOrder = True
-  Position = poDefaultPosOnly
   OnActivate = FormActivate
   OnClose = FormClose
   OnCloseQuery = FormCloseQuery
@@ -29,7 +28,6 @@ object MainForm: TMainForm
     Top = 28
     Width = 4
     Height = 294
-    Cursor = crHSplit
   end
   object ToolBar: TToolBar
     Left = 0
@@ -308,7 +306,6 @@ object MainForm: TMainForm
       item
         Width = 50
       end>
-    SimplePanel = False
   end
   object Buttons: TImageList
     Left = 8
@@ -3053,9 +3050,8 @@ object MainForm: TMainForm
   end
   object HTTP: TIdHTTP
     OnStatus = HTTPStatus
-    ASCIIFilter = True
-    Intercept = LogFile
-    MaxLineAction = maException
+    AuthRetries = 0
+    AuthProxyRetries = 0
     AllowCookies = True
     ProxyParams.BasicAuthentication = False
     ProxyParams.ProxyPort = 0
