@@ -16,7 +16,7 @@
      along with this program; if not, write to the Free Software
      Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
 }
-unit Render32;
+unit Render64;
 
 interface
 
@@ -47,7 +47,7 @@ type
   TBucketArray = array of TBucket;
 
 type
-  TRenderer32 = class(TBaseRenderer)
+  TRenderer64 = class(TBaseRenderer)
   private
     bm: TBitmap;
 
@@ -108,10 +108,10 @@ implementation
 uses
   Math, Sysutils;
 
-{ TRenderer32 }
+{ TRenderer64 }
 
 ///////////////////////////////////////////////////////////////////////////////
-procedure TRenderer32.ClearBuckets;
+procedure TRenderer64.ClearBuckets;
 var
   i: integer;
 begin
@@ -124,13 +124,13 @@ begin
 end;
 
 ///////////////////////////////////////////////////////////////////////////////
-procedure TRenderer32.ClearBuffers;
+procedure TRenderer64.ClearBuffers;
 begin
   ClearBuckets;
 end;
 
 ///////////////////////////////////////////////////////////////////////////////
-procedure TRenderer32.CreateCamera;
+procedure TRenderer64.CreateCamera;
 var
   scale: double;
   t0, t1: double;
@@ -162,7 +162,7 @@ begin
 end;
 
 ///////////////////////////////////////////////////////////////////////////////
-procedure TRenderer32.CreateColorMap;
+procedure TRenderer64.CreateColorMap;
 var
   i: integer;
 begin
@@ -175,7 +175,7 @@ begin
 end;
 
 ///////////////////////////////////////////////////////////////////////////////
-procedure TRenderer32.CreateFilter;
+procedure TRenderer64.CreateFilter;
 var
   i, j: integer;
 begin
@@ -196,7 +196,7 @@ begin
 end;
 
 ///////////////////////////////////////////////////////////////////////////////
-destructor TRenderer32.Destroy;
+destructor TRenderer64.Destroy;
 begin
   if assigned(bm) then
     bm.Free;
@@ -205,13 +205,13 @@ begin
 end;
 
 ///////////////////////////////////////////////////////////////////////////////
-function TRenderer32.GetImage: TBitmap;
+function TRenderer64.GetImage: TBitmap;
 begin
   Result := bm;
 end;
 
 ///////////////////////////////////////////////////////////////////////////////
-procedure TRenderer32.InitBuffers;
+procedure TRenderer64.InitBuffers;
 begin
   gutter_width := (filter_width - oversample) div 2;
   BucketHeight := oversample * image_height + 2 * gutter_width;
@@ -224,7 +224,7 @@ begin
 end;
 
 ///////////////////////////////////////////////////////////////////////////////
-procedure TRenderer32.InitValues;
+procedure TRenderer64.InitValues;
 begin
   image_height := fcp.Height;
   image_Width := fcp.Width;
@@ -245,7 +245,7 @@ begin
 end;
 
 ///////////////////////////////////////////////////////////////////////////////
-procedure TRenderer32.NormalizeFilter;
+procedure TRenderer64.NormalizeFilter;
 var
   i, j: integer;
   t: double;
@@ -261,7 +261,7 @@ begin
 end;
 
 ///////////////////////////////////////////////////////////////////////////////
-procedure TRenderer32.AddPointsToBuckets(const points: TPointsArray);
+procedure TRenderer64.AddPointsToBuckets(const points: TPointsArray);
 var
   i: integer;
   px, py: double;
@@ -302,7 +302,7 @@ begin
 end;
 
 ///////////////////////////////////////////////////////////////////////////////
-procedure TRenderer32.AddPointsToBucketsAngle(const points: TPointsArray);
+procedure TRenderer64.AddPointsToBucketsAngle(const points: TPointsArray);
 var
   i: integer;
   px, py: double;
@@ -355,7 +355,7 @@ begin
 end;
 
 ///////////////////////////////////////////////////////////////////////////////
-procedure TRenderer32.SetPixels;
+procedure TRenderer64.SetPixels;
 var
   i: integer;
   nsamples: Integer;
@@ -392,7 +392,7 @@ begin
 end;
 
 ///////////////////////////////////////////////////////////////////////////////
-procedure TRenderer32.CreateBMFromBuckets(YOffset: Integer);
+procedure TRenderer64.CreateBMFromBuckets(YOffset: Integer);
 var
   i, j: integer;
 
@@ -545,14 +545,14 @@ begin
     Inc(bucketpos, 2 * gutter_width);
     Inc(bucketpos, (oversample - 1) * BucketWidth);
   end;
-//  bm.PixelFormat := pf24bit;
+  bm.PixelFormat := pf24bit;
 
   if assigned(FOnProgress) then
     FOnProgress(1);
 end;
 
 ///////////////////////////////////////////////////////////////////////////////
-procedure TRenderer32.InitBitmap(w, h: Integer);
+procedure TRenderer64.InitBitmap(w, h: Integer);
 begin
   if not Assigned(bm) then
     bm := TBitmap.Create;
@@ -569,13 +569,13 @@ begin
 end;
 
 ///////////////////////////////////////////////////////////////////////////////
-constructor TRenderer32.Create;
+constructor TRenderer64.Create;
 begin
   inherited Create;
 end;
 
 ///////////////////////////////////////////////////////////////////////////////
-procedure TRenderer32.Render;
+procedure TRenderer64.Render;
 begin
   FStop := False;
 

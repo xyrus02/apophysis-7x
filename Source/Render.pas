@@ -46,6 +46,40 @@ type
   PBucket = ^TBucket;
   TBucketArray = array of TBucket;
 
+
+type
+  TBaseRenderer = class
+  private
+    procedure SetOnProgress(const Value: TOnProgress);
+  protected
+    FMaxMem: integer;
+    FCompatibility: integer;
+    FStop: boolean;
+    FOnProgress: TOnProgress;
+    FCP: TControlPoint;
+  public
+    constructor Create; virtual;
+    destructor Destroy; override;
+
+    procedure SetCP(CP: TControlPoint);
+    function  GetImage: TBitmap; virtual; abstract;
+    procedure Render; virtual; abstract;
+    procedure Stop;
+
+    property OnProgress: TOnProgress
+        read FOnProgress
+       write SetOnProgress;
+
+    property compatibility : integer
+        read Fcompatibility
+       write Fcompatibility;
+
+    property MaxMem : integer
+        read FMaxMem
+       write FMaxMem;
+
+  end;
+
 type
   TRenderer = class
   private
@@ -794,8 +828,8 @@ begin
 
     // generate points
     case Compatibility of
-      0: fcp.iterate(SUB_BATCH_SIZE, points);
-      1: fcp.iterate_d(SUB_BATCH_SIZE, points);
+      0: fcp.iterate_Old(SUB_BATCH_SIZE, points);
+      1: fcp.iterateXYC(SUB_BATCH_SIZE, points);
     end;
 
     if FCP.FAngle = 0 then
@@ -803,6 +837,9 @@ begin
     else
       AddPointsToBucketsAngle(points);
   end;
+
+  if assigned(FOnProgress) then
+    FOnProgress(1);
 end;
 
 procedure TRenderer.Stop;
@@ -964,6 +1001,9 @@ begin
     Inc(bucketpos, (oversample - 1) * BucketWidth);
   end;
   bm.PixelFormat := pf24bit;
+
+  if assigned(FOnProgress) then
+    FOnProgress(1);
 end;
 
 procedure TRenderer.InitBitmap(w, h: int64);
@@ -1044,6 +1084,42 @@ begin
   end;
 end;
 
+
+{ TBaseRenderer }
+
+procedure TBaseRenderer.SetOnProgress(const Value: TOnProgress);
+begin
+  FOnProgress := Value;
+end;
+
+constructor TBaseRenderer.Create;
+begin
+  inherited Create;
+  FCompatibility := 1;
+  FStop := False;
+end;
+
+procedure TBaseRenderer.SetCP(CP: TControlPoint);
+begin
+  if assigned(FCP) then
+    FCP.Free;
+
+  FCP := Cp.Clone;
+end;
+
+procedure TBaseRenderer.Stop;
+begin
+  FStop := True;
+end;
+
+
+destructor TBaseRenderer.Destroy;
+begin
+  if assigned(FCP) then
+    FCP.Free;
+
+  inherited;
+end;
 
 end.
 

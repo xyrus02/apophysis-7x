@@ -22,7 +22,7 @@ interface
 
 uses
   Classes, windows, Messages, Graphics,
-   controlPoint, Render, Render32;
+   controlPoint, Render, Render32, Render64;
 
 const
   WM_THREAD_COMPLETE = WM_APP + 5437;
@@ -31,7 +31,7 @@ const
 type
   TRenderThread = class(TThread)
   private
-    FRenderer: TRenderer32;
+    FRenderer: TBaseRenderer;
 
     FOnProgress: TOnProgress;
     FCP: TControlPoint;
@@ -48,9 +48,7 @@ type
     procedure SetCP(CP: TControlPoint);
     function GetImage: TBitmap;
 
-    procedure RenderMaxMem(MaxMemory: int64 = 64);
     procedure Render; overload;
-    procedure Render(Time: double); overload;
     procedure Terminate;
 
     property OnProgress: TOnProgress
@@ -81,32 +79,6 @@ begin
     Result := FRenderer.GetImage;
 end;
 
-
-procedure TRenderThread.RenderMaxMem(MaxMemory: int64);
-begin
-  if assigned(FRenderer) then
-    FRenderer.Free;
-
-  FRenderer := TRenderer32.Create;
-  FRenderer.SetCP(FCP);
-  FRenderer.compatibility := compatibility;
-  FRenderer.OnProgress := FOnProgress;
-  FRenderer.RenderMaxMem(MaxMemory);
-end;
-
-
-procedure TRenderThread.Render(Time: double);
-begin
-  if assigned(FRenderer) then
-    FRenderer.Free;
-
-  FRenderer := TRenderer32.Create;
-  FRenderer.SetCP(FCP);
-  FRenderer.compatibility := compatibility;
-  FRenderer.OnProgress := FOnProgress;
-  FRenderer.Render(Time);
-end;
-
 procedure TRenderThread.SetCP(CP: TControlPoint);
 begin
   FCP := CP;
@@ -127,7 +99,7 @@ begin
   if assigned(FRenderer) then
     FRenderer.Free;
 
-  FRenderer := TRenderer32.Create;
+  FRenderer := TRenderer64.Create;
   FRenderer.SetCP(FCP);
   FRenderer.compatibility := compatibility;
   FRenderer.OnProgress := FOnProgress;
@@ -136,10 +108,10 @@ end;
 
 procedure TRenderThread.Execute;
 begin
-  if MaxMem = 0 then
-    Render
-  else
-    RenderMaxMem(MaxMem);
+//  if MaxMem = 0 then
+    Render;
+//  else
+//    RenderMaxMem(MaxMem);
 
   if Terminated then
     PostMessage(TargetHandle, WM_THREAD_TERMINATE, 0, 0)
