@@ -311,6 +311,9 @@ begin
   if Assigned(Renderer) then Renderer.WaitFor;
   if not Assigned(Renderer) then
   begin
+      // disable screensaver
+    SystemParametersInfo(SPI_SETSCREENSAVEACTIVE, 0, nil, 0);
+
     cp.sample_density := Sample_density;
     cp.spatial_oversample := Oversample;
     cp.spatial_filter_radius := Filter_Radius;
@@ -327,6 +330,9 @@ begin
     Renderer.SetCP(cp);
     Renderer.Priority := tpLower;
     Renderer.Resume;
+
+    // enable screensaver
+    SystemParametersInfo(SPI_SETSCREENSAVEACTIVE, 1, nil, 0);
   end;
 end;
 
