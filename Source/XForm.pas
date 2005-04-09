@@ -4,9 +4,9 @@ interface
 
 const
 {$IFDEF TESTVARIANT}
-  NVARS = 26;
+  NVARS = 27;
 {$ELSE}
-  NVARS = 25;
+  NVARS = 26;
 {$ENDIF}
 
   varnames: array[0..NVARS -1] of PChar = (
@@ -34,7 +34,8 @@ const
     'rings',
     'fan',
     'triblob',
-    'daisy'
+    'daisy',
+    'checkers'
 {$IFDEF TESTVARIANT}
     ,'test'
 {$ENDIF}
@@ -97,6 +98,7 @@ type
     procedure Fan;                 // var[22]
     procedure Triblob;             // var[23]
     procedure Daisy;               // var[24]
+    procedure Checkers;            // var[25]
     procedure TestVar;             // var[NVARS - 1]
 
     function Mul33(const M1, M2: TMatrix): TMatrix;
@@ -295,6 +297,11 @@ begin
 
   if (vars[24] <> 0.0) then begin
     FFunctionList[FNrFunctions] := Daisy;
+    Inc(FNrFunctions);
+  end;
+
+  if (vars[25] <> 0.0) then begin
+    FFunctionList[FNrFunctions] := Checkers;
     Inc(FNrFunctions);
   end;
 
@@ -633,17 +640,31 @@ begin
     Angle := 0.0;
 
 //  r := r * (0.6 + 0.4 * sin(3 * Angle));
-  r := r * sin(5 * Angle);
+  r := r * ( 1 - Sqr(sin(5 * Angle)));
 
   FPx := FPx + vars[24] * r * cos(Angle);
   FPy := FPy + vars[24] * r * sin(Angle);
 end;
 
 ///////////////////////////////////////////////////////////////////////////////
+procedure TXForm.Checkers;
+var
+  dx: double;
+begin
+  if odd(Round(FTX * 5) + Round(FTY * 5)) then
+    dx := 0.2
+  else
+    dx := 0;
+
+  FPx := FPx + vars[25] * FTx + dx;
+  FPy := FPy + vars[25] * FTy;
+end;
+
+///////////////////////////////////////////////////////////////////////////////
 procedure TXForm.TestVar;
 var
   r : double;
-//  dx, dy, dx2: double;
+  dx, dy, dx2: double;
   Angle: double;
 begin
   r := sqrt(FTx * FTx + FTy * FTy);
@@ -652,11 +673,10 @@ begin
   else
     Angle := 0.0;
 
-//  r := r * (0.6 + 0.4 * sin(3 * Angle));
-  r := r * sin(5 * Angle);
+   r:=  R - 0.04 * sin(6.2 * R - 1) - 0.008 * R;
 
-  FPx := FPx + vars[NVARS-1] * r * cos(Angle);
-  FPy := FPy + vars[NVARS-1] * r * sin(Angle);
+  FPx := FPx + vars[NVars - 1] * r * cos(Angle);
+  FPy := FPy + vars[NVars - 1] * r * sin(Angle);
 end;
 
 ///////////////////////////////////////////////////////////////////////////////
