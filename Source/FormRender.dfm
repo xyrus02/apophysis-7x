@@ -1,10 +1,10 @@
 object RenderForm: TRenderForm
-  Left = 280
-  Top = 279
+  Left = 286
+  Top = 251
   BorderIcons = [biSystemMenu, biMinimize]
   BorderStyle = bsSingle
   Caption = 'RenderForm'
-  ClientHeight = 400
+  ClientHeight = 405
   ClientWidth = 424
   Color = clBtnFace
   Font.Charset = DEFAULT_CHARSET
@@ -297,9 +297,9 @@ object RenderForm: TRenderForm
     object lblPhysical: TLabel
       Left = 202
       Top = 20
-      Width = 121
+      Width = 126
       Height = 13
-      Caption = 'Available phycial memory:'
+      Caption = 'Available physical memory:'
     end
     object Label9: TLabel
       Left = 8
@@ -346,7 +346,7 @@ object RenderForm: TRenderForm
   end
   object chkSave: TCheckBox
     Left = 8
-    Top = 354
+    Top = 346
     Width = 113
     Height = 17
     Caption = 'Save parameters'
@@ -408,7 +408,7 @@ object RenderForm: TRenderForm
   end
   object StatusBar: TStatusBar
     Left = 0
-    Top = 381
+    Top = 386
     Width = 424
     Height = 19
     Panels = <
@@ -421,6 +421,14 @@ object RenderForm: TRenderForm
       item
         Width = 50
       end>
+  end
+  object chkShutdown: TCheckBox
+    Left = 8
+    Top = 368
+    Width = 137
+    Height = 17
+    Caption = 'Shutdown on complete'
+    TabOrder = 11
   end
   object SaveDialog: TSaveDialog
     Left = 368

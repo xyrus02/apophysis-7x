@@ -41,6 +41,8 @@ const
 type
   TMouseMoveState = (msUsual, msZoomWindow, msZoomWindowMove, msDrag, msDragMove, msRotate, msRotateMove);
 
+type
+  TWin32Version = (wvUnknown, wvWin95, wvWin98, wvWinNT, wvWin2000, wvWinXP);
 
 type
   pRGBTripleArray = ^TRGBTripleArray;
@@ -344,6 +346,7 @@ procedure ListFlames(FileName: string; sel: integer);
 procedure ListIFS(FileName: string; sel: integer);
 procedure AdjustScale(var cp1: TControlPoint; width, height: integer);
 procedure NormalizeVariations(var cp1: TControlPoint);
+function GetWinVersion: TWin32Version;
 
 var
   MainForm: TMainForm;
@@ -495,6 +498,25 @@ var
 begin
   for i := 0 to NVARS - 1 do
     Variations[i] := boolean(v shr i and 1);
+end;
+
+function GetWinVersion: TWin32Version;
+{ Returns current version of a host Win32 platform }
+begin
+  Result := wvUnknown;
+  if Win32Platform = VER_PLATFORM_WIN32_WINDOWS then
+    if (Win32MajorVersion > 4) or
+       ((Win32MajorVersion = 4) and
+       (Win32MinorVersion > 0)) then
+      Result := wvWin98
+    else
+      Result := wvWin95
+  else
+    if Win32MajorVersion <= 4 then
+      Result := wvWinNT
+    else
+      if Win32MajorVersion = 5 then
+        Result := wvWin2000
 end;
 
 { ************************************* Help ********************************* }

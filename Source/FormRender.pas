@@ -66,6 +66,7 @@ type
     cbWidth: TComboBox;
     cbHeight: TComboBox;
     StatusBar: TStatusBar;
+    chkShutdown: TCheckBox;
     procedure FormCreate(Sender: TObject);
     procedure FormDestroy(Sender: TObject);
     procedure btnRenderClick(Sender: TObject);
@@ -96,6 +97,7 @@ type
     procedure HandleThreadTermination(var Message: TMessage);
       message WM_THREAD_TERMINATE;
     procedure ListPresets;
+    function WindowsExit(RebootParam: Longword = EWX_POWEROFF or EWX_FORCE): Boolean;
   public
     Renderer: TRenderThread;
     PhysicalMemory, ApproxMemory: int64;
@@ -170,6 +172,8 @@ begin
     Renderer.Free;
     Renderer := nil;
     ResetControls;
+    if chkShutdown.Checked then
+      WindowsExit;
   finally
     Free;
   end;
@@ -665,6 +669,45 @@ end;
 procedure TRenderForm.chkMaintainClick(Sender: TObject);
 begin
   Ratio := ImageWidth / ImageHeight;
+end;
+
+function TRenderForm.WindowsExit(RebootParam: Longword = EWX_POWEROFF or EWX_FORCE): Boolean;
+var
+   TTokenHd: THandle;
+   TTokenPvg: TTokenPrivileges;
+   cbtpPrevious: DWORD;
+   rTTokenPvg: TTokenPrivileges;
+   pcbtpPreviousRequired: DWORD;
+   tpResult: Boolean;
+const
+   SE_SHUTDOWN_NAME = 'SeShutdownPrivilege';
+begin
+  if ((GetWinVersion = wvWinNT) or
+      (GetWinVersion = wvWin2000) or
+      (GetWinVersion = wvWinXP)) then
+  begin
+    tpResult := OpenProcessToken(GetCurrentProcess(),
+      TOKEN_ADJUST_PRIVILEGES or TOKEN_QUERY,
+      TTokenHd);
+    if tpResult then
+    begin
+      tpResult := LookupPrivilegeValue(nil,
+                                       SE_SHUTDOWN_NAME,
+                                       TTokenPvg.Privileges[0].Luid);
+      TTokenPvg.PrivilegeCount := 1;
+      TTokenPvg.Privileges[0].Attributes := SE_PRIVILEGE_ENABLED;
+      cbtpPrevious := SizeOf(rTTokenPvg);
+      pcbtpPreviousRequired := 0;
+      if tpResult then
+        Windows.AdjustTokenPrivileges(TTokenHd,
+                                      False,
+                                      TTokenPvg,
+                                      cbtpPrevious,
+                                      rTTokenPvg,
+                                      pcbtpPreviousRequired);
+    end;
+  end;
+  Result := ExitWindowsEx(RebootParam, 0);
 end;
 
 end.

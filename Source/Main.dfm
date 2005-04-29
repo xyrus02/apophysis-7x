@@ -1,6 +1,6 @@
 object MainForm: TMainForm
-  Left = 316
-  Top = 424
+  Left = 411
+  Top = 128
   Width = 574
   Height = 575
   Caption = 'Apophysis'
@@ -27,7 +27,7 @@ object MainForm: TMainForm
     Left = 160
     Top = 28
     Width = 4
-    Height = 494
+    Height = 482
   end
   object ToolBar: TToolBar
     Left = 0
@@ -251,7 +251,7 @@ object MainForm: TMainForm
     Left = 0
     Top = 28
     Width = 160
-    Height = 494
+    Height = 482
     Align = alLeft
     Columns = <
       item
@@ -270,7 +270,7 @@ object MainForm: TMainForm
     Left = 164
     Top = 28
     Width = 402
-    Height = 494
+    Height = 482
     Align = alClient
     BevelInner = bvLowered
     BevelOuter = bvNone
@@ -281,7 +281,7 @@ object MainForm: TMainForm
       Left = 1
       Top = 1
       Width = 400
-      Height = 472
+      Height = 480
       Align = alClient
       AutoSize = True
       PopupMenu = DisplayPopup
@@ -293,7 +293,7 @@ object MainForm: TMainForm
   end
   object StatusBar: TStatusBar
     Left = 0
-    Top = 522
+    Top = 510
     Width = 566
     Height = 19
     Panels = <
@@ -2919,8 +2919,9 @@ object MainForm: TMainForm
   end
   object HTTP: TIdHTTP
     OnStatus = HTTPStatus
+    MaxLineAction = maException
+    ReadTimeout = 0
     AuthRetries = 0
-    AuthProxyRetries = 0
     AllowCookies = True
     ProxyParams.BasicAuthentication = False
     ProxyParams.ProxyPort = 0
