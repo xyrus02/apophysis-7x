@@ -167,7 +167,6 @@ object ExportDialog: TExportDialog
       Max = 4
       Position = 2
       TabOrder = 3
-      Wrap = False
     end
   end
   object GroupBox2: TGroupBox
@@ -243,7 +242,7 @@ object ExportDialog: TExportDialog
     Top = 176
     Width = 313
     Height = 89
-    Caption = 'Hqi'
+    Caption = 'hqi/flam3'
     TabOrder = 5
     object Label6: TLabel
       Left = 10
@@ -285,7 +284,6 @@ object ExportDialog: TExportDialog
       Max = 10000
       Position = 1
       TabOrder = 1
-      Wrap = False
     end
     object cmbDepth: TComboBox
       Left = 224
@@ -330,7 +328,6 @@ object ExportDialog: TExportDialog
       Max = 512
       Position = 1
       TabOrder = 5
-      Wrap = False
     end
   end
   object SaveDialog: TSaveDialog
