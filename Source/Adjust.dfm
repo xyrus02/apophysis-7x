@@ -135,6 +135,7 @@ object AdjustForm: TAdjustForm
       Height = 21
       TabOrder = 1
       Text = '0'
+      OnEnter = txtGammaEnter
       OnExit = txtGammaExit
       OnKeyPress = txtGammaKeyPress
     end
@@ -157,6 +158,7 @@ object AdjustForm: TAdjustForm
       Height = 21
       TabOrder = 3
       Text = '0'
+      OnEnter = txtBrightnessEnter
       OnExit = txtBrightnessExit
       OnKeyPress = txtBrightnessKeyPress
     end
@@ -178,6 +180,7 @@ object AdjustForm: TAdjustForm
       Height = 21
       TabOrder = 5
       Text = '0'
+      OnEnter = txtVibrancyEnter
       OnExit = txtVibrancyExit
       OnKeyPress = txtVibrancyKeyPress
     end
@@ -243,6 +246,7 @@ object AdjustForm: TAdjustForm
       Height = 21
       TabOrder = 1
       Text = '0'
+      OnEnter = txtZoomEnter
       OnExit = txtZoomExit
       OnKeyPress = txtZoomKeyPress
     end
@@ -266,6 +270,7 @@ object AdjustForm: TAdjustForm
       Height = 21
       TabOrder = 3
       Text = '0'
+      OnEnter = txtCenterXEnter
       OnExit = txtCenterXExit
       OnKeyPress = txtCenterXKeyPress
     end
@@ -289,6 +294,7 @@ object AdjustForm: TAdjustForm
       Height = 21
       TabOrder = 5
       Text = '0'
+      OnEnter = txtCenterYEnter
       OnExit = txtCenterYExit
       OnKeyPress = txtCenterYKeyPress
     end

@@ -101,10 +101,17 @@ type
     procedure ColorPanelClick(Sender: TObject);
     procedure scrollContrastScroll(Sender: TObject;
       ScrollCode: TScrollCode; var ScrollPos: Integer);
+    procedure txtGammaEnter(Sender: TObject);
+    procedure txtBrightnessEnter(Sender: TObject);
+    procedure txtVibrancyEnter(Sender: TObject);
+    procedure txtZoomEnter(Sender: TObject);
+    procedure txtCenterXEnter(Sender: TObject);
+    procedure txtCenterYEnter(Sender: TObject);
   private
     Resetting: boolean;
     Render: TRenderer;
     bm: TBitmap;
+    EditBoxValue: string;
   public
     PreviewDensity: double;
     cp: TControlPoint;
@@ -312,10 +319,15 @@ begin
   DrawPreview;
 end;
 
+procedure TAdjustForm.txtZoomEnter(Sender: TObject);
+begin
+  EditBoxValue := txtZoom.Text;
+end;
+
 procedure TAdjustForm.txtZoomKeyPress(Sender: TObject; var Key: Char);
 var v: integer;
 begin
-  if key = #13 then
+  if ((key = #13) and (EditBoxValue <> txtZoom.Text)) then
   begin
     key := #0;
     try
@@ -325,6 +337,7 @@ begin
       if v <> ScrollZoom.Position then begin
         ScrollZoom.Position := v;
         UpdateFlame;
+        EditBoxValue := txtZoom.Text;
       end;
     except on EConvertError do
     end;
@@ -335,6 +348,7 @@ procedure TAdjustForm.txtZoomExit(Sender: TObject);
 var
   v: integer;
 begin
+  if (EditBoxValue <> txtZoom.Text) then
   try
     v := Trunc(StrToFloat(txtZoom.Text) * 100);
     if v > scrollZoom.Max then v := scrollZoom.Max;
@@ -348,11 +362,16 @@ begin
   end;
 end;
 
+procedure TAdjustForm.txtCenterXEnter(Sender: TObject);
+begin
+  EditBoxValue := txtCenterX.Text;
+end;
+
 procedure TAdjustForm.txtCenterXKeyPress(Sender: TObject; var Key: Char);
 var
   v: integer;
 begin
-  if key = #13 then
+  if ((key = #13) and (EditBoxValue <> txtCenterX.Text)) then
   begin
     key := #0;
     try
@@ -360,6 +379,8 @@ begin
       if v > scrollCenterX.Max then v := scrollCenterX.Max;
       if v < scrollCenterX.Min then v := scrollCenterX.Min;
       ScrollCenterX.Position := v;
+      UpdateFlame;
+      EditBoxValue := txtCenterX.Text;
     except on EConvertError do
     end;
   end;
@@ -369,6 +390,7 @@ procedure TAdjustForm.txtCenterXExit(Sender: TObject);
 var
   v: integer;
 begin
+  if (EditBoxValue <> txtCenterX.Text) then
   try
     v := Trunc(StrToFloat(txtCenterX.Text) * 100);
     if v > scrollCenterX.Max then v := scrollCenterX.Max;
@@ -380,11 +402,16 @@ begin
   end;
 end;
 
+procedure TAdjustForm.txtCenterYEnter(Sender: TObject);
+begin
+  EditBoxValue := txtCenterY.Text;
+end;
+
 procedure TAdjustForm.txtCenterYKeyPress(Sender: TObject; var Key: Char);
 var
   v: integer;
 begin
-  if key = #13 then
+  if ((key = #13) and (EditBoxValue <> txtCenterY.Text)) then
   begin
     key := #0;
     try
@@ -393,6 +420,7 @@ begin
       if v < ScrollCenterY.Min then v := ScrollCenterY.Min;
       ScrollCenterY.Position := v;
       UpdateFlame;
+      EditBoxValue := txtCenterY.Text;
     except on EConvertError do
     end;
   end;
@@ -402,6 +430,7 @@ procedure TAdjustForm.txtCenterYExit(Sender: TObject);
 var
   v: integer;
 begin
+  if (EditBoxValue <> txtCenterY.Text) then
   try
     v := Trunc(StrToFloat(txtCenterY.Text) * 100);
     if v > ScrollCenterY.Max then v := ScrollCenterY.Max;
@@ -413,10 +442,16 @@ begin
   end;
 end;
 
+procedure TAdjustForm.txtGammaEnter(Sender: TObject);
+begin
+  EditBoxValue := txtGamma.Text;
+end;
+
 procedure TAdjustForm.txtGammaExit(Sender: TObject);
 var
   v: integer;
 begin
+  if (txtGamma.Text <> EditBoxValue) then
   try
     v := Trunc(StrToFloat(txtGamma.Text) * 100);
     if v > scrollGamma.Max then v := scrollGamma.Max;
@@ -432,7 +467,7 @@ procedure TAdjustForm.txtGammaKeyPress(Sender: TObject; var Key: Char);
 var
   v: integer;
 begin
-  if key = #13 then
+  if ((key = #13) and (txtGamma.Text <> EditBoxValue)) then
   begin
     key := #0;
     try
@@ -441,15 +476,22 @@ begin
       if v < scrollGamma.Min then v := scrollGamma.Min;
       ScrollGamma.Position := v;
       UpdateFlame;
+      EditBoxValue := txtGamma.Text;
     except on EConvertError do
     end;
   end;
+end;
+
+procedure TAdjustForm.txtBrightnessEnter(Sender: TObject);
+begin
+  EditBoxValue := txtBrightness.Text;
 end;
 
 procedure TAdjustForm.txtBrightnessExit(Sender: TObject);
 var
   v: integer;
 begin
+  if (txtBrightness.Text <> EditBoxValue) then
   try
     v := Trunc(StrToFloat(txtBrightness.Text) * 100);
     if v > scrollBrightness.Max then v := scrollBrightness.Max;
@@ -466,7 +508,7 @@ procedure TAdjustForm.txtBrightnessKeyPress(Sender: TObject;
 var
   v: integer;
 begin
-  if key = #13 then
+  if ((key = #13) and (txtBrightness.Text <> EditBoxValue)) then
   begin
     key := #0;
     try
@@ -475,16 +517,22 @@ begin
       if v < scrollBrightness.Min then v := scrollBrightness.Min;
       ScrollBrightness.Position := v;
       UpdateFlame;
+      EditBoxValue := txtBrightness.Text;
     except on EConvertError do
     end;
   end;
+end;
+
+procedure TAdjustForm.txtVibrancyEnter(Sender: TObject);
+begin
+  EditBoxValue := txtVibrancy.Text;
 end;
 
 procedure TAdjustForm.txtVibrancyKeyPress(Sender: TObject; var Key: Char);
 var
   v: integer;
 begin
-  if key = #13 then
+  if ((key = #13) and (txtVibrancy.Text <> EditBoxValue)) then
   begin
     key := #0;
     try
@@ -493,6 +541,7 @@ begin
       if v < scrollVibrancy.Min then v := scrollVibrancy.Min;
       ScrollVibrancy.Position := v;
       UpdateFlame;
+      EditBoxValue := txtVibrancy.Text;
     except on EConvertError do
     end;
   end;
@@ -502,6 +551,7 @@ procedure TAdjustForm.txtVibrancyExit(Sender: TObject);
 var
   v: integer;
 begin
+  if (txtVibrancy.Text <> EditBoxValue) then
   try
     v := Trunc(StrToFloat(txtVibrancy.Text) * 100);
     if v > scrollVibrancy.Max then v := scrollVibrancy.Max;
