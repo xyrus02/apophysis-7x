@@ -1,5 +1,7 @@
 2.02h
 + Disable screen saver when rendering to disk
++ Automatic system shutdown after rendering completion
+B1116907 Values Editing events
 
 2.02g
 + Delphi2005 Project
