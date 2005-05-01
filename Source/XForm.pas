@@ -4,9 +4,9 @@ interface
 
 const
 {$IFDEF TESTVARIANT}
-  NVARS = 27;
+  NVARS = 28;
 {$ELSE}
-  NVARS = 26;
+  NVARS = 27;
 {$ENDIF}
 
   varnames: array[0..NVARS -1] of PChar = (
@@ -35,7 +35,8 @@ const
     'fan',
     'triblob',
     'daisy',
-    'checkers'
+    'checkers',
+    'crot'
 {$IFDEF TESTVARIANT}
     ,'test'
 {$ENDIF}
@@ -99,6 +100,8 @@ type
     procedure Triblob;             // var[23]
     procedure Daisy;               // var[24]
     procedure Checkers;            // var[25]
+    procedure CRot;                // var[26]
+
     procedure TestVar;             // var[NVARS - 1]
 
     function Mul33(const M1, M2: TMatrix): TMatrix;
@@ -302,6 +305,11 @@ begin
 
   if (vars[25] <> 0.0) then begin
     FFunctionList[FNrFunctions] := Checkers;
+    Inc(FNrFunctions);
+  end;
+
+  if (vars[26] <> 0.0) then begin
+    FFunctionList[FNrFunctions] := CRot;
     Inc(FNrFunctions);
   end;
 
@@ -661,6 +669,29 @@ begin
 end;
 
 ///////////////////////////////////////////////////////////////////////////////
+procedure TXForm.CRot;
+var
+  r : double;
+  dx, dy, dx2: double;
+  Angle: double;
+begin
+  r := sqrt(FTx * FTx + FTy * FTy);
+  if (FTx < -EPS) or (FTx > EPS) or (FTy < -EPS) or (FTy > EPS) then
+     Angle := arctan2(FTx, FTy)
+  else
+    Angle := 0.0;
+
+  if r < 3 then
+    Angle := Angle + (3 - r) * sin(3 * r);
+
+//   r:=  R - 0.04 * sin(6.2 * R - 1) - 0.008 * R;
+
+  FPx := FPx + vars[26] * r * cos(Angle);
+  FPy := FPy + vars[26] * r * sin(Angle);
+end;
+
+
+///////////////////////////////////////////////////////////////////////////////
 procedure TXForm.TestVar;
 var
   r : double;
@@ -673,7 +704,9 @@ begin
   else
     Angle := 0.0;
 
-   r:=  R - 0.04 * sin(6.2 * R - 1) - 0.008 * R;
+  Angle := Angle + Max(0, (3 - r)) * sin(2 * r);
+
+//   r:=  R - 0.04 * sin(6.2 * R - 1) - 0.008 * R;
 
   FPx := FPx + vars[NVars - 1] * r * cos(Angle);
   FPy := FPy + vars[NVars - 1] * r * sin(Angle);
