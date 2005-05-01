@@ -52,6 +52,7 @@ type
     procedure SetCP(CP: TControlPoint);
     function GetImage: TBitmap;
     procedure Execute; override;
+    function GetRenderer: TBaseRenderer;
 
     procedure Terminate;
 
@@ -179,6 +180,12 @@ begin
   FMaxMem := Value;
 end;
 
-///////////////////////////////////////////////////////////////////////////////
-end.
+//////////////////////////////////////////////////////////////////////////////
+function TRenderThread.GetRenderer: TBaseRenderer;
+begin
+  Result := FRenderer;
+  FRenderer := nil;
+end;
 
+///////////////////////////////////////////////////////////////////////////////end.
+end.

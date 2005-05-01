@@ -461,6 +461,8 @@ begin
     end;
   end;
 
+  bm.PixelFormat := pf32bit;
+
   ls := 0;
   ai := 0;
   bucketpos := 0;

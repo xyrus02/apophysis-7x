@@ -68,8 +68,8 @@ type
     ColorMap: TColorMapArray;
 
     bg: array[0..2] of extended;
-    vib_gam_n: Integer;
-    vibrancy: double;
+//    vib_gam_n: Integer;
+//    vibrancy: double;
     gamma: double;
 
     bounds: array[0..3] of extended;
@@ -101,6 +101,7 @@ type
 
     procedure Render; override;
 
+    procedure UpdateImage(CP: TControlPoint); override;
   end;
 
 implementation
@@ -234,8 +235,10 @@ end;
 
 ///////////////////////////////////////////////////////////////////////////////
 procedure TRenderer64.InitBuffers;
+const
+  MaxFilterWidth = 25;
 begin
-  gutter_width := (filter_width - oversample) div 2;
+  gutter_width := (MaxFilterWidth - oversample) div 2;
   BucketHeight := oversample * image_height + 2 * gutter_width;
   Bucketwidth := oversample * image_width + 2 * gutter_width;
   BucketSize := BucketWidth * BucketHeight;
@@ -258,9 +261,9 @@ begin
 
   CreateColorMap;
 
-  vibrancy := 0;
+//  vibrancy := 0;
   gamma := 0;
-  vib_gam_n := 0;
+//  vib_gam_n := 0;
   bg[0] := 0;
   bg[1] := 0;
   bg[2] := 0;
@@ -473,7 +476,7 @@ begin
   for i := 1 to 1024 do begin
     lsa[i] := (k1 * log10(1 + fcp.White_level * i * k2)) / (fcp.White_level * i);
   end;
-
+(*
   if filter_width > 1 then begin
     for i := 0 to BucketWidth * BucketHeight - 1 do begin
       if Buckets[i].count = 0 then
@@ -487,6 +490,8 @@ begin
       Buckets[i].Count := Round(Buckets[i].Count * ls);
     end;
   end;
+*)
+  bm.PixelFormat := pf32bit;
 
   ls := 0;
   ai := 0;
@@ -510,10 +515,12 @@ begin
             filterValue := filter[ii, jj];
             filterpos := bucketpos + ii * BucketWidth + jj;
 
-            fp[0] := fp[0] + filterValue * Buckets[filterpos].Red;
-            fp[1] := fp[1] + filterValue * Buckets[filterpos].Green;
-            fp[2] := fp[2] + filterValue * Buckets[filterpos].Blue;
-            fp[3] := fp[3] + filterValue * Buckets[filterpos].Count;
+            ls := lsa[Min(1023, Buckets[filterpos].Count)];
+
+            fp[0] := fp[0] + filterValue * ls * Buckets[filterpos].Red;
+            fp[1] := fp[1] + filterValue * ls * Buckets[filterpos].Green;
+            fp[2] := fp[2] + filterValue * ls * Buckets[filterpos].Blue;
+            fp[3] := fp[3] + filterValue * ls * Buckets[filterpos].Count;
           end;
         end;
 
@@ -620,6 +627,17 @@ begin
   InitBitmap;
   ClearBuffers;
   SetPixels;
+  CreateBMFromBuckets;
+end;
+
+///////////////////////////////////////////////////////////////////////////////
+procedure TRenderer64.UpdateImage(CP: TControlPoint);
+begin
+  FCP.background := cp.background;
+  FCP.spatial_filter_radius := cp.spatial_filter_radius;
+
+  CreateFilter;
+
   CreateBMFromBuckets;
 end;
 

@@ -69,6 +69,7 @@ type
     procedure SetCP(CP: TControlPoint);
     function  GetImage: TBitmap; virtual; abstract;
     procedure Render; virtual; abstract;
+    procedure UpdateImage(CP: TControlPoint); virtual;
     procedure Stop;
 
     property OnProgress: TOnProgress
@@ -109,6 +110,7 @@ type
     function GetImage: TBitmap;
     procedure Render;
     procedure RenderMaxMem(MaxMem: Int64);
+    procedure UpdateImage(CP: TControlPoint);
 
     procedure Stop;
 
@@ -249,6 +251,12 @@ begin
 end;
 
 ///////////////////////////////////////////////////////////////////////////////
+procedure TBaseRenderer.UpdateImage(CP: TControlPoint);
+begin
+
+end;
+
+///////////////////////////////////////////////////////////////////////////////
 procedure TBaseRenderer.Stop;
 begin
   FStop := True;
@@ -287,6 +295,12 @@ procedure TRenderer.RenderMaxMem(MaxMem: Int64);
 begin
   FMaxMem := MaxMem;
   Render;
+end;
+
+///////////////////////////////////////////////////////////////////////////////
+procedure TRenderer.UpdateImage(CP: TControlPoint);
+begin
+
 end;
 
 ///////////////////////////////////////////////////////////////////////////////
