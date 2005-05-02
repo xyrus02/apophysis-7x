@@ -3,6 +3,7 @@
 + Automatic system shutdown after rendering completion
 B1116907 Values Editing events
 + FR1183940 Added triangle rotation functions in the editors popup menu.
++ Added gradient drawing in a tooltip form in the gradient browser window.
 
 2.02g
 + Delphi2005 Project
