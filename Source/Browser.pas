@@ -26,6 +26,7 @@ uses
 
 const
   PixelCountMax = 32768;
+  PaletteTooltipTimeout = 1500;
 
 type
   TGradientBrowser = class(TForm)
@@ -43,6 +44,7 @@ type
     pnlControls: TPanel;
     OpenDialog: TOpenDialog;
     LargeImages: TImageList;
+    TooltipTimer: TTimer;
     procedure ListViewChange(Sender: TObject; Item: TListItem;
       Change: TItemChange);
     procedure FormCreate(Sender: TObject);
@@ -56,6 +58,9 @@ type
     procedure SpeedButton1Click(Sender: TObject);
     procedure ListViewKeyPress(Sender: TObject; var Key: Char);
     procedure FormClose(Sender: TObject; var Action: TCloseAction);
+    procedure ListViewInfoTip(Sender: TObject; Item: TListItem;
+      var InfoTip: String);
+    procedure TooltipTimerTimer(Sender: TObject);
   private
     procedure DrawPalette;
     procedure Apply;
@@ -503,6 +508,81 @@ begin
   finally
     Registry.Free;
   end;
+end;
+
+procedure TGradientBrowser.ListViewInfoTip(Sender: TObject;
+  Item: TListItem; var InfoTip: String);
+var
+  i, j: integer;
+  Row: pRGBTripleArray;
+  Bitmap: TBitmap;
+  pal: TColorMap;
+  EntryStrings, FStrings: TStringList;
+  rect: TRect;
+begin
+  BitMap := TBitMap.create;
+  Bitmap.PixelFormat := pf24bit;
+  BitMap.Width := 256;
+  BitMap.Height := 100;
+
+  FStrings := TStringList.Create;
+  EntryStrings := TStringList.Create;
+  try
+    if Lowercase(ExtractFileExt(filename)) = '.map' then
+    begin
+      pal := LoadFractintMap(filename);
+    end
+    else
+    begin
+      Identifier := Item.Caption;
+      FStrings.LoadFromFile(Filename);
+      for i := 0 to FStrings.count - 1 do
+        if Pos(Lowercase(Item.Caption) + ' ', Trim(Lowercase(FStrings[i]))) = 1 then break;
+      EntryStrings.Add(FStrings[i]);
+      repeat
+        inc(i);
+        EntryStrings.Add(FStrings[i]);
+      until Pos('}', FStrings[i]) <> 0;
+      pal := CreatePalette(EntryStrings.Text);
+    end;
+  finally
+    EntryStrings.Free;
+    FStrings.Free;
+  end;
+
+  for j := 0 to Bitmap.Height - 1 do
+  begin
+    Row := Bitmap.Scanline[j];
+    for i := 0 to Bitmap.Width - 1 do
+    begin
+      with Row[i] do
+      begin
+        rgbtRed := pal[i][0];
+        rgbtGreen := pal[i][1];
+        rgbtBlue := pal[i][2];
+      end
+    end
+  end;
+  rect.TopLeft := Item.Position;
+  rect.BottomRight.X := rect.TopLeft.X + 100;
+  rect.BottomRight.Y := rect.TopLeft.Y + 16;
+  with ListView do
+  begin
+    Canvas.Rectangle(Rect);
+    //Canvas.TextOut(Rect.Left, Rect.Top, Item.Caption);
+    //Rect.Left := (Rect.Left + rect.Right) div 3;
+    Canvas.StretchDraw(Rect, Bitmap);
+  end;
+  BitMap.Free;
+  InfoTip := '';
+  TooltipTimer.Interval := PaletteTooltipTimeout;
+  TooltipTimer.Enabled := true;
+end;
+
+procedure TGradientBrowser.TooltipTimerTimer(Sender: TObject);
+begin
+  ListView.Repaint;
+  TooltipTimer.Enabled := false;
 end;
 
 end.

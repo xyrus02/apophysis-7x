@@ -73,7 +73,9 @@ object GradientBrowser: TGradientBrowser
       LargeImages = LargeImages
       ReadOnly = True
       RowSelect = True
+      ParentShowHint = False
       PopupMenu = PopupMenu
+      ShowHint = True
       SmallImages = SmallImages
       SortType = stText
       TabOrder = 0
@@ -81,6 +83,7 @@ object GradientBrowser: TGradientBrowser
       OnChange = ListViewChange
       OnDblClick = SpeedButton1Click
       OnEdited = ListViewEdited
+      OnInfoTip = ListViewInfoTip
       OnKeyPress = ListViewKeyPress
     end
   end
@@ -874,5 +877,10 @@ object GradientBrowser: TGradientBrowser
       E000007F000000000000000000000000E00000FFFFFFFF00FFFFFF00FFFFFF00
       E00001FF10022F031F022F0320FFFF0000000000000000000000000000000000
       000000000000}
+  end
+  object TooltipTimer: TTimer
+    OnTimer = TooltipTimerTimer
+    Left = 8
+    Top = 52
   end
 end
