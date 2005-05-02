@@ -1,6 +1,6 @@
 object EditForm: TEditForm
-  Left = 516
-  Top = 218
+  Left = 392
+  Top = 208
   Width = 582
   Height = 471
   Caption = 'Editor'
@@ -52,7 +52,7 @@ object EditForm: TEditForm
     Left = 0
     Top = 0
     Width = 394
-    Height = 422
+    Height = 429
     Align = alClient
     BevelOuter = bvLowered
     Color = clBlack
@@ -61,7 +61,7 @@ object EditForm: TEditForm
       Left = 1
       Top = 1
       Width = 392
-      Height = 420
+      Height = 427
       Align = alClient
       PopupMenu = EditPopup
       OnDblClick = GraphImageDblClick
@@ -72,7 +72,7 @@ object EditForm: TEditForm
   end
   object StatusBar: TStatusBar
     Left = 0
-    Top = 422
+    Top = 429
     Width = 574
     Height = 15
     Panels = <
@@ -90,14 +90,14 @@ object EditForm: TEditForm
     Left = 394
     Top = 0
     Width = 180
-    Height = 422
+    Height = 429
     Align = alRight
     Alignment = taLeftJustify
     BevelOuter = bvNone
     TabOrder = 2
     DesignSize = (
       180
-      422)
+      429)
     object lblTransform: TLabel
       Left = 10
       Top = 128
@@ -136,7 +136,7 @@ object EditForm: TEditForm
       Width = 57
       Height = 21
       Style = csDropDownList
-      ItemHeight = 0
+      ItemHeight = 13
       TabOrder = 1
       OnChange = cbTransformsChange
     end
@@ -565,6 +565,17 @@ object EditForm: TEditForm
       OnClick = mnuAddClick
     end
     object N4: TMenuItem
+      Caption = '-'
+    end
+    object mnuRotateRight: TMenuItem
+      Caption = 'Rotate Right'
+      OnClick = mnuRotateRightClick
+    end
+    object mnuRotateLeft: TMenuItem
+      Caption = 'Rotate Left'
+      OnClick = mnuRotateLeftClick
+    end
+    object N2: TMenuItem
       Caption = '-'
     end
     object mnuFlipVertical: TMenuItem

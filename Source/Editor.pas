@@ -109,6 +109,9 @@ type
     chkUseXFormColor: TCheckBox;
     chkFlameBack: TCheckBox;
     pnlReference: TPanel;
+    N2: TMenuItem;
+    mnuRotateRight: TMenuItem;
+    mnuRotateLeft: TMenuItem;
     procedure FormCreate(Sender: TObject);
     procedure GraphImageMouseMove(Sender: TObject; Shift: TShiftState; X,
       Y: integer);
@@ -162,6 +165,8 @@ type
     procedure VEVarsExit(Sender: TObject);
     procedure VEVarsValidate(Sender: TObject; ACol, ARow: Integer;
       const KeyName, KeyValue: String);
+    procedure mnuRotateRightClick(Sender: TObject);
+    procedure mnuRotateLeftClick(Sender: TObject);
   private
     bm: TBitmap;
     cmap: TColorMap;
@@ -1007,6 +1012,20 @@ begin
     UpdateFlame(true);
   end;
   HasChanged := False;
+end;
+
+procedure TEditForm.mnuRotateRightClick(Sender: TObject);
+begin
+  MainTriangles[SelectedTriangle] := RotateTriangleCenter(MainTriangles[SelectedTriangle], -(PI / 20));
+  HasChanged := True;
+  UpdateFlame(False);
+end;
+
+procedure TEditForm.mnuRotateLeftClick(Sender: TObject);
+begin
+  MainTriangles[SelectedTriangle] := RotateTriangleCenter(MainTriangles[SelectedTriangle], PI / 20);
+  HasChanged := True;
+  UpdateFlame(False);
 end;
 
 procedure TEditForm.FormShow(Sender: TObject);
