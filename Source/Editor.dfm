@@ -145,130 +145,361 @@ object EditForm: TEditForm
       Top = 148
       Width = 167
       Height = 277
-      ActivePage = TabSheet2
+      ActivePage = TabSheet1
       Anchors = [akLeft, akTop, akRight, akBottom]
       MultiLine = True
       TabOrder = 2
       TabStop = False
       object TabSheet1: TTabSheet
         Caption = 'Triangle'
-        object Label7: TLabel
-          Left = 9
-          Top = 12
-          Width = 17
-          Height = 13
-          Caption = 'Ax:'
-        end
-        object Label8: TLabel
-          Left = 9
-          Top = 36
-          Width = 17
-          Height = 13
-          Caption = 'Ay:'
-        end
-        object Label9: TLabel
-          Left = 9
-          Top = 60
-          Width = 16
-          Height = 13
-          Caption = 'Bx:'
-        end
-        object Label10: TLabel
-          Left = 9
-          Top = 84
-          Width = 16
-          Height = 13
-          Caption = 'By:'
-        end
-        object Label11: TLabel
-          Left = 9
-          Top = 108
-          Width = 17
-          Height = 13
-          Caption = 'Cx:'
-        end
-        object Label12: TLabel
-          Left = 9
-          Top = 132
-          Width = 17
-          Height = 13
-          Caption = 'Cy:'
-        end
-        object txtAx: TEdit
-          Left = 32
-          Top = 8
-          Width = 110
-          Height = 21
-          AutoSelect = False
+        object TriangleScrollBox: TScrollBox
+          Left = 0
+          Top = 0
+          Width = 159
+          Height = 231
+          HorzScrollBar.Visible = False
+          VertScrollBar.Smooth = True
+          VertScrollBar.Style = ssFlat
+          VertScrollBar.Tracking = True
+          Align = alClient
+          BevelInner = bvNone
+          BevelOuter = bvNone
+          BorderStyle = bsNone
           TabOrder = 0
-          Text = '0'
-          OnExit = CornerEditExit
-          OnKeyPress = CornerEditKeyPress
-        end
-        object txtAy: TEdit
-          Left = 32
-          Top = 32
-          Width = 110
-          Height = 21
-          AutoSelect = False
-          TabOrder = 1
-          Text = '0'
-          OnExit = CornerEditExit
-          OnKeyPress = CornerEditKeyPress
-        end
-        object txtBx: TEdit
-          Left = 32
-          Top = 56
-          Width = 110
-          Height = 21
-          AutoSelect = False
-          TabOrder = 2
-          Text = '0'
-          OnExit = CornerEditExit
-          OnKeyPress = CornerEditKeyPress
-        end
-        object txtBy: TEdit
-          Left = 32
-          Top = 80
-          Width = 110
-          Height = 21
-          AutoSelect = False
-          TabOrder = 3
-          Text = '0'
-          OnExit = CornerEditExit
-          OnKeyPress = CornerEditKeyPress
-        end
-        object txtCx: TEdit
-          Left = 32
-          Top = 104
-          Width = 110
-          Height = 21
-          AutoSelect = False
-          TabOrder = 4
-          Text = '0'
-          OnExit = CornerEditExit
-          OnKeyPress = CornerEditKeyPress
-        end
-        object txtCy: TEdit
-          Left = 32
-          Top = 128
-          Width = 110
-          Height = 21
-          AutoSelect = False
-          TabOrder = 5
-          Text = '0'
-          OnExit = CornerEditExit
-          OnKeyPress = CornerEditKeyPress
-        end
-        object chkPreserve: TCheckBox
-          Left = 8
-          Top = 168
-          Width = 129
-          Height = 17
-          Caption = 'Preserve weights'
-          Checked = True
-          State = cbChecked
-          TabOrder = 6
+          object TrianglePanel: TPanel
+            Left = 0
+            Top = 0
+            Width = 155
+            Height = 302
+            BevelOuter = bvNone
+            TabOrder = 0
+            object Label9: TLabel
+              Left = 6
+              Top = 54
+              Width = 16
+              Height = 13
+              Caption = 'Bx:'
+            end
+            object Label8: TLabel
+              Left = 6
+              Top = 30
+              Width = 17
+              Height = 13
+              Caption = 'Ay:'
+            end
+            object Label7: TLabel
+              Left = 6
+              Top = 6
+              Width = 17
+              Height = 13
+              Caption = 'Ax:'
+            end
+            object Label12: TLabel
+              Left = 6
+              Top = 126
+              Width = 17
+              Height = 13
+              Caption = 'Cy:'
+            end
+            object Label11: TLabel
+              Left = 6
+              Top = 102
+              Width = 17
+              Height = 13
+              Caption = 'Cx:'
+            end
+            object Label10: TLabel
+              Left = 6
+              Top = 78
+              Width = 16
+              Height = 13
+              Caption = 'By:'
+            end
+            object btTrgRotateRight: TSpeedButton
+              Left = 90
+              Top = 184
+              Width = 33
+              Height = 24
+              Flat = True
+              Glyph.Data = {
+                F6000000424DF600000000000000760000002800000010000000100000000100
+                04000000000080000000130B0000130B00001000000000000000000000000000
+                8000008000000080800080000000800080008080000080808000C0C0C0000000
+                FF0000FF000000FFFF00FF000000FF00FF00FFFF0000FFFFFF00FFFFFFFFFFFF
+                FFFF77FFFFFFFFFFFFFF70FFFFFFFFFFFFFF708FFFFFFFFFFFFF707FFFFFFFFF
+                FFFF7007FFFFFFFFFFFFF0007FFFFF7FFFFFF7000788FF70FFFFF80000077770
+                0FFFFF770000000000FFFFF770000000000FFFFF777000000078FFFFF8777770
+                078FFFFFFFFF870078FFFFFFFFFFFF778FFFFFFFFFFFFF78FFFF}
+              OnClick = btTrgRotateRightClick
+            end
+            object btTrgRotateLeft: TSpeedButton
+              Left = 22
+              Top = 184
+              Width = 33
+              Height = 24
+              Flat = True
+              Glyph.Data = {
+                36030000424D3603000000000000360000002800000010000000100000000100
+                18000000000000030000130B0000130B00000000000000000000FFFFFFFFFFFF
+                FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF
+                FFFFFFFFFFFFFFC0C0C0FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF
+                FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF808080808080FFFFFFFFFFFF
+                FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF
+                FFFFFFFF000000404040FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF
+                FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFC0C0C0000000404040FFFFFFFFFFFF
+                FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF
+                FF404040000000404040FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFE0E0E0FFFFFFFF
+                FFFFFFFFFFFFFFFFFFFFFFFFFFFF808080000000000000808080FFFFFFFFFFFF
+                FFFFFFFFFFFFE0E0E0606060FFFFFFFFFFFFFFFFFFFFFFFFE0E0E08080800000
+                00000000000000E0E0E0FFFFFFFFFFFFFFFFFFE0E0E0202020404040FFFFFFE0
+                E0E0C0C0C0A0A0A0404040000000000000000000404040FFFFFFFFFFFFFFFFFF
+                E0E0E02020200000004040408080804040404040400000000000000000000000
+                00000000C0C0C0FFFFFFFFFFFFE0E0E020202000000000000000000000000000
+                0000000000000000000000000000404040404040FFFFFFFFFFFFFFFFFF202020
+                0000000000000000000000000000000000000000000000000000004040408080
+                80FFFFFFFFFFFFFFFFFFC0C0C080808000000000000000000000000000000000
+                0000000000404040808080808080FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFC0C0C0
+                808080000000000000404040808080808080808080808080C0C0C0FFFFFFFFFF
+                FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFC0C0C0808080000000202020808080C0
+                C0C0FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF
+                FFFFFFC0C0C0808080404040FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF
+                FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFC0C0C0808080FFFFFFFF
+                FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF}
+              OnClick = btTrgRotateLeftClick
+            end
+            object btTrgMoveUp: TSpeedButton
+              Left = 56
+              Top = 226
+              Width = 33
+              Height = 24
+              Flat = True
+              Glyph.Data = {
+                36030000424D3603000000000000360000002800000010000000100000000100
+                18000000000000030000130B0000130B00000000000000000000FFFFFFFFFFFF
+                FFFFFFFFFFFFFFFFFFFFFFFFFFFFFF404040000000C0C0C0FFFFFFFFFFFFFFFF
+                FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF00
+                0000000000808080FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF
+                FFFFFFFFFFFFFFFFFFFFFFFFFFFFFF000000000000808080FFFFFFFFFFFFFFFF
+                FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF00
+                0000000000808080FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF
+                FFFFFFFFFFFFFFFFFFFFFFFFFFFFFF000000000000808080FFFFFFFFFFFFFFFF
+                FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF00
+                0000000000808080FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF
+                FFFFFF808080C0C0C0FFFFFFFFFFFF000000000000808080FFFFFFFFFFFF4040
+                40FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF000000404040C0C0C000
+                0000000000808080808080000000808080FFFFFFFFFFFFFFFFFFFFFFFFFFFFFF
+                FFFFFFFFFFFF808080000000000000000000000000000000000000000000FFFF
+                FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF00000000000000
+                0000000000000000000000808080FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF
+                FFFFFFFFFFFFFFFFFF808080000000000000000000000000000000FFFFFFFFFF
+                FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF00000000
+                0000000000000000808080FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF
+                FFFFFFFFFFFFFFFFFFFFFFFF808080000000000000000000FFFFFFFFFFFFFFFF
+                FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF00
+                0000000000808080FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF
+                FFFFFFFFFFFFFFFFFFFFFFFFFFFFFF808080000000FFFFFFFFFFFFFFFFFFFFFF
+                FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF
+                FFFF808080FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF}
+              OnClick = btTrgMoveUpClick
+            end
+            object btTrgMoveRight: TSpeedButton
+              Left = 90
+              Top = 250
+              Width = 33
+              Height = 24
+              Flat = True
+              Glyph.Data = {
+                36030000424D3603000000000000360000002800000010000000100000000100
+                18000000000000030000130B0000130B00000000000000000000FFFFFFFFFFFF
+                FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF
+                FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF
+                FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF
+                FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF
+                FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF40404080
+                8080FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF
+                FFFFFFFFFFFFFFFFFFFFFFFFFFFFFF000000000000808080FFFFFFFFFFFFFFFF
+                FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF80
+                8080000000000000000000808080FFFFFFFFFFFFFFFFFFFFFFFFC0C0C0808080
+                8080808080808080808080808080808080800000000000000000000000000000
+                00808080FFFFFFFFFFFF00000000000000000000000000000000000000000000
+                0000000000000000000000000000000000000000000000808080404040000000
+                0000000000000000000000000000000000000000000000000000000000000000
+                00000000808080FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFC0
+                C0C0000000000000000000000000808080FFFFFFFFFFFFFFFFFFFFFFFFFFFFFF
+                FFFFFFFFFFFFFFFFFFFFFFFFFFFFFF404040000000000000808080FFFFFFFFFF
+                FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFC0C0C000
+                0000808080FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF
+                FFFFFFFFFFFFFFFFFFFFFFFF808080FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF
+                FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF
+                FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF
+                FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF
+                FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF
+                FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF}
+              OnClick = btTrgMoveRightClick
+            end
+            object btTrgMoveLeft: TSpeedButton
+              Left = 22
+              Top = 250
+              Width = 33
+              Height = 24
+              Flat = True
+              Glyph.Data = {
+                36030000424D3603000000000000360000002800000010000000100000000100
+                18000000000000030000130B0000130B00000000000000000000FFFFFFFFFFFF
+                FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF
+                FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF
+                FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF
+                FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF
+                FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF
+                FFFF808080404040FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF
+                FFFFFFFFFFFFFFFFFFFFFFFF808080000000000000FFFFFFFFFFFFFFFFFFFFFF
+                FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF80808000000000000000
+                0000808080FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF
+                8080800000000000000000000000000000008080808080808080808080808080
+                80808080808080C0C0C080808000000000000000000000000000000000000000
+                0000000000000000000000000000000000000000000000000000FFFFFF808080
+                0000000000000000000000000000000000000000000000000000000000000000
+                00000000000000404040FFFFFFFFFFFFFFFFFF80808000000000000000000000
+                0000C0C0C0FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF
+                FFFFFFFFFFFFFFFFFF808080000000000000404040FFFFFFFFFFFFFFFFFFFFFF
+                FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF80
+                8080000000C0C0C0FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF
+                FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF808080FFFFFFFFFFFFFFFF
+                FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF
+                FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF
+                FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF
+                FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF
+                FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF}
+              OnClick = btTrgMoveLeftClick
+            end
+            object btTrgMoveDown: TSpeedButton
+              Left = 56
+              Top = 274
+              Width = 33
+              Height = 24
+              Flat = True
+              Glyph.Data = {
+                36030000424D3603000000000000360000002800000010000000100000000100
+                18000000000000030000130B0000130B00000000000000000000FFFFFFFFFFFF
+                FFFFFFFFFFFFFFFFFFFFFFFFFFFFFF808080FFFFFFFFFFFFFFFFFFFFFFFFFFFF
+                FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF00
+                0000808080FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF
+                FFFFFFFFFFFFFFFFFFFFFFFF808080000000000000FFFFFFFFFFFFFFFFFFFFFF
+                FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF00000000
+                0000000000808080FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF
+                FFFFFFFFFFFFFFFFFF808080000000000000000000000000FFFFFFFFFFFFFFFF
+                FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF00000000000000
+                0000000000000000808080FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF
+                FFFFFFFFFFFF808080000000000000000000000000000000000000FFFFFFFFFF
+                FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF00000000000000000000
+                0000000000000000000000808080FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF
+                FFFFFF808080000000808080808080000000000000C0C0C0404040000000FFFF
+                FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF404040FFFFFFFFFFFF80808000
+                0000000000FFFFFFFFFFFFC0C0C0808080FFFFFFFFFFFFFFFFFFFFFFFFFFFFFF
+                FFFFFFFFFFFFFFFFFFFFFFFF808080000000000000FFFFFFFFFFFFFFFFFFFFFF
+                FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF80808000
+                0000000000FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF
+                FFFFFFFFFFFFFFFFFFFFFFFF808080000000000000FFFFFFFFFFFFFFFFFFFFFF
+                FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF80808000
+                0000000000FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF
+                FFFFFFFFFFFFFFFFFFFFFFFF808080000000000000FFFFFFFFFFFFFFFFFFFFFF
+                FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFC0C0C000
+                0000404040FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF}
+              OnClick = btTrgMoveDownClick
+            end
+            object txtTrgRotateValue: TEdit
+              Left = 56
+              Top = 184
+              Width = 33
+              Height = 24
+              TabOrder = 7
+              Text = '5'
+            end
+            object txtTrgMoveValue: TEdit
+              Left = 56
+              Top = 250
+              Width = 33
+              Height = 24
+              TabOrder = 8
+              Text = '0.05'
+            end
+            object txtCy: TEdit
+              Left = 28
+              Top = 122
+              Width = 110
+              Height = 21
+              AutoSelect = False
+              TabOrder = 5
+              Text = '0'
+              OnExit = CornerEditExit
+              OnKeyPress = CornerEditKeyPress
+            end
+            object txtCx: TEdit
+              Left = 28
+              Top = 98
+              Width = 110
+              Height = 21
+              AutoSelect = False
+              TabOrder = 4
+              Text = '0'
+              OnExit = CornerEditExit
+              OnKeyPress = CornerEditKeyPress
+            end
+            object txtBy: TEdit
+              Left = 28
+              Top = 74
+              Width = 110
+              Height = 21
+              AutoSelect = False
+              TabOrder = 3
+              Text = '0'
+              OnExit = CornerEditExit
+              OnKeyPress = CornerEditKeyPress
+            end
+            object txtBx: TEdit
+              Left = 28
+              Top = 50
+              Width = 110
+              Height = 21
+              AutoSelect = False
+              TabOrder = 2
+              Text = '0'
+              OnExit = CornerEditExit
+              OnKeyPress = CornerEditKeyPress
+            end
+            object txtAy: TEdit
+              Left = 28
+              Top = 26
+              Width = 110
+              Height = 21
+              AutoSelect = False
+              TabOrder = 1
+              Text = '0'
+              OnExit = CornerEditExit
+              OnKeyPress = CornerEditKeyPress
+            end
+            object txtAx: TEdit
+              Left = 28
+              Top = 2
+              Width = 110
+              Height = 21
+              AutoSelect = False
+              TabOrder = 0
+              Text = '0'
+              OnExit = CornerEditExit
+              OnKeyPress = CornerEditKeyPress
+            end
+            object chkPreserve: TCheckBox
+              Left = 28
+              Top = 152
+              Width = 105
+              Height = 17
+              Caption = 'Preserve weights'
+              Checked = True
+              State = cbChecked
+              TabOrder = 6
+            end
+          end
         end
       end
       object XForm: TTabSheet
@@ -574,6 +805,14 @@ object EditForm: TEditForm
     object mnuRotateLeft: TMenuItem
       Caption = 'Rotate Left'
       OnClick = mnuRotateLeftClick
+    end
+    object mnuScaleUp: TMenuItem
+      Caption = 'Scale Up'
+      OnClick = mnuScaleUpClick
+    end
+    object mnuScaleDown: TMenuItem
+      Caption = 'Scale Down'
+      OnClick = mnuScaleDownClick
     end
     object N2: TMenuItem
       Caption = '-'

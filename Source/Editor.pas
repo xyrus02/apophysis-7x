@@ -23,7 +23,7 @@ interface
 uses
   Windows, Messages, SysUtils, Classes, Graphics, Controls, Forms, Dialogs,
   ExtCtrls, StdCtrls, ComCtrls, Math, Menus, ToolWin, Registry, MyTypes,
-  ControlPoint, Render, cmap, Grids, ValEdit;
+  ControlPoint, Render, cmap, Grids, ValEdit, Buttons;
 
 const
 //  PixelCountMax = 32768;
@@ -65,19 +65,6 @@ type
     N6: TMenuItem;
     PageControl: TPageControl;
     TabSheet1: TTabSheet;
-    Label7: TLabel;
-    Label8: TLabel;
-    Label9: TLabel;
-    Label10: TLabel;
-    Label11: TLabel;
-    Label12: TLabel;
-    txtAx: TEdit;
-    txtAy: TEdit;
-    txtBx: TEdit;
-    txtBy: TEdit;
-    txtCx: TEdit;
-    txtCy: TEdit;
-    chkPreserve: TCheckBox;
     XForm: TTabSheet;
     lbla: TLabel;
     Label1: TLabel;
@@ -112,6 +99,31 @@ type
     N2: TMenuItem;
     mnuRotateRight: TMenuItem;
     mnuRotateLeft: TMenuItem;
+    mnuScaleUp: TMenuItem;
+    mnuScaleDown: TMenuItem;
+    TriangleScrollBox: TScrollBox;
+    TrianglePanel: TPanel;
+    txtTrgRotateValue: TEdit;
+    txtTrgMoveValue: TEdit;
+    txtCy: TEdit;
+    txtCx: TEdit;
+    txtBy: TEdit;
+    txtBx: TEdit;
+    txtAy: TEdit;
+    txtAx: TEdit;
+    Label9: TLabel;
+    Label8: TLabel;
+    Label7: TLabel;
+    Label12: TLabel;
+    Label11: TLabel;
+    Label10: TLabel;
+    chkPreserve: TCheckBox;
+    btTrgRotateRight: TSpeedButton;
+    btTrgRotateLeft: TSpeedButton;
+    btTrgMoveUp: TSpeedButton;
+    btTrgMoveRight: TSpeedButton;
+    btTrgMoveLeft: TSpeedButton;
+    btTrgMoveDown: TSpeedButton;
     procedure FormCreate(Sender: TObject);
     procedure GraphImageMouseMove(Sender: TObject; Shift: TShiftState; X,
       Y: integer);
@@ -167,6 +179,14 @@ type
       const KeyName, KeyValue: String);
     procedure mnuRotateRightClick(Sender: TObject);
     procedure mnuRotateLeftClick(Sender: TObject);
+    procedure mnuScaleUpClick(Sender: TObject);
+    procedure mnuScaleDownClick(Sender: TObject);
+    procedure btTrgRotateLeftClick(Sender: TObject);
+    procedure btTrgRotateRightClick(Sender: TObject);
+    procedure btTrgMoveLeftClick(Sender: TObject);
+    procedure btTrgMoveRightClick(Sender: TObject);
+    procedure btTrgMoveUpClick(Sender: TObject);
+    procedure btTrgMoveDownClick(Sender: TObject);
   private
     bm: TBitmap;
     cmap: TColorMap;
@@ -1018,14 +1038,28 @@ procedure TEditForm.mnuRotateRightClick(Sender: TObject);
 begin
   MainTriangles[SelectedTriangle] := RotateTriangleCenter(MainTriangles[SelectedTriangle], -(PI / 20));
   HasChanged := True;
-  UpdateFlame(False);
+  UpdateFlame(true);
 end;
 
 procedure TEditForm.mnuRotateLeftClick(Sender: TObject);
 begin
   MainTriangles[SelectedTriangle] := RotateTriangleCenter(MainTriangles[SelectedTriangle], PI / 20);
   HasChanged := True;
-  UpdateFlame(False);
+  UpdateFlame(true);
+end;
+
+procedure TEditForm.mnuScaleUpClick(Sender: TObject);
+begin
+  MainTriangles[SelectedTriangle] := ScaleTriangleCenter(MainTriangles[SelectedTriangle], 1.1);
+  HasChanged := True;
+  UpdateFlame(true);
+end;
+
+procedure TEditForm.mnuScaleDownClick(Sender: TObject);
+begin
+  MainTriangles[SelectedTriangle] := ScaleTriangleCenter(MainTriangles[SelectedTriangle], 0.9);
+  HasChanged := True;
+  UpdateFlame(true);
 end;
 
 procedure TEditForm.FormShow(Sender: TObject);
@@ -1912,6 +1946,127 @@ begin
     VEVars.Values[VarNames[i]] := Format('%.6g', [cp.xform[SelectedTriangle].vars[i]]);
     ShowSelectedInfo;
     UpdateFlame(True);
+  end;
+end;
+
+{ **************************************************************************** }
+
+procedure TEditForm.btTrgRotateLeftClick(Sender: TObject);
+var
+  offset: double;
+begin
+  try
+    offset := StrToFloat(txtTrgRotateValue.Text);
+  except
+    offset := 0;
+    txtTrgRotateValue.Text := '0';
+  end;
+  if offset <> 0 then
+  begin
+    MainTriangles[SelectedTriangle] := RotateTriangleCenter(MainTriangles[SelectedTriangle], (PI/180) * offset);    HasChanged := True;
+    UpdateFlame(true);
+  end;
+end;
+
+procedure TEditForm.btTrgRotateRightClick(Sender: TObject);
+var
+  offset: double;
+begin
+  try
+    offset := StrToFloat(txtTrgRotateValue.Text);
+  except
+    offset := 0;
+    txtTrgRotateValue.Text := '0';
+  end;
+  if offset <> 0 then
+  begin
+    MainTriangles[SelectedTriangle] := RotateTriangleCenter(MainTriangles[SelectedTriangle], -((PI/180) * offset));
+    HasChanged := True;
+    UpdateFlame(true);
+  end;
+end;
+
+procedure TEditForm.btTrgMoveLeftClick(Sender: TObject);
+var
+  i: integer;
+  offset: double;
+begin
+  try
+    offset := StrToFloat(txtTrgMoveValue.Text);
+  except
+    offset := 0;
+    txtTrgMoveValue.Text := '0';
+  end;
+  if offset <> 0 then
+  begin
+    for i := 0 to 2 do
+      MainTriangles[SelectedTriangle].x[i] :=
+                    MainTriangles[SelectedTriangle].x[i] - offset;
+    HasChanged := True;
+    UpdateFlame(true);
+  end;
+end;
+
+procedure TEditForm.btTrgMoveRightClick(Sender: TObject);
+var
+  i: integer;
+  offset: double;
+begin
+  try
+    offset := StrToFloat(txtTrgMoveValue.Text);
+  except
+    offset := 0;
+    txtTrgMoveValue.Text := '0';
+  end;
+  if offset <> 0 then
+  begin
+    for i := 0 to 2 do
+      MainTriangles[SelectedTriangle].x[i] :=
+                    MainTriangles[SelectedTriangle].x[i] + offset;
+    HasChanged := True;
+    UpdateFlame(true);
+  end;
+end;
+
+procedure TEditForm.btTrgMoveUpClick(Sender: TObject);
+var
+  i: integer;
+  offset: double;
+begin
+  try
+    offset := StrToFloat(txtTrgMoveValue.Text);
+  except
+    offset := 0;
+    txtTrgMoveValue.Text := '0';
+  end;
+  if offset <> 0 then
+  begin
+    for i := 0 to 2 do
+      MainTriangles[SelectedTriangle].y[i] :=
+                    MainTriangles[SelectedTriangle].y[i] + offset;
+    HasChanged := True;
+    UpdateFlame(true);
+  end;
+end;
+
+procedure TEditForm.btTrgMoveDownClick(Sender: TObject);
+var
+  i: integer;
+  offset: double;
+begin
+  try
+    offset := StrToFloat(txtTrgMoveValue.Text);
+  except
+    offset := 0;
+    txtTrgMoveValue.Text := '0';
+  end;
+  if offset <> 0 then
+  begin
+    for i := 0 to 2 do
+      MainTriangles[SelectedTriangle].y[i] :=
+                    MainTriangles[SelectedTriangle].y[i] - offset;
+    HasChanged := True;
+    UpdateFlame(true);
   end;
 end;
 
