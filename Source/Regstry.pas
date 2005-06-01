@@ -26,7 +26,17 @@ procedure SaveSettings;
 
 implementation
 
-uses Windows, SysUtils, Forms, Registry, Global, Dialogs;
+uses Windows, SysUtils, Forms, Registry, Global, Dialogs, XForm;
+
+procedure UnpackVariations(v: integer);
+{ Unpacks the variation options form an integer }
+var
+  i: integer;
+begin
+  for i := 0 to NVARS - 1 do
+    Variations[i] := boolean(v shr i and 1);
+end;
+
 
 procedure ReadSettings;
 var
@@ -265,6 +275,8 @@ begin
       begin
         VariationOptions := 262143;
       end;
+      UnpackVariations(VariationOptions);
+
       if Registry.ValueExists('MinNodes') then
       begin
         MinNodes := Registry.ReadInteger('MinNodes');
@@ -504,6 +516,7 @@ begin
       SymmetryType := 0;
       SymmetryOrder := 4;
       VariationOptions := 262143;
+      UnpackVariations(VariationOptions);
       MinNodes := 2;
       MaxNodes := 10;
       MinHue := 0;
