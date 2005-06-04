@@ -67,6 +67,7 @@ type
     cbHeight: TComboBox;
     StatusBar: TStatusBar;
     chkShutdown: TCheckBox;
+    cbPostProcess: TCheckBox;
     procedure FormCreate(Sender: TObject);
     procedure FormDestroy(Sender: TObject);
     procedure btnRenderClick(Sender: TObject);
@@ -88,9 +89,10 @@ type
     procedure cmbPresetChange(Sender: TObject);
     procedure chkMaintainClick(Sender: TObject);
   private
-
     StartTime: TDateTime;
     Remainder: TDateTime;
+
+    procedure DoPostProcess;
 
     procedure HandleThreadCompletion(var Message: TMessage);
       message WM_THREAD_COMPLETE;
@@ -119,7 +121,7 @@ var
 
 implementation
 
-uses Main, Global, SavePreset, FileCtrl;
+uses Main, Global, SavePreset, FileCtrl, formPostProcess;
 
 {$R *.DFM}
 
@@ -134,6 +136,7 @@ begin
   txtOversample.Enabled := true;
   chkLimitMem.Enabled := true;
   cbMaxMemory.enabled := chkLimitMem.Checked;
+  cbPostProcess.Enabled := not chkLimitMem.Checked;
   btnRender.Enabled := true;
   cmbPreset.enabled := true;
   chkSave.enabled := true;
@@ -169,6 +172,10 @@ begin
     Assign(Renderer.GetImage);
     JPEGLoader.Default.Quality := JPEGQuality;
     SaveToFile(RenderForm.FileName);
+    if cbPostProcess.enabled and
+       cbPostProcess.checked then
+      DoPostProcess;
+
     Renderer.Free;
     Renderer := nil;
     ResetControls;
@@ -420,6 +427,7 @@ end;
 procedure TRenderForm.chkLimitMemClick(Sender: TObject);
 begin
   cbMaxMemory.enabled := chkLimitMem.Checked;
+  cbPostProcess.Enabled := not chkLimitMem.Checked;
 end;
 
 procedure TRenderForm.txtFilenameChange(Sender: TObject);
@@ -482,13 +490,10 @@ end;
 procedure TRenderForm.btnPauseClick(Sender: TObject);
 begin
   if Assigned(Renderer) then
-    if Renderer.Suspended = false then
-    begin
+    if Renderer.Suspended = false then begin
       renderer.suspend;
       btnPause.caption := 'Resume';
-    end
-    else
-    begin
+    end else begin
       renderer.resume;
       btnPause.caption := 'Pause';
     end;
@@ -669,6 +674,14 @@ end;
 procedure TRenderForm.chkMaintainClick(Sender: TObject);
 begin
   Ratio := ImageWidth / ImageHeight;
+end;
+
+procedure TRenderForm.DoPostProcess;
+begin
+  frmPostProcess.SetRenderer(Renderer.GetRenderer);
+  frmPostProcess.SetControlPoint(CP);
+  frmPostProcess.SetImageName(RenderForm.FileName);
+  frmPostProcess.Show;
 end;
 
 function TRenderForm.WindowsExit(RebootParam: Longword = EWX_POWEROFF or EWX_FORCE): Boolean;

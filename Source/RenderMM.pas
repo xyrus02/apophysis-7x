@@ -393,7 +393,10 @@ begin
       Exit;
 
     if (i and $F = 0) then
-      Progress(i / nrbatches);
+      if nrbatches > 0 then
+        Progress(i / nrbatches)
+      else
+        Progress(0);
 
     // generate points
     case Compatibility of

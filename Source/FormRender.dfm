@@ -4,7 +4,7 @@ object RenderForm: TRenderForm
   BorderIcons = [biSystemMenu, biMinimize]
   BorderStyle = bsSingle
   Caption = 'RenderForm'
-  ClientHeight = 405
+  ClientHeight = 424
   ClientWidth = 424
   Color = clBtnFace
   Font.Charset = DEFAULT_CHARSET
@@ -50,15 +50,16 @@ object RenderForm: TRenderForm
   PixelsPerInch = 96
   TextHeight = 13
   object ProgressBar: TProgressBar
-    Left = 8
-    Top = 330
-    Width = 409
+    Left = 0
+    Top = 392
+    Width = 424
     Height = 13
+    Align = alBottom
     TabOrder = 0
   end
   object btnRender: TButton
     Left = 256
-    Top = 352
+    Top = 364
     Width = 75
     Height = 23
     Caption = 'Render'
@@ -68,7 +69,7 @@ object RenderForm: TRenderForm
   end
   object btnCancel: TButton
     Left = 344
-    Top = 350
+    Top = 362
     Width = 75
     Height = 25
     Caption = 'Close'
@@ -337,7 +338,7 @@ object RenderForm: TRenderForm
   end
   object btnPause: TButton
     Left = 168
-    Top = 350
+    Top = 362
     Width = 75
     Height = 25
     Caption = 'Pause'
@@ -346,7 +347,7 @@ object RenderForm: TRenderForm
   end
   object chkSave: TCheckBox
     Left = 8
-    Top = 346
+    Top = 330
     Width = 113
     Height = 17
     Caption = 'Save parameters'
@@ -360,7 +361,7 @@ object RenderForm: TRenderForm
     Width = 408
     Height = 57
     Caption = 'Preset'
-    TabOrder = 9
+    TabOrder = 11
     object btnSavePreset: TSpeedButton
       Left = 344
       Top = 18
@@ -408,7 +409,7 @@ object RenderForm: TRenderForm
   end
   object StatusBar: TStatusBar
     Left = 0
-    Top = 386
+    Top = 405
     Width = 424
     Height = 19
     Panels = <
@@ -428,7 +429,15 @@ object RenderForm: TRenderForm
     Width = 137
     Height = 17
     Caption = 'Shutdown on complete'
-    TabOrder = 11
+    TabOrder = 10
+  end
+  object cbPostProcess: TCheckBox
+    Left = 8
+    Top = 348
+    Width = 97
+    Height = 17
+    Caption = 'Post render'
+    TabOrder = 9
   end
   object SaveDialog: TSaveDialog
     Left = 368

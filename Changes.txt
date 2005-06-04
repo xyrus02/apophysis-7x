@@ -1,11 +1,12 @@
 2.02h
 + Disable screen saver when rendering to disk
 + Automatic system shutdown after rendering completion
-B1116907 Values Editing events
++ B1116907 Values Editing events
 + FR1183940 Added triangle rotation functions in the editors popup menu.
 + Added gradient drawing in a tooltip form in the gradient browser window.
 + Editor window now has controls for precise moving and rotating triangles.
-Fixed a bug causing floating point errors on big unzooming and other editing tasks.
++ Fixed a bug causing floating point errors on big unzooming and other editing tasks.
++ Added form to modify the image after rendering.
 
 2.02g
 + Delphi2005 Project
