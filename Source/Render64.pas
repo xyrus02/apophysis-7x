@@ -404,8 +404,11 @@ begin
     if FStop then
       Exit;
 
-    if (i and $F = 0) then
-      Progress(i / nrbatches);
+    if ((i and $F) = 0) then
+      if nrbatches > 0 then
+        Progress(i / nrbatches)
+      else
+        Progress(0);
 
     // generate points
 {$IFDEF TESTVARIANT}
