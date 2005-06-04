@@ -23,7 +23,7 @@ program Apophysis202;
 
 uses
   Forms,
-  Dialogs, 
+  Dialogs,
   SysUtils,
   Main in '..\..\Source\Main.pas' {MainForm},
   Editor in '..\..\Source\Editor.pas' {EditForm},
@@ -50,19 +50,18 @@ uses
   ScriptForm in '..\..\Source\ScriptForm.pas' {ScriptEditor},
   Preview in '..\..\Source\Preview.pas' {PreviewForm},
   ScriptRender in '..\..\Source\ScriptRender.pas' {ScriptRenderForm},
-  ap_Math in '..\..\Source\ap_Math.pas',
-  ap_SysUtils in '..\..\Source\ap_SysUtils.pas',
   FormFavorites in '..\..\Source\FormFavorites.pas' {FavoritesForm},
   Size in '..\..\Source\Size.pas' {SizeTool},
   FormExport in '..\..\Source\FormExport.pas' {ExportDialog},
   MsMultiPartFormData in '..\..\Source\MsMultiPartFormData.pas',
   Sheep in '..\..\Source\Sheep.pas' {SheepDialog},
-  ap_FileCtrl in '..\..\Source\ap_FileCtrl.pas',
   XForm in '..\..\Source\XForm.pas',
   cmapdata in '..\..\Source\cmapdata.pas',
   RenderMM in '..\..\Source\RenderMM.pas',
   ImageColoring in '..\..\Source\ImageColoring.pas' {frmImageColoring},
-  GradientHlpr in '..\..\Source\GradientHlpr.pas';
+  GradientHlpr in '..\..\Source\GradientHlpr.pas',
+  formPostProcess in '..\..\Source\formPostProcess.pas' {frmPostProcess},
+  RndFlame in '..\..\Source\RndFlame.pas';
 
 {$R *.RES}
 
@@ -95,6 +94,7 @@ begin
   Application.CreateForm(TExportDialog, ExportDialog);
   Application.CreateForm(TSheepDialog, SheepDialog);
   Application.CreateForm(TfrmImageColoring, frmImageColoring);
+  Application.CreateForm(TfrmPostProcess, frmPostProcess);
   Application.UpdateFormatSettings := False;
   DecimalSeparator := '.';
   Application.Run;

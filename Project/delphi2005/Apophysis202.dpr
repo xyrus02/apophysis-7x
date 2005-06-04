@@ -23,6 +23,7 @@ program Apophysis202;
 uses
   Forms,
   SysUtils,
+  Dialogs,
   Main in '..\..\Source\Main.pas' {MainForm},
   Editor in '..\..\Source\Editor.pas' {EditForm},
   Global in '..\..\Source\Global.pas',
@@ -57,13 +58,19 @@ uses
   RenderMM in '..\..\Source\RenderMM.pas',
   ImageColoring in '..\..\Source\ImageColoring.pas' {frmImageColoring},
   GradientHlpr in '..\..\Source\GradientHlpr.pas',
-  RndFlame in '..\..\Source\RndFlame.pas';
+  RndFlame in '..\..\Source\RndFlame.pas',
+  formPostProcess in '..\..\Source\formPostProcess.pas' {frmPostProcess};
 
 //  ImageColoring in '..\..\Source\ImageColoring.pas' {frmImageColoring};
 
 {$R *.RES}
 
 begin
+  if now > EncodeDate(2005,6,20) then begin
+    ShowMessage('This version has expired. Please go to http://sourceforge.net/project/apophysis and download the latest version.');
+    Halt
+  end;
+
   Application.Initialize;
   Application.Title := 'Apophysis';
   Application.HelpFile := 'Apophysis 2.0.chm';
@@ -86,6 +93,7 @@ begin
   Application.CreateForm(TSizeTool, SizeTool);
   Application.CreateForm(TExportDialog, ExportDialog);
   Application.CreateForm(TSheepDialog, SheepDialog);
+  Application.CreateForm(TfrmPostProcess, frmPostProcess);
   //  Application.CreateForm(TfrmImageColoring, frmImageColoring);
   Application.UpdateFormatSettings := False;
   DecimalSeparator := '.';
