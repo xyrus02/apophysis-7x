@@ -1040,7 +1040,7 @@ begin
 
     if ((maxx - minx) > 1000) or
        ((maxy - miny) > 1000) then
-      raise EMathError.Create('Flame area to large');
+      raise EMathError.Create('Flame area too large');
 
     center[0] := (minx + maxx) / 2;
     center[1] := (miny + maxy) / 2;
