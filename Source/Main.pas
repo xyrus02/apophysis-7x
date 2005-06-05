@@ -39,7 +39,7 @@ const
   RS_VO = 3;
 
 type
-  TMouseMoveState = (msUsual, msZoomWindow, msZoomWindowMove, msDrag, msDragMove, msRotate, msRotateMove);
+  TMouseMoveState = (msUsual, msZoomWindow, msZoomOutWindow, msZoomWindowMove, msZoomOutWindowMove, msDrag, msDragMove, msRotate, msRotateMove);
 
 type
   TWin32Version = (wvUnknown, wvWin95, wvWin98, wvWinNT, wvWin2000, wvWinXP);
@@ -177,6 +177,8 @@ type
     tbDrag: TToolButton;
     tbRotate: TToolButton;
     mnuimage: TMenuItem;
+    tbzoomoutwindow: TToolButton;
+    procedure tbzoomoutwindowClick(Sender: TObject);
     procedure mnuimageClick(Sender: TObject);
     procedure mnuExitClick(Sender: TObject);
     procedure mnuSaveUPRClick(Sender: TObject);
@@ -661,6 +663,7 @@ var
 *)
 begin
   cp1.Free;
+  cp1 := nil;
   cp1 := RandomFlame(MainCP, alg);
 (*
   Min := randMinTransforms;
@@ -4005,6 +4008,13 @@ begin
         DrawZoomWindow(FSelectRect);
         FMouseMoveState := msZoomWindowMove;
       end;
+    msZoomOutWindow:
+      begin
+        FSelectRect.TopLeft := Point(x, y);
+        FSelectRect.BottomRight := Point(x, y);
+        DrawZoomWindow(FSelectRect);
+        FMouseMoveState := msZoomOutWindowMove;
+      end;
     msDrag:
       begin
         if not assigned(FViewBMP) then
@@ -4053,7 +4063,8 @@ var
   FOffs : TPoint;
 begin
   case FMouseMoveState of
-    msZoomWindowMove:
+    msZoomWindowMove,
+    msZoomOutWindowMove:
       begin
         DrawZoomWindow(FSelectRect);
         FSelectRect.BottomRight := Point(x, y);
@@ -4106,6 +4117,22 @@ begin
         StopThread;
         UpdateUndo;
         MainCp.ZoomtoRect(FSelectRect);
+
+        RedrawTimer.Enabled := True;
+        UpdateWindows;
+      end;
+    msZoomOutWindowMove:
+      begin
+        DrawZoomWindow(FSelectRect);
+        FSelectRect.BottomRight := Point(x, y);
+        FMouseMoveState := msZoomOutWindow;
+        if (abs(FSelectRect.Left - FSelectRect.Right) < 10) or
+           (abs(FSelectRect.Top - FSelectRect.Bottom) < 10) then
+          Exit; // zoom to much or double clicked
+
+        StopThread;
+        UpdateUndo;
+        MainCp.ZoomOuttoRect(FSelectRect);
 
         RedrawTimer.Enabled := True;
         UpdateWindows;
@@ -4213,6 +4240,12 @@ begin
 end;
 
 ///////////////////////////////////////////////////////////////////////////////
+procedure TMainForm.tbzoomoutwindowClick(Sender: TObject);
+begin
+  FMouseMoveState := msZoomOutWindow;
+end;
+
+///////////////////////////////////////////////////////////////////////////////
 procedure TMainForm.tbDragClick(Sender: TObject);
 begin
   FMouseMoveState := msDrag;
@@ -4255,6 +4288,7 @@ begin
   RedrawTimer.Enabled := True;
   UpdateWindows;
 end;
+
 
 ///////////////////////////////////////////////////////////////////////////////
 end.
