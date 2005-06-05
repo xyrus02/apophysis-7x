@@ -121,6 +121,7 @@ type
     destructor Destroy; override;
 
     procedure ZoomtoRect(R: TRect);
+    procedure ZoomOuttoRect(R: TRect);
     procedure ZoomIn(Factor: double);
     procedure MoveRect(R: TRect);
     procedure Rotate(Angle: double);
@@ -1136,7 +1137,7 @@ begin
 
     if ((maxx - minx) > 1000) or
        ((maxy - miny) > 1000) then
-      raise EMathError.Create('Flame area to large');
+      raise EMathError.Create('Flame area too large');
 
     cp.center[0] := (minx + maxx) / 2;
     cp.center[1] := (miny + maxy) / 2;
@@ -1625,6 +1626,27 @@ begin
 
   Scale := Scale * Min( Width/(abs(r.Right - r.Left) + 1), Height/(abs(r.Bottom - r.Top) + 1)) ;
   Zoom := Log2(Scale);
+end;
+
+///////////////////////////////////////////////////////////////////////////////
+procedure TControlPoint.ZoomOuttoRect(R: TRect);
+var
+  scale: double;
+  ppux, ppuy: double;
+  dx,dy: double;
+begin
+  scale := power(2, zoom);
+  ppux := pixels_per_unit * scale;
+  ppuy := pixels_per_unit * scale;
+
+  dx := ((r.Left + r.Right)/2 - Width/2)/ppux ;
+  dy := ((r.Top + r.Bottom)/2 - Height/2)/ppuy;
+
+  center[0] := center[0] + cos(FAngle) * dx - sin(FAngle) * dy;
+  center[1] := center[1] + sin(FAngle) * dx + cos(FAngle) * dy ;
+
+  Scale := Scale * Min( Width/(abs(r.Right - r.Left) + 1), Height/(abs(r.Bottom - r.Top) + 1)) ;
+  Zoom := Log2(1/Scale);
 end;
 
 ///////////////////////////////////////////////////////////////////////////////
