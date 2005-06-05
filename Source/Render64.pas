@@ -638,6 +638,10 @@ procedure TRenderer64.UpdateImage(CP: TControlPoint);
 begin
   FCP.background := cp.background;
   FCP.spatial_filter_radius := cp.spatial_filter_radius;
+  FCP.gamma := cp.Gamma;
+  FCP.vibrancy := cp.vibrancy;
+  FCP.contrast := cp.contrast;
+  FCP.brightness := cp.brightness;
 
   CreateFilter;
 
