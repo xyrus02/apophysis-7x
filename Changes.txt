@@ -7,6 +7,8 @@
 + Editor window now has controls for precise moving and rotating triangles.
 + Fixed a bug causing floating point errors on big unzooming and other editing tasks.
 + Added form to modify the image after rendering.
++ B1199407 'Use current' gradient option bug
++ Add zoom out functionality on main form
 
 2.02g
 + Delphi2005 Project
