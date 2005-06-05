@@ -1288,8 +1288,37 @@ begin
   end;
 end;
 
+function ColorToXmlCompact(cp1: TControlPoint): string;
+var
+  i: integer;
+begin
+  Result := '   <colors count="256" data="';
 
-function FlameToXML(const cp1: TControlPoint; sheep: boolean): string;
+  for i := 0 to 255 do  begin
+    Result := Result + IntToHex(0,2)
+                     + IntToHex(cp1.cmap[i, 0],2)
+                     + IntToHex(cp1.cmap[i, 1],2)
+                     + IntToHex(cp1.cmap[i, 2],2);
+  end;
+  Result := Result + '"/>';
+end;
+
+
+function ColorToXml(cp1: TControlPoint): string;
+var
+  i: integer;
+begin
+  Result := '';
+  for i := 0 to 255 do  begin
+    Result := Result + '   <color index="' + IntToStr(i) +
+      '" rgb="' + IntToStr(cp1.cmap[i, 0]) + ' ' +
+                  IntToStr(cp1.cmap[i, 1]) + ' ' +
+                  IntToStr(cp1.cmap[i, 2]) + '"/>' + #13#10;
+  end;
+end;
+
+
+function FlameToXML(const cp1: TControlPoint; sheep: boolean; compact: boolean = false): string;
 var
   t, i, j: integer;
   FileList: TStringList;
@@ -1348,14 +1377,12 @@ begin
       end;
     end;
    { Write palette data }
-    if not sheep then
-      for i := 0 to 255 do
-      begin
-        FileList.Add('   <color index="' + IntToStr(i) +
-          '" rgb="' + IntToStr(cp1.cmap[i, 0]) + ' ' +
-          IntToStr(cp1.cmap[i, 1]) + ' ' +
-          IntToStr(cp1.cmap[i, 2]) + '"/>');
-      end;
+    if not sheep then begin
+      if not compact then
+        FileList.Add(ColorToXml(cp1));
+      FileList.Add(ColorToXmlcompact(cp1));
+   end;
+
     FileList.Add('</flame>');
     result := FileList.text;
   finally
@@ -3610,7 +3637,7 @@ procedure TMainForm.mnuCopyClick(Sender: TObject);
 var
   txt: string;
 begin
-  txt := Trim(FlameToXML(Maincp, false));
+  txt := Trim(FlameToXML(Maincp, false, true));
   Clipboard.SetTextBuf(PChar(txt));
   mnuPaste.enabled := true;
   btnPaste.enabled := true;
@@ -3912,6 +3939,29 @@ begin
   end;
 end;
 
+procedure ParseCompactcolors(cp: TControlPoint; count: integer; data: string);
+  function HexChar(c: Char): Byte;
+  begin
+    case c of
+      '0'..'9':  Result := Byte(c) - Byte('0');
+      'a'..'f':  Result := (Byte(c) - Byte('a')) + 10;
+      'A'..'F':  Result := (Byte(c) - Byte('A')) + 10;
+    else
+      Result := 0;
+    end;
+  end;
+var
+  i: integer;
+begin
+  Assert(Count = 256,'only 256 color Colormaps are supported at the moment');
+  Assert((Count * 8) = Length(data),'Data size MisMatch');
+  for i := 0 to Count -1 do begin
+    Parsecp.cmap[i][0] := 16 * HexChar(Data[i*8 + 3]) + HexChar(Data[i*8 + 4]);
+    Parsecp.cmap[i][1] := 16 * HexChar(Data[i*8 + 5]) + HexChar(Data[i*8 + 6]);
+    Parsecp.cmap[i][2] := 16 * HexChar(Data[i*8 + 7]) + HexChar(Data[i*8 + 8]);
+  end;
+end;
+
 procedure TMainForm.XMLScannerEmptyTag(Sender: TObject; TagName: string;
   Attributes: TAttrList);
 var
@@ -3977,6 +4027,10 @@ begin
       Parsecp.cmap[i][0] := StrToInt(Tokens[0]);
       Parsecp.cmap[i][1] := StrToInt(Tokens[1]);
       Parsecp.cmap[i][2] := StrToInt(Tokens[2]);
+    end;
+    if TagName = 'colors' then
+    begin
+      ParseCompactcolors(Parsecp, StrToInt(Attributes.value('count')), Attributes.value('data'));
     end;
     if TagName = 'symmetry' then
     begin

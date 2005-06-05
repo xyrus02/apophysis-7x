@@ -9,6 +9,7 @@
 + Added form to modify the image after rendering.
 + B1199407 'Use current' gradient option bug
 + Add zoom out functionality on main form
++ compact format for copy/paste
 
 2.02g
 + Delphi2005 Project

@@ -2,7 +2,7 @@ object MainForm: TMainForm
   Left = 411
   Top = 128
   Width = 574
-  Height = 575
+  Height = 595
   Caption = 'Apophysis'
   Color = clBtnFace
   Font.Charset = ANSI_CHARSET
@@ -27,7 +27,7 @@ object MainForm: TMainForm
     Left = 160
     Top = 28
     Width = 4
-    Height = 474
+    Height = 514
   end
   object ToolBar: TToolBar
     Left = 0
@@ -261,7 +261,7 @@ object MainForm: TMainForm
     Left = 0
     Top = 28
     Width = 160
-    Height = 474
+    Height = 514
     Align = alLeft
     Columns = <
       item
@@ -280,7 +280,7 @@ object MainForm: TMainForm
     Left = 164
     Top = 28
     Width = 402
-    Height = 474
+    Height = 514
     Align = alClient
     BevelInner = bvLowered
     BevelOuter = bvNone
@@ -291,7 +291,7 @@ object MainForm: TMainForm
       Left = 1
       Top = 1
       Width = 400
-      Height = 472
+      Height = 492
       Align = alClient
       AutoSize = True
       PopupMenu = DisplayPopup
@@ -303,7 +303,7 @@ object MainForm: TMainForm
   end
   object StatusBar: TStatusBar
     Left = 0
-    Top = 502
+    Top = 542
     Width = 566
     Height = 19
     Panels = <
@@ -321,7 +321,7 @@ object MainForm: TMainForm
     Left = 8
     Top = 56
     Bitmap = {
-      494C010133003600040010001000FFFFFFFFFF00FFFFFFFFFFFFFFFF424D3600
+      494C010133003600040010001000FFFFFFFFFF10FFFFFFFFFFFFFFFF424D3600
       000000000000360000002800000040000000E0000000010020000000000000E0
       0000000000000000000000000000000000000000000000000000000000000000
       0000000000000000000000000000000000000000000000000000000000000000
@@ -2173,7 +2173,8 @@ object MainForm: TMainForm
       C003000F80018000C003000780018000C003000380018000C003000180018000
       C003000180018000C003001F80018000C003001F80018001C003001F80018001
       C0038FF180018001C007FFF980018001C00FFF7580018001C01FFF8F80018001
-      C03FFFFF80018001FFFFFFFFFFFFFFFF}
+      C03FFFFF80018001FFFFFFFFFFFFFFFF00000000000000000000000000000000
+      000000000000}
   end
   object SmallImages: TImageList
     Left = 40
