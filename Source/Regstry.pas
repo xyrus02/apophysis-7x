@@ -33,7 +33,7 @@ procedure UnpackVariations(v: integer);
 var
   i: integer;
 begin
-  for i := 0 to NVARS - 1 do
+  for i := 0 to NRVAR - 1 do
     Variations[i] := boolean(v shr i and 1);
 end;
 

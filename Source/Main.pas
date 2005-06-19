@@ -27,7 +27,7 @@ uses
   Jpeg, SyncObjs, SysUtils, ClipBrd, Graphics, Math, Global, MyTypes,
   Registry, RenderThread, Cmap, ExtDlgs, AppEvnts, ShellAPI, IdComponent,
   IdTCPConnection, IdTCPClient, IdHTTP, IdBaseComponent, IdIntercept,
-  IdLogBase, IdLogFile, LibXmlParser, LibXmlComps;
+  IdLogBase, IdLogFile, LibXmlParser, LibXmlComps, Xform;
 
 const
   PixelCountMax = 32768;
@@ -302,7 +302,7 @@ type
     Remainder: TDateTime;
     AnimPal: TColorMap;
 
-    VarMenus: array[0..NVARS] of TMenuItem;
+    VarMenus: array[0..NRVISVAR] of TMenuItem;
 
     procedure LoadXMLFlame(filename, name: string);
     procedure DisableFavorites;
@@ -363,7 +363,7 @@ implementation
 uses Editor, Options, Regstry, Gradient, Render,
   FullScreen, FormRender, Mutate, Adjust, Browser, Save, About, CmapData,
   HtmlHlp, ScriptForm, FormFavorites, Size, FormExport, msMultiPartFormData,
-  Sheep, ImageColoring, RndFlame, XForm;
+  Sheep, ImageColoring, RndFlame;
 
 {$R *.DFM}
 
@@ -375,7 +375,7 @@ begin
   for i := 0 to NXFORMS - 1 do
   begin
     totvar := 0;
-    for j := 0 to NVARS - 1 do
+    for j := 0 to NRVAR - 1 do
     begin
       if cp1.xform[i].vars[j] < 0 then cp1.xform[i].vars[j] := cp1.xform[i].vars[j] * -1;
       totvar := totvar + cp1.xform[i].vars[j];
@@ -385,7 +385,7 @@ begin
       cp1.xform[i].vars[0] := 1;
     end
     else
-      for j := 0 to NVARS - 1 do begin
+      for j := 0 to NRVAR - 1 do begin
         if totVar <> 0 then
           cp1.xform[i].vars[j] := cp1.xform[i].vars[j] / totvar;
       end;
@@ -486,7 +486,7 @@ var
   r, i: cardinal;
 begin
   r := 0;
-  for i := 0 to NVARS - 1 do
+  for i := 0 to NRVAR - 1 do
   begin
     r := r or byte(Variations[i]) shl i;
   end;
@@ -498,7 +498,7 @@ procedure UnpackVariations(v: integer);
 var
   i: integer;
 begin
-  for i := 0 to NVARS - 1 do
+  for i := 0 to NRVAR - 1 do
     Variations[i] := boolean(v shr i and 1);
 end;
 
@@ -587,7 +587,7 @@ var
   i: integer;
 begin
   for i := 0 to Transforms - 1 do
-    MainCp.xform[x].vars[i] := 1.0 / NVARS;
+    MainCp.xform[x].vars[i] := 1.0 / NRVAR;
 end;
 
 procedure NormalVars(const x: integer);
@@ -614,13 +614,13 @@ begin
   RandSeed := MainSeed;
   for i := 0 to NumXForms(cp) - 1 do
   begin
-    for j := 0 to NVARS - 1 do
+    for j := 0 to NRVAR - 1 do
       cp.xform[i].vars[j] := 0;
     repeat
-      a := random(NVARS);
+      a := random(NRVISVAR);
     until Variations[a];
     repeat
-      b := random(NVARS);
+      b := random(NRVISVAR);
     until Variations[b];
     if (a = b) then
     begin
@@ -646,7 +646,7 @@ begin
   else
     for i := 0 to NumXForms(cp) - 1 do
     begin
-      for j := 0 to NVARS - 1 do
+      for j := 0 to NRVAR - 1 do
         cp.xform[i].vars[j] := 0;
       cp.xform[i].vars[integer(Variation)] := 1;
     end;
@@ -1365,7 +1365,7 @@ begin
         e := c[2][0];
         f := c[2][1];
         varlist := '';
-        for j := 0 to NVARS - 1 do
+        for j := 0 to NRVAR - 1 do
         begin
           if vars[j] <> 0 then
           begin
@@ -1431,7 +1431,7 @@ begin
         e := c[2][0];
         f := c[2][1];
         varlist := '';
-        for j := 0 to NVARS - 1 do
+        for j := 0 to NRVAR - 1 do
         begin
           if vars[j] <> 0 then
           begin
@@ -2268,7 +2268,7 @@ begin
         'p_xf' + inttostr(m) + '_cfd=' + Format('%.6g ', [d]));
       Strings.Add('  p_xf' + inttostr(m) + '_cfe=' + Format('%.6g ', [e]) +
         ' p_xf' + inttostr(m) + '_cff=' + Format('%.6g ', [f]));
-      for j := 0 to NVARS - 1 do
+      for j := 0 to NRVAR - 1 do
         Strings.Add('  p_xf' + inttostr(m) + '_var' + inttostr(j) + '=' +
           floatToStr(cp1.xform[m].vars[j]));
     end;
@@ -3992,7 +3992,7 @@ begin
         c[2][1] := StrToFloat(Tokens[5]);
       end;
 
-      for i := 0 to NVARS - 1 do
+      for i := 0 to NRVAR - 1 do
       begin
         Parsecp.xform[nxform].vars[i] := 0;
         v := Attributes.Value(varnames[i]);
@@ -4003,17 +4003,17 @@ begin
       v := Attributes.Value('var1');
       if v <> '' then
       begin
-        for i := 0 to NVARS - 1 do
+        for i := 0 to NRVAR - 1 do
           Parsecp.xform[nxform].vars[i] := 0;
         Parsecp.xform[nxform].vars[StrToInt(v)] := 1;
       end;
       v := Attributes.Value('var');
       if v <> '' then
       begin
-        for i := 0 to NVARS - 1 do
+        for i := 0 to NRVAR - 1 do
           Parsecp.xform[nxform].vars[i] := 0;
         GetTokens(v, tokens);
-        if Tokens.Count > NVARS then ShowMessage('To many vars..crash?');
+        if Tokens.Count > NRVAR then ShowMessage('To many vars..crash?');
         for i := 0 to Tokens.Count - 1 do
           Parsecp.xform[nxform].vars[i] := StrToFloat(Tokens[i]);
       end;
@@ -4317,7 +4317,7 @@ var
   i: integer;
   NewMenuItem : TMenuItem;
 begin
-  for i := 0 to NVARS - 1 do begin
+  for i := 0 to NRVISVAR - 1 do begin
     NewMenuItem := TMenuItem.Create(self);
     NewMenuItem.Caption    := uppercase(varnames[i][0]) + copy(varnames[i], 2, length(varnames[i])-1);
     NewMenuItem.OnClick    := VariantMenuClick;

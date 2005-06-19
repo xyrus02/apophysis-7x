@@ -52,7 +52,7 @@ object EditForm: TEditForm
     Left = 0
     Top = 0
     Width = 394
-    Height = 429
+    Height = 422
     Align = alClient
     BevelOuter = bvLowered
     Color = clBlack
@@ -72,7 +72,7 @@ object EditForm: TEditForm
   end
   object StatusBar: TStatusBar
     Left = 0
-    Top = 429
+    Top = 422
     Width = 574
     Height = 15
     Panels = <
@@ -90,14 +90,14 @@ object EditForm: TEditForm
     Left = 394
     Top = 0
     Width = 180
-    Height = 429
+    Height = 422
     Align = alRight
     Alignment = taLeftJustify
     BevelOuter = bvNone
     TabOrder = 2
     DesignSize = (
       180
-      429)
+      422)
     object lblTransform: TLabel
       Left = 10
       Top = 128
@@ -136,7 +136,7 @@ object EditForm: TEditForm
       Width = 57
       Height = 21
       Style = csDropDownList
-      ItemHeight = 13
+      ItemHeight = 0
       TabOrder = 1
       OnChange = cbTransformsChange
     end

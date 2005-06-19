@@ -28,7 +28,7 @@ function RandomFlame(SourceCP: TControlPoint= nil; algorithm: integer = 0): TCon
 implementation
 
 uses
-  SysUtils, Global, cmap, MyTypes, GradientHlpr;
+  SysUtils, Global, cmap, MyTypes, GradientHlpr, XForm;
 
 ///////////////////////////////////////////////////////////////////////////////
 procedure RandomGradient(SourceCP, DestCP: TControlPoint);
@@ -80,18 +80,33 @@ procedure RandomVariation(cp: TControlPoint);
 { Randomise variation parameters }
 var
   a, b, i, j: integer;
+  VarPossible: boolean;
 begin
   inc(MainSeed);
   RandSeed := MainSeed;
+
+  VarPossible := false;
+  for j := 0 to NRVISVAR - 1 do begin
+    VarPossible := VarPossible or Variations[j];
+  end;
+
   for i := 0 to NumXForms(cp) - 1 do begin
-    for j := 0 to NVARS - 1 do
+    for j := 0 to NRVAR - 1 do
       cp.xform[i].vars[j] := 0;
-    repeat
-      a := random(NVARS);
-    until Variations[a];
-    repeat
-      b := random(NVARS);
-    until Variations[b];
+
+    if VarPossible then begin
+      repeat
+        a := random(NRVISVAR);
+      until Variations[a];
+
+      repeat
+        b := random(NRVISVAR);
+      until Variations[b];
+    end else begin
+      a := 0;
+      b := 0;
+    end;
+
     if (a = b) then begin
       cp.xform[i].vars[a] := 1;
     end else begin
@@ -111,7 +126,7 @@ begin
     RandomVariation(cp);
   end else
     for i := 0 to NumXForms(cp) - 1 do  begin
-      for j := 0 to NVARS - 1 do
+      for j := 0 to NRVAR - 1 do
         cp.xform[i].vars[j] := 0;
       cp.xform[i].vars[integer(Variation)] := 1;
     end;
@@ -310,7 +325,7 @@ begin
               Result.xform[i].color := 0;
               Result.xform[i].symmetry := 0;
               Result.xform[i].vars[0] := 1;
-              for j := 1 to NVARS - 1 do
+              for j := 1 to NRVAR - 1 do
                 Result.xform[i].vars[j] := 0;
               Result.xform[i].Translate(random * 2 - 1, random * 2 - 1);
               Result.xform[i].Rotate(random * 360);

@@ -515,7 +515,7 @@ begin
   EditForm.txtXFormColor.Text := FloatToStr(EditForm.cp.xform[t].color);
   EditForm.scrlXFormcolor.Position := Trunc(EditForm.cp.xform[t].color * 100);
 
-  for i := 0 to NVars-1 do begin
+  for i := 0 to NRVISVAR-1 do begin
     EditForm.VEVars.Values[VarNames[i]] := Format('%.6g', [EditForm.cp.xform[SelectedTriangle].vars[i]]);
   end;
 
@@ -639,7 +639,7 @@ begin
         cp.xform[i].density := cp.xform[i + 1].density;
         cp.xform[i].color := cp.xform[i + 1].color;
         cp.xform[i].symmetry := cp.xform[i + 1].symmetry;
-        for j := 0 to NVARS - 1 do
+        for j := 0 to NRVAR - 1 do
           cp.xform[i].vars[j] := cp.xform[i + 1].vars[j];
       end;
       Transforms := Transforms - 1;
@@ -807,7 +807,7 @@ procedure TEditForm.FormCreate(Sender: TObject);
 var
   i: integer;
 begin
-  for i:= 0 to NVars-1 do begin
+  for i:= 0 to NRVISVAR - 1 do begin
     VEVars.InsertRow(Varnames[i], '0', True);
   end;
 
@@ -1149,7 +1149,7 @@ begin
     SelectedTriangle := Transforms - 1;
     ComputeWeights(cp, MainTriangles, transforms);
     cp.xform[Transforms - 1].vars[0] := 1;
-    for i := 1 to NVARS - 1 do
+    for i := 1 to NRVAR - 1 do
       cp.xform[Transforms - 1].vars[i] := 0;
     cbTransforms.clear;
     for i := 0 to Transforms - 1 do
@@ -1168,7 +1168,7 @@ begin
     Transforms := Transforms + 1;
     MainTriangles[Transforms - 1] := MainTriangles[SelectedTriangle];
     ComputeWeights(cp, MainTriangles, transforms);
-    for i := 0 to NVARS - 1 do
+    for i := 0 to NRVAR - 1 do
       cp.xform[Transforms - 1].vars[i] := cp.xform[SelectedTriangle].vars[i];
     SelectedTriangle := Transforms - 1;
     cbTransforms.clear;

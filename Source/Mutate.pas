@@ -300,7 +300,7 @@ begin
           mutants[i].xform[j].c[1][1] := cps[0].xform[j].c[1][1];
           mutants[i].xform[j].c[2][0] := cps[0].xform[j].c[2][0];
           mutants[i].xform[j].c[2][1] := cps[0].xform[j].c[2][1];
-          for k := 0 to NVARS - 1 do
+          for k := 0 to NRVISVAR - 1 do
             mutants[i].xform[j].vars[k] := cps[0].xform[j].vars[k];
         end;
       end;
@@ -354,7 +354,7 @@ var
 begin
   cmbTrend.Items.clear;
   cmbTrend.AddItem('Random', Tobject(vRandom));
-  for i:= 0 to NVars -1 do begin
+  for i:= 0 to NRVISVAR -1 do begin
     cmbTrend.AddItem(varnames[i], Tobject(i));
   end;
 
@@ -482,7 +482,7 @@ begin
         cps[0].xform[i].c[1][1] := cpt.xform[i].c[1][1];
         cps[0].xform[i].c[2][0] := cpt.xform[i].c[2][0];
         cps[0].xform[i].c[2][1] := cpt.xform[i].c[2][1];
-        for j := 0 to NVARS - 1 do
+        for j := 0 to NRVAR - 1 do
           cps[0].xform[i].vars[j] := cpt.xform[i].vars[j];
       end;
     end;

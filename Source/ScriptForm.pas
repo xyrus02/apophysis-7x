@@ -784,7 +784,7 @@ begin
   with AMachine do
   begin
     i := GetArrayIndex(0);
-    if (i >= 0) and (i < NVARS) then
+    if (i >= 0) and (i < NRVAR) then
       ReturnOutPutArg(Variations[i]);
   end;
 end;
@@ -798,7 +798,7 @@ begin
   begin
     v := GetInputArgAsBoolean(0);
     i := GetArrayIndex(0);
-    if (i >= 0) and (i < NVARS) then
+    if (i >= 0) and (i < NRVAR) then
     begin
       Variations[i] := v;
       vars := PackVariations;
@@ -1649,7 +1649,7 @@ begin
   with AMachine do
   begin
     i := integer(Variation);
-    if (i >= NVARS) or (i < 0) then
+    if (i >= NRVAR) or (i < 0) then
       i := -1;
     ReturnOutputArg(i);
   end
@@ -1662,8 +1662,8 @@ begin
   with AMachine do
   begin
     i := GetInputArgAsInteger(0);
-    if (i < 0) or (i >= NVARS) then
-      i := NVARS;
+    if (i < 0) or (i >= NRVAR) then
+      i := NRVAR;
     Variation := TVariation(i);
     if i = -1 then
       MainForm.mnuVRandom.checked := True
@@ -1774,7 +1774,7 @@ begin
       ScriptEditor.cp.xform[ActiveTransform].color := 0;
       ScriptEditor.cp.xform[ActiveTransform].density := 1 / NumTransforms;
       ScriptEditor.cp.xform[ActiveTransform].vars[0] := 1;
-      for i := 1 to NVARS - 1 do
+      for i := 1 to NRVAR - 1 do
         ScriptEditor.cp.xform[ActiveTransform].vars[i] := 0;
     end
     else raise EFormatInvalid.Create('Too many transforms.');
@@ -1809,7 +1809,7 @@ begin
         ScriptEditor.cp.xform[i].density := ScriptEditor.cp.xform[i + 1].density;
         ScriptEditor.cp.xform[i].color := ScriptEditor.cp.xform[i + 1].color;
         ScriptEditor.cp.xform[i].symmetry := ScriptEditor.cp.xform[i + 1].symmetry;
-        for j := 0 to NVARS - 1 do
+        for j := 0 to NRVAR - 1 do
           ScriptEditor.cp.xform[i].vars[j] := ScriptEditor.cp.xform[i + 1].vars[j];
       end;
       NumTransforms := NumTransforms - 1;
@@ -1845,7 +1845,7 @@ begin
       ScriptEditor.cp.xform[ActiveTransform].c[2, 1] := ScriptEditor.cp.xform[old].c[2, 1];
       ScriptEditor.cp.xform[ActiveTransform].color := ScriptEditor.cp.xform[old].color;
       ScriptEditor.cp.xform[ActiveTransform].density := ScriptEditor.cp.xform[old].density;
-      for i := 0 to NVARS - 1 do
+      for i := 0 to NRVAR - 1 do
         ScriptEditor.cp.xform[ActiveTransform].vars[i] := ScriptEditor.cp.xform[old].vars[i]
     end
     else raise EFormatInvalid.Create('Too many transforms.');
@@ -1939,7 +1939,7 @@ begin
   xform.color := 0;
   xform.density := 1 / NumTransforms;
   xform.vars[0] := 1;
-  for i := 1 to NVARS - 1 do
+  for i := 1 to NRVAR - 1 do
     xform.vars[i] := 0;
 end;
 
@@ -2476,7 +2476,7 @@ begin
   begin
     v := GetInputArgAsFloat(0);
     i := GetArrayIndex(0);
-    if (i >= 0) and (i < NVARS) then
+    if (i >= 0) and (i < NRVAR) then
       cp.xform[ActiveTransform].vars[i] := v;
   end;
 end;
@@ -2648,7 +2648,7 @@ begin
   Scripter.AddLibrary(TatClassesLibrary);
   { Variables and constants }
   Scripter.AddConstant('PI', pi);
-  Scripter.AddConstant('NVARS', NVARS);
+  Scripter.AddConstant('NVARS', NRVAR);
   Scripter.AddConstant('NXFORMS', NXFORMS);
   Scripter.AddConstant('INSTALLPATH', ExtractFilePath(Application.exename));
   Scripter.AddConstant('SYM_NONE', 0);
@@ -2960,7 +2960,7 @@ begin
   dest.c[2, 1] := source.c[2, 1];
   dest.color := source.color;
   dest.density := source.density;
-  for i := 0 to NVARS - 1 do
+  for i := 0 to NRVAR - 1 do
     dest.vars[i] := source.vars[i];
 end;
 

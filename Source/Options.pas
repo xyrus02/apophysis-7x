@@ -274,7 +274,7 @@ begin
 
   { Variations tab }
   UnpackVariations(VariationOptions);
-  for i := 0 to NVars -1 do
+  for i := 0 to NRVISVAR -1 do
     clbVarEnabled.Checked[i] := Variations[i];
 
   { Gradient tab }
@@ -318,7 +318,7 @@ begin
 
   { Variations tab }
   { Get option values from controls. Disallow bad values }
-  for i := 0 to NVars -1 do
+  for i := 0 to NRVISVAR -1 do
     Variations[i] := clbVarEnabled.Checked[i];
 
   v := PackVariations;
@@ -471,7 +471,7 @@ procedure TOptionsForm.btnSetAllClick(Sender: TObject);
 var
   i: integer;
 begin
-  for i := 0 to NVars - 1 do
+  for i := 0 to NRVISVAR - 1 do
     clbVarEnabled.Checked[i] := True;
 end;
 
@@ -479,7 +479,7 @@ procedure TOptionsForm.btnClearAllClick(Sender: TObject);
 var
   i: integer;
 begin
-  for i := 0 to NVars - 1 do
+  for i := 0 to NRVISVAR - 1 do
     clbVarEnabled.Checked[i] := False;
 end;
 
@@ -582,7 +582,7 @@ procedure TOptionsForm.FormCreate(Sender: TObject);
 var
   i: integer;
 begin
-  for i:= 0 to NVARS - 1 do begin
+  for i:= 0 to NRVISVAR - 1 do begin
     clbVarEnabled.AddItem(varnames[i],nil);
   end;
 end;

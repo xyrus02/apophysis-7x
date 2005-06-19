@@ -25,7 +25,6 @@ uses
 
 const
   EPS = 1E-10;
-  NVARS = Xform.NVARS;
   NXFORMS = 12;
   SUB_BATCH_SIZE = 10000;
   PREFILTER_WHITE = (1 shl 26);
@@ -137,9 +136,8 @@ uses
   SysUtils, math, global;
 
 var
-  var_distrib: array[0..NVARS + 18] of integer;
-  mixed_var_distrib: array[0..NVARS + 8] of integer;
-
+  var_distrib: array[0..NRVISVAR + 18] of integer;
+  mixed_var_distrib: array[0..NRVISVAR + 8] of integer;
 
 { TControlPoint }
 
@@ -822,7 +820,7 @@ begin
       Inc(ParsePos);
       xform[CurrentXForm].c[2, 1] := StrToFloat(ParseValues[ParsePos]);
     end else if AnsiCompareText(CurrentToken, 'var') = 0 then begin
-      for i := 0 to NVARS - 1 do begin
+      for i := 0 to NRVAR - 1 do begin
         xform[CurrentXForm].vars[i] := 0;
       end;
 
@@ -856,13 +854,23 @@ procedure TControlPoint.SetVariation(vari: TVariation);
 var
   i, j, v: integer;
   rv: integer;
+  VarPossible: boolean;
 begin
-  repeat
-    rv := var_distrib[random(Length(var_distrib))];
-  until Variations[rv];
+  VarPossible := false;
+  for j := 0 to NRVISVAR - 1 do begin
+    VarPossible := VarPossible or Variations[j];
+  end;
+
+  if VarPossible then begin
+    repeat
+      rv := var_distrib[random(Length(var_distrib))];
+    until Variations[rv];
+  end else begin
+    rv := 0;
+  end;
 
   for i := 0 to NXFORMS - 1 do begin
-    for j := 0 to NVARS - 1 do begin
+    for j := 0 to NRVAR - 1 do begin
       xform[i].vars[j] := 0;
     end;
 
@@ -870,9 +878,13 @@ begin
     begin
       if rv < 0 then
       begin
-        repeat
-          v := Mixed_var_distrib[random(Length(mixed_var_distrib))];
-        until Variations[v]; // Use only Variations set in options
+        if VarPossible then begin
+          repeat
+            v := Mixed_var_distrib[random(Length(mixed_var_distrib))];
+          until Variations[v]; // Use only Variations set in options
+        end else begin
+          v := 0;
+        end;
         xform[i].vars[v] := 1
       end
       else
@@ -888,6 +900,7 @@ var
   nrXforms: integer;
   i, j: integer;
   v, rv: integer;
+  VarPossible: boolean;
 begin
 //hue_rotation := random;
   hue_rotation := 1;
@@ -897,9 +910,19 @@ begin
 
 //nrXforms := xform_distrib[random(13)];
   nrXforms := random(Max - (Min - 1)) + Min;
-  repeat
-    rv := var_distrib[random(Length(var_distrib))];
-  until Variations[rv];
+
+  VarPossible := false;
+  for j := 0 to NRVISVAR - 1 do begin
+    VarPossible := VarPossible or Variations[j];
+  end;
+
+  if VarPossible then begin
+    repeat
+      rv := var_distrib[random(Length(var_distrib))];
+    until Variations[rv];
+  end else begin
+    rv := 0;
+  end;
 
   for i := 0 to NXFORMS - 1 do begin
     xform[i].density := 0;
@@ -916,18 +939,23 @@ begin
     xform[i].c[2][0] := 4 * random - 2;
     xform[i].c[2][1] := 4 * random - 2;
 
-    for j := 0 to NVARS - 1 do begin
+    for j := 0 to NRVAR - 1 do begin
       xform[i].vars[j] := 0;
     end;
 
-    for j := 0 to NVARS - 1 do begin
+    for j := 0 to NRVAR - 1 do begin
       xform[i].vars[j] := 0;
     end;
 
     if rv < 0 then begin
-      repeat
-        v := Mixed_var_distrib[random(Length(mixed_var_distrib))];
-      until Variations[v]; // use only variations set in options
+      if VarPossible then begin
+        repeat
+          v := Mixed_var_distrib[random(Length(mixed_var_distrib))];
+        until Variations[v]; // use only variations set in options
+      end else begin
+        v := 0;
+      end;
+
       xform[i].vars[v] := 1
     end else
       xform[i].vars[rv] := 1;
@@ -943,7 +971,7 @@ var
 begin
   RandomCP;
   for i := 0 to NXFORMS - 1 do begin
-    for j := 0 to NVARS - 1 do begin
+    for j := 0 to NRVAR - 1 do begin
       xform[i].vars[j] := 0;
     end;
     xform[i].vars[0] := 1;
@@ -1237,7 +1265,7 @@ begin
   for i := 0 to NXFORMS - 1 do begin
     Result.xform[i].density := c0 * cp1.xform[i].density + c1 * cp2.xform[i].density;
     Result.xform[i].color := c0 * cp1.xform[i].color + c1 * cp2.xform[i].color;
-    for j := 0 to NVARS - 1 do begin
+    for j := 0 to NRVAR - 1 do begin
       Result.xform[i].vars[j] := c0 * cp1.xform[i].vars[j] + c1 * cp2.xform[i].vars[j];
     end;
 
@@ -1352,7 +1380,7 @@ begin
     Result.xform[i].density := c0 * cp1.xform[i].density + c1 * cp2.xform[i].density;
     Result.xform[i].color := c0 * cp1.xform[i].color + c1 * cp2.xform[i].color;
     Result.xform[i].symmetry := c0 * cp1.xform[i].symmetry + c1 * cp2.xform[i].symmetry;
-    for j := 0 to NVARS - 1 do begin
+    for j := 0 to NRVAR - 1 do begin
       Result.xform[i].vars[j] := c0 * cp1.xform[i].vars[j] + c1 * cp2.xform[i].vars[j];
     end;
 (*
@@ -1419,7 +1447,7 @@ begin
 
     sl.add(format('xform %d density %.3f color %f symmetry %f', [i, xform[i].density, xform[i].color, xform[i].symmetry]));
     s := 'var';
-    for j := 0 to NVARS - 1 do begin
+    for j := 0 to NRVAR - 1 do begin
       s := format('%s %f', [s, xform[i].vars[j]]);
     end;
     sl.add(s);
@@ -1487,7 +1515,7 @@ begin
     xform[i].symmetry := 0;
     xform[i].color := 0;
     xform[i].vars[0] := 1;
-    for j := 1 to NVARS - 1 do begin
+    for j := 1 to NRVAR - 1 do begin
       xform[i].vars[j] := 0;
     end;
   end;
@@ -1538,7 +1566,8 @@ begin
     cp.xform[i].density := 1.0;
     cp.xform[i].symmetry := 1;
     cp.xform[i].vars[0] := 1.0;
-    for j := 1 to NVARS - 1 do cp.xform[i].vars[j] := 0;
+    for j := 1 to NRVAR - 1 do
+      cp.xform[i].vars[j] := 0;
     cp.xform[i].color := 1.0;
     cp.xform[i].c[0][0] := -1.0;
     cp.xform[i].c[0][1] := 0.0;
@@ -1561,7 +1590,7 @@ begin
     cp.xform[i].density := 1.0;
     cp.xform[i].vars[0] := 1.0;
     cp.xform[i].symmetry := 1;
-    for j := 1 to NVARS - 1 do
+    for j := 1 to NRVAR - 1 do
       cp.xform[i].vars[j] := 0;
     if sym < 3 then
       cp.xform[i].color := 0

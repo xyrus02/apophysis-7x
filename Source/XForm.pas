@@ -3,13 +3,10 @@ unit XForm;
 interface
 
 const
-{$IFDEF TESTVARIANT}
-  NVARS = 28;
-{$ELSE}
-  NVARS = 27;
-{$ENDIF}
+  NRVISVAR = 23;
+  NRVAR = 28;
 
-  varnames: array[0..NVARS -1] of PChar = (
+  varnames: array[0..NRVAR - 1] of PChar = (
     'linear',
     'sinusoidal',
     'spherical',
@@ -36,10 +33,8 @@ const
     'triblob',
     'daisy',
     'checkers',
-    'crot'
-{$IFDEF TESTVARIANT}
-    ,'test'
-{$ENDIF}
+    'crot',
+    'test'
     );
 
 type
@@ -62,7 +57,7 @@ type
   TXForm = class
   private
     FNrFunctions: Integer;
-    FFunctionList: array[0..NVARS] of TCalcMethod;
+    FFunctionList: array[0..NRVAR-1] of TCalcMethod;
 
     FTx, FTy: double;
     FPx, FPy: double;
@@ -108,7 +103,7 @@ type
     function Identity: TMatrix;
 
   public
-    vars: array[0..NVARS - 1] of double; // normalized interp coefs between variations
+    vars: array[0..NRVAR - 1] of double; // normalized interp coefs between variations
     c: array[0..2, 0..1] of double;      // the coefs to the affine part of the function
     density: double;                     // prob is this function is chosen. 0 - 1
     color: double;                       // color coord for this function. 0 - 1
@@ -153,7 +148,7 @@ begin
   density := 0;
   Color := 0;
   Vars[0] := 1;
-  for i := 1 to NVARS - 1 do begin
+  for i := 1 to NRVAR - 1 do begin
     Vars[i] := 0;
   end;
   c[0, 0] := 1;
@@ -313,12 +308,10 @@ begin
     Inc(FNrFunctions);
   end;
 
-{$IFDEF TESTVARIANT}
-  if (vars[NVARS -1] <> 0.0) then begin
+  if (vars[NRVAR -1] <> 0.0) then begin
     FFunctionList[FNrFunctions] := TestVar;
     Inc(FNrFunctions);
   end;
-{$ENDIF}
 
   CalculateAngle := (vars[5] <> 0.0) or (vars[6] <> 0.0) or (vars[7] <> 0.0) or (vars[8] <> 0.0) or
                     (vars[12] <> 0.0) or (vars[13] <> 0.0) or (vars[21] <> 0.0) or (vars[22] <> 0.0);
@@ -672,7 +665,6 @@ end;
 procedure TXForm.CRot;
 var
   r : double;
-  dx, dy, dx2: double;
   Angle: double;
 begin
   r := sqrt(FTx * FTx + FTy * FTy);
@@ -695,7 +687,7 @@ end;
 procedure TXForm.TestVar;
 var
   r : double;
-  dx, dy, dx2: double;
+//  dx, dy, dx2: double;
   Angle: double;
 begin
   r := sqrt(FTx * FTx + FTy * FTy);
@@ -708,8 +700,8 @@ begin
 
 //   r:=  R - 0.04 * sin(6.2 * R - 1) - 0.008 * R;
 
-  FPx := FPx + vars[NVars - 1] * r * cos(Angle);
-  FPy := FPy + vars[NVars - 1] * r * sin(Angle);
+  FPx := FPx + vars[NRVAR - 1] * r * cos(Angle);
+  FPy := FPy + vars[NRVAR - 1] * r * sin(Angle);
 end;
 
 ///////////////////////////////////////////////////////////////////////////////

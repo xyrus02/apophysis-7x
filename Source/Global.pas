@@ -21,7 +21,7 @@ interface
 
 uses
   SysUtils, Classes, SyncObjs, Controls, Graphics, Math,
-  cmap, MyTypes, controlpoint;
+  cmap, MyTypes, controlpoint, Xform;
 
 type
   EFormatInvalid = class(Exception);
@@ -108,7 +108,7 @@ var
   defFlameFile: string;
   SymmetryType: integer;
   SymmetryOrder: integer;
-  Variations: array[0..NVARS - 1] of boolean;
+  Variations: array[0..NRVAR - 1] of boolean;
   VariationOptions: integer;
   { For random gradients }
   MinNodes, MaxNodes, MinHue, MaxHue, MinSat, MaxSat, MinLum, MaxLum: integer;
