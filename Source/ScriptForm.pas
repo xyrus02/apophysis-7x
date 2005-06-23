@@ -1649,7 +1649,7 @@ begin
   with AMachine do
   begin
     i := integer(Variation);
-    if (i >= NRVAR) or (i < 0) then
+    if (i >= NRVISVAR) or (i < 0) then
       i := -1;
     ReturnOutputArg(i);
   end
@@ -1662,8 +1662,8 @@ begin
   with AMachine do
   begin
     i := GetInputArgAsInteger(0);
-    if (i < 0) or (i >= NRVAR) then
-      i := NRVAR;
+    if (i < 0) or (i >= NRVISVAR) then
+      i := NRVISVAR - 1;
     Variation := TVariation(i);
     if i = -1 then
       MainForm.mnuVRandom.checked := True

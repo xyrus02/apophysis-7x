@@ -165,7 +165,7 @@ object ScriptEditor: TScriptEditor
         'end;')
       MarkerList.UseDefaultMarkerImageIndex = False
       MarkerList.DefaultMarkerImageIndex = -1
-      MarkerList.ImageTransparentColor = -1
+      MarkerList.ImageTransparentColor = 33554432
       PrintOptions.MarginLeft = 0
       PrintOptions.MarginRight = 0
       PrintOptions.MarginTop = 0
