@@ -280,7 +280,6 @@ var
   skip: boolean;
 begin
   Result := TControlPoint.Create;
-  RandomGradient(SourceCP, Result);
 
   Min := randMinTransforms;
   Max := randMaxTransforms;
@@ -406,6 +405,8 @@ begin
     if skip then
       continue;
   until not Result.BlowsUP(5000) and (Result.xform[0].density <> 0);
+
+  RandomGradient(SourceCP, Result);
 
   Result.brightness := defBrightness;
   Result.gamma := defGamma;
