@@ -1663,9 +1663,9 @@ begin
   begin
     i := GetInputArgAsInteger(0);
     if (i < 0) or (i >= NRVISVAR) then
-      i := NRVISVAR - 1;
+      i := NRVISVAR ;
     Variation := TVariation(i);
-    if i = -1 then
+    if i = NRVISVAR then
       MainForm.mnuVRandom.checked := True
     else
       MainForm.VarMenus[i].Checked := True;

@@ -2,7 +2,7 @@ object MainForm: TMainForm
   Left = 411
   Top = 128
   Width = 574
-  Height = 595
+  Height = 615
   Caption = 'Apophysis'
   Color = clBtnFace
   Font.Charset = ANSI_CHARSET
@@ -291,7 +291,7 @@ object MainForm: TMainForm
       Left = 1
       Top = 1
       Width = 400
-      Height = 492
+      Height = 512
       Align = alClient
       AutoSize = True
       PopupMenu = DisplayPopup
@@ -2707,14 +2707,14 @@ object MainForm: TMainForm
       object mnuVRandom: TMenuItem
         Caption = 'Random'
         Checked = True
-        GroupIndex = 1
+        GroupIndex = 2
         RadioItem = True
         ShortCut = 121
         OnClick = mnuVRandomClick
       end
       object N8: TMenuItem
         Caption = '-'
-        GroupIndex = 1
+        GroupIndex = 2
       end
     end
     object mnuScript: TMenuItem
