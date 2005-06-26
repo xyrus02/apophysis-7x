@@ -1,3 +1,9 @@
+2.02i
++ Fixed Randomize gradient in batch bug
++ Fixed Randomize gradient floating point error
++ Fixed spiral batch script bug
++ B1227562 Background will remain the same (depending on options)
+
 2.02h
 + Disable screen saver when rendering to disk
 + Automatic system shutdown after rendering completion
