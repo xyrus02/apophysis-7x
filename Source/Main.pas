@@ -661,10 +661,23 @@ var
   r, s, theta, phi: double;
   skip: boolean;
 *)
+var
+  sourceCP: TControlPoint;
 begin
-  cp1.Free;
-  cp1 := nil;
-  cp1 := RandomFlame(MainCP, alg);
+  if assigned(MainCP) then
+    sourceCP := MainCP.Clone
+  else
+    SourceCP := nil;
+
+  if assigned(cp1) then begin
+    cp1.Free;
+    cp1 := nil;
+  end;
+  cp1 := RandomFlame(sourceCP, alg);
+
+  if assigned(sourceCP) then
+    sourceCP.Free;
+
 (*
   Min := randMinTransforms;
   Max := randMaxTransforms;
