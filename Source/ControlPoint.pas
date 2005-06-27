@@ -1074,7 +1074,7 @@ begin
     center[0] := (minx + maxx) / 2;
     center[1] := (miny + maxy) / 2;
     if ((maxx - minx) > 0.001) and ((maxy - miny) > 0.001) then
-      pixels_per_unit := 0.7 * Min(width / (maxx - minx), Height / (maxy - miny))
+      pixels_per_unit := 0.65 * Min(width / (maxx - minx), Height / (maxy - miny))
     else
       pixels_per_unit := 10;
   except on E: EMathError do
@@ -1674,8 +1674,8 @@ begin
   center[0] := center[0] + cos(FAngle) * dx - sin(FAngle) * dy;
   center[1] := center[1] + sin(FAngle) * dx + cos(FAngle) * dy ;
 
-  Scale := Scale * Min( Width/(abs(r.Right - r.Left) + 1), Height/(abs(r.Bottom - r.Top) + 1)) ;
-  Zoom := Log2(1/Scale);
+  Scale := Scale / Min( Width/(abs(r.Right - r.Left) + 1), Height/(abs(r.Bottom - r.Top) + 1)) ;
+  Zoom := Log2(Scale);
 end;
 
 ///////////////////////////////////////////////////////////////////////////////
