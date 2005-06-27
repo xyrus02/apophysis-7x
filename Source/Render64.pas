@@ -61,6 +61,7 @@ type
     BucketHeight: Int64;
     BucketSize: Int64;
     gutter_width: Integer;
+    max_gutter_width: Integer;
 
     sample_density: extended;
 
@@ -135,6 +136,7 @@ procedure TRenderer64.CreateCamera;
 var
   scale: double;
   t0, t1: double;
+  t2, t3: double;
   corner0, corner1: double;
   shift: Integer;
 begin
@@ -144,14 +146,17 @@ begin
   ppuy := fcp.pixels_per_unit * scale;
   // todo field stuff
   shift := 0;
-  t0 := gutter_width / (oversample * ppux);
-  t1 := gutter_width / (oversample * ppuy);
+
+  t0 := (gutter_width) / (oversample * ppux);
+  t1 := (gutter_width) / (oversample * ppuy);
+  t2 := (2 * max_gutter_width - gutter_width) / (oversample * ppux);
+  t3 := (2 * max_gutter_width - gutter_width) / (oversample * ppuy);
   corner0 := fcp.center[0] - image_width / ppux / 2.0;
   corner1 := fcp.center[1] - image_height / ppuy / 2.0;
   bounds[0] := corner0 - t0;
   bounds[1] := corner1 - t1 + shift;
-  bounds[2] := corner0 + image_width / ppux + t0;
-  bounds[3] := corner1 + image_height / ppuy + t1; //+ shift;
+  bounds[2] := corner0 + image_width / ppux + t2;
+  bounds[3] := corner1 + image_height / ppuy + t3; //+ shift;
   if abs(bounds[2] - bounds[0]) > 0.01 then
     size[0] := 1.0 / (bounds[2] - bounds[0])
   else
@@ -238,9 +243,10 @@ procedure TRenderer64.InitBuffers;
 const
   MaxFilterWidth = 25;
 begin
-  gutter_width := (MaxFilterWidth - oversample) div 2;
-  BucketHeight := oversample * image_height + 2 * gutter_width;
-  Bucketwidth := oversample * image_width + 2 * gutter_width;
+  max_gutter_width := (MaxFilterWidth - oversample) div 2;
+  gutter_width := (filter_width - oversample) div 2;
+  BucketHeight := oversample * image_height + 2 * max_gutter_width;
+  Bucketwidth := oversample * image_width + 2 * max_gutter_width;
   BucketSize := BucketWidth * BucketHeight;
 
   if high(buckets) <> (BucketSize - 1) then begin
@@ -255,9 +261,9 @@ begin
   image_Width := fcp.Width;
 
   CreateFilter;
+  InitBuffers;
   CreateCamera;
 
-  InitBuffers;
 
   CreateColorMap;
 
@@ -516,7 +522,7 @@ begin
         for ii := 0 to filter_width - 1 do begin
           for jj := 0 to filter_width - 1 do begin
             filterValue := filter[ii, jj];
-            filterpos := bucketpos + ii * BucketWidth + jj;
+            filterpos := bucketpos + (ii + gwo) * BucketWidth + jj + gwo;
 
             ls := lsa[Min(1023, Buckets[filterpos].Count)];
 
@@ -590,7 +596,7 @@ begin
       Row[j] := RGB(bi, gi, ri);// + (ai shl 24);
     end;
 
-    Inc(bucketpos, 2 * gutter_width);
+    Inc(bucketpos, 2 * max_gutter_width);
     Inc(bucketpos, (oversample - 1) * BucketWidth);
   end;
   bm.PixelFormat := pf24bit;
