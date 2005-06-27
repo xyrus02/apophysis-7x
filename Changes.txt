@@ -3,6 +3,8 @@
 + Fixed Randomize gradient floating point error
 + Fixed spiral batch script bug
 + B1227562 Background will remain the same (depending on options)
++ Fixed Zoom out
++ Fixed Offset problems in editor and mutation form
 
 2.02h
 + Disable screen saver when rendering to disk
