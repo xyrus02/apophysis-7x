@@ -414,7 +414,11 @@ begin
   Result.sample_density := defSampleDensity;
   Result.spatial_oversample := defOversample;
   Result.spatial_filter_radius := defFilterRadius;
-  if not KeepBackground then begin
+  if KeepBackground and assigned(SourceCP) then begin
+    Result.background[0] := SourceCP.background[0];
+    Result.background[1] := SourceCP.background[1];
+    Result.background[2] := SourceCP.background[2];
+  end else begin
     Result.background[0] := 0;
     Result.background[1] := 0;
     Result.background[2] := 0;
