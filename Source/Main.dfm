@@ -1,6 +1,6 @@
 object MainForm: TMainForm
-  Left = 411
-  Top = 128
+  Left = 408
+  Top = 98
   Width = 574
   Height = 615
   Caption = 'Apophysis'
@@ -27,7 +27,7 @@ object MainForm: TMainForm
     Left = 160
     Top = 28
     Width = 4
-    Height = 534
+    Height = 522
   end
   object ToolBar: TToolBar
     Left = 0
@@ -261,7 +261,7 @@ object MainForm: TMainForm
     Left = 0
     Top = 28
     Width = 160
-    Height = 534
+    Height = 522
     Align = alLeft
     Columns = <
       item
@@ -280,7 +280,7 @@ object MainForm: TMainForm
     Left = 164
     Top = 28
     Width = 402
-    Height = 534
+    Height = 522
     Align = alClient
     BevelInner = bvLowered
     BevelOuter = bvNone
@@ -291,7 +291,7 @@ object MainForm: TMainForm
       Left = 1
       Top = 1
       Width = 400
-      Height = 512
+      Height = 520
       Align = alClient
       AutoSize = True
       PopupMenu = DisplayPopup
@@ -303,7 +303,7 @@ object MainForm: TMainForm
   end
   object StatusBar: TStatusBar
     Left = 0
-    Top = 562
+    Top = 550
     Width = 566
     Height = 19
     Panels = <
@@ -2679,6 +2679,7 @@ object MainForm: TMainForm
       object mnuRandomizeColorValues: TMenuItem
         Caption = 'Randomize Color Values'
         Hint = 'Randomizes the transform color parameters.'
+        ShortCut = 16462
         OnClick = mnuRandomizeColorValuesClick
       end
       object N12: TMenuItem
@@ -2929,8 +2930,9 @@ object MainForm: TMainForm
   end
   object HTTP: TIdHTTP
     OnStatus = HTTPStatus
+    MaxLineAction = maException
+    ReadTimeout = 0
     AuthRetries = 0
-    AuthProxyRetries = 0
     AllowCookies = True
     ProxyParams.BasicAuthentication = False
     ProxyParams.ProxyPort = 0
