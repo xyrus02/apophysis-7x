@@ -522,7 +522,7 @@ begin
         for ii := 0 to filter_width - 1 do begin
           for jj := 0 to filter_width - 1 do begin
             filterValue := filter[ii, jj];
-            filterpos := bucketpos + (ii + gwo) * BucketWidth + jj + gwo;
+            filterpos := bucketpos + ii * BucketWidth + jj;
 
             ls := lsa[Min(1023, Buckets[filterpos].Count)];
 
