@@ -65,14 +65,18 @@ var
   hsv: array[0..2] of double;
   pal: TColorMap;
 begin
+  rgb[0] := 0;
+  rgb[1] := 0;
+  rgb[2] := 0;
+
   inc(MainSeed);
   RandSeed := Mainseed;
   nodes := random((MaxNodes - 1) - (MinNodes - 2)) + (MinNodes - 1);
   n := 256 div nodes;
   b := 0;
-  hsv[0] := (random(MaxHue - (MinHue - 1)) + MinHue) / 100;
-  hsv[1] := (random(MaxSat - (MinSat - 1)) + MinSat) / 100;
-  hsv[2] := (random(MaxLum - (MinLum - 1)) + MinLum) / 100;
+  hsv[0] := 0.01 * (random(MaxHue - (MinHue - 1)) + MinHue);
+  hsv[1] := 0.01 * (random(MaxSat - (MinSat - 1)) + MinSat);
+  hsv[2] := 0.01 * (random(MaxLum - (MinLum - 1)) + MinLum);
   hsv2rgb(hsv, rgb);
   Pal[0][0] := Round(rgb[0] * 255);
   Pal[0][1] := Round(rgb[1] * 255);
@@ -80,9 +84,9 @@ begin
   repeat
     a := b;
     b := b + n;
-    hsv[0] := (random(MaxHue - (MinHue - 1)) + MinHue) / 100;
-    hsv[1] := (random(MaxSat - (MinSat - 1)) + MinSat) / 100;
-    hsv[2] := (random(MaxLum - (MinLum - 1)) + MinLum) / 100;
+    hsv[0] := 0.01 * (random(MaxHue - (MinHue - 1)) + MinHue);
+    hsv[1] := 0.01 * (random(MaxSat - (MinSat - 1)) + MinSat);
+    hsv[2] := 0.01 * (random(MaxLum - (MinLum - 1)) + MinLum);
     hsv2rgb(hsv, rgb);
     if b > 255 then b := 255;
     Pal[b][0] := Round(rgb[0] * 255);

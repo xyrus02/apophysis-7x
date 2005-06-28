@@ -83,11 +83,12 @@ var
   f, p, q, t, v: double;
 begin
   try
-    rgb[0] := 0;
-    rgb[1] := 0;
-    rgb[2] := 0;
-    
+//    rgb[0] := 0;
+//    rgb[1] := 0;
+//    rgb[2] := 0;
+
     j := floor(hsv[0]);
+
     f := hsv[0] - j;
     v := hsv[2];
     p := hsv[2] * (1 - hsv[1]);
