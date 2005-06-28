@@ -1,6 +1,6 @@
 object EditForm: TEditForm
-  Left = 392
-  Top = 208
+  Left = 398
+  Top = 205
   Width = 582
   Height = 471
   Caption = 'Editor'
@@ -52,7 +52,7 @@ object EditForm: TEditForm
     Left = 0
     Top = 0
     Width = 394
-    Height = 422
+    Height = 429
     Align = alClient
     BevelOuter = bvLowered
     Color = clBlack
@@ -72,7 +72,7 @@ object EditForm: TEditForm
   end
   object StatusBar: TStatusBar
     Left = 0
-    Top = 422
+    Top = 429
     Width = 574
     Height = 15
     Panels = <
@@ -90,14 +90,14 @@ object EditForm: TEditForm
     Left = 394
     Top = 0
     Width = 180
-    Height = 422
+    Height = 429
     Align = alRight
     Alignment = taLeftJustify
     BevelOuter = bvNone
     TabOrder = 2
     DesignSize = (
       180
-      422)
+      429)
     object lblTransform: TLabel
       Left = 10
       Top = 128
@@ -136,7 +136,7 @@ object EditForm: TEditForm
       Width = 57
       Height = 21
       Style = csDropDownList
-      ItemHeight = 0
+      ItemHeight = 13
       TabOrder = 1
       OnChange = cbTransformsChange
     end
@@ -158,6 +158,7 @@ object EditForm: TEditForm
           Width = 159
           Height = 231
           HorzScrollBar.Visible = False
+          VertScrollBar.Position = 121
           VertScrollBar.Smooth = True
           VertScrollBar.Style = ssFlat
           VertScrollBar.Tracking = True
@@ -168,9 +169,9 @@ object EditForm: TEditForm
           TabOrder = 0
           object TrianglePanel: TPanel
             Left = 0
-            Top = 0
+            Top = -121
             Width = 155
-            Height = 302
+            Height = 352
             BevelOuter = bvNone
             TabOrder = 0
             object Label9: TLabel
@@ -220,6 +221,7 @@ object EditForm: TEditForm
               Top = 184
               Width = 33
               Height = 24
+              Hint = 'Rotate triangle clockwise around its center'
               Flat = True
               Glyph.Data = {
                 F6000000424DF600000000000000760000002800000010000000100000000100
@@ -230,6 +232,8 @@ object EditForm: TEditForm
                 FFFF7007FFFFFFFFFFFFF0007FFFFF7FFFFFF7000788FF70FFFFF80000077770
                 0FFFFF770000000000FFFFF770000000000FFFFF777000000078FFFFF8777770
                 078FFFFFFFFF870078FFFFFFFFFFFF778FFFFFFFFFFFFF78FFFF}
+              ParentShowHint = False
+              ShowHint = True
               OnClick = btTrgRotateRightClick
             end
             object btTrgRotateLeft: TSpeedButton
@@ -237,6 +241,7 @@ object EditForm: TEditForm
               Top = 184
               Width = 33
               Height = 24
+              Hint = 'Rotate triangle counter clockwise around its center'
               Flat = True
               Glyph.Data = {
                 36030000424D3603000000000000360000002800000010000000100000000100
@@ -265,6 +270,8 @@ object EditForm: TEditForm
                 FFFFFFC0C0C0808080404040FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF
                 FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFC0C0C0808080FFFFFFFF
                 FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF}
+              ParentShowHint = False
+              ShowHint = True
               OnClick = btTrgRotateLeftClick
             end
             object btTrgMoveUp: TSpeedButton
@@ -272,6 +279,7 @@ object EditForm: TEditForm
               Top = 226
               Width = 33
               Height = 24
+              Hint = 'Move triangle up'
               Flat = True
               Glyph.Data = {
                 36030000424D3603000000000000360000002800000010000000100000000100
@@ -300,6 +308,8 @@ object EditForm: TEditForm
                 FFFFFFFFFFFFFFFFFFFFFFFFFFFFFF808080000000FFFFFFFFFFFFFFFFFFFFFF
                 FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF
                 FFFF808080FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF}
+              ParentShowHint = False
+              ShowHint = True
               OnClick = btTrgMoveUpClick
             end
             object btTrgMoveRight: TSpeedButton
@@ -307,6 +317,7 @@ object EditForm: TEditForm
               Top = 250
               Width = 33
               Height = 24
+              Hint = 'Move triangle right'
               Flat = True
               Glyph.Data = {
                 36030000424D3603000000000000360000002800000010000000100000000100
@@ -335,6 +346,8 @@ object EditForm: TEditForm
                 FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF
                 FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF
                 FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF}
+              ParentShowHint = False
+              ShowHint = True
               OnClick = btTrgMoveRightClick
             end
             object btTrgMoveLeft: TSpeedButton
@@ -342,6 +355,7 @@ object EditForm: TEditForm
               Top = 250
               Width = 33
               Height = 24
+              Hint = 'Move triangle left'
               Flat = True
               Glyph.Data = {
                 36030000424D3603000000000000360000002800000010000000100000000100
@@ -370,6 +384,8 @@ object EditForm: TEditForm
                 FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF
                 FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF
                 FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF}
+              ParentShowHint = False
+              ShowHint = True
               OnClick = btTrgMoveLeftClick
             end
             object btTrgMoveDown: TSpeedButton
@@ -377,6 +393,7 @@ object EditForm: TEditForm
               Top = 274
               Width = 33
               Height = 24
+              Hint = 'Move triangle down'
               Flat = True
               Glyph.Data = {
                 36030000424D3603000000000000360000002800000010000000100000000100
@@ -405,13 +422,55 @@ object EditForm: TEditForm
                 FFFFFFFFFFFFFFFFFFFFFFFF808080000000000000FFFFFFFFFFFFFFFFFFFFFF
                 FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFC0C0C000
                 0000404040FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF}
+              ParentShowHint = False
+              ShowHint = True
               OnClick = btTrgMoveDownClick
+            end
+            object btTrgScaleUp: TSpeedButton
+              Left = 90
+              Top = 318
+              Width = 33
+              Height = 24
+              Hint = 'Scale triangle up'
+              Flat = True
+              Glyph.Data = {
+                F6000000424DF600000000000000760000002800000010000000100000000100
+                0400000000008000000000000000000000001000000000000000000000000000
+                8000008000000080800080000000800080008080000080808000C0C0C0000000
+                FF0000FF000000FFFF00FF000000FF00FF00FFFF0000FFFFFF00FFFFFFFFFFFF
+                FFFFF00000000000000FF00000000000000FFF000FFFFFFFF00FFFF000FFFFFF
+                F00FFFFF000FFFFFF00FFFFFF000FFFFF00FFFFFFF000FFFF00FFFFFFFF000FF
+                F00FFFFFFFFF000FF00FFFFFFFFFF000F00FFFFFFFFFFF00000FFFFFFFFFFFF0
+                000FFFFFFFFFFFFF000FFFFFFFFFFFFFF00FFFFFFFFFFFFFFFFF}
+              ParentShowHint = False
+              ShowHint = True
+              OnClick = btTrgScaleUpClick
+            end
+            object btTrgScaleDown: TSpeedButton
+              Left = 22
+              Top = 318
+              Width = 33
+              Height = 24
+              Hint = 'Scale triangle down'
+              Flat = True
+              Glyph.Data = {
+                F6000000424DF600000000000000760000002800000010000000100000000100
+                0400000000008000000000000000000000001000000000000000000000000000
+                8000008000000080800080000000800080008080000080808000C0C0C0000000
+                FF0000FF000000FFFF00FF000000FF00FF00FFFF0000FFFFFF00FFFFFFFFFFFF
+                FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF00000000000
+                0FFFF000000000000FFFFF0000FFFFF00FFFFFF0000FFFF00FFFFFFFF000FFF0
+                0FFFFFFFFF000FF00FFFFFFFFFF000000FFFFFFFFFFF00000FFFFFFFFFFFFF00
+                0FFFFFFFFFFFFFF00FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF}
+              ParentShowHint = False
+              ShowHint = True
+              OnClick = btTrgScaleDownClick
             end
             object txtTrgRotateValue: TEdit
               Left = 56
               Top = 184
               Width = 33
-              Height = 24
+              Height = 21
               TabOrder = 7
               Text = '5'
             end
@@ -419,7 +478,7 @@ object EditForm: TEditForm
               Left = 56
               Top = 250
               Width = 33
-              Height = 24
+              Height = 21
               TabOrder = 8
               Text = '0.05'
             end
@@ -498,6 +557,14 @@ object EditForm: TEditForm
               Checked = True
               State = cbChecked
               TabOrder = 6
+            end
+            object txtTrgScaleValue: TEdit
+              Left = 56
+              Top = 320
+              Width = 33
+              Height = 21
+              TabOrder = 9
+              Text = '0.1'
             end
           end
         end

@@ -124,6 +124,9 @@ type
     btTrgMoveRight: TSpeedButton;
     btTrgMoveLeft: TSpeedButton;
     btTrgMoveDown: TSpeedButton;
+    txtTrgScaleValue: TEdit;
+    btTrgScaleUp: TSpeedButton;
+    btTrgScaleDown: TSpeedButton;
     procedure FormCreate(Sender: TObject);
     procedure GraphImageMouseMove(Sender: TObject; Shift: TShiftState; X,
       Y: integer);
@@ -187,6 +190,8 @@ type
     procedure btTrgMoveRightClick(Sender: TObject);
     procedure btTrgMoveUpClick(Sender: TObject);
     procedure btTrgMoveDownClick(Sender: TObject);
+    procedure btTrgScaleUpClick(Sender: TObject);
+    procedure btTrgScaleDownClick(Sender: TObject);
   private
     bm: TBitmap;
     cmap: TColorMap;
@@ -980,6 +985,7 @@ procedure TEditForm.GraphImageMouseUp(Sender: TObject; Button: TMouseButton;
 var
   fx, fy: double;
   i: integer;
+  transformvalue: double;
 begin
   Scale(fx, fy, x, y, EditForm.GraphImage.Width, EditForm.GraphImage.Height);
   { Mouse inside a triangle?}
@@ -1002,27 +1008,59 @@ begin
     else if Button = mbLeft then
       if Shift = [ssAlt] then
       begin
-        MainTriangles[i] := RotateTriangleCenter(MainTriangles[i], -(PI / 20));
-        HasChanged := True;
-        UpdateFlame(False);
+        try
+          transformvalue := StrToFloat(txtTrgRotateValue.Text);
+        except
+          transformvalue := 0;
+          txtTrgRotateValue.Text := '0';
+        end;
+        if transformvalue <> 0 then
+        begin
+          MainTriangles[i] := RotateTriangleCenter(MainTriangles[i], -((PI/180) * transformvalue));
+          HasChanged := True;
+        end;
       end
       else if Shift = [ssCtrl, ssAlt] then
       begin
-        MainTriangles[i] := RotateTriangleCenter(MainTriangles[i], PI / 20);
-        HasChanged := True;
-        UpdateFlame(False);
+        try
+          transformvalue := StrToFloat(txtTrgRotateValue.Text);
+        except
+          transformvalue := 0;
+          txtTrgRotateValue.Text := '0';
+        end;
+        if transformvalue <> 0 then
+        begin
+          MainTriangles[i] := RotateTriangleCenter(MainTriangles[i], (PI/180) * transformvalue);
+          HasChanged := True;
+        end;
       end
       else if Shift = [ssShift] then
       begin
-        MainTriangles[i] := ScaleTriangleCenter(MainTriangles[i], 1.1);
-        HasChanged := True;
-        UpdateFlame(False);
+        try
+          transformvalue := StrToFloat(txtTrgScaleValue.Text);
+        except
+          transformvalue := 0.0;
+          txtTrgScaleValue.Text := '0.0';
+        end;
+        if transformvalue <> 0 then
+        begin
+          MainTriangles[i] := ScaleTriangleCenter(MainTriangles[i], transformvalue+1.0);
+          HasChanged := True;
+        end;
       end
       else if Shift = [ssCtrl, ssShift] then
       begin
-        MainTriangles[i] := ScaleTriangleCenter(MainTriangles[i], 0.9);
-        HasChanged := True;
-        UpdateFlame(False);
+        try
+          transformvalue := StrToFloat(txtTrgScaleValue.Text);
+        except
+          transformvalue := 0.0;
+          txtTrgScaleValue.Text := '0.0';
+        end;
+        if transformvalue <> 0 then
+        begin
+          MainTriangles[i] := ScaleTriangleCenter(MainTriangles[i], 1.0-transformvalue);
+          HasChanged := True;
+        end;
       end;
   end;
   CornerCaught := False;
@@ -1035,31 +1073,75 @@ begin
 end;
 
 procedure TEditForm.mnuRotateRightClick(Sender: TObject);
+var
+  offset: double;
 begin
-  MainTriangles[SelectedTriangle] := RotateTriangleCenter(MainTriangles[SelectedTriangle], -(PI / 20));
-  HasChanged := True;
-  UpdateFlame(true);
+  try
+    offset := StrToFloat(txtTrgRotateValue.Text);
+  except
+    offset := 0;
+    txtTrgRotateValue.Text := '0';
+  end;
+  if offset <> 0 then
+  begin
+    MainTriangles[SelectedTriangle] := RotateTriangleCenter(MainTriangles[SelectedTriangle], -((PI/180) * offset));
+    HasChanged := True;
+    UpdateFlame(true);
+  end;
 end;
 
 procedure TEditForm.mnuRotateLeftClick(Sender: TObject);
+var
+  offset: double;
 begin
-  MainTriangles[SelectedTriangle] := RotateTriangleCenter(MainTriangles[SelectedTriangle], PI / 20);
-  HasChanged := True;
-  UpdateFlame(true);
+  try
+    offset := StrToFloat(txtTrgRotateValue.Text);
+  except
+    offset := 0;
+    txtTrgRotateValue.Text := '0';
+  end;
+  if offset <> 0 then
+  begin
+    MainTriangles[SelectedTriangle] := RotateTriangleCenter(MainTriangles[SelectedTriangle], (PI/180) * offset);
+    HasChanged := True;
+    UpdateFlame(true);
+  end;
 end;
 
 procedure TEditForm.mnuScaleUpClick(Sender: TObject);
+var
+  scale: double;
 begin
-  MainTriangles[SelectedTriangle] := ScaleTriangleCenter(MainTriangles[SelectedTriangle], 1.1);
-  HasChanged := True;
-  UpdateFlame(true);
+  try
+    scale := StrToFloat(txtTrgScaleValue.Text);
+  except
+    scale := 0.0;
+    txtTrgScaleValue.Text := '0.0';
+  end;
+  if scale <> 0 then
+  begin
+    MainTriangles[SelectedTriangle] := ScaleTriangleCenter(MainTriangles[SelectedTriangle], scale+1.0);
+    HasChanged := True;
+    UpdateFlame(true);
+  end;
 end;
 
 procedure TEditForm.mnuScaleDownClick(Sender: TObject);
+var
+  scale: double;
 begin
-  MainTriangles[SelectedTriangle] := ScaleTriangleCenter(MainTriangles[SelectedTriangle], 0.9);
-  HasChanged := True;
-  UpdateFlame(true);
+  try
+    scale := StrToFloat(txtTrgScaleValue.Text);
+  except
+    scale := 0.0;
+    txtTrgScaleValue.Text := '0.0';
+  end;
+  if scale <> 0 then
+  begin
+    MainTriangles[SelectedTriangle] := ScaleTriangleCenter(MainTriangles[SelectedTriangle], 1.0-scale);
+    HasChanged := True;
+    UpdateFlame(true);
+  end;
 end;
 
 procedure TEditForm.FormShow(Sender: TObject);
@@ -1963,7 +2045,8 @@ begin
   end;
   if offset <> 0 then
   begin
-    MainTriangles[SelectedTriangle] := RotateTriangleCenter(MainTriangles[SelectedTriangle], (PI/180) * offset);    HasChanged := True;
+    MainTriangles[SelectedTriangle] := RotateTriangleCenter(MainTriangles[SelectedTriangle], (PI/180) * offset);
+    HasChanged := True;
     UpdateFlame(true);
   end;
 end;
@@ -2065,6 +2148,42 @@ begin
     for i := 0 to 2 do
       MainTriangles[SelectedTriangle].y[i] :=
                     MainTriangles[SelectedTriangle].y[i] - offset;
+    HasChanged := True;
+    UpdateFlame(true);
+  end;
+end;
+
+procedure TEditForm.btTrgScaleUpClick(Sender: TObject);
+var
+  scale: double;
+begin
+  try
+    scale := StrToFloat(txtTrgScaleValue.Text);
+  except
+    scale := 0.0;
+    txtTrgScaleValue.Text := '0.0';
+  end;
+  if scale <> 0 then
+  begin
+    MainTriangles[SelectedTriangle] := ScaleTriangleCenter(MainTriangles[SelectedTriangle], scale+1.0);
+    HasChanged := True;
+    UpdateFlame(true);
+  end;
+end;
+
+procedure TEditForm.btTrgScaleDownClick(Sender: TObject);
+var
+  scale: double;
+begin
+  try
+    scale := StrToFloat(txtTrgScaleValue.Text);
+  except
+    scale := 0.0;
+    txtTrgScaleValue.Text := '0.0';
+  end;
+  if scale <> 0 then
+  begin
+    MainTriangles[SelectedTriangle] := ScaleTriangleCenter(MainTriangles[SelectedTriangle], 1.0-scale);
     HasChanged := True;
     UpdateFlame(true);
   end;
