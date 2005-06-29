@@ -178,6 +178,7 @@ type
     tbRotate: TToolButton;
     mnuimage: TMenuItem;
     tbzoomoutwindow: TToolButton;
+    mnuSaveAllAs: TMenuItem;
     procedure tbzoomoutwindowClick(Sender: TObject);
     procedure mnuimageClick(Sender: TObject);
     procedure mnuExitClick(Sender: TObject);
@@ -274,6 +275,7 @@ type
     procedure tbzoomwindowClick(Sender: TObject);
     procedure tbDragClick(Sender: TObject);
     procedure tbRotateClick(Sender: TObject);
+    procedure mnuSaveAllAsClick(Sender: TObject);
   private
     Renderer: TRenderThread;
 
@@ -2376,6 +2378,36 @@ begin
   end;
 end;
 
+procedure TMainForm.mnuSaveAllAsClick(Sender: TObject);
+{ Save all parameters to a file }
+var
+  i, current: integer;
+begin
+  SaveForm.Caption := 'Save All Parameters';
+  SaveForm.Filename := SavePath;
+  SaveForm.Title := '';
+  SaveForm.txtTitle.Enabled := false;
+  if SaveForm.ShowModal = mrOK then
+  begin
+    SavePath := SaveForm.Filename;
+    if ExtractFileExt(SavePath) = '' then SavePath := SavePath + '.flame';
+    if ExtractFileExt(SavePath) <> '.flame' then
+    begin
+      Application.MessageBox('Bad filename extension.', 'Warning',
+                             MB_OK or MB_ICONEXCLAMATION);
+      exit;
+    end;
+    current := ListView.ItemIndex;
+    for i := 0 to ListView.Items.Count-1 do
+    begin
+      LoadXMLFlame(OpenFile, ListView.Items.Item[i].Caption);
+      SaveXMLFlame(maincp, maincp.name, SavePath);
+    end;
+    ListView.ItemIndex := current;
+    LoadXMLFlame(OpenFile, ListView.Selected.caption);
+  end;
+end;
+
 
 procedure TMainForm.mnuAutoZoomClick(Sender: TObject);
 begin
@@ -4356,6 +4388,4 @@ begin
   UpdateWindows;
 end;
 
-
-///////////////////////////////////////////////////////////////////////////////
 end.

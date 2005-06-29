@@ -85,11 +85,13 @@ begin
   else if caption = 'Save Gradient' then
     warn := 'gradient'
   else if caption = 'Export UPR' then
-    warn := 'UPR';
+    warn := 'UPR'
+  else if caption = 'Save All Parameters' then
+    warn := 'allparameters';
   t := Trim(txtTitle.Text);
   f := Trim(txtFilename.Text);
 
-  if t = '' then
+  if ((t = '') and txtTitle.Enabled) then
   begin
     Application.MessageBox(PChar('Please enter a title for the ' + warn + '.'), 'Apophysis', 48);
     Exit;
@@ -108,6 +110,10 @@ begin
   if warn = 'parameters' then
   begin
     check := XMLEntryExists(t, f);
+  end
+  else if warn = 'allparameters' then
+  begin
+    check := false;
   end
   else
   begin
@@ -155,6 +161,12 @@ begin
     SaveDialog.Title := 'Select Ultra Fractal Parameter File';
     SaveDialog.DefaultExt := 'upr';
     SaveDialog.Filter := 'UPR Files (*.upr)|*.upr';
+  end
+  else if caption = 'Save All Parameters' then
+  begin
+    SaveDialog.Title := 'Select Parameter File';
+    SaveDialog.DefaultExt := 'flame';
+    SaveDialog.Filter := 'Flame files (*.flame)|*.flame';
   end;
   SaveDialog.InitialDir := ExtractFilePath(txtFilename.Text);
   if SaveDialog.Execute then

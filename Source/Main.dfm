@@ -2476,6 +2476,12 @@ object MainForm: TMainForm
         ShortCut = 16467
         OnClick = mnuSaveAsClick
       end
+      object mnuSaveAllAs: TMenuItem
+        Caption = 'Save &All Parameters'
+        Hint = 'Saves all parameters to file.'
+        ShortCut = 24659
+        OnClick = mnuSaveAllAsClick
+      end
       object N9: TMenuItem
         Caption = '-'
       end
