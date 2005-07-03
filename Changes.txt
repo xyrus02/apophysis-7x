@@ -9,6 +9,7 @@
 + Shift-Alt-Ctrl mouse actions in editor are bound to the values on the triangle tab
 + FR1221967 'Randomize color value' got Ctrl+N shortcut
 + Added 'Save all parameters' option to the main menu
++ Added screensaver
 
 2.02h
 + Disable screen saver when rendering to disk
