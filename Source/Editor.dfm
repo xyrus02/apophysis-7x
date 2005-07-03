@@ -158,7 +158,7 @@ object EditForm: TEditForm
           Width = 159
           Height = 231
           HorzScrollBar.Visible = False
-          VertScrollBar.Position = 121
+          VertScrollBar.Position = 127
           VertScrollBar.Smooth = True
           VertScrollBar.Style = ssFlat
           VertScrollBar.Tracking = True
@@ -169,9 +169,9 @@ object EditForm: TEditForm
           TabOrder = 0
           object TrianglePanel: TPanel
             Left = 0
-            Top = -121
+            Top = -127
             Width = 155
-            Height = 352
+            Height = 400
             BevelOuter = bvNone
             TabOrder = 0
             object Label9: TLabel
@@ -218,7 +218,7 @@ object EditForm: TEditForm
             end
             object btTrgRotateRight: TSpeedButton
               Left = 90
-              Top = 184
+              Top = 240
               Width = 33
               Height = 24
               Hint = 'Rotate triangle clockwise around its center'
@@ -238,7 +238,7 @@ object EditForm: TEditForm
             end
             object btTrgRotateLeft: TSpeedButton
               Left = 22
-              Top = 184
+              Top = 240
               Width = 33
               Height = 24
               Hint = 'Rotate triangle counter clockwise around its center'
@@ -276,7 +276,7 @@ object EditForm: TEditForm
             end
             object btTrgMoveUp: TSpeedButton
               Left = 56
-              Top = 226
+              Top = 282
               Width = 33
               Height = 24
               Hint = 'Move triangle up'
@@ -314,7 +314,7 @@ object EditForm: TEditForm
             end
             object btTrgMoveRight: TSpeedButton
               Left = 90
-              Top = 250
+              Top = 306
               Width = 33
               Height = 24
               Hint = 'Move triangle right'
@@ -352,7 +352,7 @@ object EditForm: TEditForm
             end
             object btTrgMoveLeft: TSpeedButton
               Left = 22
-              Top = 250
+              Top = 306
               Width = 33
               Height = 24
               Hint = 'Move triangle left'
@@ -390,7 +390,7 @@ object EditForm: TEditForm
             end
             object btTrgMoveDown: TSpeedButton
               Left = 56
-              Top = 274
+              Top = 330
               Width = 33
               Height = 24
               Hint = 'Move triangle down'
@@ -428,7 +428,7 @@ object EditForm: TEditForm
             end
             object btTrgScaleUp: TSpeedButton
               Left = 90
-              Top = 318
+              Top = 374
               Width = 33
               Height = 24
               Hint = 'Scale triangle up'
@@ -448,7 +448,7 @@ object EditForm: TEditForm
             end
             object btTrgScaleDown: TSpeedButton
               Left = 22
-              Top = 318
+              Top = 374
               Width = 33
               Height = 24
               Hint = 'Scale triangle down'
@@ -468,7 +468,7 @@ object EditForm: TEditForm
             end
             object txtTrgRotateValue: TEdit
               Left = 56
-              Top = 184
+              Top = 240
               Width = 33
               Height = 21
               TabOrder = 7
@@ -476,7 +476,7 @@ object EditForm: TEditForm
             end
             object txtTrgMoveValue: TEdit
               Left = 56
-              Top = 250
+              Top = 306
               Width = 33
               Height = 21
               TabOrder = 8
@@ -549,7 +549,7 @@ object EditForm: TEditForm
               OnKeyPress = CornerEditKeyPress
             end
             object chkPreserve: TCheckBox
-              Left = 28
+              Left = 8
               Top = 152
               Width = 105
               Height = 17
@@ -560,11 +560,28 @@ object EditForm: TEditForm
             end
             object txtTrgScaleValue: TEdit
               Left = 56
-              Top = 320
+              Top = 376
               Width = 33
               Height = 21
               TabOrder = 9
               Text = '0.1'
+            end
+            object rgPivot: TRadioGroup
+              Left = 8
+              Top = 176
+              Width = 129
+              Height = 49
+              Caption = ' Rotating pivot :  '
+              Columns = 2
+              Ctl3D = True
+              ItemIndex = 3
+              Items.Strings = (
+                'A'
+                'B'
+                'C'
+                'Center')
+              ParentCtl3D = False
+              TabOrder = 10
             end
           end
         end

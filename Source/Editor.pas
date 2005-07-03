@@ -127,6 +127,7 @@ type
     txtTrgScaleValue: TEdit;
     btTrgScaleUp: TSpeedButton;
     btTrgScaleDown: TSpeedButton;
+    rgPivot: TRadioGroup;
     procedure FormCreate(Sender: TObject);
     procedure GraphImageMouseMove(Sender: TObject; Shift: TShiftState; X,
       Y: integer);
@@ -2045,7 +2046,16 @@ begin
   end;
   if offset <> 0 then
   begin
-    MainTriangles[SelectedTriangle] := RotateTriangleCenter(MainTriangles[SelectedTriangle], (PI/180) * offset);
+    case (rgPivot.ItemIndex) of
+      0: MainTriangles[SelectedTriangle] :=
+               RotateTrianglePoint(MainTriangles[SelectedTriangle], MainTriangles[SelectedTriangle].x[0], MainTriangles[SelectedTriangle].y[0], (PI/180) * offset);
+      1: MainTriangles[SelectedTriangle] :=
+               RotateTrianglePoint(MainTriangles[SelectedTriangle], MainTriangles[SelectedTriangle].x[1], MainTriangles[SelectedTriangle].y[1], (PI/180) * offset);
+      2: MainTriangles[SelectedTriangle] :=
+               RotateTrianglePoint(MainTriangles[SelectedTriangle], MainTriangles[SelectedTriangle].x[2], MainTriangles[SelectedTriangle].y[2], (PI/180) * offset);
+      3: MainTriangles[SelectedTriangle] :=
+               RotateTriangleCenter(MainTriangles[SelectedTriangle], (PI/180) * offset);
+    end;
     HasChanged := True;
     UpdateFlame(true);
   end;
@@ -2063,7 +2073,16 @@ begin
   end;
   if offset <> 0 then
   begin
-    MainTriangles[SelectedTriangle] := RotateTriangleCenter(MainTriangles[SelectedTriangle], -((PI/180) * offset));
+    case (rgPivot.ItemIndex) of
+      0: MainTriangles[SelectedTriangle] :=
+               RotateTrianglePoint(MainTriangles[SelectedTriangle], MainTriangles[SelectedTriangle].x[0], MainTriangles[SelectedTriangle].y[0], -((PI/180) * offset));
+      1: MainTriangles[SelectedTriangle] :=
+               RotateTrianglePoint(MainTriangles[SelectedTriangle], MainTriangles[SelectedTriangle].x[1], MainTriangles[SelectedTriangle].y[1], -((PI/180) * offset));
+      2: MainTriangles[SelectedTriangle] :=
+               RotateTrianglePoint(MainTriangles[SelectedTriangle], MainTriangles[SelectedTriangle].x[2], MainTriangles[SelectedTriangle].y[2], -((PI/180) * offset));
+      3: MainTriangles[SelectedTriangle] :=
+               RotateTriangleCenter(MainTriangles[SelectedTriangle], -((PI/180) * offset));
+    end;
     HasChanged := True;
     UpdateFlame(true);
   end;
