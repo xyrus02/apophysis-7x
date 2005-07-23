@@ -11,6 +11,8 @@
 + Added 'Save all parameters' option to the main menu
 + Added screensaver
 + Added triangle rotating pivot controls
++ fixed Copy/Paste on scripting form
++ fixed Resize On load
 
 2.02h
 + Disable screen saver when rendering to disk
