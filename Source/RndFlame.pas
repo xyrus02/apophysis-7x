@@ -279,7 +279,10 @@ var
   r, s, theta, phi: double;
   skip: boolean;
 begin
-  Result := TControlPoint.Create;
+  if Assigned(SourceCP) then
+    Result := SourceCP.clone
+  else
+    Result := TControlPoint.Create;
 
   Min := randMinTransforms;
   Max := randMaxTransforms;

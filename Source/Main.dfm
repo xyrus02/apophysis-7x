@@ -27,7 +27,7 @@ object MainForm: TMainForm
     Left = 160
     Top = 28
     Width = 4
-    Height = 522
+    Height = 534
   end
   object ToolBar: TToolBar
     Left = 0
@@ -261,7 +261,7 @@ object MainForm: TMainForm
     Left = 0
     Top = 28
     Width = 160
-    Height = 522
+    Height = 534
     Align = alLeft
     Columns = <
       item
@@ -280,7 +280,7 @@ object MainForm: TMainForm
     Left = 164
     Top = 28
     Width = 402
-    Height = 522
+    Height = 534
     Align = alClient
     BevelInner = bvLowered
     BevelOuter = bvNone
@@ -303,7 +303,7 @@ object MainForm: TMainForm
   end
   object StatusBar: TStatusBar
     Left = 0
-    Top = 550
+    Top = 562
     Width = 566
     Height = 19
     Panels = <
@@ -2936,9 +2936,8 @@ object MainForm: TMainForm
   end
   object HTTP: TIdHTTP
     OnStatus = HTTPStatus
-    MaxLineAction = maException
-    ReadTimeout = 0
     AuthRetries = 0
+    AuthProxyRetries = 0
     AllowCookies = True
     ProxyParams.BasicAuthentication = False
     ProxyParams.ProxyPort = 0
