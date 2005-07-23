@@ -80,6 +80,7 @@ type
     btnBreak: TToolButton;
     OpenDialog: TOpenDialog;
     SaveDialog: TSaveDialog;
+    procedure FormShortCut(var Msg: TWMKey; var Handled: Boolean);
     procedure FormCreate(Sender: TObject);
     procedure FormDestroy(Sender: TObject);
     procedure FormShow(Sender: TObject);
@@ -324,7 +325,7 @@ implementation
 
 uses Main, Editor, Adjust, Global, Mutate, Registry, Preview,
   ScriptRender, Gradient, ap_math, ap_classes, ap_sysutils, MyTypes,
-  SavePreset, ap_windows, ap_FileCtrl;
+  SavePreset, ap_windows, ap_FileCtrl, bmdll32;
 
 {$R *.DFM}
 
@@ -377,6 +378,8 @@ type
     procedure CalculateBounds(AMachine: TatVirtualMachine);
     procedure GetSaveFileName(AMachine: TatVirtualMachine);
     procedure CopyFileProc(AMachine: TatVirtualMachine);
+    procedure BM_OpenProc(AMachine: TatVirtualMachine);
+    procedure BM_DllCFuncProc(AMachine: TatVirtualMachine);
     procedure Init; override;
   end;
 
@@ -1164,6 +1167,9 @@ begin
   Scripter.DefineMethod('NormalizeVars', 0, tkNone, nil, NormalizeVars);
   Scripter.DefineMethod('GetSaveFileName', 0, tkString, nil, GetSaveFileName);
   Scripter.DefineMethod('CopyFile', 2, tkString, nil, CopyFileProc);
+
+  Scripter.DefineMethod('BM_Open', 1, tkInteger, nil, BM_OpenProc);
+  Scripter.DefineMethod('BM_DllCFunc', 2, tkInteger, nil, BM_DllCFuncProc);
 end;
 
 procedure TOperationLibrary.RandomFlame(AMachine: TatVirtualMachine);
@@ -1264,6 +1270,34 @@ begin
   end;
 end;
 
+procedure TOperationLibrary.BM_OpenProc(AMachine: TatVirtualMachine);
+var
+  Name: string;
+begin
+  Name := AMachine.GetInputArgAsString(0);
+
+  if @bmdll32.Open <> nil then begin
+    AMachine.ReturnOutputArg(bmdll32.Open(Pchar(Name)));
+  end else begin
+    LastError := 'bmdll32.dll not loaded';
+    AMachine.Halt;
+  end;
+end;
+
+procedure TOperationLibrary.BM_DllCFuncProc(AMachine: TatVirtualMachine);
+var
+  var1, var2: Integer;
+begin
+  var1 := AMachine.GetInputArgAsInteger(0);
+  var2 := AMachine.GetInputArgAsInteger(1);
+
+  if @bmdll32.DllCFunc <> nil then begin
+    AMachine.ReturnOutputArg(bmdll32.DllCFunc(var1, var2));
+  end else begin
+    LastError := 'bmdll32.dll not loaded';
+    AMachine.Halt;
+  end;
+end;
 
 procedure TOperationLibrary.SetParamFileProc(AMachine: TatVirtualMachine);
 var
@@ -3032,6 +3066,27 @@ begin
   if there then exit;
   Favorites.Add(Script);
   Favorites.SaveToFile(AppPath + 'favorites');
+end;
+
+procedure TScriptEditor.FormShortCut(var Msg: TWMKey; var Handled: Boolean);
+begin
+  if GetKeyState(VK_CONTROL) >= 0 then
+    Exit;
+
+  if Msg.CharCode = Ord('C')  then begin
+    Editor.CopyToClipBoard;
+    Handled := True;
+  end;
+
+  if Msg.CharCode = Ord('V') then begin
+    Editor.PasteFromClipBoard;
+    Handled := True;
+  end;
+
+  if Msg.CharCode = Ord('X') then begin
+    Editor.CutToClipBoard;
+    Handled := True;
+  end;
 end;
 
 end.

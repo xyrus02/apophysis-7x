@@ -14,6 +14,7 @@ object ScriptEditor: TScriptEditor
   OnClose = FormClose
   OnCreate = FormCreate
   OnDestroy = FormDestroy
+  OnShortCut = FormShortCut
   OnShow = FormShow
   PixelsPerInch = 96
   TextHeight = 13
