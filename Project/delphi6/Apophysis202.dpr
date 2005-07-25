@@ -58,15 +58,16 @@ uses
   XForm in '..\..\Source\XForm.pas',
   cmapdata in '..\..\Source\cmapdata.pas',
   RenderMM in '..\..\Source\RenderMM.pas',
-  ImageColoring in '..\..\Source\ImageColoring.pas' {frmImageColoring},
   GradientHlpr in '..\..\Source\GradientHlpr.pas',
   formPostProcess in '..\..\Source\formPostProcess.pas' {frmPostProcess},
-  RndFlame in '..\..\Source\RndFlame.pas';
+  RndFlame in '..\..\Source\RndFlame.pas',
+  bmdll32 in '..\..\Source\bmdll32.PAS',
+  ImageColoring in '..\..\Source\ImageColoring.pas' {frmImageColoring};
 
 {$R *.RES}
 
 begin
-  if now > EncodeDate(2005,6,20) then begin
+  if now > EncodeDate(2005, 10, 23) then begin
     ShowMessage('This version has expired. Please go to http://sourceforge.net/project/apophysis and download the latest version.');
     Halt
   end;
@@ -93,8 +94,8 @@ begin
   Application.CreateForm(TSizeTool, SizeTool);
   Application.CreateForm(TExportDialog, ExportDialog);
   Application.CreateForm(TSheepDialog, SheepDialog);
-  Application.CreateForm(TfrmImageColoring, frmImageColoring);
   Application.CreateForm(TfrmPostProcess, frmPostProcess);
+  Application.CreateForm(TfrmImageColoring, frmImageColoring);
   Application.UpdateFormatSettings := False;
   DecimalSeparator := '.';
   Application.Run;

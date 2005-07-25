@@ -38,7 +38,7 @@ uses
   Gradient in '..\..\Source\Gradient.pas' {GradientForm},
   Save in '..\..\Source\Save.pas' {SaveForm},
   About in '..\..\Source\About.pas' {AboutForm},
-  cmap in '..\..\Source\cmap.pas',
+  Cmap in '..\..\Source\Cmap.pas',
   SavePreset in '..\..\Source\SavePreset.pas' {SavePresetForm},
   ControlPoint in '..\..\Source\ControlPoint.pas',
   HtmlHlp in '..\..\Source\HtmlHlp.pas',
@@ -59,14 +59,15 @@ uses
   ImageColoring in '..\..\Source\ImageColoring.pas' {frmImageColoring},
   GradientHlpr in '..\..\Source\GradientHlpr.pas',
   RndFlame in '..\..\Source\RndFlame.pas',
-  formPostProcess in '..\..\Source\formPostProcess.pas' {frmPostProcess};
+  formPostProcess in '..\..\Source\formPostProcess.pas' {frmPostProcess},
+  bmdll32 in '..\..\Source\bmdll32.PAS';
 
 //  ImageColoring in '..\..\Source\ImageColoring.pas' {frmImageColoring};
 
 {$R *.RES}
 
 begin
-  if now > EncodeDate(2005,6,20) then begin
+  if now > EncodeDate(2005,9,20) then begin
     ShowMessage('This version has expired. Please go to http://sourceforge.net/project/apophysis and download the latest version.');
     Halt
   end;
