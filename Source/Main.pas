@@ -2353,6 +2353,7 @@ begin
   SaveForm.Caption := 'Save Parameters';
   SaveForm.Filename := SavePath;
   SaveForm.Title := maincp.name;
+  SaveForm.txtTitle.Enabled := True;
   if SaveForm.ShowModal = mrOK then
   begin
     maincp.name := SaveForm.Title;
