@@ -2,9 +2,13 @@ unit XForm;
 
 interface
 
+uses
+  atPascal;
+
+
 const
-  NRVISVAR = 23;
-  NRVAR = 28;
+  NRVISVAR = 29;
+  NRVAR = 29;
 
   varnames: array[0..NRVAR - 1] of PChar = (
     'linear',
@@ -34,6 +38,7 @@ const
     'daisy',
     'checkers',
     'crot',
+    'testscript',
     'test'
     );
 
@@ -96,7 +101,7 @@ type
     procedure Daisy;               // var[24]
     procedure Checkers;            // var[25]
     procedure CRot;                // var[26]
-
+    procedure TestScript;          // var[27]
     procedure TestVar;             // var[NVARS - 1]
 
     function Mul33(const M1, M2: TMatrix): TMatrix;
@@ -113,9 +118,13 @@ type
 
     varType: integer;
 
+    nx,ny,x,y: double;
+    script: TatPascalScripter;
+
     Orientationtype: integer;
 
     constructor Create;
+    destructor Destroy; override;
     procedure Prepare;
 
     procedure NextPoint(var px, py, pc: double); overload;
@@ -158,6 +167,7 @@ begin
   c[2, 0] := 0;
   c[2, 1] := 0;
   Symmetry := 0;
+
 end;
 
 
@@ -306,6 +316,29 @@ begin
   if (vars[26] <> 0.0) then begin
     FFunctionList[FNrFunctions] := CRot;
     Inc(FNrFunctions);
+  end;
+
+  if (vars[27] <> 0.0) then begin
+    FFunctionList[FNrFunctions] := TestScript;
+    Inc(FNrFunctions);
+
+    Script := TatPascalScripter.Create(nil);
+    Script.SourceCode.Text :=
+       'function test(x, y; var nx, ny);' + #10#13 +
+       'begin' +  #10#13 +
+         'nx := x;' +  #10#13 +
+         'ny := y;' +  #10#13 +
+       'end;' + #10#13 +
+       'function test2;' + #10#13 +
+       'begin' +  #10#13 +
+         'nx := x;' +  #10#13 +
+         'ny := y;' +  #10#13 +
+       'end;' + #10#13;
+    Script.AddVariable('x',x);
+    Script.AddVariable('y',y);
+    Script.AddVariable('nx',nx);
+    Script.AddVariable('ny',ny);
+    Script.Compile;
   end;
 
   if (vars[NRVAR -1] <> 0.0) then begin
@@ -682,6 +715,19 @@ begin
   FPy := FPy + vars[26] * r * sin(Angle);
 end;
 
+///////////////////////////////////////////////////////////////////////////////
+procedure TXForm.TestScript;
+begin
+//  Script.ExecuteSubroutine('test', [FTX, FTY, nvx,nvy]);
+
+  x := FTX;
+  y := FTY;
+  Script.ExecuteSubroutine('test2');
+
+
+  FPx := FPx + vars[27] * nx;
+  FPy := FPy + vars[27] * ny;
+end;
 
 ///////////////////////////////////////////////////////////////////////////////
 procedure TXForm.TestVar;
@@ -1053,4 +1099,12 @@ end;
 
 
 ///////////////////////////////////////////////////////////////////////////////
+destructor TXForm.Destroy;
+begin
+  if assigned(Script) then
+    Script.Free;
+
+  inherited;
+end;
+
 end.
