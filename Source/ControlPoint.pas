@@ -32,8 +32,6 @@ const
   BRIGHT_ADJUST = 2.3;
 
 type
-  PLongintArray = ^TLongintArray;
-  TLongintArray = array[0..8192] of Longint;
   TVariation = (vLinear, vSinusoidal, vSpherical, vSwirl, vHorseshoe, vPolar,
     vHandkerchief, vHeart, vDisc, vSpiral, vHyperbolic, vSquare, vEx, vJulia,
     vBent, vWaves, vFisheye, vPopcorn, vExponential, vPower, vCosine,
@@ -87,6 +85,8 @@ type
     FTwoColorDimensions: Boolean;
   private
     procedure PreparePropTable;
+    function getppux: double;
+    function getppuy: double;
 
   public
     procedure SaveToStringlist(sl: TStringlist);
@@ -124,6 +124,9 @@ type
     procedure ZoomIn(Factor: double);
     procedure MoveRect(R: TRect);
     procedure Rotate(Angle: double);
+
+    property ppux: double read getppux;
+    property ppuy: double read getppuy;
   end;
 
 function add_symmetry_to_control_point(var cp: TControlPoint; sym: integer): integer;
@@ -239,7 +242,6 @@ var
   i: Integer;
   px, py, pc: double;
   dx, dy, tx, ty: double;
-  nx, ny: double;
   r: double;
   s, v, a: double;
   n0, n1, m0, m1: double;
@@ -1732,6 +1734,18 @@ begin
 
   for i := High(startmixed_var_distrib) + 1 to high(mixed_var_distrib) do
     mixed_var_distrib[i] := 8 + i - High(startmixed_var_distrib) - 1;
+end;
+
+///////////////////////////////////////////////////////////////////////////////
+function TControlPoint.getppux: double;
+begin
+  result := pixels_per_unit * power(2, zoom)
+end;
+
+///////////////////////////////////////////////////////////////////////////////
+function TControlPoint.getppuy: double;
+begin
+  result := pixels_per_unit * power(2, zoom)
 end;
 
 ///////////////////////////////////////////////////////////////////////////////
