@@ -45,7 +45,7 @@ type
   end;
   PBucket = ^TBucket;
   TBucketArray = array of TBucket;
-
+  PBucketArray = ^PBucketArray;
 
 type
   TBaseRenderer = class
@@ -67,10 +67,13 @@ type
     destructor Destroy; override;
 
     procedure SetCP(CP: TControlPoint);
-    function  GetImage: TBitmap; virtual; abstract;
     procedure Render; virtual; abstract;
+
+    function  GetImage: TBitmap; virtual; abstract;
     procedure UpdateImage(CP: TControlPoint); virtual;
-    procedure Stop;
+    procedure SaveImage(const FileName: String); virtual;
+
+    procedure Stop; virtual;
 
     property OnProgress: TOnProgress
         read FOnProgress
@@ -107,10 +110,12 @@ type
     destructor Destroy; override;
 
     procedure SetCP(CP: TControlPoint);
-    function GetImage: TBitmap;
     procedure Render;
     procedure RenderMaxMem(MaxMem: Int64);
+
+    function GetImage: TBitmap;
     procedure UpdateImage(CP: TControlPoint);
+    procedure SaveImage(const FileName: String);
 
     procedure Stop;
 
@@ -223,6 +228,24 @@ begin
 end;
 
 ///////////////////////////////////////////////////////////////////////////////
+procedure TRenderer.RenderMaxMem(MaxMem: Int64);
+begin
+  FMaxMem := MaxMem;
+  Render;
+end;
+
+///////////////////////////////////////////////////////////////////////////////
+procedure TRenderer.UpdateImage(CP: TControlPoint);
+begin
+
+end;
+
+///////////////////////////////////////////////////////////////////////////////
+procedure TRenderer.SaveImage(const FileName: String);
+begin
+  if assigned(FRenderer) then
+    FRenderer.SaveImage(FileName);
+end;
 
 
 { TBaseRenderer }
@@ -291,14 +314,7 @@ begin
 end;
 
 ///////////////////////////////////////////////////////////////////////////////
-procedure TRenderer.RenderMaxMem(MaxMem: Int64);
-begin
-  FMaxMem := MaxMem;
-  Render;
-end;
-
-///////////////////////////////////////////////////////////////////////////////
-procedure TRenderer.UpdateImage(CP: TControlPoint);
+procedure TBaseRenderer.SaveImage(const FileName: String);
 begin
 
 end;

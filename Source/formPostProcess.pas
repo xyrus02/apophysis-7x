@@ -56,8 +56,7 @@ var
 implementation
 
 uses
-  ImageDLLLoader, ICOLoader, PNGLOader, HIPSLoader, BMPLoader, PCXLoader, WMFLoader,
-  LinarBitmap, FileUtils, JPEGLoader, JPEG, Registry, Global;
+  Registry, Global;
 
 {$R *.dfm}
 
@@ -235,14 +234,7 @@ end;
 ///////////////////////////////////////////////////////////////////////////////
 procedure TfrmPostProcess.btnSaveClick(Sender: TObject);
 begin
-  with TLinearBitmap.Create do
-  try
-    Assign(FRenderer.GetImage);
-    JPEGLoader.Default.Quality := JPEGQuality;
-    SaveToFile(FImagename);
-  finally
-    Free;
-  end;
+  FRenderer.SaveImage(FImagename);
 end;
 
 ///////////////////////////////////////////////////////////////////////////////

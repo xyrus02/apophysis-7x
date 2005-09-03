@@ -21,8 +21,7 @@ interface
 
 uses
   Windows, Messages, SysUtils, Classes, Graphics, Controls, Forms, Dialogs,
-  ComCtrls, StdCtrls, Render, cmap, ControlPoint, ImageDLLLoader,
-  PNGLoader, BMPLoader, LinarBitmap, ExtCtrls, FileUtils, JPEGLoader, JPEG;
+  ComCtrls, StdCtrls, Render, cmap, ControlPoint;
 
 const
   WM_THREAD_COMPLETE = WM_APP + 5437;
@@ -91,14 +90,7 @@ begin
   if (ScriptEditor.Renderer.MaxMemory > 0) then
     Renderer.RenderMaxMem(ScriptEditor.Renderer.MaxMemory)
   else Renderer.Render;
-  with TLinearBitmap.Create do
-  try
-    Assign(Renderer.GetImage);
-    JPEGLoader.Default.Quality := JPEGQuality;
-    if not cancelled then SaveToFile(FileName);
-  finally
-    Free;
-  end;
+  Renderer.SaveImage(FileName);
   ScriptEditor.Scripter.Paused := False;
 end;
 
@@ -124,7 +116,6 @@ procedure TScriptRenderForm.FormCreate(Sender: TObject);
 begin
   Renderer := TRenderer.Create;
   cp := TControlPoint.Create;
-  ImageDLLLoader.Default.FindDLLs(ProgramPath);
 end;
 
 procedure TScriptRenderForm.btnCancelClick(Sender: TObject);

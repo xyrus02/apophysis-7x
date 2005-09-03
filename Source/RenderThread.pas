@@ -22,7 +22,7 @@ interface
 
 uses
   Classes, windows, Messages, Graphics,
-   controlPoint, Render, Render32, Render64, RenderMM;
+   controlPoint, Render, Render64, Render64MT, RenderMM;
 
 const
   WM_THREAD_COMPLETE = WM_APP + 5437;
@@ -37,12 +37,14 @@ type
     FCP: TControlPoint;
     Fcompatibility: Integer;
     FMaxMem: int64;
+    FNrThreads: Integer;
 
     procedure Render;
     function GetNrSlices: integer;
     function GetSlice: integer;
     procedure Setcompatibility(const Value: Integer);
     procedure SetMaxMem(const Value: int64);
+    procedure SetNrThreads(const Value: Integer);
   public
     TargetHandle: HWND;
 
@@ -50,15 +52,17 @@ type
     destructor Destroy; override;
 
     procedure SetCP(CP: TControlPoint);
-    function GetImage: TBitmap;
+    function  GetImage: TBitmap;
+    procedure SaveImage(const FileName: String);
+
     procedure Execute; override;
-    function GetRenderer: TBaseRenderer;
+    function  GetRenderer: TBaseRenderer;
 
     procedure Terminate;
 
     property OnProgress: TOnProgress
-      read FOnProgress
-      write FOnProgress;
+        read FOnProgress
+       write FOnProgress;
 
     property Slice: integer
         read GetSlice;
@@ -70,6 +74,9 @@ type
     property compatibility: Integer
         read Fcompatibility
        write Setcompatibility;
+    property NrThreads: Integer
+        read FNrThreads
+       write SetNrThreads;
   end;
 
 implementation
@@ -118,7 +125,12 @@ begin
     FRenderer.Free;
 
   if MaxMem = 0 then begin
-    FRenderer := TRenderer64.Create;
+    if NrThreads <= 1 then begin
+      FRenderer := TRenderer64.Create;
+    end else begin
+      FRenderer := TRenderer64MT.Create;
+      TRenderer64MT(FRenderer).NrOfTreads := NrThreads;
+    end;
   end else begin
     FRenderer := TRendererMM64.Create;
     FRenderer.MaxMem := MaxMem
@@ -185,6 +197,19 @@ function TRenderThread.GetRenderer: TBaseRenderer;
 begin
   Result := FRenderer;
   FRenderer := nil;
+end;
+
+///////////////////////////////////////////////////////////////////////////////end.
+procedure TRenderThread.SetNrThreads(const Value: Integer);
+begin
+  FNrThreads := Value;
+end;
+
+///////////////////////////////////////////////////////////////////////////////end.
+procedure TRenderThread.SaveImage(const FileName: String);
+begin
+  if assigned(FRenderer) then
+    FRenderer.SaveImage(FileName);
 end;
 
 ///////////////////////////////////////////////////////////////////////////////end.
