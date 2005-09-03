@@ -476,6 +476,9 @@ var
 
 implementation
 
+uses
+  SysUtils;
+
 var
   SaveExit: pointer;
   DLLHandle: THandle;
@@ -495,9 +498,11 @@ begin
 {$IFNDEF MSDOS}
   ErrorMode := SetErrorMode($8000{SEM_NoOpenFileErrorBox});
 {$ENDIF}
-//  DLLHandle := LoadLibrary('bmdll32.DLL');
-//  if DLLHandle < 32 then
-    DLLHandle := LoadLibrary('C:\brainm.20a\bmdll32.DLL');
+  DLLHandle := LoadLibrary('bmdll32.DLL');
+  if DLLHandle < 32 then
+    DLLHandle := LoadLibrary('C:\brainm.20\bmdll32.DLL');
+  if DLLHandle < 32 then
+     DLLHandle := LoadLibrary(Pchar(IncludeTrailingPathDelimiter(ExtractFilePath(Paramstr(0))) + '..\bmdll32.DLL'));
 
   if DLLHandle >= 32 then begin
     DLLLoaded := True;
