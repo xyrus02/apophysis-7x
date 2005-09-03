@@ -14,13 +14,11 @@ libraries:
 Scripter Studio
 http://www.tmssoftware.com/scriptstudio.htm
 
-ImageFileLib
-http://www.logicnet.dk/lib/
-
 XML Parser
 http://www.destructor.de/
 
 Indy Internet Components
 http://www.indyproject.org/
 
-
+Portable Network Graphics Delphi
+http://pngdelphi.sourceforge.net/
