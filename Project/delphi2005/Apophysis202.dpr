@@ -19,7 +19,7 @@ program Apophysis202;
 
 {%File '..\..\readme.txt'}
 {%File '..\..\Changes.txt'}
-
+                 
 uses
   Forms,
   SysUtils,
@@ -53,14 +53,15 @@ uses
   XForm in '..\..\Source\XForm.pas',
   RenderThread in '..\..\Source\RenderThread.pas',
   Render in '..\..\Source\Render.pas',
-  Render32 in '..\..\Source\Render32.pas',
-  Render64 in '..\..\Source\Render64.pas',
+  Render64MT in '..\..\Source\Render64MT.pas',
   RenderMM in '..\..\Source\RenderMM.pas',
   ImageColoring in '..\..\Source\ImageColoring.pas' {frmImageColoring},
   GradientHlpr in '..\..\Source\GradientHlpr.pas',
   RndFlame in '..\..\Source\RndFlame.pas',
   formPostProcess in '..\..\Source\formPostProcess.pas' {frmPostProcess},
-  bmdll32 in '..\..\Source\bmdll32.PAS';
+  bmdll32 in '..\..\Source\bmdll32.PAS',
+  Render64 in '..\..\Source\Render64.pas',
+  ImageMaker in '..\..\Source\ImageMaker.pas';
 
 //  ImageColoring in '..\..\Source\ImageColoring.pas' {frmImageColoring};
 
