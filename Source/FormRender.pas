@@ -22,8 +22,7 @@ interface
 uses
   Windows, Messages, SysUtils, Classes, Graphics, Controls, Forms, Dialogs,
   StdCtrls, ControlPoint, RenderThread, ComCtrls, Math, Buttons, Registry, cmap,
-  ImageDLLLoader, ICOLoader, PNGLOader, HIPSLoader, BMPLoader, PCXLoader, WMFLoader,
-  LinarBitmap, ExtCtrls, FileUtils, JPEGLoader, JPEG;
+  ExtCtrls;
 
 const
   WM_THREAD_COMPLETE = WM_APP + 5437;
@@ -68,6 +67,8 @@ type
     StatusBar: TStatusBar;
     chkShutdown: TCheckBox;
     cbPostProcess: TCheckBox;
+    edtNrThreads: TEdit;
+    Label6: TLabel;
     procedure FormCreate(Sender: TObject);
     procedure FormDestroy(Sender: TObject);
     procedure btnRenderClick(Sender: TObject);
@@ -121,7 +122,8 @@ var
 
 implementation
 
-uses Main, Global, SavePreset, FileCtrl, formPostProcess;
+uses
+  Main, Global, SavePreset, formPostProcess, pngimage;
 
 {$R *.DFM}
 
@@ -140,6 +142,8 @@ begin
   btnRender.Enabled := true;
   cmbPreset.enabled := true;
   chkSave.enabled := true;
+  cbPostProcess.enabled := true;
+  chkShutdown.enabled := true;
   btnSavePreset.enabled := true;
   btnDeletePreset.enabled := true;
   btnCancel.Caption := 'Close';
@@ -167,23 +171,17 @@ end;
 
 procedure TRenderForm.HandleThreadCompletion(var Message: TMessage);
 begin
-  with TLinearBitmap.Create do
-  try
-    Assign(Renderer.GetImage);
-    JPEGLoader.Default.Quality := JPEGQuality;
-    SaveToFile(RenderForm.FileName);
-    if cbPostProcess.enabled and
-       cbPostProcess.checked then
-      DoPostProcess;
+  if not chkLimitMem.Checked and
+     cbPostProcess.checked then
+    DoPostProcess;
 
-    Renderer.Free;
-    Renderer := nil;
-    ResetControls;
-    if chkShutdown.Checked then
-      WindowsExit;
-  finally
-    Free;
-  end;
+  Renderer.SaveImage(RenderForm.FileName);
+
+  Renderer.Free;
+  Renderer := nil;
+  ResetControls;
+  if chkShutdown.Checked then
+    WindowsExit;
 end;
 
 procedure TRenderForm.HandleThreadTermination(var Message: TMessage);
@@ -230,7 +228,6 @@ end;
 procedure TRenderForm.FormCreate(Sender: TObject);
 begin
   cp := TControlPoint.Create;
-  ImageDLLLoader.Default.FindDLLs(ProgramPath);
   cbMaxMemory.ItemIndex := 1;
   MainForm.Buttons.GetBitmap(2, btnSavePreset.Glyph);
   MainForm.Buttons.GetBitmap(9, btnDeletePreset.Glyph);
@@ -311,6 +308,8 @@ begin
   cbMaxMemory.Enabled := false;
   cmbPreset.enabled := false;
   chkSave.enabled := false;
+  cbPostProcess.enabled := false;
+  chkShutdown.enabled := false;
   btnSavePreset.enabled := false;
   btnDeletePreset.enabled := false;
   btnRender.Enabled := false;
@@ -340,6 +339,7 @@ begin
     Renderer.Compatibility := compatibility;
     Renderer.SetCP(cp);
     Renderer.Priority := tpLower;
+    Renderer.NrThreads := StrToInt(edtNrThreads.text);
     Renderer.Resume;
 
     // enable screensaver
@@ -586,8 +586,8 @@ var
   Title: string;
   FStrings: TStringList;
 begin
+  FStrings := TStringList.Create;
   try
-    FStrings := TStringList.Create;
     if fileExists(AppPath + 'render presets') then begin
       FStrings.LoadFromFile(AppPath + 'render presets');
       cmbPreset.Clear;
