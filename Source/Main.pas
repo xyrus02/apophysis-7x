@@ -365,7 +365,7 @@ implementation
 uses Editor, Options, Regstry, Gradient, Render,
   FullScreen, FormRender, Mutate, Adjust, Browser, Save, About, CmapData,
   HtmlHlp, ScriptForm, FormFavorites, Size, FormExport, msMultiPartFormData,
-  Sheep, ImageColoring, RndFlame;
+  ImageColoring, RndFlame;
 
 {$R *.DFM}
 
@@ -3822,11 +3822,11 @@ begin
 end;
 
 procedure TMainForm.mnuPostSheepClick(Sender: TObject);
-var
-  URL: string;
-  StringList: TStringList;
-  ResponseStream: TMemoryStream;
-  MultiPartFormDataStream: TmsMultiPartFormDataStream;
+//var
+//  URL: string;
+//  StringList: TStringList;
+//  ResponseStream: TMemoryStream;
+//  MultiPartFormDataStream: TmsMultiPartFormDataStream;
 begin
 //  if MainCp.HasNewVariants then begin
 //    showMessage('The posting of sheep with new variants (exponential, power, cosine and sawtooth) is disabled in this version.');
@@ -3837,7 +3837,7 @@ begin
 //    showMessage('The posting of sheep with are rotated is disabled in this version.');
 //    Exit;
 //  end;
-
+(*
   if SheepDialog.ShowModal = mrOK then
   begin
     DeleteFile('apophysis.log');
@@ -3877,7 +3877,7 @@ begin
       logFile.Active := False;
     end;
   end;
-
+*)
 end;
 
 procedure TMainForm.HTTPRedirect(Sender: TObject; var dest: string;

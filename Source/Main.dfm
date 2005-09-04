@@ -2,7 +2,7 @@ object MainForm: TMainForm
   Left = 408
   Top = 98
   Width = 574
-  Height = 635
+  Height = 675
   Caption = 'Apophysis'
   Color = clBtnFace
   Font.Charset = ANSI_CHARSET
@@ -27,7 +27,7 @@ object MainForm: TMainForm
     Left = 160
     Top = 28
     Width = 4
-    Height = 534
+    Height = 574
   end
   object ToolBar: TToolBar
     Left = 0
@@ -261,7 +261,7 @@ object MainForm: TMainForm
     Left = 0
     Top = 28
     Width = 160
-    Height = 534
+    Height = 574
     Align = alLeft
     Columns = <
       item
@@ -280,7 +280,7 @@ object MainForm: TMainForm
     Left = 164
     Top = 28
     Width = 402
-    Height = 534
+    Height = 574
     Align = alClient
     BevelInner = bvLowered
     BevelOuter = bvNone
@@ -291,7 +291,7 @@ object MainForm: TMainForm
       Left = 1
       Top = 1
       Width = 400
-      Height = 532
+      Height = 572
       Align = alClient
       AutoSize = True
       PopupMenu = DisplayPopup
@@ -303,7 +303,7 @@ object MainForm: TMainForm
   end
   object StatusBar: TStatusBar
     Left = 0
-    Top = 562
+    Top = 602
     Width = 566
     Height = 19
     Panels = <
@@ -2521,11 +2521,12 @@ object MainForm: TMainForm
       object mnuPostSheep: TMenuItem
         Caption = 'Post Sheep...'
         ImageIndex = 45
-        ShortCut = 16456
+        Visible = False
         OnClick = mnuPostSheepClick
       end
       object N21: TMenuItem
         Caption = '-'
+        Visible = False
       end
       object mnuRandomBatch: TMenuItem
         Caption = '&Random Batch'
