@@ -1,5 +1,6 @@
 
 Apophysis was written with Delphi 5.0
+And is now developed using Delphi 6,7 and 2005
 
 The rendering engine (with some modifications) comes
 from a screensaver by Ronald Hordijk.
