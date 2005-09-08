@@ -19,12 +19,12 @@
 unit cmapdata;
 
 // updated on 2004-12-10 by Ralf Lehmann to match Flam3's color maps from:
-// "@(#) $Id: cmapdata.pas,v 1.1 2005/03/25 08:35:39 ronaldhordijk Exp $"
+// "@(#) $Id: cmapdata.pas,v 1.2 2005/09/08 16:52:12 zueuk Exp $"
 
 interface
 
 Const
-  cmaps : array[0..700,0..255,0..2] of integer =
+  cmaps : array[0..700,0..255,0..2] of byte = 
 (
 // 0 south-sea-bather
 ((185, 234, 235), (193, 238, 235), (197, 242, 235), (201, 242, 235),
