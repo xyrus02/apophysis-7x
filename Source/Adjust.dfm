@@ -173,7 +173,7 @@ object AdjustForm: TAdjustForm
     Top = 133
     Width = 390
     Height = 131
-    ActivePage = TabSheet2
+    ActivePage = TabSheet3
     Align = alBottom
     TabOrder = 1
     object TabSheet1: TTabSheet
@@ -681,6 +681,7 @@ object AdjustForm: TAdjustForm
           Align = alClient
           PopupMenu = GradientPopup
           Stretch = True
+          OnDblClick = GradientImageDblClick
           OnMouseDown = GradImageMouseDown
           OnMouseMove = GradImageMouseMove
           OnMouseUp = GradImageMouseUp

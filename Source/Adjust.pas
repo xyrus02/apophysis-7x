@@ -242,6 +242,7 @@ type
     procedure GetMainWindowSize;
     procedure btnUndoClick(Sender: TObject);
     procedure btnRedoClick(Sender: TObject);
+    procedure GradientImageDblClick(Sender: TObject);
 
   private
     Resetting: boolean;
@@ -1645,6 +1646,11 @@ procedure TAdjustForm.mnuRandomizeClick(Sender: TObject);
 begin
   UpdateGradient(GradientHelper.RandomGradient);
   Apply;
+end;
+
+procedure TAdjustForm.GradientImageDblClick(Sender: TObject);
+begin
+  mnuRandomizeClick(Sender);
 end;
 
 procedure TAdjustForm.GradImageMouseDown(Sender: TObject;
