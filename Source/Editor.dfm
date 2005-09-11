@@ -1,10 +1,12 @@
 object EditForm: TEditForm
-  Left = 305
-  Top = 166
+  Left = 377
+  Top = 179
   Width = 586
-  Height = 590
+  Height = 600
   Caption = 'Transform Editor'
   Color = clBtnFace
+  Constraints.MinHeight = 400
+  Constraints.MinWidth = 200
   Font.Charset = ANSI_CHARSET
   Font.Color = clWindowText
   Font.Height = -11
@@ -44,16 +46,13 @@ object EditForm: TEditForm
   OnClose = FormClose
   OnCreate = FormCreate
   OnDestroy = FormDestroy
-  OnKeyDown = editKeyDown
-  OnKeyPress = editKeyPress
-  OnMouseWheel = editMouseWheel
   OnResize = FormResize
   OnShow = FormShow
   PixelsPerInch = 96
   TextHeight = 13
   object StatusBar: TStatusBar
     Left = 0
-    Top = 547
+    Top = 557
     Width = 578
     Height = 15
     Panels = <
@@ -325,14 +324,14 @@ object EditForm: TEditForm
     Left = 0
     Top = 24
     Width = 578
-    Height = 523
+    Height = 533
     Align = alClient
     TabOrder = 1
     object Splitter1: TSplitter
       Left = 396
       Top = 1
       Width = 9
-      Height = 521
+      Height = 531
       Align = alRight
       AutoSnap = False
       Beveled = True
@@ -343,30 +342,17 @@ object EditForm: TEditForm
       Left = 1
       Top = 1
       Width = 395
-      Height = 521
+      Height = 531
       Align = alClient
       BevelOuter = bvNone
-      Color = clBlack
+      Color = clAppWorkSpace
       TabOrder = 0
-      object GraphImage: TImage
-        Tag = 1
-        Left = 0
-        Top = 0
-        Width = 395
-        Height = 521
-        Align = alClient
-        PopupMenu = EditPopup
-        OnDblClick = GraphImageDblClick
-        OnMouseDown = GraphImageMouseDown
-        OnMouseMove = GraphImageMouseMove
-        OnMouseUp = GraphImageMouseUp
-      end
     end
     object RightPanel: TPanel
       Left = 405
       Top = 1
       Width = 172
-      Height = 521
+      Height = 531
       Align = alRight
       Alignment = taLeftJustify
       BevelOuter = bvNone
@@ -406,7 +392,7 @@ object EditForm: TEditForm
         Left = 0
         Top = 136
         Width = 172
-        Height = 385
+        Height = 395
         Align = alClient
         TabOrder = 0
         object lblTransform: TLabel
@@ -441,8 +427,8 @@ object EditForm: TEditForm
           Left = 1
           Top = 26
           Width = 170
-          Height = 358
-          ActivePage = tabVariations
+          Height = 368
+          ActivePage = TriangleTab
           Align = alBottom
           Anchors = [akLeft, akTop, akRight, akBottom]
           MultiLine = True
@@ -454,7 +440,7 @@ object EditForm: TEditForm
               Left = 0
               Top = 0
               Width = 162
-              Height = 312
+              Height = 322
               HorzScrollBar.Visible = False
               VertScrollBar.Smooth = True
               VertScrollBar.Style = ssFlat
@@ -1299,7 +1285,7 @@ object EditForm: TEditForm
               Left = 0
               Top = 0
               Width = 162
-              Height = 312
+              Height = 322
               Align = alClient
               ScrollBars = ssVertical
               TabOrder = 0

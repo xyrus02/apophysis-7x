@@ -23,7 +23,7 @@ interface
 uses
   Windows, Messages, SysUtils, Classes, Graphics, Controls, Forms, Dialogs,
   ExtCtrls, StdCtrls, ComCtrls, Math, Menus, ToolWin, Registry, MyTypes,
-  ControlPoint, Render, cmap, Grids, ValEdit, Buttons, ImgList;
+  ControlPoint, Render, cmap, Grids, ValEdit, Buttons, ImgList, TriangleGraph;
 
 const
 //  PixelCountMax = 32768;
@@ -32,7 +32,6 @@ const
 type
   TEditForm = class(TForm)
     GrphPnl: TPanel;
-    GraphImage: TImage;
     StatusBar: TStatusBar;
     ControlPanel: TPanel;
     lblTransform: TLabel;
@@ -268,6 +267,7 @@ type
       Shift: TShiftState; X, Y: Integer);
 
   private
+    TriangleGraph: TTriangleGraph;
     bm: TBitmap;
     cmap: TColorMap;
  //   cp1: TControlPoint;
@@ -726,11 +726,11 @@ begin
   gCentery := yminz + gylength / 2;
   if gxlength >= gylength then
   begin
-    GraphZoom := EditForm.GraphImage.Width / 60 / gxlength;
+    GraphZoom := TriangleGraph.Width / 60 / gxlength;
   end
   else
   begin
-    GraphZoom := EditForm.GraphImage.Height / 60 / gylength;
+    GraphZoom := TriangleGraph.Height / 60 / gylength;
   end;
   EditForm.StatusBar.Panels[2].Text := Format('Zoom: %f', [GraphZoom]);
 end;
@@ -922,27 +922,27 @@ var
   ix, iy, sc: double;
   ax, ay, bx, by, cx, cy: integer;
   Width, Height: integer;
-  BitMap: TBitMap;
+//  BitMap: TBitMap;
   // --Z--
   gridX1, gridX2, gridY1, gridY2, gi, gstep: double;
   gp: TRoundToRange;
-//  TrgPoints: array[0..2] of TPoint;
 label DrawCorner;
 begin
   // --Z-- hmmm:
   if SelectedTriangle < 0 then SelectedTriangle := 0
   else if SelectedTriangle >= Transforms then SelectedTriangle := Transforms-1;
 
-  BitMap := TBitMap.Create;
+//  BitMap := TBitMap.Create;
   try
-    Width := GraphImage.Width;
-    Height := GraphImage.Height;
-    BitMap.Width := Width;
-    BitMap.Height := Height;
+    Width := TriangleGraph.Width;
+    Height := TriangleGraph.Height;
+//    BitMap.Width := Width;
+//    BitMap.Height := Height;
     ix := Width / 2;
     iy := Height / 2;
     sc := 50 * GraphZoom;
-    with Bitmap.canvas do
+//    with Bitmap.canvas do
+    with TriangleGraph.Canvas do
     begin
       brush.Color := pnlBackColor.Color;
       FillRect(rect(0, 0, Width, Height));
@@ -1150,10 +1150,10 @@ begin
 }
       // --
     end;
-    GraphImage.Picture.Graphic := Bitmap;
-    GraphImage.Refresh;
+//    GraphImage.Picture.Graphic := Bitmap;
+//    GraphImage.Refresh;
   finally
-    BitMap.Free;
+//    BitMap.Free;
   end;
 end;
 
@@ -1161,16 +1161,23 @@ procedure TEditForm.FormCreate(Sender: TObject);
 var
   i: integer;
 begin
-(*
-  Drawcntrl := TDrawingControl.Create(self);
-  Drawcntrl.TabStop := True;
-  Drawcntrl.Parent := GrphPnl;
-  Drawcntrl.Align := alClient;
-  Drawcntrl.Visible := True;
+//
+  TriangleGraph := TTriangleGraph.Create(self);
+  TriangleGraph.TabStop := True;
+  TriangleGraph.Parent := GrphPnl;
+  TriangleGraph.Align := alClient;
+  TriangleGraph.Visible := True;
 
-  Drawcntrl.OnDblClick := GraphImageDblClick;
-  Drawcntrl.Onpaint :=  viewPaint;
-*)
+  TriangleGraph.OnDblClick := GraphImageDblClick;
+  TriangleGraph.OnMouseDown := GraphImageMouseDown;
+  TriangleGraph.OnMouseMove := GraphImageMouseMove;
+  TriangleGraph.OnMouseUp := GraphImageMouseUp;
+  TriangleGraph.OnMouseWheel := EditMouseWheel;
+  TriangleGraph.OnKeyDown := EditKeyDown;
+
+//  TriangleGraph.PopupMenu := EditPopup;
+//  TriangleGraph.OnPaint :=
+//
 
   for i:= 0 to NRVAR - 1 do begin
     VEVars.InsertRow(Varnames(i), '0', True);
@@ -1219,7 +1226,7 @@ var
   d: double;
 label FoundCorner;
 begin
-  Scale(fx, fy, x, y, EditForm.GraphImage.Width, EditForm.GraphImage.Height);
+  Scale(fx, fy, x, y, TriangleGraph.Width, TriangleGraph.Height);
   // --Z--
   StatusBar.Panels[0].Text := Format('X: %f', [fx]);
   StatusBar.Panels[1].Text := Format('Y: %f', [fy]);
@@ -1258,9 +1265,9 @@ FoundCorner:
 
 
   if  (mouseOverTriangle >= 0) and (SelectMode or (mouseOverTriangle = SelectedTriangle)) then
-    GraphImage.Cursor := crHandPoint
+    TriangleGraph.Cursor := crHandPoint
   else
-    GraphImage.Cursor := crArrow;
+    TriangleGraph.Cursor := crArrow;
 
   if graphDragMode then // graph panning
   begin
@@ -1395,7 +1402,7 @@ begin
   CornerCaught := False;
   TriangleCaught := False;
   dragged := false; // --Z--
-  Scale(fx, fy, x, y, EditForm.GraphImage.Width, EditForm.GraphImage.Height);
+  Scale(fx, fy, x, y, TriangleGraph.Width, TriangleGraph.Height);
   Shift := Shift - [ssLeft]; // --Z--
   if Button = mbLeft then
   begin
@@ -1476,7 +1483,7 @@ begin
   end
   else if Button = mbRight then // graph panning
   begin
-    SetCaptureControl(GraphImage);
+    SetCaptureControl(TriangleGraph);
     Screen.Cursor := crSizeAll;
 
     graphDragMode := true;
@@ -2771,17 +2778,12 @@ var
   coeff: double;
 label goNext;
 begin
-  //if VEVars.Focused then exit;
-
   if Shift = [ssShift] then coeff := 10
   else if Shift = [ssCtrl] then coeff := 0.1
   else coeff := 1.0;
 
-//  if (key in [VK_LEFT,VK_RIGHT,VK_UP,VK_DOWN,VK_PRIOR,VK_NEXT,VK_HOME,VK_END]) and
-//  if VEVars.Focused = false then
-//  if FocusedControl = VEVars then
-  if (PageControl.TabIndex <> 2) or    // variations
-     (PageControl.TabIndex <> 3) then  // variables
+//  if (PageControl.TabIndex <> 2) or    // variations
+//     (PageControl.TabIndex <> 3) then  // variables
   begin
 //    MainForm.UpdateUndo;
     case key of
@@ -2826,6 +2828,7 @@ goNext:
         ShowSelectedInfo;
       end;
     VK_SPACE: EditForm.tbSelectClick(Sender);
+
     Ord('Q'): EditForm.tbEditModeClick(tbMove);
     Ord('W'): EditForm.tbEditModeClick(tbRotate);
     Ord('E'): EditForm.tbEditModeClick(tbScale);
@@ -2850,8 +2853,8 @@ end;
 
 procedure TEditForm.editKeyPress(Sender: TObject; var Key: Char);
 begin
-  if key_handled then key := #0
-  else if key in ['A'..'z'] then key := #0; // hmmm...
+//  if key_handled then key := #0 else
+  if key in ['A'..'z'] then key := #0; // hmmm...
 end;
 
 procedure TEditForm.splitterMoved(Sender: TObject);
@@ -2873,7 +2876,7 @@ begin
     StatusBar.Panels[2].Text := 'Select OFF';
   end;
 
-  // hack:
+  // hack (to generate MouseMove event):
   GetCursorPos(MousePos);
   SetCursorPos(MousePos.x, MousePos.y);
 end;
@@ -2883,7 +2886,6 @@ procedure TEditForm.editMouseWheel(Sender: TObject; Shift: TShiftState;
 begin
   if WheelDelta > 0 then GraphZoom := GraphZoom * 1.25
   else GraphZoom := GraphZoom * 0.8;
-//  if GraphZoom < 0 the GraphZoom := 0;
   EditForm.StatusBar.Panels[2].Text := Format('Zoom: %f', [GraphZoom]);
 
   DrawGraph;
@@ -2964,8 +2966,6 @@ begin
   begin
     v := cp.xform[SelectedTriangle].vars[varDragIndex];
     v := RoundTo(v + ((x-varDragPos)*2)/1000.0, -3);
-
-    // someone keeps rounding my variation values... grrrr >:-((
 
     varDragPos:=x;
     SetCursorPos(MousePos.x, MousePos.y); // hmmm
