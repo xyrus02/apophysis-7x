@@ -30,8 +30,6 @@ object ScriptRenderForm: TScriptRenderForm
     Top = 8
     Width = 249
     Height = 13
-    Min = 0
-    Max = 100
     TabOrder = 1
   end
 end

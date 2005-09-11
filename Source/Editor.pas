@@ -154,6 +154,11 @@ type
     ToolButton9: TToolButton;
     Panel1: TPanel;
     ColorImage: TImage;
+    TabSheet4: TTabSheet;
+    vleVariables: TValueListEditor;
+    procedure vleVariablesValidate(Sender: TObject; ACol, ARow: Integer; const KeyName, KeyValue: string);
+    procedure vleVariablesKeyPress(Sender: TObject; var Key: Char);
+    procedure vleVariablesExit(Sender: TObject);
     procedure FormCreate(Sender: TObject);
     procedure GraphImageMouseMove(Sender: TObject; Shift: TShiftState; X,
       Y: integer);
@@ -284,7 +289,7 @@ type
     GraphZoom: double;
     CornerCaught: boolean;
     TriangleCaught: boolean;
-//  SelectedTriangle: integer; // outside only for scripting (??)
+//    SelectedTriangle: integer; // outside only for scripting (??)
     SelectedCorner: integer;
     SelectMode: boolean;
     // Drawing: boolean;
@@ -294,7 +299,7 @@ type
     // --Z--
     olddist: double;
     Pivot: TSPoint;
-    VarsCache: array[0..32] of double; // hack
+    VarsCache: array[0..64] of double; // hack
 
     colorDrag, colorChanged: boolean;
     colorDragX, colorOldX: integer;
@@ -357,7 +362,7 @@ procedure ScaleAll;
 implementation
 
 uses
-  Main, Global, Adjust, Mutate, Xform;
+  Main, Global, Adjust, Mutate, XformMan;
 
 const
   SUB_BATCH_SIZE = 1000;
@@ -625,6 +630,7 @@ var
   i: integer;
   a, b, c, d, e, f: double;
   v: double;
+  val: double;
 begin
   t := SelectedTriangle; // why 't' ?
 
@@ -674,15 +680,19 @@ begin
   EditForm.txtXFormColor.Text := Format('%1.3f', [cp.xform[t].color]);//FloatToStr(EditForm.cp.xform[t].color);
   EditForm.scrlXFormcolor.Position := Trunc(EditForm.cp.xform[t].color * scrlXFormColor.Max);
 
-  for i := 0 to NRVISVAR-1 do begin
+  for i := 0 to NRVAR-1 do begin
     v:=EditForm.cp.xform[SelectedTriangle].vars[i];
     if v <> VarsCache[i] then
     begin
       VarsCache[i]:=v;
-      EditForm.VEVars.Values[VarNames[i]] := Format('%.6g', [v]);
+      EditForm.VEVars.Values[VarNames(i)] := Format('%.6g', [v]);
     end;
   end;
 
+  for i:= 0 to GetNrVariableNames - 1 do begin
+    EditForm.cp.xform[SelectedTriangle].GetVariable(GetVariableNameAt(i), val);
+    EditForm.vleVariables.Values[GetVariableNameAt(i)] := Format('%.6g', [val]);
+  end;
 end;
 
 procedure TEditForm.Scale(var fx, fy: double; x, y, Width, Height: integer);
@@ -1154,8 +1164,23 @@ procedure TEditForm.FormCreate(Sender: TObject);
 var
   i: integer;
 begin
-  for i:= 0 to NRVISVAR - 1 do begin
-    VEVars.InsertRow(Varnames[i], '0', True);
+(*
+  Drawcntrl := TDrawingControl.Create(self);
+  Drawcntrl.TabStop := True;
+  Drawcntrl.Parent := GrphPnl;
+  Drawcntrl.Align := alClient;
+  Drawcntrl.Visible := True;
+
+  Drawcntrl.OnDblClick := GraphImageDblClick;
+  Drawcntrl.Onpaint :=  viewPaint;
+*)
+
+  for i:= 0 to NRVAR - 1 do begin
+    VEVars.InsertRow(Varnames(i), '0', True);
+  end;
+
+  for i:= 0 to GetNrVariableNames - 1 do begin
+    vleVariables.InsertRow(GetVariableNameAt(i), '0', True);
   end;
 
   bm := TBitmap.Create;
@@ -1183,7 +1208,8 @@ begin
   mouseOverTriangle := -1;
   mouseOverCorner := -1;
 
-  for i := 0 to NRVISVAR-1 do VarsCache[i] := MinDouble;
+  for i := 0 to NRVAR-1 do
+    VarsCache[i] := MinDouble;
 end;
 
 procedure TEditForm.GraphImageMouseMove(Sender: TObject; Shift: TShiftState;
@@ -2458,17 +2484,17 @@ begin
     OldVal := Round6(cp.xform[SelectedTriangle].vars[i]);
   { Test that it's a valid floating point number }
     try
-      StrToFloat(VEVars.Values[VarNames[i]]);
+      StrToFloat(VEVars.Values[VarNames(i)]);
     except on Exception do
       begin
       { It's not, so we restore the old value }
-        VEVars.Values[VarNames[i]] := Format('%.6g', [OldVal]);
+        VEVars.Values[VarNames(i)] := Format('%.6g', [OldVal]);
         Allow := False;
       end;
     end;
-    NewVal := Round6(StrToFloat(VEVars.Values[VarNames[i]]));
+    NewVal := Round6(StrToFloat(VEVars.Values[VarNames(i)]));
 //    if NewVal < 0 then NewVal := 0;
-    VEVars.Values[VarNames[i]] := Format('%.6g', [NewVal]);
+    VEVars.Values[VarNames(i)] := Format('%.6g', [NewVal]);
 
   { If it's not the same as the old value and it was valid }
     if (NewVal <> OldVal) and Allow then
@@ -2477,7 +2503,7 @@ begin
 //      EditedVariation := i;
       cp.xform[SelectedTriangle].vars[i] := NewVal;
 //      VarNormalize(cp);
-      VEVars.Values[VarNames[i]] := Format('%.6g', [cp.xform[SelectedTriangle].vars[i]]);
+      VEVars.Values[VarNames(i)] := Format('%.6g', [cp.xform[SelectedTriangle].vars[i]]);
       ShowSelectedInfo;
       UpdateFlame(True);
     end;
@@ -2497,17 +2523,17 @@ begin
   OldVal := Round6(cp.xform[SelectedTriangle].vars[i]);
 { Test that it's a valid floating point number }
   try
-    StrToFloat(VEVars.Values[VarNames[i]]);
+    StrToFloat(VEVars.Values[VarNames(i)]);
   except on Exception do
     begin
     { It's not, so we restore the old value }
-      VEVars.Values[VarNames[i]] := Format('%.6g', [OldVal]);
+      VEVars.Values[VarNames(i)] := Format('%.6g', [OldVal]);
       Allow := False;
     end;
   end;
-  NewVal := Round6(StrToFloat(VEVars.Values[VarNames[i]]));
+  NewVal := Round6(StrToFloat(VEVars.Values[VarNames(i)]));
 //    if NewVal < 0 then NewVal := 0;
-  VEVars.Values[VarNames[i]] := Format('%.6g', [NewVal]);
+  VEVars.Values[VarNames(i)] := Format('%.6g', [NewVal]);
 
 { If it's not the same as the old value and it was valid }
   if (NewVal <> OldVal) and Allow then
@@ -2516,7 +2542,7 @@ begin
 //    EditedVariation := i;
     cp.xform[SelectedTriangle].vars[i] := NewVal;
 //      VarNormalize(cp);
-    VEVars.Values[VarNames[i]] := Format('%.6g', [cp.xform[SelectedTriangle].vars[i]]);
+    VEVars.Values[VarNames(i)] := Format('%.6g', [cp.xform[SelectedTriangle].vars[i]]);
     ShowSelectedInfo;
     UpdateFlame(True);
   end;
@@ -2535,17 +2561,17 @@ begin
   OldVal := Round6(cp.xform[SelectedTriangle].vars[i]);
 { Test that it's a valid floating point number }
   try
-    StrToFloat(VEVars.Values[VarNames[i]]);
+    StrToFloat(VEVars.Values[VarNames(i)]);
   except on Exception do
     begin
     { It's not, so we restore the old value }
-      VEVars.Values[VarNames[i]] := Format('%.6g', [OldVal]);
+      VEVars.Values[VarNames(i)] := Format('%.6g', [OldVal]);
       Allow := False;
     end;
   end;
-  NewVal := Round6(StrToFloat(VEVars.Values[VarNames[i]]));
+  NewVal := Round6(StrToFloat(VEVars.Values[VarNames(i)]));
 //    if NewVal < 0 then NewVal := 0;
-  VEVars.Values[VarNames[i]] := Format('%.6g', [NewVal]);
+  VEVars.Values[VarNames(i)] := Format('%.6g', [NewVal]);
 
 { If it's not the same as the old value and it was valid }
   if (NewVal <> OldVal) and Allow then
@@ -2554,7 +2580,7 @@ begin
 //    EditedVariation := i;
     cp.xform[SelectedTriangle].vars[i] := NewVal;
 //      VarNormalize(cp);
-    VEVars.Values[VarNames[i]] := Format('%.6g', [cp.xform[SelectedTriangle].vars[i]]);
+    VEVars.Values[VarNames(i)] := Format('%.6g', [cp.xform[SelectedTriangle].vars[i]]);
     ShowSelectedInfo;
     UpdateFlame(True);
   end;
@@ -2762,7 +2788,8 @@ begin
 //  if (key in [VK_LEFT,VK_RIGHT,VK_UP,VK_DOWN,VK_PRIOR,VK_NEXT,VK_HOME,VK_END]) and
 //  if VEVars.Focused = false then
 //  if FocusedControl = VEVars then
-  if PageControl.TabIndex <> 2 then
+  if (PageControl.TabIndex <> 2) or    // variations
+     (PageControl.TabIndex <> 3) then  // variables
   begin
 //    MainForm.UpdateUndo;
     case key of
@@ -2953,7 +2980,7 @@ begin
     varMM:=true;
 
     cp.xform[SelectedTriangle].vars[varDragIndex] := v;
-    VEVars.Values[VarNames[varDragIndex]] := Format('%.6g', [v]);
+    VEVars.Values[VarNames(varDragIndex)] := Format('%.6g', [v]);
 
     HasChanged := True;
     UpdateFlameX;
@@ -2986,7 +3013,7 @@ begin
 
 //  i := EditForm.VEVars.Row - 1;
   cp.xform[SelectedTriangle].vars[varDragIndex] := 0;
-  VEVars.Values[VarNames[varDragIndex]] := '0';
+  VEVars.Values[VarNames(varDragIndex)] := '0';
   HasChanged := True;
   UpdateFlameX;
 end;
@@ -3069,6 +3096,119 @@ begin
     // MainCP.copy(cp);
     // UpdateXXXX;
     end;
+  end;
+end;
+
+procedure TEditForm.vleVariablesExit(Sender: TObject);
+var
+  Allow: boolean;
+  i: integer;
+  NewVal, OldVal: double;
+begin
+  Allow := True;
+
+  i := vleVariables.Row;
+
+  cp.xform[SelectedTriangle].GetVariable(vleVariables.Keys[i], OldVal);
+  { Test that it's a valid floating point number }
+  try
+    StrToFloat(vleVariables.Values[vleVariables.Keys[i]]);
+  except on Exception do
+    begin
+    { It's not, so we restore the old value }
+      vleVariables.Values[vleVariables.Keys[i]] := Format('%.6g', [OldVal]);
+      Allow := False;
+    end;
+  end;
+
+  NewVal := Round6(StrToFloat(vleVariables.Values[vleVariables.Keys[i]]));
+  vleVariables.Values[vleVariables.Keys[i]] := Format('%.6g', [NewVal]);
+
+  { If it's not the same as the old value and it was valid }
+  if (NewVal <> OldVal) and Allow then
+  begin
+    MainForm.UpdateUndo;
+    cp.xform[SelectedTriangle].SetVariable(vleVariables.Keys[i], NewVal);
+    vleVariables.Values[vleVariables.Keys[i]] := Format('%.6g', [NewVal]);
+    ShowSelectedInfo;
+    UpdateFlame(True);
+  end;
+end;
+
+procedure TEditForm.vleVariablesKeyPress(Sender: TObject; var Key: Char);
+var
+  Allow: boolean;
+  i: integer;
+  NewVal, OldVal: double;
+begin
+  if key <> #13 then
+    Exit;
+
+  key := #0;
+
+  Allow := True;
+
+  i := vleVariables.Row;
+
+  cp.xform[SelectedTriangle].GetVariable(vleVariables.Keys[i], OldVal);
+  { Test that it's a valid floating point number }
+  try
+    StrToFloat(vleVariables.Values[vleVariables.Keys[i]]);
+  except on Exception do
+    begin
+    { It's not, so we restore the old value }
+      vleVariables.Values[vleVariables.Keys[i]] := Format('%.6g', [OldVal]);
+      Allow := False;
+    end;
+  end;
+
+  NewVal := Round6(StrToFloat(vleVariables.Values[vleVariables.Keys[i]]));
+  vleVariables.Values[vleVariables.Keys[i]] := Format('%.6g', [NewVal]);
+
+  { If it's not the same as the old value and it was valid }
+  if (NewVal <> OldVal) and Allow then
+  begin
+    MainForm.UpdateUndo;
+    cp.xform[SelectedTriangle].SetVariable(vleVariables.Keys[i], NewVal);
+    vleVariables.Values[vleVariables.Keys[i]] := Format('%.6g', [NewVal]);
+    ShowSelectedInfo;
+    UpdateFlame(True);
+  end;
+end;
+
+procedure TEditForm.vleVariablesValidate(Sender: TObject; ACol, ARow: Integer; const KeyName, KeyValue: string);
+var
+  Allow: boolean;
+  i: integer;
+  NewVal, OldVal: double;
+begin
+  Allow := True;
+
+  i := vleVariables.Row;
+
+  cp.xform[SelectedTriangle].GetVariable(vleVariables.Keys[i], OldVal);
+  { Test that it's a valid floating point number }
+  try
+    StrToFloat(vleVariables.Values[vleVariables.Keys[i]]);
+  except on Exception do
+    begin
+    { It's not, so we restore the old value }
+      vleVariables.Values[vleVariables.Keys[i]] := Format('%.6g', [OldVal]);
+      Allow := False;
+    end;
+  end;
+
+  NewVal := Round6(StrToFloat(vleVariables.Values[vleVariables.Keys[i]]));
+  vleVariables.Values[vleVariables.Keys[i]] := Format('%.6g', [NewVal]);
+
+  { If it's not the same as the old value and it was valid }
+  if (NewVal <> OldVal) and Allow then
+  begin
+    MainForm.UpdateUndo;
+    cp.xform[SelectedTriangle].SetVariable(vleVariables.Keys[i], NewVal);
+    vleVariables.Values[vleVariables.Keys[i]] := Format('%.6g', [NewVal]);
+    ShowSelectedInfo;
+    UpdateFlame(True);
   end;
 end;
 

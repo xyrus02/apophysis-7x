@@ -3,44 +3,7 @@ unit XForm;
 interface
 
 uses
-  atPascal;
-
-
-const
-  NRVISVAR = 29;
-  NRVAR = 29;
-
-  varnames: array[0..NRVAR - 1] of PChar = (
-    'linear',
-    'sinusoidal',
-    'spherical',
-    'swirl',
-    'horseshoe',
-    'polar',
-    'handkerchief',
-    'heart',
-    'disc',
-    'spiral',
-    'hyperbolic',
-    'diamond',
-    'ex',
-    'julia',
-    'bent',
-    'waves',
-    'fisheye',
-    'popcorn',
-    'exponential',
-    'power',
-    'cosine',
-    'rings',
-    'fan',
-    'triblob',
-    'daisy',
-    'checkers',
-    'crot',
-    'testscript',
-    'test'
-    );
+  XFormMan, baseVariation;
 
 type
   TCalcMethod = procedure of object;
@@ -62,7 +25,8 @@ type
   TXForm = class
   private
     FNrFunctions: Integer;
-    FFunctionList: array[0..NRVAR-1] of TCalcMethod;
+    FFunctionList: array of TCalcMethod;
+    FCalcFunctionList: array[0..64] of TCalcMethod;
 
     FTx, FTy: double;
     FPx, FPy: double;
@@ -73,6 +37,8 @@ type
     CalculateAngle: boolean;
     CalculateLength: boolean;
     CalculateSinCos: boolean;
+
+    FRegVariations: array of TBaseVariation;
 
     procedure Linear;              // var[0]
     procedure Sinusoidal;          // var[1]
@@ -101,31 +67,33 @@ type
     procedure Daisy;               // var[24]
     procedure Checkers;            // var[25]
     procedure CRot;                // var[26]
-    procedure TestScript;          // var[27]
-    procedure TestVar;             // var[NVARS - 1]
 
     function Mul33(const M1, M2: TMatrix): TMatrix;
     function Identity: TMatrix;
 
+    procedure BuildFunctionlist;
+    procedure AddRegVariations;
+
   public
-    vars: array[0..NRVAR - 1] of double; // normalized interp coefs between variations
+    vars: array of double; // normalized interp coefs between variations
     c: array[0..2, 0..1] of double;      // the coefs to the affine part of the function
+    p: array[0..2, 0..1] of double;      // the coefs to the affine part of the function
     density: double;                     // prob is this function is chosen. 0 - 1
     color: double;                       // color coord for this function. 0 - 1
     color2: double;                      // Second color coord for this function. 0 - 1
     symmetry: double;
     c00, c01, c10, c11, c20, c21: double;
 
-    varType: integer;
-
-    nx,ny,x,y: double;
-    script: TatPascalScripter;
+//    nx,ny,x,y: double;
+//    script: TatPascalScripter;
 
     Orientationtype: integer;
 
     constructor Create;
     destructor Destroy; override;
     procedure Prepare;
+
+    procedure Assign(Xform: TXForm);
 
     procedure NextPoint(var px, py, pc: double); overload;
     procedure NextPoint(var CPpoint: TCPpoint); overload;
@@ -137,6 +105,11 @@ type
     procedure Translate(const x, y: double);
     procedure Multiply(const a, b, c, d: double);
     procedure Scale(const s: double);
+
+    procedure SetVariable(const name: string; var Value: double);
+    procedure GetVariable(const name: string; var Value: double);
+
+    function ToXMLString: string;
   end;
 
 implementation
@@ -156,10 +129,6 @@ var
 begin
   density := 0;
   Color := 0;
-  Vars[0] := 1;
-  for i := 1 to NRVAR - 1 do begin
-    Vars[i] := 0;
-  end;
   c[0, 0] := 1;
   c[0, 1] := 0;
   c[1, 0] := 0;
@@ -168,11 +137,19 @@ begin
   c[2, 1] := 0;
   Symmetry := 0;
 
-end;
+  AddRegVariations;
+  BuildFunctionlist;
 
+  SetLength(vars, NRLOCVAR + Length(FRegVariations));
+  Vars[0] := 1;
+  for i := 1 to High(vars) do
+    Vars[i] := 0;
+end;
 
 ///////////////////////////////////////////////////////////////////////////////
 procedure TXForm.Prepare;
+var
+  i: integer;
 begin
   c00 := c[0][0];
   c01 := c[0][1];
@@ -183,141 +160,23 @@ begin
 
   FNrFunctions := 0;
 
-  if (vars[0] <> 0.0) then begin
-    FFunctionList[FNrFunctions] := Linear;
-    Inc(FNrFunctions);
+  for i := 0 to High(FRegVariations) do begin
+    FRegVariations[i].FPX := @FPX;
+    FRegVariations[i].FPY := @FPY;
+    FRegVariations[i].FTX := @FTX;
+    FRegVariations[i].FTY := @FTY;
+
+    FRegVariations[i].vvar := vars[i + NRLOCVAR];
+    FRegVariations[i].prepare;
   end;
 
-  if (vars[1] <> 0.0) then begin
-    FFunctionList[FNrFunctions] := Sinusoidal;
-    Inc(FNrFunctions);
+  for i := 0 to NrVar - 1 do begin
+    if (vars[i] <> 0.0) then begin
+      FCalcFunctionList[FNrFunctions] := FFunctionList[i];
+      Inc(FNrFunctions);
+    end;
   end;
-
-  if (vars[2] <> 0.0) then begin
-    FFunctionList[FNrFunctions] := Spherical;
-    Inc(FNrFunctions);
-  end;
-
-  if (vars[3] <> 0.0) then begin
-    FFunctionList[FNrFunctions] := Swirl;
-    Inc(FNrFunctions);
-  end;
-
-  if (vars[4] <> 0.0) then begin
-    FFunctionList[FNrFunctions] := Horseshoe;
-    Inc(FNrFunctions);
-  end;
-
-  if (vars[5] <> 0.0) then begin
-    FFunctionList[FNrFunctions] := Polar;
-    Inc(FNrFunctions);
-  end;
-
-  if (vars[6] <> 0.0) then begin
-    FFunctionList[FNrFunctions] := FoldedHandkerchief;
-    Inc(FNrFunctions);
-  end;
-
-  if (vars[7] <> 0.0) then begin
-    FFunctionList[FNrFunctions] := Heart;
-    Inc(FNrFunctions);
-  end;
-
-  if (vars[8] <> 0.0) then begin
-    FFunctionList[FNrFunctions] := Disc;
-    Inc(FNrFunctions);
-  end;
-
-  if (vars[9] <> 0.0) then begin
-    FFunctionList[FNrFunctions] := Spiral;
-    Inc(FNrFunctions);
-  end;
-
-  if (vars[10] <> 0.0) then begin
-    FFunctionList[FNrFunctions] := Hyperbolic;
-    Inc(FNrFunctions);
-  end;
-
-  if (vars[11] <> 0.0) then begin
-    FFunctionList[FNrFunctions] := Square;
-    Inc(FNrFunctions);
-  end;
-
-  if (vars[12] <> 0.0) then begin
-    FFunctionList[FNrFunctions] := Ex;
-    Inc(FNrFunctions);
-  end;
-
-  if (vars[13] <> 0.0) then begin
-    FFunctionList[FNrFunctions] := Julia;
-    Inc(FNrFunctions);
-  end;
-
-  if (vars[14] <> 0.0) then begin
-    FFunctionList[FNrFunctions] := Bent;
-    Inc(FNrFunctions);
-  end;
-
-  if (vars[15] <> 0.0) then begin
-    FFunctionList[FNrFunctions] := Waves;
-    Inc(FNrFunctions);
-  end;
-
-  if (vars[16] <> 0.0) then begin
-    FFunctionList[FNrFunctions] := Fisheye;
-    Inc(FNrFunctions);
-  end;
-
-  if (vars[17] <> 0.0) then begin
-    FFunctionList[FNrFunctions] := Popcorn;
-    Inc(FNrFunctions);
-  end;
-
-  if (vars[18] <> 0.0) then begin
-    FFunctionList[FNrFunctions] := Exponential;
-    Inc(FNrFunctions);
-  end;
-
-  if (vars[19] <> 0.0) then begin
-    FFunctionList[FNrFunctions] := Power;
-    Inc(FNrFunctions);
-  end;
-
-  if (vars[20] <> 0.0) then begin
-    FFunctionList[FNrFunctions] := Cosine;
-    Inc(FNrFunctions);
-  end;
-
-  if (vars[21] <> 0.0) then begin
-    FFunctionList[FNrFunctions] := Rings;
-    Inc(FNrFunctions);
-  end;
-
-  if (vars[22] <> 0.0) then begin
-    FFunctionList[FNrFunctions] := Fan;
-    Inc(FNrFunctions);
-  end;
-
-  if (vars[23] <> 0.0) then begin
-    FFunctionList[FNrFunctions] := Triblob;
-    Inc(FNrFunctions);
-  end;
-
-  if (vars[24] <> 0.0) then begin
-    FFunctionList[FNrFunctions] := Daisy;
-    Inc(FNrFunctions);
-  end;
-
-  if (vars[25] <> 0.0) then begin
-    FFunctionList[FNrFunctions] := Checkers;
-    Inc(FNrFunctions);
-  end;
-
-  if (vars[26] <> 0.0) then begin
-    FFunctionList[FNrFunctions] := CRot;
-    Inc(FNrFunctions);
-  end;
-
+(*
   if (vars[27] <> 0.0) then begin
     FFunctionList[FNrFunctions] := TestScript;
     Inc(FNrFunctions);
@@ -333,7 +192,9 @@ begin
        'begin' +  #10#13 +
          'nx := x;' +  #10#13 +
          'ny := y;' +  #10#13 +
-       'end;' + #10#13;
+       'end;' + #10#13 +
+       'nx := x;' +  #10#13 +
+       'ny := y;' +  #10#13;
     Script.AddVariable('x',x);
     Script.AddVariable('y',y);
     Script.AddVariable('nx',nx);
@@ -341,10 +202,11 @@ begin
     Script.Compile;
   end;
 
-  if (vars[NRVAR -1] <> 0.0) then begin
+  if (vars[NRLOCVAR -1] <> 0.0) then begin
     FFunctionList[FNrFunctions] := TestVar;
     Inc(FNrFunctions);
   end;
+*)
 
   CalculateAngle := (vars[5] <> 0.0) or (vars[6] <> 0.0) or (vars[7] <> 0.0) or (vars[8] <> 0.0) or
                     (vars[12] <> 0.0) or (vars[13] <> 0.0) or (vars[21] <> 0.0) or (vars[22] <> 0.0);
@@ -716,41 +578,6 @@ begin
 end;
 
 ///////////////////////////////////////////////////////////////////////////////
-procedure TXForm.TestScript;
-begin
-//  Script.ExecuteSubroutine('test', [FTX, FTY, nvx,nvy]);
-
-  x := FTX;
-  y := FTY;
-  Script.ExecuteSubroutine('test2');
-
-
-  FPx := FPx + vars[27] * nx;
-  FPy := FPy + vars[27] * ny;
-end;
-
-///////////////////////////////////////////////////////////////////////////////
-procedure TXForm.TestVar;
-var
-  r : double;
-//  dx, dy, dx2: double;
-  Angle: double;
-begin
-  r := sqrt(FTx * FTx + FTy * FTy);
-  if (FTx < -EPS) or (FTx > EPS) or (FTy < -EPS) or (FTy > EPS) then
-     Angle := arctan2(FTx, FTy)
-  else
-    Angle := 0.0;
-
-  Angle := Angle + Max(0, (3 - r)) * sin(2 * r);
-
-//   r:=  R - 0.04 * sin(6.2 * R - 1) - 0.008 * R;
-
-  FPx := FPx + vars[NRVAR - 1] * r * cos(Angle);
-  FPy := FPy + vars[NRVAR - 1] * r * sin(Angle);
-end;
-
-///////////////////////////////////////////////////////////////////////////////
 procedure TXForm.NextPoint(var px,py,pc: double);
 var
   i: Integer;
@@ -787,10 +614,13 @@ begin
   Fpy := 0;
 
   for i := 0 to FNrFunctions - 1 do
-    FFunctionList[i];
+    FCalcFunctionList[i];
 
   px := FPx;
   py := FPy;
+
+//  px := p[0,0] * FPx + p[1,0] * FPy + p[2,0];
+//  py := p[0,1] * FPx + p[1,1] * FPy + p[2,1];
 end;
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -834,6 +664,8 @@ begin
 
   CPpoint.x := FPx;
   CPpoint.y := FPy;
+//  CPpoint.x := p[0,0] * FPx + p[1,0] * FPy + p[2,0];
+//  CPpoint.y := p[0,1] * FPx + p[1,1] * FPy + p[2,1];
 end;
 
 
@@ -871,9 +703,21 @@ begin
     else
        FAngle := 0.0;
   end;
-  if CalculateLength then begin
-    FLength := sqrt(FTx * FTx + FTy * FTy);
+
+  if CalculateSinCos then begin
+    Flength := sqrt(FTx * FTx + FTy * FTy);
+    if FLength = 0 then begin
+      FSinA := 0;
+      FCosA := 1;
+    end else begin
+      FSinA := FTx/FLength;
+      FCosA := FTy/FLength;
+    end;
   end;
+
+//  if CalculateLength then begin
+//    FLength := sqrt(FTx * FTx + FTy * FTy);
+//  end;
 
   Fpx := 0;
   Fpy := 0;
@@ -916,6 +760,18 @@ begin
     else
        FAngle := 0.0;
   end;
+
+  if CalculateSinCos then begin
+    Flength := sqrt(FTx * FTx + FTy * FTy);
+    if FLength = 0 then begin
+      FSinA := 0;
+      FCosA := 1;
+    end else begin
+      FSinA := FTx/FLength;
+      FCosA := FTy/FLength;
+    end;
+  end;
+
 //  if CalculateLength then begin
 //    FLength := sqrt(FTx * FTx + FTy * FTy);
 //  end;
@@ -928,6 +784,8 @@ begin
 
   px := FPx;
   py := FPy;
+//  px := p[0,0] * FPx + p[1,0] * FPy + p[2,0];
+//  py := p[0,1] * FPx + p[1,1] * FPy + p[2,1];
 end;
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -964,6 +822,8 @@ begin
 
   px := FPx;
   py := FPy;
+//  px := p[0,0] * FPx + p[1,0] * FPy + p[2,0];
+//  py := p[0,1] * FPx + p[1,1] * FPy + p[2,1];
 end;
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -1097,14 +957,147 @@ begin
   c[2, 1] := Matrix[1][2];
 end;
 
-
 ///////////////////////////////////////////////////////////////////////////////
 destructor TXForm.Destroy;
+var
+  i: integer;
 begin
-  if assigned(Script) then
-    Script.Free;
+//  if assigned(Script) then
+//    Script.Free;
+
+  for i := 0 to High(FRegVariations) do
+    FRegVariations[i].Free;
 
   inherited;
 end;
 
+///////////////////////////////////////////////////////////////////////////////
+procedure TXForm.BuildFunctionlist;
+var
+  i: integer;
+begin
+  SetLength(FFunctionList, NrVar + Length(FRegVariations));
+
+  //fixed
+  FFunctionList[0] := Linear;
+  FFunctionList[1] := Sinusoidal;
+  FFunctionList[2] := Spherical;
+  FFunctionList[3] := Swirl;
+  FFunctionList[4] := Horseshoe;
+  FFunctionList[5] := Polar;
+  FFunctionList[6] := FoldedHandkerchief;
+  FFunctionList[7] := Heart;
+  FFunctionList[8] := Disc;
+  FFunctionList[9] := Spiral;
+  FFunctionList[10] := Hyperbolic;
+  FFunctionList[11] := Square;
+  FFunctionList[12] := Ex;
+  FFunctionList[13] := Julia;
+  FFunctionList[14] := Bent;
+  FFunctionList[15] := Waves;
+  FFunctionList[16] := Fisheye;
+  FFunctionList[17] := Popcorn;
+  FFunctionList[18] := Exponential;
+  FFunctionList[19] := Power;
+  FFunctionList[20] := Cosine;
+  FFunctionList[21] := Fan;
+  FFunctionList[22] := Rings;
+  FFunctionList[23] := Triblob;
+  FFunctionList[24] := Daisy;
+  FFunctionList[25] := Checkers;
+  FFunctionList[26] := CRot;
+
+  //registered
+  for i := 0 to High(FRegVariations) do
+    FFunctionList[27 + i] := FRegVariations[i].CalcFunction;
+end;
+
+///////////////////////////////////////////////////////////////////////////////
+procedure TXForm.AddRegVariations;
+var
+  i: integer;
+begin
+  SetLength(FRegVariations, GetNrRegisteredVariations);
+  for i := 0 to GetNrRegisteredVariations - 1 do begin
+    FRegVariations[i] := GetRegisteredVariation(i).GetInstance;
+  end;
+end;
+
+///////////////////////////////////////////////////////////////////////////////
+procedure TXForm.Assign(XForm: TXForm);
+var
+  i,j: integer;
+  Name: string;
+  Value: double;
+begin
+  if Not assigned(XForm) then
+    Exit;
+
+  for i := 0 to High(vars) do
+    vars[i] := XForm.vars[i];
+
+  c := Xform.c;
+  density := XForm.density;
+  color := XForm.color;
+  color2 := XForm.color2;
+  symmetry := XForm.symmetry;
+  Orientationtype := XForm.Orientationtype;
+
+  for i := 0 to High(FRegVariations)  do begin
+    for j:= 0 to FRegVariations[i].GetNrVariables -1 do begin
+      Name := FRegVariations[i].GetVariableNameAt(j);
+      XForm.FRegVariations[i].GetVariable(Name,Value);
+      FRegVariations[i].SetVariable(Name,Value);
+    end;
+  end;
+end;
+
+///////////////////////////////////////////////////////////////////////////////
+function TXForm.ToXMLString: string;
+var
+  i, j: integer;
+  Name: string;
+  Value: double;
+begin
+  result := Format('   <xform weight="%g" color="%g" symmetry="%g" ', [density, color, symmetry]);
+  for i := 0 to nrvar - 1 do begin
+    if vars[i] <> 0 then
+      Result := Result + varnames(i) + format('="%f" ', [vars[i]]);
+  end;
+  Result := Result + Format('coefs="%g %g %g %g %g %g" ', [c[0,0], c[0,1], c[1,0], c[1,1], c[2,0], c[2,1]]);
+//  Result := Result + Format('post="%g %g %g %g %g %g" ', [p[0,0], p[0,1], p[1,0], p[1,1], p[2,0], p[2,1]]);
+
+  for i := 0 to High(FRegVariations)  do begin
+    if vars[i+NRLOCVAR] <> 0 then
+      for j:= 0 to FRegVariations[i].GetNrVariables -1 do begin
+        Name := FRegVariations[i].GetVariableNameAt(j);
+        FRegVariations[i].GetVariable(Name,Value);
+        Result := Result + Format('%s="%g" ', [name, value]);
+      end;
+  end;
+
+  Result := Result + '/>';
+end;
+
+///////////////////////////////////////////////////////////////////////////////
+procedure TXForm.SetVariable(const name: string; var Value: double);
+var
+  i: integer;
+begin
+  for i := 0 to High(FRegVariations) do
+    if FRegVariations[i].SetVariable(name, value) then
+      break;
+end;
+
+///////////////////////////////////////////////////////////////////////////////
+procedure TXForm.GetVariable(const name: string; var Value: double);
+var
+  i: integer;
+begin
+  for i := 0 to High(FRegVariations) do
+    if FRegVariations[i].GetVariable(name, value) then
+      break;
+end;
+
+///////////////////////////////////////////////////////////////////////////////
 end.

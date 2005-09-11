@@ -28,7 +28,7 @@ function RandomFlame(SourceCP: TControlPoint= nil; algorithm: integer = 0): TCon
 implementation
 
 uses
-  SysUtils, Global, cmap, MyTypes, GradientHlpr, XForm;
+  SysUtils, Global, cmap, MyTypes, GradientHlpr, XFormMan;
 
 ///////////////////////////////////////////////////////////////////////////////
 procedure RandomGradient(SourceCP, DestCP: TControlPoint);
@@ -86,7 +86,7 @@ begin
   RandSeed := MainSeed;
 
   VarPossible := false;
-  for j := 0 to NRVISVAR - 1 do begin
+  for j := 0 to NRVAR - 1 do begin
     VarPossible := VarPossible or Variations[j];
   end;
 
@@ -96,11 +96,11 @@ begin
 
     if VarPossible then begin
       repeat
-        a := random(NRVISVAR);
+        a := random(NRVAR);
       until Variations[a];
 
       repeat
-        b := random(NRVISVAR);
+        b := random(NRVAR);
       until Variations[b];
     end else begin
       a := 0;

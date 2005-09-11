@@ -700,7 +700,7 @@ begin
     Clipboard.SetTextBuf(PChar(gradstr.text));
     btnPaste.enabled := true;
     mnuPaste.enabled := true;
-    MainForm.btnPaste.enabled := False;
+//    MainForm.btnPaste.enabled := False;
     MainForm.mnuPaste.enabled := False;
   finally
     gradstr.free

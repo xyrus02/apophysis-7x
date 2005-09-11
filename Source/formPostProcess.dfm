@@ -94,8 +94,6 @@ object frmPostProcess: TfrmPostProcess
       Width = 424
       Height = 12
       Align = alBottom
-      Min = 0
-      Max = 100
       TabOrder = 1
     end
     object btnApply: TButton
@@ -161,7 +159,6 @@ object frmPostProcess: TfrmPostProcess
     end
   end
   object ColorDialog: TColorDialog
-    Ctl3D = True
     Left = 284
     Top = 4
   end

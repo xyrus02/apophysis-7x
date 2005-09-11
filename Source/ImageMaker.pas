@@ -60,9 +60,9 @@ uses
 
 type
   TRGB = packed Record
-    red: byte;
-    green: byte;
     blue: byte;
+    green: byte;
+    red: byte;
   end;
 
   PByteArray = ^TByteArray;
@@ -146,8 +146,8 @@ end;
 ///////////////////////////////////////////////////////////////////////////////
 function TImageMaker.GetImage: TBitmap;
 begin
-  Result := GetTransparentImage;
-//  Result := FBitmap;
+//  Result := GetTransparentImage;
+  Result := FBitmap;
 end;
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -384,6 +384,9 @@ var
   area: double;
   MaxA: int64;
   ACount: double;
+  RCount: double;
+  GCount: double;
+  BCount: double;
   offsetLow: double;
   offsetHigh: double;
   densLow: double;
@@ -463,6 +466,9 @@ begin
             fp[2] := fp[2] + filterValue * ls * FBuckets[filterpos].Blue;
             fp[3] := fp[3] + filterValue * ls * FBuckets[filterpos].Count;
             ACount := ACount + filterValue * FBuckets[filterpos].Count;
+//            RCount := RCount + filterValue * FBuckets[bucketpos].Red;
+//            GCount := GCount + filterValue * FBuckets[bucketpos].Green;
+//            BCount := BCount + filterValue * FBuckets[bucketpos].Blue;
           end;
         end;
 
@@ -478,7 +484,9 @@ begin
         fp[2] := ls * FBuckets[bucketpos].Blue;
         fp[3] := ls * FBuckets[bucketpos].Count * fcp.white_level;
         ACount := FBuckets[bucketpos].Count;
-
+        RCount := FBuckets[bucketpos].Red;
+        GCount := FBuckets[bucketpos].Green;
+        BCount := FBuckets[bucketpos].Blue;
       end;
 
       Inc(bucketpos, FOversample);
@@ -533,7 +541,26 @@ begin
         bi := 0
       else if (bi > 255) then
         bi := 255;
+(*
 
+      ri := Round(RCount/ACount) + (ai * bgi[0]) shr 8;
+      if (ri < 0) then
+        ri := 0
+      else if (ri > 255) then
+        ri := 255;
+
+      gi := Round(GCount/ACount) + (ai * bgi[1]) shr 8;
+      if (gi < 0) then
+        gi := 0
+      else if (gi > 255) then
+        gi := 255;
+
+      bi := Round(BCount/ACount) + (ai * bgi[2]) shr 8;
+      if (bi < 0) then
+        bi := 0
+      else if (bi > 255) then
+        bi := 255;
+*)
       Row[j].red := ri;
       Row[j].green := gi;
       Row[j].blue := bi;
@@ -544,8 +571,6 @@ begin
     Inc(bucketpos, gutter_width);
     Inc(bucketpos, (FOversample - 1) * FBucketWidth);
   end;
-
-  FBitmap.PixelFormat := pf24bit;
 
   Progress(1);
 end;
@@ -611,8 +636,7 @@ begin
   if assigned(FTransparentImage) then
     FTransparentImage.Free;
 
-  FTransparentImage := tBitmap.Create;
-//  FTransparentImage.PixelFormat := pf24bit;
+  FTransparentImage := TBitmap.Create;
 
   FTransparentImage.Width := Fcp.Width;
   FTransparentImage.Height := Fcp.Height;

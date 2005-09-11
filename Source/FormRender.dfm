@@ -49,6 +49,13 @@ object RenderForm: TRenderForm
   OnShow = FormShow
   PixelsPerInch = 96
   TextHeight = 13
+  object Label6: TLabel
+    Left = 204
+    Top = 340
+    Width = 118
+    Height = 13
+    Caption = 'TestValue Nr Of Threads'
+  end
   object ProgressBar: TProgressBar
     Left = 0
     Top = 392
@@ -181,8 +188,10 @@ object RenderForm: TRenderForm
       Top = 20
       Width = 73
       Height = 21
+      BiDiMode = bdRightToLeftNoAlign
       Enabled = False
       ItemHeight = 13
+      ParentBiDiMode = False
       TabOrder = 1
       OnChange = txtWidthChange
       Items.Strings = (
@@ -199,8 +208,10 @@ object RenderForm: TRenderForm
       Top = 44
       Width = 73
       Height = 21
+      BiDiMode = bdRightToLeftNoAlign
       Enabled = False
       ItemHeight = 13
+      ParentBiDiMode = False
       TabOrder = 2
       OnChange = txtHeightChange
       Items.Strings = (
@@ -247,7 +258,9 @@ object RenderForm: TRenderForm
       Top = 68
       Width = 57
       Height = 21
+      BiDiMode = bdRightToLeft
       Enabled = False
+      ParentBiDiMode = False
       ReadOnly = True
       TabOrder = 2
       Text = '2'
@@ -258,6 +271,8 @@ object RenderForm: TRenderForm
       Top = 44
       Width = 57
       Height = 21
+      BiDiMode = bdRightToLeft
+      ParentBiDiMode = False
       TabOrder = 1
       OnChange = txtFilterRadiusChange
     end
@@ -266,6 +281,8 @@ object RenderForm: TRenderForm
       Top = 20
       Width = 57
       Height = 21
+      BiDiMode = bdRightToLeft
+      ParentBiDiMode = False
       TabOrder = 0
       OnChange = txtDensityChange
     end
@@ -314,8 +331,10 @@ object RenderForm: TRenderForm
       Top = 44
       Width = 57
       Height = 21
+      BiDiMode = bdRightToLeftNoAlign
       Enabled = False
       ItemHeight = 13
+      ParentBiDiMode = False
       TabOrder = 1
       Items.Strings = (
         '32'
@@ -438,6 +457,16 @@ object RenderForm: TRenderForm
     Height = 17
     Caption = 'Post render'
     TabOrder = 9
+  end
+  object edtNrThreads: TEdit
+    Left = 336
+    Top = 336
+    Width = 73
+    Height = 21
+    BiDiMode = bdRightToLeft
+    ParentBiDiMode = False
+    TabOrder = 13
+    Text = '1'
   end
   object SaveDialog: TSaveDialog
     Left = 368

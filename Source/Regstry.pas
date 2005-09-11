@@ -26,7 +26,7 @@ procedure SaveSettings;
 
 implementation
 
-uses Windows, SysUtils, Forms, Registry, Global, Dialogs, XForm;
+uses Windows, SysUtils, Forms, Registry, Global, Dialogs, XFormMan;
 
 procedure UnpackVariations(v: integer);
 { Unpacks the variation options form an integer }

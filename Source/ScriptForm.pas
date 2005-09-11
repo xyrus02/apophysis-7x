@@ -21,8 +21,9 @@ interface
 
 uses
   Windows, Messages, SysUtils, Classes, Graphics, Controls, Forms, Dialogs,
-  ExtCtrls, StdCtrls, ControlPoint, cmap, Buttons, ComCtrls, ToolWin,
-  Menus, atScript, atPascal, AdvMemo, Advmps, XForm, GradientHlpr;
+  ExtCtrls, StdCtrls, ControlPoint, Buttons, ComCtrls, ToolWin,
+  Menus, atScript, atPascal, AdvMemo, Advmps, XFormMan, XForm, GradientHlpr,
+  cmap, Gradient;
 
 const NCPS = 10;
 type
@@ -324,7 +325,7 @@ implementation
 }
 
 uses Main, Editor, Adjust, Global, Mutate, Registry, Preview,
-  ScriptRender, {Gradient,} ap_math, ap_classes, ap_sysutils, MyTypes,
+  ScriptRender, ap_math, ap_classes, ap_sysutils, MyTypes,
   SavePreset, ap_windows, ap_FileCtrl, bmdll32;
 
 {$R *.DFM}
@@ -1683,7 +1684,7 @@ begin
   with AMachine do
   begin
     i := integer(Variation);
-    if (i >= NRVISVAR) or (i < 0) then
+    if (i >= NRVAR) or (i < 0) then
       i := -1;
     ReturnOutputArg(i);
   end
@@ -1696,10 +1697,10 @@ begin
   with AMachine do
   begin
     i := GetInputArgAsInteger(0);
-    if (i < 0) or (i >= NRVISVAR) then
-      i := NRVISVAR ;
+    if (i < 0) or (i >= NRVAR) then
+      i := NRVAR ;
     Variation := TVariation(i);
-    if i = NRVISVAR then
+    if i = NRVAR then
       MainForm.mnuVRandom.checked := True
     else
       MainForm.VarMenus[i].Checked := True;

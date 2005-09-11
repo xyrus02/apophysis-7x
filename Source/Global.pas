@@ -108,8 +108,8 @@ var
   defFlameFile: string;
   SymmetryType: integer;
   SymmetryOrder: integer;
-  Variations: array[0..NRVAR - 1] of boolean;
-  VariationOptions: integer;
+  Variations: array[0..63] of boolean;
+  VariationOptions: int64;
   { For random gradients }
   MinNodes, MaxNodes, MinHue, MaxHue, MinSat, MaxSat, MinLum, MaxLum: integer;
   FixedReference: boolean;
