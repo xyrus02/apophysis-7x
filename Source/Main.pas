@@ -377,7 +377,7 @@ uses
 {$ENDIF}
   Editor, Options, Regstry,  Render,
   FullScreen, FormRender, Mutate, Adjust, Browser, Save, About, CmapData,
-  HtmlHlp, ScriptForm, FormFavorites, Size, FormExport, msMultiPartFormData,
+  HtmlHlp, ScriptForm, FormFavorites, FormExport, msMultiPartFormData,
   ImageColoring, RndFlame;
 
 {$R *.DFM}

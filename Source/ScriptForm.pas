@@ -23,7 +23,7 @@ uses
   Windows, Messages, SysUtils, Classes, Graphics, Controls, Forms, Dialogs,
   ExtCtrls, StdCtrls, ControlPoint, Buttons, ComCtrls, ToolWin,
   Menus, atScript, atPascal, AdvMemo, Advmps, XFormMan, XForm, GradientHlpr,
-  cmap, Gradient;
+  cmap;
 
 const NCPS = 10;
 type
