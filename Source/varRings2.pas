@@ -1,4 +1,4 @@
-unit varblob;
+unit varRings2;
 
 interface
 
@@ -6,11 +6,9 @@ uses
   BaseVariation, XFormMan;
 
 type
-  TVariationBlob = class(TBaseVariation)
+  TVariationRings2 = class(TBaseVariation)
   private
-    FWaves: double;
-    FLow:   double;
-    FHigh:  double;
+    FVal: double;
   public
     constructor Create;
 
@@ -23,6 +21,7 @@ type
     function SetVariable(const Name: string; var value: double): boolean; override;
     function GetVariable(const Name: string; var value: double): boolean; override;
 
+
     procedure CalcFunction; override;
   end;
 
@@ -31,102 +30,87 @@ implementation
 uses
   Math;
 
+const
+  EPS = 1E-10;
+
+
 { TVariationTest }
 
 ///////////////////////////////////////////////////////////////////////////////
-procedure TVariationBlob.CalcFunction;
-const
-  EPS = 1E-10;
+procedure TVariationRings2.CalcFunction;
 var
-  r : double;
+  dx,r: double;
+  Length: double;
   Angle: double;
 begin
-  r := sqrt(FTx^ * FTx^ + FTy^ * FTy^);
+  Length := sqrt(FTx^ * FTx^ + FTy^ * FTy^);
   if (FTx^ < -EPS) or (FTx^ > EPS) or (FTy^ < -EPS) or (FTy^ > EPS) then
      Angle := arctan2(FTx^, FTy^)
   else
     Angle := 0.0;
 
-  r := r * (FLow + (FHigh - FLow) * (0.5 + 0.5 * sin(FWaves * Angle)));
+  dx := sqr(FVal) + EPS;
+  r := Length + dx - System.Int((Length + dx)/(2 * dx)) * 2 * dx - dx + Length * (1-dx);
 
   FPx^ := FPx^ + vvar * r * sin(Angle);
   FPy^ := FPy^ + vvar * r * cos(Angle);
 end;
 
 ///////////////////////////////////////////////////////////////////////////////
-class function TVariationBlob.GetName: string;
+constructor TVariationRings2.Create;
 begin
-  Result := 'blob';
+  FVal := Random * 2;
 end;
 
 ///////////////////////////////////////////////////////////////////////////////
-class function TVariationBlob.GetVariableNameAt(const Index: integer): string;
+class function TVariationRings2.GetInstance: TBaseVariation;
+begin
+  Result := TVariationRings2.Create;
+end;
+
+///////////////////////////////////////////////////////////////////////////////
+class function TVariationRings2.GetName: string;
+begin
+  Result := 'rings2';
+end;
+
+///////////////////////////////////////////////////////////////////////////////
+class function TVariationRings2.GetVariableNameAt(const Index: integer): string;
 begin
   case Index Of
-  0: Result := 'blob_low';
-  1: Result := 'blob_high';
-  2: Result := 'blob_waves';
+  0: Result := 'rings2_val';
   else
     Result := '';
   end
 end;
 
 ///////////////////////////////////////////////////////////////////////////////
-class function TVariationBlob.GetNrVariables: integer;
-begin
-  Result := 3;
-end;
-
-///////////////////////////////////////////////////////////////////////////////
-function TVariationBlob.SetVariable(const Name: string; var value: double): boolean;
+function TVariationRings2.SetVariable(const Name: string; var value: double): boolean;
 begin
   Result := False;
-  if Name = 'blob_low' then begin
-    FLow := Value;
-    Result := True;
-  end else if Name = 'blob_high' then begin
-    FHigh := Value;
-    Result := True;
-  end else if Name = 'blob_waves' then begin
-    Value := Round(Value);
-    FWaves := Value;
+  if Name = 'rings2_val' then begin
+    FVal := Value;
     Result := True;
   end
 end;
 
 ///////////////////////////////////////////////////////////////////////////////
-function TVariationBlob.GetVariable(const Name: string; var value: double): boolean;
+class function TVariationRings2.GetNrVariables: integer;
+begin
+  Result := 1
+end;
+
+///////////////////////////////////////////////////////////////////////////////
+function TVariationRings2.GetVariable(const Name: string; var value: double): boolean;
 begin
   Result := False;
-  if Name = 'blob_low' then begin
-    Value := FLow;
-    Result := True;
-  end else if Name = 'blob_high' then begin
-    Value := FHigh;
-    Result := True;
-  end else if Name = 'blob_waves' then begin
-    Value := FWaves;
+  if Name = 'rings2_val' then begin
+    Value := FVal;
     Result := True;
   end
-end;
-
-///////////////////////////////////////////////////////////////////////////////
-constructor TVariationBlob.Create;
-begin
-  inherited Create;
-
-  FWaves := Round(2 + 5 * Random);
-  FLow  := 0.2 + 0.5 * random;
-  FHigh := 0.8 + 0.4 * random;
-end;
-
-///////////////////////////////////////////////////////////////////////////////
-class function TVariationBlob.GetInstance: TBaseVariation;
-begin
-  Result := TVariationBlob.Create;
 end;
 
 ///////////////////////////////////////////////////////////////////////////////
 initialization
-  RegisterVariation(TVariationBlob);
+  RegisterVariation(TVariationRings2);
 end.
