@@ -1,3 +1,11 @@
+2.02j
++ Fixed save flame naming problem
++ Save png transparent images
++ multithread rendering
++ Parameterized variations
++ blob variation
++ pdj variation
+
 2.02i
 + Fixed Randomize gradient in batch bug
 + Fixed Randomize gradient floating point error
