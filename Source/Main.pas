@@ -27,9 +27,7 @@ uses
   ToolWin, StdCtrls, Classes, Messages, ExtCtrls, ImgList, controlpoint,
   Jpeg, SyncObjs, SysUtils, ClipBrd, Graphics, Math, Global, MyTypes,
   Registry, RenderThread, Cmap, ExtDlgs, AppEvnts, ShellAPI,
-//  IdComponent, IdTCPConnection, IdTCPClient, IdHTTP,
-//  IdBaseComponent, IdIntercept, IdLogBase, IdLogFile,
-  LibXmlParser, LibXmlComps, Xform;
+  LibXmlParser, LibXmlComps, Xform, XFormMan;
 
 const
   PixelCountMax = 32768;
@@ -311,7 +309,7 @@ type
     Remainder: TDateTime;
     AnimPal: TColorMap;
 
-    VarMenus: array[0..NRVISVAR] of TMenuItem;
+    VarMenus: array of TMenuItem;
 
     procedure LoadXMLFlame(filename, name: string);
     procedure DisableFavorites;
@@ -336,6 +334,10 @@ type
     procedure RandomBatch;
     procedure GetScripts;
     function ApplicationOnHelp(Command: Word; Data: Integer; var CallHelp: Boolean): Boolean;
+
+{$IFDEF DEBUG}
+    procedure AppException(Sender: TObject; E: Exception);
+{$ENDIF}
   end;
 
 procedure ListXML(FileName: string; sel: integer);
@@ -369,10 +371,14 @@ var
 implementation
 
 
-uses Editor, Options, Regstry, {Gradient,} Render,
+uses
+{$IFDEF DEBUG}
+  JclDebug, ExceptForm, 
+{$ENDIF}
+  Editor, Options, Regstry,  Render,
   FullScreen, FormRender, Mutate, Adjust, Browser, Save, About, CmapData,
-  HtmlHlp, ScriptForm, FormFavorites, {Size,} FormExport, msMultiPartFormData,
-  {Sheep,} ImageColoring, RndFlame;
+  HtmlHlp, ScriptForm, FormFavorites, Size, FormExport, msMultiPartFormData,
+  ImageColoring, RndFlame;
 
 {$R *.DFM}
 
@@ -626,10 +632,10 @@ begin
     for j := 0 to NRVAR - 1 do
       cp.xform[i].vars[j] := 0;
     repeat
-      a := random(NRVISVAR);
+      a := random(NRVAR);
     until Variations[a];
     repeat
-      b := random(NRVISVAR);
+      b := random(NRVAR);
     until Variations[b];
     if (a = b) then
     begin
@@ -1346,10 +1352,10 @@ end;
 
 function FlameToXML(const cp1: TControlPoint; sheep: boolean; compact: boolean = false): string;
 var
-  t, i, j: integer;
+  t, i{, j}: integer;
   FileList: TStringList;
-  x, y, a, b, cc, d, e, f: double;
-  varlist, nick, url, pal, hue: string;
+  x, y{, a, b, cc, d, e, f}: double;
+  {varlist,} nick, url, pal, hue: string;
 begin
   FileList := TStringList.create;
   x := cp1.center[0];
@@ -1380,27 +1386,27 @@ begin
       format('vibrancy="%g" ', [cp1.vibrancy]) + hue + url + nick + '>');
    { Write transform parameters }
     t := NumXForms(cp1);
-    for i := 0 to t - 1 do
-    begin
-      with cp1.xform[i] do
-      begin
-        a := c[0][0];
-        b := c[1][0];
-        cc := c[0][1];
-        d := c[1][1];
-        e := c[2][0];
-        f := c[2][1];
-        varlist := '';
-        for j := 0 to NRVAR - 1 do
-        begin
-          if vars[j] <> 0 then
-          begin
-            varlist := varlist + varnames[j] + format('="%f" ', [vars[j]]);
-          end;
-        end;
-        FileList.Add(Format('   <xform weight="%g" color="%g" symmetry="%g" ', [density, color, symmetry]) +
-          varlist + Format('coefs="%g %g %g %g %g %g"/>', [a, cc, b, d, e, f]));
-      end;
+    for i := 0 to t - 1 do  begin
+      FileList.Add(cp1.xform[i].ToXMLString);
+//      with cp1.xform[i] do
+//      begin
+//        a := c[0][0];
+//        b := c[1][0];
+//        cc := c[0][1];
+//        d := c[1][1];
+//        e := c[2][0];
+//        f := c[2][1];
+//        varlist := '';
+//        for j := 0 to NRVAR - 1 do
+//        begin
+//          if vars[j] <> 0 then
+//          begin
+//            varlist := varlist + varnames(j) + format('="%f" ', [vars[j]]);
+//          end;
+//        end;
+//        FileList.Add(Format('   <xform weight="%g" color="%g" symmetry="%g" ', [density, color, symmetry]) +
+//          varlist + Format('coefs="%g %g %g %g %g %g"/>', [a, cc, b, d, e, f]));
+//      end;
     end;
    { Write palette data }
     if not sheep then begin
@@ -1416,64 +1422,64 @@ begin
   end;
 end;
 
-function FlameToXMLSheep(const cp1: TControlPoint): string;
-var
-  t, i, j: integer;
-  FileList: TStringList;
-  x, y, a, b, cc, d, e, f: double;
-  varlist, pal, hue: string;
-begin
-  FileList := TStringList.create;
-  x := cp1.center[0];
-  y := cp1.center[1];
-  pal := ''; hue := '';
-  pal := 'palette="' + IntToStr(cp1.cmapindex) + '" ';
-//  if cp1.hue_rotation = 0 then cp1.hue_rotation := 1;
-  hue := ' hue="' + format('%g', [cp1.hue_rotation]) + '"';
-  try
-    FileList.Add('<flame' + format(' time="%g" ', [cp1.time]) +
-      pal + 'size="' + IntToStr(cp1.width) + ' ' + IntToStr(cp1.height) +
-      format('" center="%g %g" ', [x, y]) +
-      format('scale="%g" ', [cp1.pixels_per_unit]) +
-      format('zoom="%g" ', [cp1.zoom]) +
-      'oversample="' + IntToStr(cp1.spatial_oversample) +
-      format('" filter="%g" ', [cp1.spatial_filter_radius]) +
-      format('quality="%g" ', [cp1.sample_density]) +
-      'batches="' + IntToStr(cp1.nbatches) +
-      format('" background="%g %g %g" ', [cp1.background[0] / 255, cp1.background[1] / 255, cp1.background[2] / 255]) +
-      format('brightness="%g" ', [cp1.brightness]) +
-      format('gamma="%g" ', [cp1.gamma]) +
-      format('vibrancy="%g"', [cp1.vibrancy]) + hue + '>');
-   { Write transform parameters }
-    t := NumXForms(cp1);
-    for i := 0 to t - 1 do
-    begin
-      with cp1.xform[i] do
-      begin
-        a := c[0][0];
-        b := c[1][0];
-        cc := c[0][1];
-        d := c[1][1];
-        e := c[2][0];
-        f := c[2][1];
-        varlist := '';
-        for j := 0 to NRVAR - 1 do
-        begin
-          if vars[j] <> 0 then
-          begin
-            varlist := varlist + varnames[j] + format('="%f" ', [vars[j]]);
-          end;
-        end;
-        FileList.Add(Format('   <xform weight="%g" color="%g" symmetry="%g" ', [density, color, symmetry]) +
-          varlist + Format('coefs="%g %g %g %g %g %g"/>', [a, cc, b, d, e, f]));
-      end;
-    end;
-    FileList.Add('</flame>');
-    result := FileList.text;
-  finally
-    FileList.free
-  end;
-end;
+//function FlameToXMLSheep(const cp1: TControlPoint): string;
+//var
+//  t, i, j: integer;
+//  FileList: TStringList;
+//  x, y, a, b, cc, d, e, f: double;
+//  varlist, pal, hue: string;
+//begin
+//  FileList := TStringList.create;
+//  x := cp1.center[0];
+//  y := cp1.center[1];
+//  pal := ''; hue := '';
+//  pal := 'palette="' + IntToStr(cp1.cmapindex) + '" ';
+////  if cp1.hue_rotation = 0 then cp1.hue_rotation := 1;
+//  hue := ' hue="' + format('%g', [cp1.hue_rotation]) + '"';
+//  try
+//    FileList.Add('<flame' + format(' time="%g" ', [cp1.time]) +
+//      pal + 'size="' + IntToStr(cp1.width) + ' ' + IntToStr(cp1.height) +
+//      format('" center="%g %g" ', [x, y]) +
+//      format('scale="%g" ', [cp1.pixels_per_unit]) +
+//      format('zoom="%g" ', [cp1.zoom]) +
+//      'oversample="' + IntToStr(cp1.spatial_oversample) +
+//      format('" filter="%g" ', [cp1.spatial_filter_radius]) +
+//      format('quality="%g" ', [cp1.sample_density]) +
+//      'batches="' + IntToStr(cp1.nbatches) +
+//      format('" background="%g %g %g" ', [cp1.background[0] / 255, cp1.background[1] / 255, cp1.background[2] / 255]) +
+//      format('brightness="%g" ', [cp1.brightness]) +
+//      format('gamma="%g" ', [cp1.gamma]) +
+//      format('vibrancy="%g"', [cp1.vibrancy]) + hue + '>');
+//   { Write transform parameters }
+//    t := NumXForms(cp1);
+//    for i := 0 to t - 1 do
+//    begin
+//      with cp1.xform[i] do
+//      begin
+//        a := c[0][0];
+//        b := c[1][0];
+//        cc := c[0][1];
+//        d := c[1][1];
+//        e := c[2][0];
+//        f := c[2][1];
+//        varlist := '';
+//        for j := 0 to NRVAR - 1 do
+//        begin
+//          if vars[j] <> 0 then
+//          begin
+//            varlist := varlist + varnames(j) + format('="%f" ', [vars[j]]);
+//          end;
+//        end;
+//        FileList.Add(Format('   <xform weight="%g" color="%g" symmetry="%g" ', [density, color, symmetry]) +
+//          varlist + Format('coefs="%g %g %g %g %g %g"/>', [a, cc, b, d, e, f]));
+//      end;
+//    end;
+//    FileList.Add('</flame>');
+//    result := FileList.text;
+//  finally
+//    FileList.free
+//  end;
+//end;
 
 
 function RemoveExt(filename: string): string;
@@ -2540,6 +2546,17 @@ procedure TMainForm.FormCreate(Sender: TObject);
 var
   dte: string;
 begin
+{$IFDEF DEBUG}
+  // Enable raw mode (default mode uses stack frames which aren't always generated by the compiler)
+  Include(JclStackTrackingOptions, stRawMode);
+  // Disable stack tracking in dynamically loaded modules (it makes stack tracking code a bit faster)
+  Include(JclStackTrackingOptions, stStaticModuleList);
+
+  // Initialize Exception tracking
+  JclStartExceptionTracking;
+  Application.OnException := AppException;
+{$ENDIF}
+
   FMouseMoveState := msDrag; // --Z-- was: msZoomWindow;
   LimitVibrancy := True;
   Favorites := TStringList.Create;
@@ -4093,6 +4110,7 @@ procedure TMainForm.XMLScannerEmptyTag(Sender: TObject; TagName: string;
 var
   i: integer;
   v: string;
+  d: double;
   Tokens: TStringList;
 begin
   Tokens := TStringList.Create;
@@ -4121,7 +4139,7 @@ begin
       for i := 0 to NRVAR - 1 do
       begin
         Parsecp.xform[nxform].vars[i] := 0;
-        v := Attributes.Value(varnames[i]);
+        v := Attributes.Value(varnames(i));
         if v <> '' then
           Parsecp.xform[nxform].vars[i] := StrToFloat(v);
       end;
@@ -4143,6 +4161,15 @@ begin
         for i := 0 to Tokens.Count - 1 do
           Parsecp.xform[nxform].vars[i] := StrToFloat(Tokens[i]);
       end;
+
+      for i := 0 to GetNrVariableNames - 1 do begin
+        v := Attributes.Value(GetVariableNameAt(i));
+        if v <> '' then begin
+          d := StrToFloat(v);
+          Parsecp.xform[nxform].SetVariable(GetVariableNameAt(i), d);
+        end;
+      end;
+
       inc(nxform);
     end;
     if TagName = 'color' then
@@ -4451,11 +4478,15 @@ end;
 procedure TMainForm.FillVariantMenu;
 var
   i: integer;
+  s: string;
   NewMenuItem : TMenuItem;
 begin
-  for i := 0 to NRVISVAR - 1 do begin
+  SetLength(VarMenus, NrVar);
+
+  for i := 0 to NRVAR - 1 do begin
     NewMenuItem := TMenuItem.Create(self);
-    NewMenuItem.Caption    := uppercase(varnames[i][0]) + copy(varnames[i], 2, length(varnames[i])-1);
+    s := varnames(i);
+    NewMenuItem.Caption    := uppercase(s[1]) + copy(s, 2, length(s)-1);
     NewMenuItem.OnClick    := VariantMenuClick;
     NewMenuItem.Enabled    := True;
     NewMenuItem.Name       := 'var' + intTostr(i);
@@ -4573,5 +4604,22 @@ begin
   end;
 }
 end;
+{$IFDEF DEBUG}
+///////////////////////////////////////////////////////////////////////////////
+procedure TMainForm.AppException(Sender: TObject; E: Exception);
+var
+  frmException: TfrmException;
+begin
+  frmException := TfrmException.Create(nil);
 
+  JclLastExceptStackListToStrings(frmException.Memo1.Lines, False, True, True, False);
+
+  frmException.Memo1.Lines.Insert(0,e.Message);
+  frmException.Memo1.Lines.Insert(1,'');
+
+  frmException.ShowModal;
+end;
+{$ENDIF}
+
+///////////////////////////////////////////////////////////////////////////////
 end.
