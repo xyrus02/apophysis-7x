@@ -173,7 +173,7 @@ object AdjustForm: TAdjustForm
     Top = 133
     Width = 390
     Height = 131
-    ActivePage = TabSheet1
+    ActivePage = TabSheet2
     Align = alBottom
     TabOrder = 1
     object TabSheet1: TTabSheet
@@ -406,7 +406,7 @@ object AdjustForm: TAdjustForm
         Width = 257
         Height = 15
         LargeChange = 100
-        Max = 1000
+        Max = 10000
         PageSize = 0
         TabOrder = 2
         OnChange = scrollBrightnessChange

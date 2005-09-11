@@ -477,7 +477,7 @@ var
   i: integer;
   strx, stry, strw, strh: string;
 begin
-  if LimitVibrancy then scrollVibrancy.Max := 1000 else scrollVibrancy.Max := 3000;
+  if LimitVibrancy then scrollVibrancy.Max := 100 else scrollVibrancy.Max := 3000;
   { Read posution from registry }
   Registry := TRegistry.Create;
   try
