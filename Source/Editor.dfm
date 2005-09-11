@@ -1,9 +1,9 @@
 object EditForm: TEditForm
-  Left = 398
-  Top = 205
-  Width = 582
-  Height = 471
-  Caption = 'Editor'
+  Left = 305
+  Top = 166
+  Width = 586
+  Height = 590
+  Caption = 'Transform Editor'
   Color = clBtnFace
   Font.Charset = ANSI_CHARSET
   Font.Color = clWindowText
@@ -44,36 +44,17 @@ object EditForm: TEditForm
   OnClose = FormClose
   OnCreate = FormCreate
   OnDestroy = FormDestroy
+  OnKeyDown = editKeyDown
+  OnKeyPress = editKeyPress
+  OnMouseWheel = editMouseWheel
   OnResize = FormResize
   OnShow = FormShow
   PixelsPerInch = 96
   TextHeight = 13
-  object GrphPnl: TPanel
-    Left = 0
-    Top = 0
-    Width = 394
-    Height = 429
-    Align = alClient
-    BevelOuter = bvLowered
-    Color = clBlack
-    TabOrder = 0
-    object GraphImage: TImage
-      Left = 1
-      Top = 1
-      Width = 392
-      Height = 427
-      Align = alClient
-      PopupMenu = EditPopup
-      OnDblClick = GraphImageDblClick
-      OnMouseDown = GraphImageMouseDown
-      OnMouseMove = GraphImageMouseMove
-      OnMouseUp = GraphImageMouseUp
-    end
-  end
   object StatusBar: TStatusBar
     Left = 0
-    Top = 429
-    Width = 574
+    Top = 547
+    Width = 578
     Height = 15
     Panels = <
       item
@@ -86,775 +67,1418 @@ object EditForm: TEditForm
         Width = 150
       end>
   end
-  object ControlPanel: TPanel
-    Left = 394
+  object topPnl: TPanel
+    Left = 0
     Top = 0
-    Width = 180
-    Height = 429
-    Align = alRight
-    Alignment = taLeftJustify
-    BevelOuter = bvNone
-    TabOrder = 2
-    DesignSize = (
-      180
-      429)
-    object lblTransform: TLabel
-      Left = 10
-      Top = 128
-      Width = 59
-      Height = 13
-      Caption = 'Transform'
-      Font.Charset = ANSI_CHARSET
-      Font.Color = clWindowText
-      Font.Height = -11
-      Font.Name = 'Tahoma'
-      Font.Style = [fsBold]
-      ParentFont = False
+    Width = 578
+    Height = 24
+    Align = alTop
+    BevelOuter = bvSpace
+    Ctl3D = True
+    ParentCtl3D = False
+    TabOrder = 0
+    object EditorToolBar: TToolBar
+      Left = 1
+      Top = 1
+      Width = 352
+      Height = 22
+      Align = alLeft
+      ButtonWidth = 25
+      Caption = 'EditorToolBar'
+      Color = clBtnFace
+      EdgeBorders = []
+      Flat = True
+      Images = EditorTB
+      ParentColor = False
+      TabOrder = 0
+      object tbUndo: TToolButton
+        Left = 0
+        Top = 0
+        Hint = 'Undo (Ctrl+Z)'
+        Caption = 'Undo'
+        ImageIndex = 3
+        ParentShowHint = False
+        ShowHint = True
+        OnClick = mnuUndoClick
+      end
+      object tbRedo: TToolButton
+        Left = 25
+        Top = 0
+        Hint = 'Redo (Ctrl+Y)'
+        Caption = 'Redo'
+        ImageIndex = 4
+        ParentShowHint = False
+        ShowHint = True
+        OnClick = mnuRedoClick
+      end
+      object ToolButton4: TToolButton
+        Left = 50
+        Top = 0
+        Width = 8
+        Caption = 'ToolButton4'
+        ImageIndex = 3
+        Style = tbsSeparator
+      end
+      object tbAdd: TToolButton
+        Left = 58
+        Top = 0
+        Hint = 'Adds a new triangle'
+        Caption = 'Add'
+        ImageIndex = 0
+        ParentShowHint = False
+        ShowHint = True
+        OnClick = mnuAddClick
+      end
+      object tbDuplicate: TToolButton
+        Left = 83
+        Top = 0
+        Hint = 'Duplicates the selected triangle'
+        Caption = 'Duplicate'
+        ImageIndex = 1
+        ParentShowHint = False
+        ShowHint = True
+        OnClick = mnuDupClick
+      end
+      object tbDelete: TToolButton
+        Left = 108
+        Top = 0
+        Hint = 'Deletes the selected triangle'
+        Caption = 'Delete'
+        ImageIndex = 2
+        ParentShowHint = False
+        ShowHint = True
+        OnClick = mnuDeleteClick
+      end
+      object ToolButton1: TToolButton
+        Left = 133
+        Top = 0
+        Width = 8
+        Caption = 'ToolButton1'
+        ImageIndex = 5
+        Style = tbsSeparator
+      end
+      object tbSelect: TToolButton
+        Left = 141
+        Top = 0
+        Hint = 'Select triangle'
+        Caption = 'Select'
+        Down = True
+        ImageIndex = 5
+        ParentShowHint = False
+        ShowHint = True
+        OnClick = tbSelectClick
+      end
+      object tbMove: TToolButton
+        Left = 166
+        Top = 0
+        Hint = 'Move Triangle'
+        Caption = 'Move'
+        ImageIndex = 6
+        ParentShowHint = False
+        ShowHint = True
+        OnClick = tbEditModeClick
+      end
+      object tbRotate: TToolButton
+        Left = 191
+        Top = 0
+        Hint = 'Rotate triangle'
+        Caption = 'Rotate'
+        ImageIndex = 7
+        ParentShowHint = False
+        ShowHint = True
+        OnClick = tbEditModeClick
+      end
+      object tbScale: TToolButton
+        Left = 216
+        Top = 0
+        Hint = 'Scale triangle'
+        Caption = 'Scale'
+        ImageIndex = 8
+        ParentShowHint = False
+        ShowHint = True
+        OnClick = tbEditModeClick
+      end
+      object ToolButton5: TToolButton
+        Left = 241
+        Top = 0
+        Width = 8
+        Caption = 'ToolButton5'
+        ImageIndex = 7
+        Style = tbsSeparator
+      end
+      object tbFlipHorz: TToolButton
+        Left = 249
+        Top = 0
+        Hint = 'Flip triangle horizontal'
+        Caption = 'Flip Horizontal'
+        ImageIndex = 9
+        ParentShowHint = False
+        ShowHint = True
+        OnClick = mnuFlipHorizontalClick
+      end
+      object tbFlipVert: TToolButton
+        Left = 274
+        Top = 0
+        Hint = 'Flip triangle vertical'
+        Caption = 'Flip Vertical'
+        ImageIndex = 10
+        ParentShowHint = False
+        ShowHint = True
+        OnClick = mnuFlipVerticalClick
+      end
+      object tbFlipAllHorz: TToolButton
+        Left = 299
+        Top = 0
+        Hint = 'Flip all triangles horizontal'
+        Caption = 'Flip All Horizontal'
+        ImageIndex = 11
+        MenuItem = mnuHorizintalFlipAll
+        ParentShowHint = False
+        ShowHint = True
+      end
+      object tbFlipAllVert: TToolButton
+        Left = 324
+        Top = 0
+        Hint = 'Flip all triangles vertical'
+        Caption = 'Flip All Vertical '
+        ImageIndex = 12
+        MenuItem = mnuVerticalFlipAll
+        ParentShowHint = False
+        ShowHint = True
+      end
     end
-    object PrevPnl: TPanel
-      Left = 10
-      Top = 0
-      Width = 162
-      Height = 122
-      BevelOuter = bvLowered
-      Caption = 'PrevPnl'
+    object PreviewToolBar: TToolBar
+      Left = 443
+      Top = 1
+      Width = 134
+      Height = 22
+      Align = alRight
+      Caption = 'PreviewToolBar'
+      EdgeBorders = []
+      Flat = True
+      Images = MainForm.Buttons
+      TabOrder = 1
+      Visible = False
+      object tbFullView: TToolButton
+        Left = 0
+        Top = 0
+        Caption = 'tbFullView'
+        ImageIndex = 52
+        OnClick = tbFullViewClick
+      end
+      object ToolButton7: TToolButton
+        Left = 23
+        Top = 0
+        Width = 8
+        Caption = 'ToolButton7'
+        ImageIndex = 3
+        Style = tbsSeparator
+      end
+      object tbLowQ: TToolButton
+        Left = 31
+        Top = 0
+        Caption = 'tbLowQ'
+        Grouped = True
+        ImageIndex = 45
+        Style = tbsCheck
+        OnClick = mnuLowQualityClick
+      end
+      object tbMedQ: TToolButton
+        Left = 54
+        Top = 0
+        Caption = 'tbMedQ'
+        Down = True
+        Grouped = True
+        ImageIndex = 45
+        Style = tbsCheck
+        OnClick = mnuMediumQualityClick
+      end
+      object tbHiQ: TToolButton
+        Left = 77
+        Top = 0
+        Caption = 'tbHiQ'
+        Grouped = True
+        ImageIndex = 45
+        Style = tbsCheck
+        OnClick = mnuHighQualityClick
+      end
+      object ToolButton9: TToolButton
+        Left = 100
+        Top = 0
+        Width = 8
+        Caption = 'ToolButton9'
+        ImageIndex = 14
+        Style = tbsSeparator
+      end
+      object tbResetLoc: TToolButton
+        Left = 108
+        Top = 0
+        Hint = 'Reset location on/off'
+        Caption = 'tbResetLoc'
+        Down = True
+        ImageIndex = 12
+        OnClick = mnuResetLocClick
+      end
+    end
+  end
+  object EditPnl: TPanel
+    Left = 0
+    Top = 24
+    Width = 578
+    Height = 523
+    Align = alClient
+    TabOrder = 1
+    object Splitter1: TSplitter
+      Left = 396
+      Top = 1
+      Width = 9
+      Height = 521
+      Align = alRight
+      AutoSnap = False
+      Beveled = True
+      MinSize = 172
+      OnMoved = splitterMoved
+    end
+    object GrphPnl: TPanel
+      Left = 1
+      Top = 1
+      Width = 395
+      Height = 521
+      Align = alClient
+      BevelOuter = bvNone
       Color = clBlack
       TabOrder = 0
-      object PreviewImage: TImage
-        Left = 1
-        Top = 1
-        Width = 160
-        Height = 120
+      object GraphImage: TImage
+        Tag = 1
+        Left = 0
+        Top = 0
+        Width = 395
+        Height = 521
         Align = alClient
-        IncrementalDisplay = True
-        PopupMenu = QualityPopup
+        PopupMenu = EditPopup
+        OnDblClick = GraphImageDblClick
+        OnMouseDown = GraphImageMouseDown
+        OnMouseMove = GraphImageMouseMove
+        OnMouseUp = GraphImageMouseUp
       end
     end
-    object cbTransforms: TComboBox
-      Left = 75
-      Top = 125
-      Width = 57
-      Height = 21
-      Style = csDropDownList
-      ItemHeight = 13
+    object RightPanel: TPanel
+      Left = 405
+      Top = 1
+      Width = 172
+      Height = 521
+      Align = alRight
+      Alignment = taLeftJustify
+      BevelOuter = bvNone
       TabOrder = 1
-      OnChange = cbTransformsChange
-    end
-    object PageControl: TPageControl
-      Left = 10
-      Top = 148
-      Width = 167
-      Height = 277
-      ActivePage = TabSheet1
-      Anchors = [akLeft, akTop, akRight, akBottom]
-      MultiLine = True
-      TabOrder = 2
-      TabStop = False
-      object TabSheet1: TTabSheet
-        Caption = 'Triangle'
-        object TriangleScrollBox: TScrollBox
-          Left = 0
-          Top = 0
-          Width = 159
-          Height = 231
-          HorzScrollBar.Visible = False
-          VertScrollBar.Position = 127
-          VertScrollBar.Smooth = True
-          VertScrollBar.Style = ssFlat
-          VertScrollBar.Tracking = True
-          Align = alClient
-          BevelInner = bvNone
-          BevelOuter = bvNone
-          BorderStyle = bsNone
+      object Splitter2: TSplitter
+        Left = 0
+        Top = 128
+        Width = 172
+        Height = 8
+        Cursor = crVSplit
+        Align = alTop
+        AutoSnap = False
+        Beveled = True
+        MinSize = 130
+        OnMoved = splitterMoved
+      end
+      object PrevPnl: TPanel
+        Left = 0
+        Top = 0
+        Width = 172
+        Height = 128
+        Align = alTop
+        BevelOuter = bvLowered
+        Color = clAppWorkSpace
+        TabOrder = 1
+        object PreviewImage: TImage
+          Left = 1
+          Top = 1
+          Width = 170
+          Height = 126
+          IncrementalDisplay = True
+          PopupMenu = QualityPopup
+          OnDblClick = PreviewImageDblClick
+        end
+      end
+      object ControlPanel: TPanel
+        Left = 0
+        Top = 136
+        Width = 172
+        Height = 385
+        Align = alClient
+        TabOrder = 0
+        object lblTransform: TLabel
+          Left = 26
+          Top = 8
+          Width = 59
+          Height = 13
+          Caption = 'Transform'
+          Font.Charset = ANSI_CHARSET
+          Font.Color = clWindowText
+          Font.Height = -11
+          Font.Name = 'Tahoma'
+          Font.Style = [fsBold]
+          ParentFont = False
+        end
+        object cbTransforms: TComboBox
+          Left = 91
+          Top = 4
+          Width = 57
+          Height = 19
+          Style = csOwnerDrawFixed
+          Color = clBlack
+          DropDownCount = 12
+          ItemHeight = 13
+          TabOrder = 1
+          TabStop = False
+          OnChange = cbTransformsChange
+          OnDrawItem = cbTransformsDrawItem
+          OnKeyDown = cbKeyDown
+        end
+        object PageControl: TPageControl
+          Left = 1
+          Top = 26
+          Width = 170
+          Height = 358
+          ActivePage = TriangleTab
+          Align = alBottom
+          Anchors = [akLeft, akTop, akRight, akBottom]
+          MultiLine = True
           TabOrder = 0
-          object TrianglePanel: TPanel
-            Left = 0
-            Top = -127
-            Width = 155
-            Height = 400
-            BevelOuter = bvNone
-            TabOrder = 0
-            object Label9: TLabel
-              Left = 6
-              Top = 54
-              Width = 16
+          TabStop = False
+          object TriangleTab: TTabSheet
+            Caption = 'Triangle'
+            object TriangleScrollBox: TScrollBox
+              Left = 0
+              Top = 0
+              Width = 162
+              Height = 312
+              HorzScrollBar.Visible = False
+              VertScrollBar.Smooth = True
+              VertScrollBar.Style = ssFlat
+              VertScrollBar.Tracking = True
+              Align = alClient
+              BevelInner = bvNone
+              BevelOuter = bvNone
+              BorderStyle = bsNone
+              TabOrder = 0
+              object TrianglePanel: TPanel
+                Left = 0
+                Top = 0
+                Width = 158
+                Height = 305
+                BevelOuter = bvNone
+                TabOrder = 0
+                object Label9: TLabel
+                  Left = 4
+                  Top = 32
+                  Width = 10
+                  Height = 13
+                  Caption = 'B:'
+                end
+                object Label7: TLabel
+                  Left = 4
+                  Top = 8
+                  Width = 11
+                  Height = 13
+                  Caption = 'A:'
+                end
+                object Label11: TLabel
+                  Left = 4
+                  Top = 56
+                  Width = 11
+                  Height = 13
+                  Caption = 'C:'
+                end
+                object btTrgRotateRight: TSpeedButton
+                  Left = 106
+                  Top = 102
+                  Width = 23
+                  Height = 24
+                  Hint = 'Rotate triangle clockwise'
+                  Flat = True
+                  Glyph.Data = {
+                    F6000000424DF600000000000000760000002800000010000000100000000100
+                    04000000000080000000130B0000130B00001000000000000000000000000000
+                    8000008000000080800080000000800080008080000080808000C0C0C0000000
+                    FF0000FF000000FFFF00FF000000FF00FF00FFFF0000FFFFFF00FFFFFFFFFFFF
+                    FFFF77FFFFFFFFFFFFFF70FFFFFFFFFFFFFF708FFFFFFFFFFFFF707FFFFFFFFF
+                    FFFF7007FFFFFFFFFFFFF0007FFFFF7FFFFFF7000788FF70FFFFF80000077770
+                    0FFFFF770000000000FFFFF770000000000FFFFF777000000078FFFFF8777770
+                    078FFFFFFFFF870078FFFFFFFFFFFF778FFFFFFFFFFFFF78FFFF}
+                  ParentShowHint = False
+                  ShowHint = True
+                  OnClick = btTrgRotateRightClick
+                end
+                object btTrgRotateLeft: TSpeedButton
+                  Left = 32
+                  Top = 102
+                  Width = 23
+                  Height = 24
+                  Hint = 'Rotate triangle counter clockwise'
+                  Flat = True
+                  Glyph.Data = {
+                    36030000424D3603000000000000360000002800000010000000100000000100
+                    18000000000000030000130B0000130B00000000000000000000FFFFFFFFFFFF
+                    FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF
+                    FFFFFFFFFFFFFFC0C0C0FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF
+                    FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF808080808080FFFFFFFFFFFF
+                    FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF
+                    FFFFFFFF000000404040FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF
+                    FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFC0C0C0000000404040FFFFFFFFFFFF
+                    FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF
+                    FF404040000000404040FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFE0E0E0FFFFFFFF
+                    FFFFFFFFFFFFFFFFFFFFFFFFFFFF808080000000000000808080FFFFFFFFFFFF
+                    FFFFFFFFFFFFE0E0E0606060FFFFFFFFFFFFFFFFFFFFFFFFE0E0E08080800000
+                    00000000000000E0E0E0FFFFFFFFFFFFFFFFFFE0E0E0202020404040FFFFFFE0
+                    E0E0C0C0C0A0A0A0404040000000000000000000404040FFFFFFFFFFFFFFFFFF
+                    E0E0E02020200000004040408080804040404040400000000000000000000000
+                    00000000C0C0C0FFFFFFFFFFFFE0E0E020202000000000000000000000000000
+                    0000000000000000000000000000404040404040FFFFFFFFFFFFFFFFFF202020
+                    0000000000000000000000000000000000000000000000000000004040408080
+                    80FFFFFFFFFFFFFFFFFFC0C0C080808000000000000000000000000000000000
+                    0000000000404040808080808080FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFC0C0C0
+                    808080000000000000404040808080808080808080808080C0C0C0FFFFFFFFFF
+                    FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFC0C0C0808080000000202020808080C0
+                    C0C0FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF
+                    FFFFFFC0C0C0808080404040FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF
+                    FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFC0C0C0808080FFFFFFFF
+                    FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF}
+                  ParentShowHint = False
+                  ShowHint = True
+                  OnClick = btTrgRotateLeftClick
+                end
+                object btTrgMoveUp: TSpeedButton
+                  Left = 68
+                  Top = 129
+                  Width = 25
+                  Height = 25
+                  Hint = 'Move triangle up'
+                  Flat = True
+                  Glyph.Data = {
+                    36030000424D3603000000000000360000002800000010000000100000000100
+                    18000000000000030000130B0000130B00000000000000000000FFFFFFFFFFFF
+                    FFFFFFFFFFFFFFFFFFFFFFFFFFFFFF404040000000C0C0C0FFFFFFFFFFFFFFFF
+                    FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF00
+                    0000000000808080FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF
+                    FFFFFFFFFFFFFFFFFFFFFFFFFFFFFF000000000000808080FFFFFFFFFFFFFFFF
+                    FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF00
+                    0000000000808080FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF
+                    FFFFFFFFFFFFFFFFFFFFFFFFFFFFFF000000000000808080FFFFFFFFFFFFFFFF
+                    FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF00
+                    0000000000808080FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF
+                    FFFFFF808080C0C0C0FFFFFFFFFFFF000000000000808080FFFFFFFFFFFF4040
+                    40FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF000000404040C0C0C000
+                    0000000000808080808080000000808080FFFFFFFFFFFFFFFFFFFFFFFFFFFFFF
+                    FFFFFFFFFFFF808080000000000000000000000000000000000000000000FFFF
+                    FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF00000000000000
+                    0000000000000000000000808080FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF
+                    FFFFFFFFFFFFFFFFFF808080000000000000000000000000000000FFFFFFFFFF
+                    FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF00000000
+                    0000000000000000808080FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF
+                    FFFFFFFFFFFFFFFFFFFFFFFF808080000000000000000000FFFFFFFFFFFFFFFF
+                    FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF00
+                    0000000000808080FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF
+                    FFFFFFFFFFFFFFFFFFFFFFFFFFFFFF808080000000FFFFFFFFFFFFFFFFFFFFFF
+                    FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF
+                    FFFF808080FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF}
+                  ParentShowHint = False
+                  ShowHint = True
+                  OnClick = btTrgMoveUpClick
+                end
+                object btTrgMoveRight: TSpeedButton
+                  Left = 106
+                  Top = 154
+                  Width = 25
+                  Height = 25
+                  Hint = 'Move triangle right'
+                  Flat = True
+                  Glyph.Data = {
+                    36030000424D3603000000000000360000002800000010000000100000000100
+                    18000000000000030000130B0000130B00000000000000000000FFFFFFFFFFFF
+                    FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF
+                    FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF
+                    FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF
+                    FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF
+                    FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF40404080
+                    8080FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF
+                    FFFFFFFFFFFFFFFFFFFFFFFFFFFFFF000000000000808080FFFFFFFFFFFFFFFF
+                    FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF80
+                    8080000000000000000000808080FFFFFFFFFFFFFFFFFFFFFFFFC0C0C0808080
+                    8080808080808080808080808080808080800000000000000000000000000000
+                    00808080FFFFFFFFFFFF00000000000000000000000000000000000000000000
+                    0000000000000000000000000000000000000000000000808080404040000000
+                    0000000000000000000000000000000000000000000000000000000000000000
+                    00000000808080FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFC0
+                    C0C0000000000000000000000000808080FFFFFFFFFFFFFFFFFFFFFFFFFFFFFF
+                    FFFFFFFFFFFFFFFFFFFFFFFFFFFFFF404040000000000000808080FFFFFFFFFF
+                    FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFC0C0C000
+                    0000808080FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF
+                    FFFFFFFFFFFFFFFFFFFFFFFF808080FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF
+                    FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF
+                    FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF
+                    FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF
+                    FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF
+                    FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF}
+                  ParentShowHint = False
+                  ShowHint = True
+                  OnClick = btTrgMoveRightClick
+                end
+                object btTrgMoveLeft: TSpeedButton
+                  Left = 30
+                  Top = 154
+                  Width = 25
+                  Height = 25
+                  Hint = 'Move triangle left'
+                  Flat = True
+                  Glyph.Data = {
+                    36030000424D3603000000000000360000002800000010000000100000000100
+                    18000000000000030000130B0000130B00000000000000000000FFFFFFFFFFFF
+                    FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF
+                    FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF
+                    FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF
+                    FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF
+                    FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF
+                    FFFF808080404040FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF
+                    FFFFFFFFFFFFFFFFFFFFFFFF808080000000000000FFFFFFFFFFFFFFFFFFFFFF
+                    FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF80808000000000000000
+                    0000808080FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF
+                    8080800000000000000000000000000000008080808080808080808080808080
+                    80808080808080C0C0C080808000000000000000000000000000000000000000
+                    0000000000000000000000000000000000000000000000000000FFFFFF808080
+                    0000000000000000000000000000000000000000000000000000000000000000
+                    00000000000000404040FFFFFFFFFFFFFFFFFF80808000000000000000000000
+                    0000C0C0C0FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF
+                    FFFFFFFFFFFFFFFFFF808080000000000000404040FFFFFFFFFFFFFFFFFFFFFF
+                    FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF80
+                    8080000000C0C0C0FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF
+                    FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF808080FFFFFFFFFFFFFFFF
+                    FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF
+                    FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF
+                    FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF
+                    FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF
+                    FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF}
+                  ParentShowHint = False
+                  ShowHint = True
+                  OnClick = btTrgMoveLeftClick
+                end
+                object btTrgMoveDown: TSpeedButton
+                  Left = 68
+                  Top = 179
+                  Width = 25
+                  Height = 25
+                  Hint = 'Move triangle down'
+                  Flat = True
+                  Glyph.Data = {
+                    36030000424D3603000000000000360000002800000010000000100000000100
+                    18000000000000030000130B0000130B00000000000000000000FFFFFFFFFFFF
+                    FFFFFFFFFFFFFFFFFFFFFFFFFFFFFF808080FFFFFFFFFFFFFFFFFFFFFFFFFFFF
+                    FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF00
+                    0000808080FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF
+                    FFFFFFFFFFFFFFFFFFFFFFFF808080000000000000FFFFFFFFFFFFFFFFFFFFFF
+                    FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF00000000
+                    0000000000808080FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF
+                    FFFFFFFFFFFFFFFFFF808080000000000000000000000000FFFFFFFFFFFFFFFF
+                    FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF00000000000000
+                    0000000000000000808080FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF
+                    FFFFFFFFFFFF808080000000000000000000000000000000000000FFFFFFFFFF
+                    FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF00000000000000000000
+                    0000000000000000000000808080FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF
+                    FFFFFF808080000000808080808080000000000000C0C0C0404040000000FFFF
+                    FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF404040FFFFFFFFFFFF80808000
+                    0000000000FFFFFFFFFFFFC0C0C0808080FFFFFFFFFFFFFFFFFFFFFFFFFFFFFF
+                    FFFFFFFFFFFFFFFFFFFFFFFF808080000000000000FFFFFFFFFFFFFFFFFFFFFF
+                    FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF80808000
+                    0000000000FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF
+                    FFFFFFFFFFFFFFFFFFFFFFFF808080000000000000FFFFFFFFFFFFFFFFFFFFFF
+                    FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF80808000
+                    0000000000FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF
+                    FFFFFFFFFFFFFFFFFFFFFFFF808080000000000000FFFFFFFFFFFFFFFFFFFFFF
+                    FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFC0C0C000
+                    0000404040FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF}
+                  ParentShowHint = False
+                  ShowHint = True
+                  OnClick = btTrgMoveDownClick
+                end
+                object btTrgScaleUp: TSpeedButton
+                  Left = 106
+                  Top = 206
+                  Width = 23
+                  Height = 24
+                  Hint = 'Scale triangle up'
+                  Flat = True
+                  Glyph.Data = {
+                    F6000000424DF600000000000000760000002800000010000000100000000100
+                    0400000000008000000000000000000000001000000000000000000000000000
+                    8000008000000080800080000000800080008080000080808000C0C0C0000000
+                    FF0000FF000000FFFF00FF000000FF00FF00FFFF0000FFFFFF00FFFFFFFFFFFF
+                    FFFFF00000000000000FF00000000000000FFF000FFFFFFFF00FFFF000FFFFFF
+                    F00FFFFF000FFFFFF00FFFFFF000FFFFF00FFFFFFF000FFFF00FFFFFFFF000FF
+                    F00FFFFFFFFF000FF00FFFFFFFFFF000F00FFFFFFFFFFF00000FFFFFFFFFFFF0
+                    000FFFFFFFFFFFFF000FFFFFFFFFFFFFF00FFFFFFFFFFFFFFFFF}
+                  ParentShowHint = False
+                  ShowHint = True
+                  OnClick = btTrgScaleUpClick
+                end
+                object btTrgScaleDown: TSpeedButton
+                  Left = 32
+                  Top = 206
+                  Width = 23
+                  Height = 24
+                  Hint = 'Scale triangle down'
+                  Flat = True
+                  Glyph.Data = {
+                    F6000000424DF600000000000000760000002800000010000000100000000100
+                    0400000000008000000000000000000000001000000000000000000000000000
+                    8000008000000080800080000000800080008080000080808000C0C0C0000000
+                    FF0000FF000000FFFF00FF000000FF00FF00FFFF0000FFFFFF00FFFFFFFFFFFF
+                    FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF00000000000
+                    0FFFF000000000000FFFFF0000FFFFF00FFFFFF0000FFFF00FFFFFFFF000FFF0
+                    0FFFFFFFFF000FF00FFFFFFFFFF000000FFFFFFFFFFF00000FFFFFFFFFFFFF00
+                    0FFFFFFFFFFFFFF00FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF}
+                  ParentShowHint = False
+                  ShowHint = True
+                  OnClick = btTrgScaleDownClick
+                end
+                object btTrgRotateRight90: TSpeedButton
+                  Left = 132
+                  Top = 102
+                  Width = 23
+                  Height = 24
+                  Hint = 'Rotate triangle clockwise 90'#176
+                  Flat = True
+                  Glyph.Data = {
+                    36050000424D3605000000000000360400002800000010000000100000000100
+                    08000000000000010000C40E0000C40E00000001000000000000000000000000
+                    8000008000000080800080000000800080008080000080808000C0C0C0000000
+                    FF0000FF000000FFFF00FF000000FF00FF00FFFF0000FFFFFF00000000000000
+                    0000000000000000000000000000000000000000000000000000000000000000
+                    0000000000000000000000000000000000000000000000000000000000000000
+                    0000000000000000000000000000000000000000000000000000000000003300
+                    00006600000099000000CC000000FF0000000033000033330000663300009933
+                    0000CC330000FF33000000660000336600006666000099660000CC660000FF66
+                    000000990000339900006699000099990000CC990000FF99000000CC000033CC
+                    000066CC000099CC0000CCCC0000FFCC000000FF000033FF000066FF000099FF
+                    0000CCFF0000FFFF000000003300330033006600330099003300CC003300FF00
+                    330000333300333333006633330099333300CC333300FF333300006633003366
+                    33006666330099663300CC663300FF6633000099330033993300669933009999
+                    3300CC993300FF99330000CC330033CC330066CC330099CC3300CCCC3300FFCC
+                    330000FF330033FF330066FF330099FF3300CCFF3300FFFF3300000066003300
+                    66006600660099006600CC006600FF0066000033660033336600663366009933
+                    6600CC336600FF33660000666600336666006666660099666600CC666600FF66
+                    660000996600339966006699660099996600CC996600FF99660000CC660033CC
+                    660066CC660099CC6600CCCC6600FFCC660000FF660033FF660066FF660099FF
+                    6600CCFF6600FFFF660000009900330099006600990099009900CC009900FF00
+                    990000339900333399006633990099339900CC339900FF339900006699003366
+                    99006666990099669900CC669900FF6699000099990033999900669999009999
+                    9900CC999900FF99990000CC990033CC990066CC990099CC9900CCCC9900FFCC
+                    990000FF990033FF990066FF990099FF9900CCFF9900FFFF99000000CC003300
+                    CC006600CC009900CC00CC00CC00FF00CC000033CC003333CC006633CC009933
+                    CC00CC33CC00FF33CC000066CC003366CC006666CC009966CC00CC66CC00FF66
+                    CC000099CC003399CC006699CC009999CC00CC99CC00FF99CC0000CCCC0033CC
+                    CC0066CCCC0099CCCC00CCCCCC00FFCCCC0000FFCC0033FFCC0066FFCC0099FF
+                    CC00CCFFCC00FFFFCC000000FF003300FF006600FF009900FF00CC00FF00FF00
+                    FF000033FF003333FF006633FF009933FF00CC33FF00FF33FF000066FF003366
+                    FF006666FF009966FF00CC66FF00FF66FF000099FF003399FF006699FF009999
+                    FF00CC99FF00FF99FF0000CCFF0033CCFF0066CCFF0099CCFF00CCCCFF00FFCC
+                    FF0000FFFF0033FFFF0066FFFF0099FFFF00CCFFFF00FFFFFF000F0F0F0F0F0F
+                    0F0F0F0F0F0F0F0F0F0F0F0F0F0F0F0F0F0F0F0F0F0F0F0F0F0F0F0F07000007
+                    0F0F0F0F0F0F0F0F0F0F0F0F070000070F0F0F0F0F0F0F0F0F0F0F0F07000007
+                    0F0F0F0F0F0F0F0F0F0F0F0F070000070F0F0F0FD40F0F0F0F0F0F0F07000007
+                    0F0F0F0F7ED40F0F0F0F0F0F070000070F0F0F0F5353D40F0F0F0F0F07000007
+                    0F0F0F0F530053D40F0F0F0F070000070707070700000053D40F0F0F07000000
+                    0000000000000000530F0F0F07000000000000000000000007080F0F07070707
+                    0707070700000007080F0F0F0F0F0F0F0F0F0F0F000007080F0F0F0F0F0F0F0F
+                    0F0F0F0F0007080F0F0F0F0F0F0F0F0F0F0F0F0F00080F0F0F0F}
+                  ParentShowHint = False
+                  ShowHint = True
+                  OnClick = btTrgRotateRight90Click
+                end
+                object btTrgRotateLeft90: TSpeedButton
+                  Left = 6
+                  Top = 102
+                  Width = 23
+                  Height = 24
+                  Hint = 'Rotate triangle counter clockwise 90'#176
+                  Flat = True
+                  Glyph.Data = {
+                    36050000424D3605000000000000360400002800000010000000100000000100
+                    08000000000000010000C40E0000C40E00000001000000000000000000000000
+                    8000008000000080800080000000800080008080000080808000C0C0C0000000
+                    FF0000FF000000FFFF00FF000000FF00FF00FFFF0000FFFFFF00000000000000
+                    0000000000000000000000000000000000000000000000000000000000000000
+                    0000000000000000000000000000000000000000000000000000000000000000
+                    0000000000000000000000000000000000000000000000000000000000003300
+                    00006600000099000000CC000000FF0000000033000033330000663300009933
+                    0000CC330000FF33000000660000336600006666000099660000CC660000FF66
+                    000000990000339900006699000099990000CC990000FF99000000CC000033CC
+                    000066CC000099CC0000CCCC0000FFCC000000FF000033FF000066FF000099FF
+                    0000CCFF0000FFFF000000003300330033006600330099003300CC003300FF00
+                    330000333300333333006633330099333300CC333300FF333300006633003366
+                    33006666330099663300CC663300FF6633000099330033993300669933009999
+                    3300CC993300FF99330000CC330033CC330066CC330099CC3300CCCC3300FFCC
+                    330000FF330033FF330066FF330099FF3300CCFF3300FFFF3300000066003300
+                    66006600660099006600CC006600FF0066000033660033336600663366009933
+                    6600CC336600FF33660000666600336666006666660099666600CC666600FF66
+                    660000996600339966006699660099996600CC996600FF99660000CC660033CC
+                    660066CC660099CC6600CCCC6600FFCC660000FF660033FF660066FF660099FF
+                    6600CCFF6600FFFF660000009900330099006600990099009900CC009900FF00
+                    990000339900333399006633990099339900CC339900FF339900006699003366
+                    99006666990099669900CC669900FF6699000099990033999900669999009999
+                    9900CC999900FF99990000CC990033CC990066CC990099CC9900CCCC9900FFCC
+                    990000FF990033FF990066FF990099FF9900CCFF9900FFFF99000000CC003300
+                    CC006600CC009900CC00CC00CC00FF00CC000033CC003333CC006633CC009933
+                    CC00CC33CC00FF33CC000066CC003366CC006666CC009966CC00CC66CC00FF66
+                    CC000099CC003399CC006699CC009999CC00CC99CC00FF99CC0000CCCC0033CC
+                    CC0066CCCC0099CCCC00CCCCCC00FFCCCC0000FFCC0033FFCC0066FFCC0099FF
+                    CC00CCFFCC00FFFFCC000000FF003300FF006600FF009900FF00CC00FF00FF00
+                    FF000033FF003333FF006633FF009933FF00CC33FF00FF33FF000066FF003366
+                    FF006666FF009966FF00CC66FF00FF66FF000099FF003399FF006699FF009999
+                    FF00CC99FF00FF99FF0000CCFF0033CCFF0066CCFF0099CCFF00CCCCFF00FFCC
+                    FF0000FFFF0033FFFF0066FFFF0099FFFF00CCFFFF00FFFFFF000F0F0F0F0F0F
+                    0F0F0F0F0F0F0F0F0F0F0F0F0F0F0F0F0F0F0F0F0F0F0F0F0F0F0F0F0F0F0F0F
+                    0F0F0F0F070000070F0F0F0F0F0F0F0F0F0F0F0F070000070F0F0F0F0F0F0F0F
+                    0F0F0F0F070000070F0F0F0F0F0F0FD40F0F0F0F070000070F0F0F0F0F0FD47E
+                    0F0F0F0F070000070F0F0F0F0FD453530F0F0F0F070000070F0F0F0FD4530053
+                    0F0F0F0F070000070F0F0FD45300000007070707070000070F0F0F5300000000
+                    00000000000000070F0F08070000000000000000000000070F0F0F0807000000
+                    07070707070707070F0F0F0F080700000F0F0F0F0F0F0F0F0F0F0F0F0F080700
+                    0F0F0F0F0F0F0F0F0F0F0F0F0F0F08000F0F0F0F0F0F0F0F0F0F}
+                  ParentShowHint = False
+                  ShowHint = True
+                  OnClick = btTrgRotateLeft90Click
+                end
+                object btTrgMoveLU: TSpeedButton
+                  Left = 42
+                  Top = 129
+                  Width = 25
+                  Height = 25
+                  Hint = 'Move triangle left-up'
+                  Flat = True
+                  Glyph.Data = {
+                    36030000424D3603000000000000360000002800000010000000100000000100
+                    18000000000000030000120B0000120B00000000000000000000FFFFFFFFFFFF
+                    FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF
+                    FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF
+                    FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF
+                    FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF0000
+                    00FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF
+                    FFFFFFFFFFFFFFFFFFFFFF000000000000000000FFFFFFFFFFFFFFFFFFFFFFFF
+                    FFFFFFFFFFFFFFFFFF686868FFFFFFFFFFFFFFFFFFFFFFFF0000000000000E0E
+                    0EFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF030303686868FF
+                    FFFFFFFFFF000000000000161616FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF
+                    FFFFFFFFFFFFFFFFFF000000000000686868000000000000000000FFFFFFFFFF
+                    FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF2B2B2B00000000000000
+                    0000000000000000FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF
+                    FFFFFFFFFFFF040404000000000000030303000000686868FFFFFFFFFFFFFFFF
+                    FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF68686800000000000000000000
+                    0000000000000000686868FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF
+                    FFFFFF2828280000000000000000000000000000000F0F0F000000686868FFFF
+                    FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF00000000000000000000000016
+                    1616404040FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF
+                    686868161616070707303030FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF
+                    FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF0000005A5A5AFFFFFFFFFFFFFFFFFFFF
+                    FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF
+                    FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF
+                    FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF
+                    FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF}
+                  ParentShowHint = False
+                  ShowHint = True
+                  OnClick = btTrgMoveLUClick
+                end
+                object btTrgMoveLD: TSpeedButton
+                  Left = 42
+                  Top = 179
+                  Width = 25
+                  Height = 25
+                  Hint = 'Move triangle left-down'
+                  Flat = True
+                  Glyph.Data = {
+                    36030000424D3603000000000000360000002800000010000000100000000100
+                    18000000000000030000120B0000120B00000000000000000000FFFFFFFFFFFF
+                    FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF
+                    FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF
+                    FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF
+                    0000005A5A5AFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF
+                    FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF686868161616070707303030FFFFFFFF
+                    FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF
+                    FFFFFF000000000000000000000000161616404040FFFFFFFFFFFFFFFFFFFFFF
+                    FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF28282800000000000000000000
+                    00000000000F0F0F000000686868FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF
+                    FFFFFF686868000000000000000000000000000000000000686868FFFFFFFFFF
+                    FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF04040400000000000003
+                    0303000000686868FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF
+                    FFFFFFFFFFFF2B2B2B000000000000000000000000000000FFFFFFFFFFFFFFFF
+                    FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF00000000000068
+                    6868000000000000000000FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF
+                    FFFFFFFFFFFFFFFFFF030303686868FFFFFFFFFFFF000000000000161616FFFF
+                    FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF686868FFFFFFFF
+                    FFFFFFFFFFFFFFFF0000000000000E0E0EFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF
+                    FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF0000000000
+                    00000000FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF
+                    FFFFFFFFFFFFFFFFFFFFFFFFFFFF000000FFFFFFFFFFFFFFFFFFFFFFFFFFFFFF
+                    FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF
+                    FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF
+                    FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF}
+                  ParentShowHint = False
+                  ShowHint = True
+                  OnClick = btTrgMoveLDClick
+                end
+                object btTrgMoveRU: TSpeedButton
+                  Left = 94
+                  Top = 129
+                  Width = 25
+                  Height = 25
+                  Hint = 'Move triangle right-up'
+                  Flat = True
+                  Glyph.Data = {
+                    36030000424D3603000000000000360000002800000010000000100000000100
+                    18000000000000030000120B0000120B00000000000000000000FFFFFFFFFFFF
+                    FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF
+                    FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF
+                    FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF
+                    FFFFFF000000FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF
+                    FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF000000000000000000FFFFFFFFFFFFFF
+                    FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF
+                    FFFFFF0E0E0E000000000000FFFFFFFFFFFFFFFFFFFFFFFF686868FFFFFFFFFF
+                    FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF161616000000000000FF
+                    FFFFFFFFFF686868030303FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF
+                    FFFFFFFFFFFFFFFFFF000000000000000000686868000000000000FFFFFFFFFF
+                    FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF00000000
+                    00000000000000000000002B2B2BFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF
+                    FFFFFFFFFFFFFFFFFFFFFFFF686868000000030303000000000000040404FFFF
+                    FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF68686800000000
+                    0000000000000000000000000000686868FFFFFFFFFFFFFFFFFFFFFFFFFFFFFF
+                    FFFFFFFFFFFF6868680000000F0F0F0000000000000000000000000000002828
+                    28FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF40
+                    4040161616000000000000000000000000FFFFFFFFFFFFFFFFFFFFFFFFFFFFFF
+                    FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF3030300707071616
+                    16686868FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF
+                    FFFFFFFFFFFFFFFFFFFFFFFFFFFF5A5A5A000000FFFFFFFFFFFFFFFFFFFFFFFF
+                    FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF
+                    FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF
+                    FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF}
+                  ParentShowHint = False
+                  ShowHint = True
+                  OnClick = btTrgMoveRUClick
+                end
+                object btTrgMoveRD: TSpeedButton
+                  Left = 94
+                  Top = 179
+                  Width = 25
+                  Height = 25
+                  Hint = 'Move triangle right-down'
+                  Flat = True
+                  Glyph.Data = {
+                    36030000424D3603000000000000360000002800000010000000100000000100
+                    18000000000000030000120B0000120B00000000000000000000FFFFFFFFFFFF
+                    FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF
+                    FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF
+                    FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF
+                    FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF5A5A
+                    5A000000FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF
+                    FFFFFFFFFFFFFFFF303030070707161616686868FFFFFFFFFFFFFFFFFFFFFFFF
+                    FFFFFFFFFFFFFFFFFFFFFFFFFFFFFF4040401616160000000000000000000000
+                    00FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF6868680000000F0F0F00
+                    0000000000000000000000000000282828FFFFFFFFFFFFFFFFFFFFFFFFFFFFFF
+                    FFFFFFFFFFFFFFFFFF6868680000000000000000000000000000000000006868
+                    68FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF68686800
+                    0000030303000000000000040404FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF
+                    FFFFFFFFFFFFFFFFFFFFFFFF0000000000000000000000000000002B2B2BFFFF
+                    FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF00000000000000
+                    0000686868000000000000FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF
+                    FFFFFFFFFFFF161616000000000000FFFFFFFFFFFF686868030303FFFFFFFFFF
+                    FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF0E0E0E000000000000FFFFFFFF
+                    FFFFFFFFFFFFFFFF686868FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF
+                    000000000000000000FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF
+                    FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF000000FFFFFFFFFFFFFFFFFFFF
+                    FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF
+                    FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF
+                    FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF
+                    FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF}
+                  ParentShowHint = False
+                  ShowHint = True
+                  OnClick = btTrgMoveRDClick
+                end
+                object txtCy: TEdit
+                  Left = 88
+                  Top = 52
+                  Width = 66
+                  Height = 21
+                  AutoSelect = False
+                  TabOrder = 5
+                  Text = '0'
+                  OnExit = CornerEditExit
+                  OnKeyPress = CornerEditKeyPress
+                end
+                object txtCx: TEdit
+                  Left = 20
+                  Top = 52
+                  Width = 65
+                  Height = 21
+                  AutoSelect = False
+                  TabOrder = 4
+                  Text = '0'
+                  OnExit = CornerEditExit
+                  OnKeyPress = CornerEditKeyPress
+                end
+                object txtBy: TEdit
+                  Left = 88
+                  Top = 28
+                  Width = 65
+                  Height = 21
+                  AutoSelect = False
+                  TabOrder = 3
+                  Text = '0'
+                  OnExit = CornerEditExit
+                  OnKeyPress = CornerEditKeyPress
+                end
+                object txtBx: TEdit
+                  Left = 20
+                  Top = 28
+                  Width = 65
+                  Height = 21
+                  AutoSelect = False
+                  TabOrder = 2
+                  Text = '0'
+                  OnExit = CornerEditExit
+                  OnKeyPress = CornerEditKeyPress
+                end
+                object txtAy: TEdit
+                  Left = 88
+                  Top = 4
+                  Width = 65
+                  Height = 21
+                  AutoSelect = False
+                  TabOrder = 1
+                  Text = '0'
+                  OnExit = CornerEditExit
+                  OnKeyPress = CornerEditKeyPress
+                end
+                object txtAx: TEdit
+                  Left = 20
+                  Top = 4
+                  Width = 65
+                  Height = 21
+                  AutoSelect = False
+                  TabOrder = 0
+                  Text = '0'
+                  OnExit = CornerEditExit
+                  OnKeyPress = CornerEditKeyPress
+                end
+                object chkPreserve: TCheckBox
+                  Left = 32
+                  Top = 80
+                  Width = 105
+                  Height = 17
+                  Caption = 'Preserve weights'
+                  Checked = True
+                  State = cbChecked
+                  TabOrder = 6
+                end
+                object rgPivot: TRadioGroup
+                  Left = 16
+                  Top = 240
+                  Width = 129
+                  Height = 65
+                  BiDiMode = bdLeftToRight
+                  Caption = 'Triangle Pivot'
+                  Columns = 2
+                  Ctl3D = True
+                  ItemIndex = 1
+                  Items.Strings = (
+                    'A'
+                    'B'
+                    'C'
+                    'Center'
+                    '(0;0)')
+                  ParentBiDiMode = False
+                  ParentCtl3D = False
+                  TabOrder = 7
+                  OnClick = rgPivotClicked
+                end
+                object txtTrgMoveValue: TComboBox
+                  Left = 56
+                  Top = 156
+                  Width = 49
+                  Height = 21
+                  ItemHeight = 13
+                  ItemIndex = 3
+                  TabOrder = 9
+                  Text = '0.1'
+                  Items.Strings = (
+                    '1'
+                    '0.5'
+                    '0.25'
+                    '0.1'
+                    '0.05'
+                    '0.025'
+                    '0.01')
+                end
+                object txtTrgRotateValue: TComboBox
+                  Left = 56
+                  Top = 104
+                  Width = 49
+                  Height = 21
+                  ItemHeight = 13
+                  ItemIndex = 1
+                  TabOrder = 8
+                  Text = '15'
+                  Items.Strings = (
+                    '5'
+                    '15'
+                    '30'
+                    '45'
+                    '90'
+                    '180')
+                end
+                object txtTrgScaleValue: TComboBox
+                  Left = 56
+                  Top = 208
+                  Width = 49
+                  Height = 21
+                  ItemHeight = 13
+                  ItemIndex = 1
+                  TabOrder = 10
+                  Text = '0.1'
+                  Items.Strings = (
+                    '0.05'
+                    '0.1'
+                    '0.25'
+                    '0.5'
+                    '0.75'
+                    '0.9')
+                end
+              end
+            end
+          end
+          object tabXForm: TTabSheet
+            Caption = 'Transform'
+            object lbla: TLabel
+              Left = 9
+              Top = 12
+              Width = 10
               Height = 13
-              Caption = 'Bx:'
+              Caption = 'a:'
             end
-            object Label8: TLabel
-              Left = 6
-              Top = 30
-              Width = 17
+            object Label1: TLabel
+              Left = 9
+              Top = 36
+              Width = 10
               Height = 13
-              Caption = 'Ay:'
+              Caption = 'b:'
             end
-            object Label7: TLabel
-              Left = 6
-              Top = 6
-              Width = 17
+            object Label2: TLabel
+              Left = 9
+              Top = 60
+              Width = 9
               Height = 13
-              Caption = 'Ax:'
+              Caption = 'c:'
             end
-            object Label12: TLabel
-              Left = 6
-              Top = 126
-              Width = 17
+            object Label3: TLabel
+              Left = 9
+              Top = 84
+              Width = 10
               Height = 13
-              Caption = 'Cy:'
+              Caption = 'd:'
             end
-            object Label11: TLabel
-              Left = 6
-              Top = 102
-              Width = 17
+            object Label4: TLabel
+              Left = 9
+              Top = 108
+              Width = 10
               Height = 13
-              Caption = 'Cx:'
+              Caption = 'e:'
             end
-            object Label10: TLabel
-              Left = 6
-              Top = 78
-              Width = 16
+            object Label5: TLabel
+              Left = 9
+              Top = 132
+              Width = 8
               Height = 13
-              Caption = 'By:'
+              Caption = 'f:'
             end
-            object btTrgRotateRight: TSpeedButton
-              Left = 90
-              Top = 240
-              Width = 33
-              Height = 24
-              Hint = 'Rotate triangle clockwise around its center'
-              Flat = True
-              Glyph.Data = {
-                F6000000424DF600000000000000760000002800000010000000100000000100
-                04000000000080000000130B0000130B00001000000000000000000000000000
-                8000008000000080800080000000800080008080000080808000C0C0C0000000
-                FF0000FF000000FFFF00FF000000FF00FF00FFFF0000FFFFFF00FFFFFFFFFFFF
-                FFFF77FFFFFFFFFFFFFF70FFFFFFFFFFFFFF708FFFFFFFFFFFFF707FFFFFFFFF
-                FFFF7007FFFFFFFFFFFFF0007FFFFF7FFFFFF7000788FF70FFFFF80000077770
-                0FFFFF770000000000FFFFF770000000000FFFFF777000000078FFFFF8777770
-                078FFFFFFFFF870078FFFFFFFFFFFF778FFFFFFFFFFFFF78FFFF}
-              ParentShowHint = False
-              ShowHint = True
-              OnClick = btTrgRotateRightClick
+            object Label6: TLabel
+              Left = 9
+              Top = 156
+              Width = 38
+              Height = 13
+              Caption = 'Weight:'
             end
-            object btTrgRotateLeft: TSpeedButton
-              Left = 22
-              Top = 240
-              Width = 33
-              Height = 24
-              Hint = 'Rotate triangle counter clockwise around its center'
-              Flat = True
-              Glyph.Data = {
-                36030000424D3603000000000000360000002800000010000000100000000100
-                18000000000000030000130B0000130B00000000000000000000FFFFFFFFFFFF
-                FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF
-                FFFFFFFFFFFFFFC0C0C0FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF
-                FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF808080808080FFFFFFFFFFFF
-                FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF
-                FFFFFFFF000000404040FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF
-                FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFC0C0C0000000404040FFFFFFFFFFFF
-                FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF
-                FF404040000000404040FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFE0E0E0FFFFFFFF
-                FFFFFFFFFFFFFFFFFFFFFFFFFFFF808080000000000000808080FFFFFFFFFFFF
-                FFFFFFFFFFFFE0E0E0606060FFFFFFFFFFFFFFFFFFFFFFFFE0E0E08080800000
-                00000000000000E0E0E0FFFFFFFFFFFFFFFFFFE0E0E0202020404040FFFFFFE0
-                E0E0C0C0C0A0A0A0404040000000000000000000404040FFFFFFFFFFFFFFFFFF
-                E0E0E02020200000004040408080804040404040400000000000000000000000
-                00000000C0C0C0FFFFFFFFFFFFE0E0E020202000000000000000000000000000
-                0000000000000000000000000000404040404040FFFFFFFFFFFFFFFFFF202020
-                0000000000000000000000000000000000000000000000000000004040408080
-                80FFFFFFFFFFFFFFFFFFC0C0C080808000000000000000000000000000000000
-                0000000000404040808080808080FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFC0C0C0
-                808080000000000000404040808080808080808080808080C0C0C0FFFFFFFFFF
-                FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFC0C0C0808080000000202020808080C0
-                C0C0FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF
-                FFFFFFC0C0C0808080404040FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF
-                FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFC0C0C0808080FFFFFFFF
-                FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF}
-              ParentShowHint = False
-              ShowHint = True
-              OnClick = btTrgRotateLeftClick
+            object Label29: TLabel
+              Left = 9
+              Top = 180
+              Width = 52
+              Height = 13
+              Caption = 'Symmetry:'
             end
-            object btTrgMoveUp: TSpeedButton
-              Left = 56
-              Top = 282
-              Width = 33
-              Height = 24
-              Hint = 'Move triangle up'
-              Flat = True
-              Glyph.Data = {
-                36030000424D3603000000000000360000002800000010000000100000000100
-                18000000000000030000130B0000130B00000000000000000000FFFFFFFFFFFF
-                FFFFFFFFFFFFFFFFFFFFFFFFFFFFFF404040000000C0C0C0FFFFFFFFFFFFFFFF
-                FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF00
-                0000000000808080FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF
-                FFFFFFFFFFFFFFFFFFFFFFFFFFFFFF000000000000808080FFFFFFFFFFFFFFFF
-                FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF00
-                0000000000808080FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF
-                FFFFFFFFFFFFFFFFFFFFFFFFFFFFFF000000000000808080FFFFFFFFFFFFFFFF
-                FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF00
-                0000000000808080FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF
-                FFFFFF808080C0C0C0FFFFFFFFFFFF000000000000808080FFFFFFFFFFFF4040
-                40FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF000000404040C0C0C000
-                0000000000808080808080000000808080FFFFFFFFFFFFFFFFFFFFFFFFFFFFFF
-                FFFFFFFFFFFF808080000000000000000000000000000000000000000000FFFF
-                FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF00000000000000
-                0000000000000000000000808080FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF
-                FFFFFFFFFFFFFFFFFF808080000000000000000000000000000000FFFFFFFFFF
-                FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF00000000
-                0000000000000000808080FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF
-                FFFFFFFFFFFFFFFFFFFFFFFF808080000000000000000000FFFFFFFFFFFFFFFF
-                FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF00
-                0000000000808080FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF
-                FFFFFFFFFFFFFFFFFFFFFFFFFFFFFF808080000000FFFFFFFFFFFFFFFFFFFFFF
-                FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF
-                FFFF808080FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF}
-              ParentShowHint = False
-              ShowHint = True
-              OnClick = btTrgMoveUpClick
-            end
-            object btTrgMoveRight: TSpeedButton
-              Left = 90
-              Top = 306
-              Width = 33
-              Height = 24
-              Hint = 'Move triangle right'
-              Flat = True
-              Glyph.Data = {
-                36030000424D3603000000000000360000002800000010000000100000000100
-                18000000000000030000130B0000130B00000000000000000000FFFFFFFFFFFF
-                FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF
-                FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF
-                FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF
-                FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF
-                FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF40404080
-                8080FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF
-                FFFFFFFFFFFFFFFFFFFFFFFFFFFFFF000000000000808080FFFFFFFFFFFFFFFF
-                FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF80
-                8080000000000000000000808080FFFFFFFFFFFFFFFFFFFFFFFFC0C0C0808080
-                8080808080808080808080808080808080800000000000000000000000000000
-                00808080FFFFFFFFFFFF00000000000000000000000000000000000000000000
-                0000000000000000000000000000000000000000000000808080404040000000
-                0000000000000000000000000000000000000000000000000000000000000000
-                00000000808080FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFC0
-                C0C0000000000000000000000000808080FFFFFFFFFFFFFFFFFFFFFFFFFFFFFF
-                FFFFFFFFFFFFFFFFFFFFFFFFFFFFFF404040000000000000808080FFFFFFFFFF
-                FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFC0C0C000
-                0000808080FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF
-                FFFFFFFFFFFFFFFFFFFFFFFF808080FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF
-                FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF
-                FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF
-                FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF
-                FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF
-                FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF}
-              ParentShowHint = False
-              ShowHint = True
-              OnClick = btTrgMoveRightClick
-            end
-            object btTrgMoveLeft: TSpeedButton
-              Left = 22
-              Top = 306
-              Width = 33
-              Height = 24
-              Hint = 'Move triangle left'
-              Flat = True
-              Glyph.Data = {
-                36030000424D3603000000000000360000002800000010000000100000000100
-                18000000000000030000130B0000130B00000000000000000000FFFFFFFFFFFF
-                FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF
-                FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF
-                FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF
-                FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF
-                FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF
-                FFFF808080404040FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF
-                FFFFFFFFFFFFFFFFFFFFFFFF808080000000000000FFFFFFFFFFFFFFFFFFFFFF
-                FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF80808000000000000000
-                0000808080FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF
-                8080800000000000000000000000000000008080808080808080808080808080
-                80808080808080C0C0C080808000000000000000000000000000000000000000
-                0000000000000000000000000000000000000000000000000000FFFFFF808080
-                0000000000000000000000000000000000000000000000000000000000000000
-                00000000000000404040FFFFFFFFFFFFFFFFFF80808000000000000000000000
-                0000C0C0C0FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF
-                FFFFFFFFFFFFFFFFFF808080000000000000404040FFFFFFFFFFFFFFFFFFFFFF
-                FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF80
-                8080000000C0C0C0FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF
-                FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF808080FFFFFFFFFFFFFFFF
-                FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF
-                FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF
-                FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF
-                FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF
-                FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF}
-              ParentShowHint = False
-              ShowHint = True
-              OnClick = btTrgMoveLeftClick
-            end
-            object btTrgMoveDown: TSpeedButton
-              Left = 56
-              Top = 330
-              Width = 33
-              Height = 24
-              Hint = 'Move triangle down'
-              Flat = True
-              Glyph.Data = {
-                36030000424D3603000000000000360000002800000010000000100000000100
-                18000000000000030000130B0000130B00000000000000000000FFFFFFFFFFFF
-                FFFFFFFFFFFFFFFFFFFFFFFFFFFFFF808080FFFFFFFFFFFFFFFFFFFFFFFFFFFF
-                FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF00
-                0000808080FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF
-                FFFFFFFFFFFFFFFFFFFFFFFF808080000000000000FFFFFFFFFFFFFFFFFFFFFF
-                FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF00000000
-                0000000000808080FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF
-                FFFFFFFFFFFFFFFFFF808080000000000000000000000000FFFFFFFFFFFFFFFF
-                FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF00000000000000
-                0000000000000000808080FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF
-                FFFFFFFFFFFF808080000000000000000000000000000000000000FFFFFFFFFF
-                FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF00000000000000000000
-                0000000000000000000000808080FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF
-                FFFFFF808080000000808080808080000000000000C0C0C0404040000000FFFF
-                FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF404040FFFFFFFFFFFF80808000
-                0000000000FFFFFFFFFFFFC0C0C0808080FFFFFFFFFFFFFFFFFFFFFFFFFFFFFF
-                FFFFFFFFFFFFFFFFFFFFFFFF808080000000000000FFFFFFFFFFFFFFFFFFFFFF
-                FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF80808000
-                0000000000FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF
-                FFFFFFFFFFFFFFFFFFFFFFFF808080000000000000FFFFFFFFFFFFFFFFFFFFFF
-                FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF80808000
-                0000000000FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF
-                FFFFFFFFFFFFFFFFFFFFFFFF808080000000000000FFFFFFFFFFFFFFFFFFFFFF
-                FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFC0C0C000
-                0000404040FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF}
-              ParentShowHint = False
-              ShowHint = True
-              OnClick = btTrgMoveDownClick
-            end
-            object btTrgScaleUp: TSpeedButton
-              Left = 90
-              Top = 374
-              Width = 33
-              Height = 24
-              Hint = 'Scale triangle up'
-              Flat = True
-              Glyph.Data = {
-                F6000000424DF600000000000000760000002800000010000000100000000100
-                0400000000008000000000000000000000001000000000000000000000000000
-                8000008000000080800080000000800080008080000080808000C0C0C0000000
-                FF0000FF000000FFFF00FF000000FF00FF00FFFF0000FFFFFF00FFFFFFFFFFFF
-                FFFFF00000000000000FF00000000000000FFF000FFFFFFFF00FFFF000FFFFFF
-                F00FFFFF000FFFFFF00FFFFFF000FFFFF00FFFFFFF000FFFF00FFFFFFFF000FF
-                F00FFFFFFFFF000FF00FFFFFFFFFF000F00FFFFFFFFFFF00000FFFFFFFFFFFF0
-                000FFFFFFFFFFFFF000FFFFFFFFFFFFFF00FFFFFFFFFFFFFFFFF}
-              ParentShowHint = False
-              ShowHint = True
-              OnClick = btTrgScaleUpClick
-            end
-            object btTrgScaleDown: TSpeedButton
-              Left = 22
-              Top = 374
-              Width = 33
-              Height = 24
-              Hint = 'Scale triangle down'
-              Flat = True
-              Glyph.Data = {
-                F6000000424DF600000000000000760000002800000010000000100000000100
-                0400000000008000000000000000000000001000000000000000000000000000
-                8000008000000080800080000000800080008080000080808000C0C0C0000000
-                FF0000FF000000FFFF00FF000000FF00FF00FFFF0000FFFFFF00FFFFFFFFFFFF
-                FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF00000000000
-                0FFFF000000000000FFFFF0000FFFFF00FFFFFF0000FFFF00FFFFFFFF000FFF0
-                0FFFFFFFFF000FF00FFFFFFFFFF000000FFFFFFFFFFF00000FFFFFFFFFFFFF00
-                0FFFFFFFFFFFFFF00FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF}
-              ParentShowHint = False
-              ShowHint = True
-              OnClick = btTrgScaleDownClick
-            end
-            object txtTrgRotateValue: TEdit
-              Left = 56
-              Top = 240
-              Width = 33
-              Height = 21
-              TabOrder = 7
-              Text = '5'
-            end
-            object txtTrgMoveValue: TEdit
-              Left = 56
-              Top = 306
-              Width = 33
-              Height = 21
-              TabOrder = 8
-              Text = '0.05'
-            end
-            object txtCy: TEdit
-              Left = 28
-              Top = 122
+            object txtA: TEdit
+              Left = 32
+              Top = 8
               Width = 110
               Height = 21
-              AutoSelect = False
-              TabOrder = 5
-              Text = '0'
-              OnExit = CornerEditExit
-              OnKeyPress = CornerEditKeyPress
-            end
-            object txtCx: TEdit
-              Left = 28
-              Top = 98
-              Width = 110
-              Height = 21
-              AutoSelect = False
-              TabOrder = 4
-              Text = '0'
-              OnExit = CornerEditExit
-              OnKeyPress = CornerEditKeyPress
-            end
-            object txtBy: TEdit
-              Left = 28
-              Top = 74
-              Width = 110
-              Height = 21
-              AutoSelect = False
-              TabOrder = 3
-              Text = '0'
-              OnExit = CornerEditExit
-              OnKeyPress = CornerEditKeyPress
-            end
-            object txtBx: TEdit
-              Left = 28
-              Top = 50
-              Width = 110
-              Height = 21
-              AutoSelect = False
-              TabOrder = 2
-              Text = '0'
-              OnExit = CornerEditExit
-              OnKeyPress = CornerEditKeyPress
-            end
-            object txtAy: TEdit
-              Left = 28
-              Top = 26
-              Width = 110
-              Height = 21
-              AutoSelect = False
-              TabOrder = 1
-              Text = '0'
-              OnExit = CornerEditExit
-              OnKeyPress = CornerEditKeyPress
-            end
-            object txtAx: TEdit
-              Left = 28
-              Top = 2
-              Width = 110
-              Height = 21
-              AutoSelect = False
               TabOrder = 0
               Text = '0'
-              OnExit = CornerEditExit
-              OnKeyPress = CornerEditKeyPress
+              OnExit = CoefExit
+              OnKeyPress = CoefKeyPress
             end
-            object chkPreserve: TCheckBox
-              Left = 8
-              Top = 152
-              Width = 105
-              Height = 17
-              Caption = 'Preserve weights'
-              Checked = True
-              State = cbChecked
-              TabOrder = 6
-            end
-            object txtTrgScaleValue: TEdit
-              Left = 56
-              Top = 376
-              Width = 33
+            object txtB: TEdit
+              Left = 32
+              Top = 32
+              Width = 110
               Height = 21
-              TabOrder = 9
-              Text = '0.1'
+              TabOrder = 1
+              Text = '0'
+              OnExit = CoefExit
+              OnKeyPress = CoefKeyPress
             end
-            object rgPivot: TRadioGroup
-              Left = 8
+            object txtC: TEdit
+              Left = 32
+              Top = 56
+              Width = 110
+              Height = 21
+              TabOrder = 2
+              Text = '0'
+              OnExit = CoefExit
+              OnKeyPress = CoefKeyPress
+            end
+            object txtD: TEdit
+              Left = 32
+              Top = 80
+              Width = 110
+              Height = 21
+              TabOrder = 3
+              Text = '0'
+              OnExit = CoefExit
+              OnKeyPress = CoefKeyPress
+            end
+            object txtE: TEdit
+              Left = 32
+              Top = 104
+              Width = 110
+              Height = 21
+              TabOrder = 4
+              Text = '0'
+              OnExit = CoefExit
+              OnKeyPress = CoefKeyPress
+            end
+            object txtF: TEdit
+              Left = 32
+              Top = 128
+              Width = 110
+              Height = 21
+              TabOrder = 5
+              Text = '0'
+              OnExit = CoefExit
+              OnKeyPress = CoefKeyPress
+            end
+            object txtP: TEdit
+              Left = 72
+              Top = 152
+              Width = 70
+              Height = 21
+              TabOrder = 6
+              Text = '0'
+              OnExit = txtPExit
+              OnKeyPress = txtPKeyPress
+            end
+            object txtSymmetry: TEdit
+              Left = 72
               Top = 176
-              Width = 129
-              Height = 49
-              Caption = ' Rotating pivot :  '
-              Columns = 2
-              Ctl3D = True
-              ItemIndex = 3
-              Items.Strings = (
-                'A'
-                'B'
-                'C'
-                'Center')
-              ParentCtl3D = False
-              TabOrder = 10
+              Width = 70
+              Height = 21
+              TabOrder = 7
+              Text = '0'
+              OnExit = txtSymmetryExit
+              OnKeyPress = txtSymmetryKeyPress
             end
           end
-        end
-      end
-      object XForm: TTabSheet
-        Caption = 'Transform'
-        object lbla: TLabel
-          Left = 9
-          Top = 12
-          Width = 10
-          Height = 13
-          Caption = 'a:'
-        end
-        object Label1: TLabel
-          Left = 9
-          Top = 36
-          Width = 10
-          Height = 13
-          Caption = 'b:'
-        end
-        object Label2: TLabel
-          Left = 9
-          Top = 60
-          Width = 9
-          Height = 13
-          Caption = 'c:'
-        end
-        object Label3: TLabel
-          Left = 9
-          Top = 84
-          Width = 10
-          Height = 13
-          Caption = 'd:'
-        end
-        object Label4: TLabel
-          Left = 9
-          Top = 108
-          Width = 10
-          Height = 13
-          Caption = 'e:'
-        end
-        object Label5: TLabel
-          Left = 9
-          Top = 132
-          Width = 8
-          Height = 13
-          Caption = 'f:'
-        end
-        object Label6: TLabel
-          Left = 9
-          Top = 156
-          Width = 38
-          Height = 13
-          Caption = 'Weight:'
-        end
-        object Label29: TLabel
-          Left = 9
-          Top = 180
-          Width = 52
-          Height = 13
-          Caption = 'Symmetry:'
-        end
-        object txtA: TEdit
-          Left = 32
-          Top = 8
-          Width = 110
-          Height = 21
-          TabOrder = 0
-          Text = '0'
-          OnExit = CoefExit
-          OnKeyPress = CoefKeyPress
-        end
-        object txtB: TEdit
-          Left = 32
-          Top = 32
-          Width = 110
-          Height = 21
-          TabOrder = 1
-          Text = '0'
-          OnExit = CoefExit
-          OnKeyPress = CoefKeyPress
-        end
-        object txtC: TEdit
-          Left = 32
-          Top = 56
-          Width = 110
-          Height = 21
-          TabOrder = 2
-          Text = '0'
-          OnExit = CoefExit
-          OnKeyPress = CoefKeyPress
-        end
-        object txtD: TEdit
-          Left = 32
-          Top = 80
-          Width = 110
-          Height = 21
-          TabOrder = 3
-          Text = '0'
-          OnExit = CoefExit
-          OnKeyPress = CoefKeyPress
-        end
-        object txtE: TEdit
-          Left = 32
-          Top = 104
-          Width = 110
-          Height = 21
-          TabOrder = 4
-          Text = '0'
-          OnExit = CoefExit
-          OnKeyPress = CoefKeyPress
-        end
-        object txtF: TEdit
-          Left = 32
-          Top = 128
-          Width = 110
-          Height = 21
-          TabOrder = 5
-          Text = '0'
-          OnExit = CoefExit
-          OnKeyPress = CoefKeyPress
-        end
-        object txtP: TEdit
-          Left = 72
-          Top = 152
-          Width = 70
-          Height = 21
-          TabOrder = 6
-          Text = '0'
-          OnExit = txtPExit
-          OnKeyPress = txtPKeyPress
-        end
-        object txtSymmetry: TEdit
-          Left = 72
-          Top = 176
-          Width = 70
-          Height = 21
-          TabOrder = 7
-          Text = '0'
-          OnExit = txtSymmetryExit
-          OnKeyPress = txtSymmetryKeyPress
-        end
-      end
-      object TabSheet3: TTabSheet
-        Caption = 'Variations'
-        object VEVars: TValueListEditor
-          Left = 0
-          Top = 0
-          Width = 159
-          Height = 231
-          Align = alClient
-          ScrollBars = ssVertical
-          TabOrder = 0
-          TitleCaptions.Strings = (
-            'Variation'
-            'Value')
-          OnExit = VEVarsExit
-          OnKeyPress = VEVarsKeyPress
-          OnValidate = VEVarsValidate
-          ColWidths = (
-            93
-            60)
-        end
-      end
-      object TabSheet2: TTabSheet
-        Caption = 'Colors'
-        ImageIndex = 3
-        object GroupBox1: TGroupBox
-          Left = 8
-          Top = 0
-          Width = 145
-          Height = 73
-          Caption = 'Transform color'
-          TabOrder = 0
-          object scrlXFormColor: TScrollBar
-            Left = 8
-            Top = 48
-            Width = 129
-            Height = 13
-            LargeChange = 10
-            PageSize = 0
-            TabOrder = 0
-            OnChange = scrlXFormColorChange
-            OnScroll = scrlXFormColorScroll
+          object tabVariations: TTabSheet
+            Caption = 'Variations'
+            object VEVars: TValueListEditor
+              Left = 0
+              Top = 0
+              Width = 162
+              Height = 312
+              Align = alClient
+              ScrollBars = ssVertical
+              TabOrder = 0
+              TitleCaptions.Strings = (
+                'Variation'
+                'Value')
+              OnDblClick = VEVarsDblClick
+              OnDrawCell = VEVarsDrawCell
+              OnExit = VEVarsExit
+              OnKeyPress = VEVarsKeyPress
+              OnMouseDown = VEVarsMouseDown
+              OnMouseMove = VEVarsMouseMove
+              OnMouseUp = VEVarsMouseUp
+              OnValidate = VEVarsValidate
+              ColWidths = (
+                93
+                63)
+            end
           end
-          object pnlXFormColor: TPanel
-            Left = 8
-            Top = 16
-            Width = 65
-            Height = 25
-            BevelOuter = bvLowered
-            TabOrder = 1
-          end
-          object txtXFormColor: TEdit
-            Left = 80
-            Top = 16
-            Width = 57
-            Height = 21
-            TabOrder = 2
-            OnExit = txtXFormColorExit
-            OnKeyPress = txtXFormColorKeyPress
-          end
-        end
-        object GroupBox2: TGroupBox
-          Left = 8
-          Top = 80
-          Width = 145
-          Height = 137
-          Caption = 'Graph'
-          TabOrder = 1
-          object Label20: TLabel
-            Left = 8
-            Top = 56
-            Width = 82
-            Height = 13
-            Caption = 'Background color'
-          end
-          object Label21: TLabel
-            Left = 8
-            Top = 96
-            Width = 89
-            Height = 13
-            Caption = 'Reference triangle'
-          end
-          object pnlBackColor: TPanel
-            Left = 8
-            Top = 72
-            Width = 129
-            Height = 17
-            BevelOuter = bvLowered
-            Color = clBlack
-            TabOrder = 0
-            OnClick = pnlBackColorClick
-          end
-          object chkUseXFormColor: TCheckBox
-            Left = 8
-            Top = 16
-            Width = 129
-            Height = 17
-            Caption = 'Use transform color'
-            TabOrder = 1
-            OnClick = chkUseXFormColorClick
-          end
-          object chkFlameBack: TCheckBox
-            Left = 8
-            Top = 36
-            Width = 129
-            Height = 17
-            Caption = 'Use flame background'
-            TabOrder = 2
-            OnClick = chkFlameBackClick
-          end
-          object pnlReference: TPanel
-            Left = 8
-            Top = 112
-            Width = 129
-            Height = 17
-            BevelOuter = bvLowered
-            Color = clGray
-            TabOrder = 3
-            OnClick = pnlReferenceClick
+          object tabColors: TTabSheet
+            Caption = 'Colors'
+            ImageIndex = 3
+            object GroupBox1: TGroupBox
+              Left = 8
+              Top = 0
+              Width = 145
+              Height = 97
+              Caption = 'Transform color'
+              TabOrder = 0
+              object scrlXFormColor: TScrollBar
+                Left = 8
+                Top = 48
+                Width = 129
+                Height = 15
+                LargeChange = 10
+                Max = 256
+                PageSize = 0
+                TabOrder = 0
+                OnChange = scrlXFormColorChange
+                OnScroll = scrlXFormColorScroll
+              end
+              object pnlXFormColor: TPanel
+                Left = 8
+                Top = 16
+                Width = 65
+                Height = 25
+                BevelOuter = bvLowered
+                TabOrder = 1
+              end
+              object txtXFormColor: TEdit
+                Left = 80
+                Top = 16
+                Width = 57
+                Height = 21
+                TabOrder = 2
+                OnExit = txtXFormColorExit
+                OnKeyPress = txtXFormColorKeyPress
+              end
+              object Panel1: TPanel
+                Left = 8
+                Top = 70
+                Width = 129
+                Height = 19
+                BevelOuter = bvLowered
+                TabOrder = 3
+                object ColorImage: TImage
+                  Left = 1
+                  Top = 1
+                  Width = 127
+                  Height = 17
+                  Cursor = crHandPoint
+                  Align = alClient
+                  OnMouseDown = ColorImageMouseDown
+                  OnMouseMove = ColorImageMouseMove
+                  OnMouseUp = ColorImageMouseUp
+                end
+              end
+            end
+            object GroupBox2: TGroupBox
+              Left = 8
+              Top = 104
+              Width = 145
+              Height = 177
+              Caption = 'Graph'
+              TabOrder = 1
+              object Label20: TLabel
+                Left = 8
+                Top = 56
+                Width = 82
+                Height = 13
+                Caption = 'Background color'
+              end
+              object Label21: TLabel
+                Left = 8
+                Top = 136
+                Width = 89
+                Height = 13
+                Caption = 'Reference triangle'
+              end
+              object Label8: TLabel
+                Left = 8
+                Top = 96
+                Width = 50
+                Height = 13
+                Caption = 'Grid colors'
+              end
+              object pnlBackColor: TPanel
+                Left = 8
+                Top = 72
+                Width = 129
+                Height = 17
+                BevelOuter = bvLowered
+                Color = clBlack
+                TabOrder = 0
+                OnClick = pnlBackColorClick
+              end
+              object chkUseXFormColor: TCheckBox
+                Left = 8
+                Top = 16
+                Width = 129
+                Height = 17
+                Caption = 'Use transform color'
+                TabOrder = 1
+                OnClick = chkUseXFormColorClick
+              end
+              object chkFlameBack: TCheckBox
+                Left = 8
+                Top = 36
+                Width = 129
+                Height = 17
+                Caption = 'Use flame background'
+                Enabled = False
+                TabOrder = 2
+                OnClick = chkFlameBackClick
+              end
+              object pnlReference: TPanel
+                Left = 8
+                Top = 152
+                Width = 129
+                Height = 17
+                BevelOuter = bvLowered
+                Color = clGray
+                TabOrder = 3
+                OnClick = pnlReferenceClick
+              end
+              object pnlGridColor1: TPanel
+                Left = 8
+                Top = 112
+                Width = 62
+                Height = 17
+                BevelOuter = bvLowered
+                Color = clBlack
+                TabOrder = 4
+                OnClick = pnlGridColor1Click
+              end
+              object pnlGridColor2: TPanel
+                Left = 75
+                Top = 112
+                Width = 62
+                Height = 17
+                BevelOuter = bvLowered
+                Color = clBlack
+                TabOrder = 5
+                OnClick = pnlGridColor2Click
+              end
+            end
           end
         end
       end
     end
   end
   object EditPopup: TPopupMenu
-    Images = MainForm.Buttons
-    Left = 312
-    Top = 8
+    AutoPopup = False
+    Images = EditorTB
+    Left = 360
+    Top = 40
     object mnuAutoZoom: TMenuItem
       Caption = 'Auto Zoom'
-      Hint = 'Zooms the triangle display to the best fit.'
+      Hint = 'Zooms the triangle display to the best fit'
       OnClick = mnuAutoZoomClick
     end
     object N1: TMenuItem
@@ -862,13 +1486,14 @@ object EditForm: TEditForm
     end
     object mnuDelete: TMenuItem
       Caption = 'Delete'
-      Hint = 'Deletes the selected triangle.'
-      ImageIndex = 9
+      Hint = 'Deletes the selected triangle'
+      ImageIndex = 2
       OnClick = mnuDeleteClick
     end
     object mnuDuplicate: TMenuItem
       Caption = 'Duplicate'
-      Hint = 'Duplicates the selected triangle.'
+      Hint = 'Duplicates the selected triangle'
+      ImageIndex = 1
       OnClick = mnuDupClick
     end
     object MenuItem2: TMenuItem
@@ -876,37 +1501,23 @@ object EditForm: TEditForm
     end
     object mnuAdd: TMenuItem
       Caption = 'Add'
-      Hint = 'Adds a new triangle.'
+      Hint = 'Adds a new triangle'
+      ImageIndex = 0
       OnClick = mnuAddClick
     end
     object N4: TMenuItem
       Caption = '-'
     end
-    object mnuRotateRight: TMenuItem
-      Caption = 'Rotate Right'
-      OnClick = mnuRotateRightClick
-    end
-    object mnuRotateLeft: TMenuItem
-      Caption = 'Rotate Left'
-      OnClick = mnuRotateLeftClick
-    end
-    object mnuScaleUp: TMenuItem
-      Caption = 'Scale Up'
-      OnClick = mnuScaleUpClick
-    end
-    object mnuScaleDown: TMenuItem
-      Caption = 'Scale Down'
-      OnClick = mnuScaleDownClick
-    end
-    object N2: TMenuItem
-      Caption = '-'
-    end
     object mnuFlipVertical: TMenuItem
       Caption = 'Flip Vertical'
+      Hint = 'Flip triangle vertical'
+      ImageIndex = 10
       OnClick = mnuFlipVerticalClick
     end
     object mnuFlipHorizontal: TMenuItem
       Caption = 'Flip Horizontal'
+      Hint = 'Flip triangle horizontal'
+      ImageIndex = 9
       OnClick = mnuFlipHorizontalClick
     end
     object N5: TMenuItem
@@ -914,41 +1525,40 @@ object EditForm: TEditForm
     end
     object mnuVerticalFlipAll: TMenuItem
       Caption = 'Flip All Vertical '
+      Hint = 'Flip all triangles vertical'
+      ImageIndex = 12
       OnClick = mnuVerticalFlipAllClick
     end
     object mnuHorizintalFlipAll: TMenuItem
       Caption = 'Flip All Horizontal'
+      Hint = 'Flip all triangles horizontal'
+      ImageIndex = 11
       OnClick = mnuHorizintalFlipAllClick
     end
     object MenuItem1: TMenuItem
       Caption = '-'
     end
-    object mnuLockSel: TMenuItem
-      Caption = 'Lock'
-      OnClick = mnuLockClick
-    end
-    object N6: TMenuItem
-      Caption = '-'
-    end
     object mnuUndo: TMenuItem
       Caption = 'Undo'
       Enabled = False
-      ImageIndex = 4
+      Hint = 'Undo'
+      ImageIndex = 3
       ShortCut = 16474
       OnClick = mnuUndoClick
     end
     object mnuRedo: TMenuItem
       Caption = 'Redo'
       Enabled = False
-      ImageIndex = 5
+      Hint = 'Redo'
+      ImageIndex = 4
       ShortCut = 16473
       OnClick = mnuRedoClick
     end
   end
   object QualityPopup: TPopupMenu
     Images = MainForm.Buttons
-    Left = 344
-    Top = 8
+    Left = 424
+    Top = 40
     object mnuLowQuality: TMenuItem
       Caption = 'Low Quality'
       RadioItem = True
@@ -968,10 +1578,549 @@ object EditForm: TEditForm
     object N3: TMenuItem
       Caption = '-'
     end
-    object mnuResetLocation: TMenuItem
+    object mnuResetLoc: TMenuItem
       Caption = 'Reset Location'
       Checked = True
-      OnClick = mnuResetLocationClick
+      OnClick = mnuResetLocClick
     end
+  end
+  object EditorTB: TImageList
+    Left = 361
+    Top = 80
+    Bitmap = {
+      494C01010D000E00040010001000FFFFFFFFFF10FFFFFFFFFFFFFFFF424D3600
+      0000000000003600000028000000400000004000000001002000000000000040
+      0000000000000000000000000000000000000000000000000000000000000000
+      0000000000000000000000000000000000000000000000000000000000000000
+      0000000000000000000000000000000000000000000000000000000000000000
+      0000000000000000000000000000000000000000000000000000000000000000
+      0000000000000000000000000000000000000000000000000000000000000000
+      0000000000000000000000000000000000000000000000000000000000000000
+      0000000000000000000000000000000000000000000000000000000000000000
+      0000000000000000000000000000000000000000000000000000000000000000
+      0000000000000000000000000000000000000000000000000000000000000000
+      0000000000000000000000000000000000000000000000000000000000000000
+      0000000000000000000000000000000000000000000000000000000000000000
+      0000000000000000000000000000000000000000000000000000000000000000
+      0000000000000000000000000000000000000000000000000000000000000000
+      0000000000000000000000000000000000000000000000000000000000000000
+      0000000000000000000000000000000000000000000000000000000000000000
+      0000000000000000000000000000000000000000000000000000000000000000
+      0000000000000000000000000000000000000000000000000000000000000000
+      0000000000000000000000000000000000000000000000000000000000000000
+      0000000000000000000000000000000000000000000000000000000000000000
+      0000000000000000000000000000000000000000000000000000000000000000
+      0000000000000000000000000000000000000000000000000000000000000000
+      0000000000000000000000000000000000000000000000000000000000000000
+      0000000000000000000000000000000000000000000000000000000000000000
+      0000000000000000000000000000000000000000000000000000000000000000
+      0000000000000000000000000000000000000000000000000000000000000000
+      0000000000000000000000000000000000000000000000000000000000000000
+      0000000000000000000000000000000000000000000000000000000000000000
+      0000000000000000000000000000000000000000000000000000000000000000
+      0000000000000000000000000000000000000000000000000000000000000000
+      0000000000000000000000000000000000000000000000000000000000000000
+      0000000000000000000000000000000000000000000000000000000000000000
+      0000000000000000000000000000000000000000000000000000000000000000
+      0000000000000000000000000000000000000000000000000000000000000000
+      0000000000000000000000000000000000000000000000000000000000000000
+      0000000000000000000000000000000000000000000000000000000000000000
+      0000000000000000000000000000000000000000000000000000000000000000
+      0000000000000000000000000000000000000000000000000000000000000000
+      0000000000000000000000000000000000000000000000000000000000000000
+      0000000000000000000000000000000000000000000000000000000000000000
+      0000000000000000000000000000000000000000000000000000000000000000
+      0000000000000000000000000000000000000000000000000000000000000000
+      0000000000000000000000000000000000000000000000000000000000000000
+      0000000000000000000000000000000000000000000000000000000000000000
+      0000000000000000000000000000000000000000000000000000000000000000
+      0000000000000000000000000000000000000000000000000000000000000000
+      0000000000000000000000000000000000000000000000000000000000000000
+      0000000000000000000000000000000000000000000000000000000000000000
+      0000000000000000000000000000000000000000000000000000000000000000
+      0000000000000000000000000000000000000000000000000000000000000000
+      0000000000000000000000000000000000000000000000000000000000000000
+      0000000000000000000000000000000000000000000000000000000000000000
+      0000000000000000000000000000000000000000000000000000000000000000
+      0000000000000000000000000000000000000000000000000000000000000000
+      0000000000000000000000000000000000000000000000000000000000000000
+      0000000000000000000000000000000000000000000000000000000000000000
+      0000000000000000000000000000000000000000000000000000000000000000
+      0000000000000000000000000000000000000000000000000000000000000000
+      0000000000000000000000000000000000000000000000000000000000000000
+      0000000000000000000000000000000000000000000000000000000000000000
+      0000000000000000000000000000000000000000000000000000000000000000
+      0000000000000000000000000000000000000000000000000000000000000000
+      0000000000000000000000000000000000000000000000000000000000000000
+      0000000000000000000000000000000000000000000000000000000000000000
+      0000000000000000000000000000000000000000000000000000000000000000
+      0000000000000000000000000000000000008000800080008000800080008000
+      8000000000000000000080008000800080008000800080008000800080008000
+      8000800080008000800080008000800080000000000000000000000000000000
+      0000000000000000000000000000000000000000000000000000000000000000
+      0000000000000000000000000000000000000000000000000000000000000000
+      0000000000000000000000000000000000000000000000000000000000000000
+      0000000000000000000000000000000000000000000000000000000000000000
+      0000000000000000000000000000000000000000000000000000000000000000
+      0000000000000000000000000000000000000000000000000000000000000000
+      0000000000000000000000000000000000000000000000000000000000000000
+      0000000000000000000000000000000000000000000000000000000000000000
+      0000000000000000000000000000000000000000000000000000000000000000
+      0000000000000000000000000000000000000000000000000000000000000000
+      0000000000000000000000000000000000000000000000000000000000000000
+      0000000000000000000000000000000000000000000000000000000000000000
+      0000000000000000000000000000000000000000000000000000000000000000
+      0000000000000000000000000000000000000000000000000000000000000000
+      0000000000000000000000000000000000000000000000000000000000000000
+      0000000000000000000000000000000000000000000000000000000000000000
+      0000000000000000000000000000000000000000000000000000000000000000
+      0000000000000000000000000000000000000000000000000000000000000000
+      0000000000000000000000000000000000000000000000000000000000000000
+      0000000000000000000000000000000000000000000000000000000000000000
+      0000000000000000000000000000000000000000000000000000000000000000
+      0000000000000000000000000000000000000000000000000000000000000000
+      0000000000000000000000000000000000000000000000000000000000000000
+      0000000000000000000000000000000000000000000000000000000000000000
+      0000000000000000000000000000000000000000000000000000000000000000
+      0000000000000000000000000000000000000000000000000000000000000000
+      0000000000000000000000000000000000000000000000000000000000000000
+      0000000000000000000000000000000000000000000000000000000000000000
+      0000000000000000000000000000000000000000000000000000000000000000
+      0000000000000000000000000000000000000000000000000000000000000000
+      0000000000000000000000000000000000000000000000000000000000000000
+      0000000000000000000000000000000000000000000000000000000000000000
+      0000000000000000000000000000000000000000000000000000000000000000
+      0000000000000000000000000000000000000000000000000000000000000000
+      0000000000000000000000000000000000000000000000000000000000000000
+      0000000000000000000000000000000000000000000000000000000000000000
+      0000000000000000000000000000000000000000000000000000000000000000
+      0000000000000000000000000000000000000000000000000000000000000000
+      0000000000000000000000000000000000000000000000000000000000000000
+      0000000000000000000000000000000000000000000000000000000000000000
+      0000000000000000000000000000000000000000000000000000000000000000
+      0000000000000000000000000000000000000000000000000000000000000000
+      0000000000000000000000000000000000000000000000000000000000000000
+      0000000000000000000000000000000000000000000000000000000000000000
+      0000000000000000000000000000000000000000000000000000000000000000
+      0000000000000000000000000000000000000000000000000000000000000000
+      0000000000000000000000000000000000000000000000000000000000000000
+      0000000000000000000000000000000000000000000000000000000000000000
+      0000000000000000000000000000000000000000000000000000000000000000
+      0000000000000000000000000000000000000000000000000000000000000000
+      0000000000000000000000000000000000000000000000000000000000000000
+      0000000000000000000000000000000000000000000000000000000000000000
+      0000000000000000000000000000000000000000000000000000000000000000
+      0000000000000000000000000000000000000000000000000000000000000000
+      0000000000000000000000000000000000000000000000000000000000000000
+      0000000000000000000000000000000000000000000000000000000000000000
+      0000000000000000000000000000000000000000000000000000000000000000
+      0000000000000000000000000000000000000000000000000000000000000000
+      0000000000000000000000000000000000000000000000000000000000000000
+      0000000000000000000000000000000000000000000000000000000000000000
+      0000000000000000000000000000000000000000000000000000000000000000
+      0000000000000000000000000000000000000000000000000000000000000000
+      0000000000000000000000000000000000000000000000000000000000000000
+      0000000000000000000000000000000000000000000000000000000000000000
+      0000000000000000000000000000000000000000000000000000000000000000
+      0000000000000000000000000000000000000000000000000000000000000000
+      0000000000000000000000000000000000000000000000000000000000000000
+      0000000000000000000000000000000000000000000000000000000000000000
+      0000000000000000000000000000000000008000800000000000000000000000
+      0000000000000000000000000000000000000000000000000000000000000000
+      0000000000000000000000000000000000000000000000000000000000000000
+      0000000000000000000000000000000000000000000000000000000000000000
+      0000000000000000000000000000800080000000000000000000000000000000
+      0000000000000000000000000000000000000000000000000000000000000000
+      0000000000000000000000000000000000000000000000000000000000000000
+      0000000000000000000000000000000000000000000000000000000000000000
+      0000000000000000000000000000000000008000800000000000000000000000
+      0000000000000000000000000000000000000000000000000000000000000000
+      0000000000000000000000000000000000000000000000000000000000000000
+      0000000000000000000000000000000000008000000000000000000000000000
+      0000000000000000000000000000000000000000000000000000000000000000
+      0000000000000000000000000000000000000000000000000000000000005C5C
+      5C00000000000000000000000000000000000000000000000000000000005C5C
+      5C00000000000000000000000000000000000000000000000000000000000000
+      0000000000000000000000000000000000008000800000000000000000000000
+      0000000000000000000000000000000000000000000000000000000000000000
+      00005C5C5C000000000000000000000000000000000000000000000000000000
+      0000000000000000000000000000000000008000000080000000000000000000
+      0000000000000000000000000000800080000000000000000000000000000000
+      0000000000000000000000000000000000000000000000000000000000000000
+      00005C5C5C0000000000000000000000000000000000000000005C5C5C000000
+      0000000000000000000000000000000000000000000000000000000000000000
+      0000000000000000000000000000000000008000800000000000000000000000
+      0000000000000000000000000000000000000000000000000000000000000000
+      0000000000005C5C5C0000000000000000000000000000000000000000000000
+      0000000000000000000000000000000000008000000080606000800000000000
+      0000000000000000000000000000000000000000000000000000000000000000
+      0000000000005C5C5C0000000000000000000000000000000000000000000000
+      0000000000005C5C5C000000000000000000000000005C5C5C00000000000000
+      0000000000000000000000000000000000000000000000000000000000000000
+      0000000000000000000000000000000000008000800000000000000000000000
+      0000000000000000000000000000000000000000000000000000000000000000
+      000000000000000000005C5C5C00000000000000000000000000000000000000
+      0000000000000000000000000000000000008000000000000000806060008000
+      0000000000000000000000000000800080000000000000000000000000000000
+      00005C5C5C000000000000000000000000000000000000000000000000000000
+      000000000000000000005C5C5C00000000005C5C5C0000000000000000000000
+      0000000000000000000000000000000000000000000000000000000000000000
+      0000000000000000000000000000000000008000800000000000000000000000
+      0000000000000000000000000000000000000000000000000000000000000000
+      00000000000000000000000000005C5C5C000000000000000000000000000000
+      0000000000000000000000000000000000008000000000000000000000008060
+      6000800000000000000000000000000000000000000000000000000000005C5C
+      5C00000000000000000000000000000000000000000000000000000000000000
+      00000000000000000000000000005C5C5C000000000000000000000000000000
+      0000000000000000000000000000000000000000000000000000000000000000
+      0000000000000000000000000000000000008000800000000000000000000000
+      0000000000000000000000000000000000000000000000000000000000000000
+      0000000000000000000000000000000000005C5C5C0000000000000000000000
+      0000000000000000000000000000000000008000000000000000000000000000
+      00008060600080000000000000008000800000000000000000005C5C5C000000
+      0000000000000000000000000000000000000000000000000000000000000000
+      0000000000000000000000000000000000000000000000000000000000000000
+      0000000000000000000000000000000000000000000000000000000000000000
+      0000000000000000000000000000000000008000800000000000000000000000
+      0000000000000000000000000000000000000000000000000000000000000000
+      000000000000000000000000000000000000000000005C5C5C00000000000000
+      0000000000000000000000000000000000008000000000000000000000000000
+      000000000000806060008000000000000000000000005C5C5C00000000000000
+      0000000000000000000000000000000000008000800000000000800080000000
+      0000800080000000000080008000000000008000800000000000800080000000
+      0000800080000000000080008000000000000000000000000000000000000000
+      0000000000000000000000000000000000008000800000000000000000000000
+      0000000000000000000000000000000000000000000000000000000000000000
+      00000000000000000000000000000000000000000000000000005C5C5C000000
+      0000000000000000000000000000000000008000000000000000000000000000
+      00008060600080000000000000008000800000000000000000005C5C5C000000
+      0000000000000000000000000000000000000000000000000000000000000000
+      0000000000000000000000000000800000000000000000000000000000000000
+      0000000000000000000000000000000000000000000000000000000000000000
+      0000000000000000000000000000000000008000800000000000000000000000
+      0000000000000000000000000000000000000000000000000000000000000000
+      0000000000000000000000000000000000000000000000000000000000005C5C
+      5C00000000000000000000000000000000008000000000000000000000008060
+      6000800000000000000000000000000000000000000000000000000000005C5C
+      5C00000000000000000000000000000000000000000000000000000000000000
+      0000000000000000000080000000806060008000000000000000000000000000
+      0000000000000000000000000000000000000000000000000000000000000000
+      0000000000000000000000000000000000000000000000000000000000000000
+      0000000000000000000000000000000000000000000000000000000000000000
+      0000000000000000000000000000000000000000000000000000000000000000
+      00005C5C5C000000000000000000000000008000000000000000806060008000
+      0000000000000000000000000000800080000000000000000000000000000000
+      00005C5C5C000000000000000000000000000000000000000000000000000000
+      0000000000008000000080606000000000008060600080000000000000000000
+      0000000000000000000000000000000000000000000000000000000000000000
+      0000000000000000000000000000000000000000000000000000000000000000
+      0000000000000000000000000000000000000000000000000000000000000000
+      0000000000000000000000000000000000000000000000000000000000000000
+      0000000000000000000000000000000000008000000080606000800000000000
+      0000000000000000000000000000000000000000000000000000000000000000
+      0000000000005C5C5C0000000000000000000000000000000000000000000000
+      0000800000008060600000000000000000000000000080606000800000000000
+      0000000000000000000000000000000000000000000000000000000000000000
+      0000000000000000000000000000000000008000800000000000000000000000
+      0000000000000000000000000000000000000000000000000000000000000000
+      0000000000000000000000000000000000000000000000000000000000000000
+      0000000000000000000000000000000000008000000080000000000000000000
+      0000000000000000000000000000800080000000000000000000000000000000
+      0000000000000000000000000000000000000000000000000000000000008000
+      0000806060000000000000000000000000000000000000000000806060008000
+      0000000000000000000000000000000000000000000000000000000000000000
+      0000000000000000000000000000000000008000800000000000000000000000
+      0000000000000000000000000000000000000000000000000000000000000000
+      0000000000000000000000000000000000000000000000000000000000000000
+      0000000000000000000000000000000000008000000000000000000000000000
+      0000000000000000000000000000000000000000000000000000000000000000
+      0000000000000000000000000000000000000000000000000000800000008060
+      6000000000000000000000000000000000000000000000000000000000008060
+      6000800000000000000000000000000000000000000000000000000000000000
+      0000000000000000000000000000000000008000800000000000000000000000
+      0000000000000000000000000000000000000000000000000000000000000000
+      0000000000000000000000000000000000000000000000000000000000000000
+      0000000000000000000000000000000000000000000000000000000000000000
+      0000000000000000000000000000800080000000000000000000000000000000
+      0000000000000000000000000000000000000000000080000000800000008000
+      0000800000008000000080000000800000008000000080000000800000008000
+      0000800000008000000000000000000000000000000000000000000000000000
+      0000000000000000000000000000000000008000800000000000000000000000
+      0000000000000000000000000000000000000000000000000000000000000000
+      0000000000000000000000000000000000000000000000000000000000000000
+      0000000000000000000000000000000000000000000000000000000000000000
+      0000000000000000000000000000000000000000000000000000000000000000
+      0000000000000000000000000000000000000000000000000000000000000000
+      0000000000000000000000000000000000000000000000000000000000000000
+      0000000000000000000000000000000000000000000000000000000000000000
+      0000000000000000000000000000000000000000000000000000000000000000
+      0000000000000000000000000000000000000000000000000000000000000000
+      0000000000000000000000000000000000000000000000000000000000000000
+      0000000000000000000000000000000000000000000000000000000000000000
+      0000000000000000000000000000000000000000000000000000FFFFFF00FFFF
+      FF00000000000000000000000000000000000000000000000000000000000000
+      0000000000000000000000000000000000000000000000000000000000000000
+      0000000000000000000000000000000000000000000000000000000000000000
+      0000000000000000000000000000000000000000000000000000000000000000
+      0000000000000000000000000000000000000000000000000000000000000000
+      0000000000000000000000000000000000000000000000000000000000000000
+      0000000000000000000000000000000000000000000000000000000000000000
+      0000000000000000000000000000000000000000000000000000FFFFFF00FFFF
+      FF00000000000000000000000000000000000000000000000000000000000000
+      0000000000000000000000000000000000000000000000000000000000000000
+      0000000000000000000000000000000000000000000000000000000000000000
+      000000000000000000005C5C5C00000000000000000000000000000000000000
+      0000000000000000000000000000000000000000000000000000000000000000
+      0000000000000000000000000000000000000000000000000000000000000000
+      0000000000000000000000000000000000000000000000000000000000000000
+      00000000000000000000000000000000000000000000FFFFFF00FFFFFF000000
+      0000000000000000000000000000000000000000000000000000000000000000
+      000000000000000000005C5C5C00000000005C5C5C0000000000000000000000
+      0000000000000000000000000000000000000000000000000000000000000000
+      00000000000000000000000000005C5C5C000000000000000000000000000000
+      0000000000000000000000000000000000000000000000000000000000008000
+      0000000000000000000000000000000000000000000000000000000000000000
+      0000000000000000000000000000000000000000000000000000000000000000
+      000000000000FFFFFF00000000000000000000000000FFFFFF00FFFFFF000000
+      0000000000000000000000000000000000000000000000000000000000000000
+      0000000000000000000000000000000000000000000000000000000000000000
+      0000000000000000000000000000000000000000000000000000000000000000
+      0000600000006000000000000000000000005C5C5C0000000000000000000000
+      0000000000000000000000000000000000000000000000000000000000008000
+      0000000000000000000000000000000000000000000080000000800000008000
+      0000800000008000000000000000000000000000000000000000000000000000
+      000000000000FFFFFF00FFFFFF0000000000FFFFFF00FFFFFF00000000000000
+      0000000000000000000000000000000000000000000000000000000000000000
+      0000000000000000000000000000000000000000000000000000000000000000
+      0000000000000000000000000000000000000000000000000000000000006000
+      000000000000000000000000000000000000000000005C5C5C00000000000000
+      0000000000000000000000000000000000000000000000000000800000000000
+      0000000000000000000000000000000000000000000000000000800000008000
+      0000800000008000000000000000000000000000000000000000000000000000
+      000000000000FFFFFF00FFFFFF00FFFFFF00FFFFFF0000000000000000000000
+      0000000000000000000000000000000000000000000000000000000000000000
+      0000000000000000000000000000000000000000000000000000000000000000
+      0000000000000000000000000000000000000000000000000000000000006000
+      00000000000000000000000000000000000000000000000000005C5C5C000000
+      0000000000000000000000000000000000000000000000000000800000000000
+      0000000000000000000000000000000000000000000000000000000000008000
+      0000800000008000000000000000000000000000000000000000000000000000
+      000000000000FFFFFF00FFFFFF00FFFFFF00FFFFFF00FFFFFF00FFFFFF00FFFF
+      FF000000000000000000000000000000000000000000000000005C5C5C000000
+      0000000000000000000000000000000000000000000000000000000000000000
+      00005C5C5C000000000000000000000000000000000000000000600000000000
+      0000000000000000000000000000000000000000000000000000000000005C5C
+      5C00000000000000000000000000000000000000000000000000800000000000
+      0000000000000000000000000000000000000000000000000000800000000000
+      0000800000008000000000000000000000000000000000000000000000000000
+      000000000000FFFFFF00FFFFFF00FFFFFF00FFFFFF00FFFFFF00FFFFFF000000
+      0000000000000000000000000000000000000000000000000000000000000000
+      0000000000000000000000000000000000000000000000000000000000000000
+      0000000000000000000000000000000000000000000000000000600000000000
+      0000000000000000000000000000000000000000000000000000000000000000
+      0000000000000000000000000000000000000000000000000000000000008000
+      0000000000000000000000000000000000008000000080000000000000000000
+      0000000000008000000000000000000000000000000000000000000000000000
+      000000000000FFFFFF00FFFFFF00FFFFFF00FFFFFF00FFFFFF00000000000000
+      00000000000000000000000000000000000000000000000000005C5C5C000000
+      0000000000000000000000000000000000000000000000000000000000000000
+      00005C5C5C000000000000000000000000000000000000000000600000000000
+      0000000000000000000000000000000000000000000000000000000000000000
+      0000000000000000000000000000000000000000000000000000000000000000
+      0000800000008000000080000000800000000000000000000000000000000000
+      0000000000000000000000000000000000000000000000000000000000000000
+      000000000000FFFFFF00FFFFFF00FFFFFF00FFFFFF0000000000000000000000
+      0000000000000000000000000000000000000000000000000000000000000000
+      0000000000000000000000000000000000000000000000000000000000000000
+      0000000000000000000000000000000000000000000000000000600000000000
+      0000000000000000000000000000000000000000000000000000000000000000
+      0000000000000000000000000000000000000000000000000000000000000000
+      0000000000000000000000000000000000000000000000000000000000000000
+      0000000000000000000000000000000000000000000000000000000000000000
+      000000000000FFFFFF00FFFFFF00FFFFFF000000000000000000000000000000
+      0000000000000000000000000000000000000000000000000000000000000000
+      0000000000000000000000000000000000000000000000000000000000000000
+      0000000000000000000000000000000000000000000000000000000000006000
+      0000000000000000000000000000000000000000000000000000600000006000
+      0000600000006000000000000000000000000000000000000000000000000000
+      0000000000000000000000000000000000000000000000000000000000000000
+      0000000000000000000000000000000000000000000000000000000000000000
+      000000000000FFFFFF00FFFFFF00000000000000000000000000000000000000
+      0000000000000000000000000000000000000000000000000000000000000000
+      0000000000000000000000000000000000000000000000000000000000000000
+      0000000000000000000000000000000000000000000000000000000000006000
+      0000000000000000000000000000000000000000000000000000000000000000
+      0000600000006000000000000000000000000000000000000000000000000000
+      0000000000000000000000000000000000000000000000000000000000000000
+      0000000000000000000000000000000000000000000000000000000000000000
+      000000000000FFFFFF0000000000000000000000000000000000000000000000
+      0000000000000000000000000000000000000000000000000000000000000000
+      000000000000000000005C5C5C00000000005C5C5C0000000000000000000000
+      0000000000000000000000000000000000000000000000000000000000000000
+      0000600000006000000000000000000000000000000000000000600000006000
+      0000000000006000000000000000000000000000000000000000000000000000
+      0000000000000000000000000000000000000000000000000000000000000000
+      0000000000000000000000000000000000000000000000000000000000000000
+      0000000000000000000000000000000000000000000000000000000000000000
+      0000000000000000000000000000000000000000000000000000000000000000
+      0000000000000000000000000000000000000000000000000000000000000000
+      0000000000000000000000000000000000000000000000000000000000000000
+      0000000000000000000060000000600000006000000060000000000000000000
+      0000000000006000000000000000000000000000000000000000000000000000
+      0000000000000000000000000000000000000000000000000000000000000000
+      0000000000000000000000000000000000000000000000000000000000000000
+      0000000000000000000000000000000000000000000000000000000000000000
+      0000000000000000000000000000000000000000000000000000000000000000
+      0000000000000000000000000000000000000000000000000000000000000000
+      0000000000000000000000000000000000000000000000000000000000000000
+      0000000000000000000000000000000000000000000000000000000000000000
+      0000000000000000000000000000000000000000000000000000000000000000
+      0000000000000000000000000000000000000000000000000000000000000000
+      0000000000000000000000000000000000000000000000000000000000000000
+      0000000000000000000000000000000000000000000000000000000000000000
+      0000000000000000000000000000000000000000000000000000000000000000
+      0000000000000000000000000000000000000000000000000000000000000000
+      0000000000000000000000000000000000000000000000000000000000000000
+      0000000000000000000000000000000000000000000000000000000000000000
+      0000000000000000000000000000000000000000000000000000000000000000
+      0000000000000000000000000000000000000000000000000000000000000000
+      0000000000000000000000000000000000000000000000000000000000000000
+      0000000000000000000000000000000000000000000000000000000000000000
+      0000000000000000000000000000000000000000000000000000000000000000
+      0000000000000000000000000000000000000000000000000000000000000000
+      0000000000000000000000000000000000000000000000000000000000000000
+      0000000000000000000000000000000000000000000000000000000000000000
+      0000000000000000000000000000000000000000000000000000000000000000
+      0000000000000000000000000000000000000000000000000000000000000000
+      0000000000000000000000000000000000000000000000000000000000000000
+      0000000000000000000000000000000000000000000000000000000000000000
+      0000000000000000000000000000000000000000000000000000000000000000
+      0000000000000000000000000000000000000000000000000000000000000000
+      0000000000000000000000000000000000000000000000000000000000000000
+      0000000000000000000000000000000000000000000000000000000000000000
+      0000000000000000000000000000000000000000000000000000000000000000
+      000000000000000000005C5C5C00000000000000000000000000000000000000
+      0000000000000000000000000000000000000000000000000000000000000000
+      000000000000000000005C5C5C00000000000000000000000000000000000000
+      0000000000000000000000000000000000000000000000000000000000000000
+      000000000000000000005C5C5C00000000000000000000000000000000000000
+      0000000000000000000000000000000000000000000000000000000000000000
+      0000000000000000000000000000000000000000000000000000000000000000
+      0000000000000000000000000000000000000000000000000000000000000000
+      00000000000000000000000000005C5C5C000000000000000000000000000000
+      0000000000000000000000000000000000008000000080000000800000008000
+      0000800000008000000080000000800000008000000080000000800000008000
+      00000000000000000000000000000000000000000000000000000000C0000000
+      00000000000000000000000000005C5C5C0000000000000000000000C0000000
+      0000000000000000000000000000000000000000000000000000000000000000
+      0000000000000000000000000000000000000000000000000000000000000000
+      0000800000000000000000000000000000000000000000000000000000000000
+      0000000000000000000000000000000000005C5C5C0000000000000000000000
+      0000000000000000000000000000000000000000000080000000800000008000
+      0000800000008000000080000000800000008000000080000000800000008000
+      000000000000000000000000000000000000000000000000C0000000C0000000
+      C000000000000000000000000000000000005C5C5C000000C0000000C0000000
+      C000000000000000000000000000000000000000000000000000800000008000
+      0000800000008000000080000000000000000000000000000000000000000000
+      0000800000000000000000000000000000000000000000000000000000000000
+      000000800000008000000000000000000000000000005C5C5C00000000000000
+      0000000000000000000000000000000000000000000000000000800000008000
+      000080000000000000000000000000000000000000005C5C5C00800000008000
+      00000000000000000000000000000000000000000000000000000000C0000000
+      C0000000C0000000000000000000000000000000C0000000C0000000C0000000
+      0000000000000000000000000000000000000000000000000000800000008000
+      0000800000008000000000000000000000000000000000000000000000000000
+      0000000000008000000000000000000000000000000000000000000000000000
+      00000080000000800000000000000000000000000000000000005C5C5C000000
+      0000000000000000000000000000000000000000000000000000000000008000
+      0000800000008000000000000000000000000000000000000000800000008000
+      0000000000000000000000000000000000000000000000000000000000000000
+      C0000000C0000000C000000000000000C0000000C0000000C0005C5C5C000000
+      0000000000000000000000000000000000000000000000000000800000008000
+      0000800000000000000000000000000000000000000000000000000000000000
+      0000000000008000000000000000000000000000000000000000000000000000
+      0000008000000080000000000000000000000000000000000000000000005C5C
+      5C00000000000000000000000000000000000000000000000000000000000000
+      0000800000008000000080000000000000000000000000000000800000008000
+      0000000000000000000000000000000000000000000000000000000000000000
+      00000000C0000000C0000000C0000000C0000000C00000000000000000005C5C
+      5C00000000000000000000000000000000000000000000000000800000008000
+      0000000000008000000000000000000000000000000000000000000000000000
+      0000000000008000000000000000000000000000000000000000000000000000
+      0000008000000080000000000000000000000000000000000000000000000000
+      00005C5C5C000000000000000000000000000000000000000000000000000000
+      0000000000008000000080000000800000000000000000000000800000008000
+      00005C5C5C000000000000000000000000000000000000000000000000000000
+      0000000000000000C0000000C0000000C0000000000000000000000000000000
+      00005C5C5C000000000000000000000000000000000000000000800000000000
+      0000000000000000000080000000800000000000000000000000000000000000
+      0000800000000000000000000000000000000080000000800000008000000080
+      0000008000000080000000800000008000000080000000800000000000000000
+      0000000000000000000000000000000000000000000000000000000000000000
+      0000000000000000000080000000800000008000000000000000800000008000
+      0000000000000000000000000000000000000000000000000000000000000000
+      00000000C0000000C0000000C0000000C0000000C00000000000000000000000
+      0000000000000000000000000000000000000000000000000000000000000000
+      0000000000000000000000000000000000008000000080000000800000008000
+      0000000000000000000000000000000000000080000000800000008000000080
+      0000008000000080000000800000008000000080000000800000000000000000
+      0000000000000000000000000000000000000000000000000000000000000000
+      0000000000000000000000000000800000008000000080000000800000008000
+      0000000000000000000000000000000000000000000000000000000000000000
+      C0000000C0000000C000000000000000C0000000C0000000C000000000000000
+      0000000000000000000000000000000000000000000000000000000000000000
+      0000000000000000000000000000000000000000000000000000000000000000
+      0000000000000000000000000000000000000000000000000000000000000000
+      0000008000000080000000000000000000000000000000000000000000000000
+      0000000000000000000000000000000000000000000000000000000000000000
+      0000000000000000000000000000000000008000000080000000800000008000
+      00000000000000000000000000000000000000000000000000000000C0000000
+      C0000000C0000000000000000000000000000000C0000000C0000000C0000000
+      0000000000000000000000000000000000000000000000000000000000000000
+      0000000000000000000000000000000000000000000000000000000000000000
+      0000000000000000000000000000000000000000000000000000000000000000
+      0000008000000080000000000000000000000000000000000000000000000000
+      0000000000000000000000000000000000000000000000000000000000000000
+      0000000000000000000000000000000000000000000080000000800000008000
+      000000000000000000000000000000000000000000000000C0000000C0000000
+      C00000000000000000000000000000000000000000000000C0000000C0000000
+      C000000000000000000000000000000000000000000000000000000000000000
+      0000000000000000000000000000000000000000000000000000000000000000
+      0000000000000000000000000000000000000000000000000000000000000000
+      0000008000000080000000000000000000000000000000000000000000000000
+      0000000000000000000000000000000000000000000000000000000000000000
+      0000000000000000000000000000000000000000000000000000800000008000
+      00000000000000000000000000000000000000000000000000000000C0000000
+      00000000000000000000000000000000000000000000000000000000C0000000
+      0000000000000000000000000000000000000000000000000000000000000000
+      0000000000000000000000000000000000000000000000000000000000000000
+      0000000000000000000000000000000000000000000000000000000000000000
+      0000008000000080000000000000000000000000000000000000000000000000
+      0000000000000000000000000000000000000000000000000000000000000000
+      0000000000000000000000000000000000000000000000000000000000008000
+      0000000000000000000000000000000000000000000000000000000000000000
+      0000000000000000000000000000000000000000000000000000000000000000
+      0000000000000000000000000000000000000000000000000000000000000000
+      0000000000000000000000000000000000000000000000000000000000000000
+      000000000000000000000000000000000000424D3E000000000000003E000000
+      2800000040000000400000000100010000000000000200000000000000000000
+      000000000000000000000000FFFFFF00FFFF000000000000FFFF000000000000
+      FFFF000000000000F3E7000000000000E1E7000000000000C0E7000000000000
+      F3E7000000000000F3E70000000000000000000000000000F3E7000000000000
+      F3E7000000000000F1C7000000000000F80F000000000000FC1F000000000000
+      FFFF000000000000FFFF000000000000FFFFFFFFFFFFFF7F0001FEFF8003FF7F
+      80017FFDCFE7FF7FC7F93EF9E7CFE00FE3F91FF1F39FE007F1F94EE5F93FFF63
+      F8F967CDFC7FFF73FC79729DFEFFFF73FE39793D5555FB73FF19729DFEFFF363
+      FF8967CDFC7FE007FFC14EE5F93FE00FFFE11FF1F39FF37FFFF13EF9E7CFFB7F
+      FFF97FFDCFE7FF7FFFFDFEFF8003FF7FFFFFFFCFFFFFFFFFFFFFFF87FEFFF007
+      FFFFF787FC7FF9F7FFFFF30FF83FFCF7EFFFF00FFEFFF277EF83F01FFEFFEF37
+      DFC3F003DEF7EF97DFE3F0079EF3DFC7DFD3F00F0001DFE7EF3BF01F9EF3DFF7
+      F0FFF03FDEF7DFFFFFFFF07FFEFFEFC3FFFFF0FFFEFFEFF3FFFFF1FFF83FF3CB
+      FFFFF3FFFC7FFC3BFFFFF7FFFEFFFFFFFFFFFFFFFFFFFFFFC001C001C001FFFF
+      E001E001E001FFFFF1F9F1F9F1F9FFFFF8F90009D8D9FFF7FC7980098C09C1F7
+      F239C609C619C3FBF319E309E219C7FBF389F189F009CBFBF3C1F8C1F8C1DCF7
+      0021FC41F061FF0F0031FE01E231FFFFF3F9FF09C719FFFFF3FDFF8D8F8DFFFF
+      F3FFFFCFDFDFFFFFF3FFFFEFFFFFFFFF00000000000000000000000000000000
+      000000000000}
   end
 end
