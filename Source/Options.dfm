@@ -1016,7 +1016,9 @@ object OptionsForm: TOptionsForm
     end
     object TabSheet2: TTabSheet
       Caption = 'Sheep'
+      Enabled = False
       ImageIndex = 6
+      TabVisible = False
       object GroupBox6: TGroupBox
         Left = 8
         Top = 6
