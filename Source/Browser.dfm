@@ -54,7 +54,7 @@ object GradientBrowser: TGradientBrowser
     Left = 0
     Top = 4
     Width = 372
-    Height = 106
+    Height = 105
     Align = alClient
     BevelOuter = bvNone
     TabOrder = 0
@@ -62,7 +62,7 @@ object GradientBrowser: TGradientBrowser
       Left = 0
       Top = 0
       Width = 372
-      Height = 106
+      Height = 105
       Align = alClient
       Columns = <
         item
@@ -98,7 +98,7 @@ object GradientBrowser: TGradientBrowser
   end
   object pnlControls: TPanel
     Left = 0
-    Top = 110
+    Top = 109
     Width = 372
     Height = 51
     Align = alBottom

@@ -17,6 +17,7 @@
 }
 
 //{$D-,L-,O+,Q-,R-,Y-,S-}
+
 unit Main;
 
 interface
@@ -25,9 +26,10 @@ uses
   Windows, Forms, Dialogs, Menus, Controls, ComCtrls,
   ToolWin, StdCtrls, Classes, Messages, ExtCtrls, ImgList, controlpoint,
   Jpeg, SyncObjs, SysUtils, ClipBrd, Graphics, Math, Global, MyTypes,
-  Registry, RenderThread, Cmap, ExtDlgs, AppEvnts, ShellAPI, IdComponent,
-  IdTCPConnection, IdTCPClient, IdHTTP, IdBaseComponent, IdIntercept,
-  IdLogBase, IdLogFile, LibXmlParser, LibXmlComps, Xform;
+  Registry, RenderThread, Cmap, ExtDlgs, AppEvnts, ShellAPI,
+//  IdComponent, IdTCPConnection, IdTCPClient, IdHTTP,
+//  IdBaseComponent, IdIntercept, IdLogBase, IdLogFile,
+  LibXmlParser, LibXmlComps, Xform;
 
 const
   PixelCountMax = 32768;
@@ -90,7 +92,6 @@ type
     ToolBar: TToolBar;
     btnOpen: TToolButton;
     btnSave: TToolButton;
-    btnCopyUPR: TToolButton;
     btnEditor: TToolButton;
     btnGradient: TToolButton;
     ToolButton9: TToolButton;
@@ -112,7 +113,6 @@ type
     N11: TMenuItem;
     mnuAbout: TMenuItem;
     mnuFullScreen: TMenuItem;
-    N12: TMenuItem;
     mnuRender: TMenuItem;
     mnuMutate: TMenuItem;
     btnMutate: TToolButton;
@@ -146,7 +146,6 @@ type
     mnuRun: TMenuItem;
     mnuEditScript: TMenuItem;
     N15: TMenuItem;
-    ToolButton2: TToolButton;
     btnRun: TToolButton;
     mnuStop: TMenuItem;
     btnStop: TToolButton;
@@ -162,12 +161,8 @@ type
     mnuPaste: TMenuItem;
     mnuCopy: TMenuItem;
     N20: TMenuItem;
-    btnCopy: TToolButton;
-    btnPaste: TToolButton;
     mnuExportFLame: TMenuItem;
     mnuPostSheep: TMenuItem;
-    LogFile: TIdLogFile;
-    HTTP: TIdHTTP;
     ListXmlScanner: TEasyXmlScanner;
     N21: TMenuItem;
     XmlScanner: TXmlScanner;
@@ -179,6 +174,12 @@ type
     mnuimage: TMenuItem;
     tbzoomoutwindow: TToolButton;
     mnuSaveAllAs: TMenuItem;
+    ToolButton5: TToolButton;
+    btnSize: TToolButton;
+    btnFullScreen: TToolButton;
+    ToolButton6: TToolButton;
+    tbQualityBox: TComboBox;
+    View1: TMenuItem;
     procedure tbzoomoutwindowClick(Sender: TObject);
     procedure mnuimageClick(Sender: TObject);
     procedure mnuExitClick(Sender: TObject);
@@ -254,11 +255,13 @@ type
     procedure mnuCopyClick(Sender: TObject);
     procedure mnuExportFLameClick(Sender: TObject);
     procedure mnuPostSheepClick(Sender: TObject);
+{
     procedure HTTPRedirect(Sender: TObject; var dest: string;
       var NumRedirect: Integer; var Handled: Boolean;
       var VMethod: TIdHTTPMethod);
     procedure HTTPStatus(ASender: TObject; const AStatus: TIdStatus;
       const AStatusText: string);
+}
     procedure ListXmlScannerStartTag(Sender: TObject; TagName: string;
       Attributes: TAttrList);
     procedure XMLScannerStartTag(Sender: TObject; TagName: string;
@@ -276,12 +279,16 @@ type
     procedure tbDragClick(Sender: TObject);
     procedure tbRotateClick(Sender: TObject);
     procedure mnuSaveAllAsClick(Sender: TObject);
+    procedure tbQualityBoxKeyPress(Sender: TObject; var Key: Char);
+    procedure tbQualityBoxSet(Sender: TObject);
+    procedure ImageDblClick(Sender: TObject);
   private
     Renderer: TRenderThread;
 
     FMouseMoveState: TMouseMoveState;
     FSelectRect: TRect;
     FRotateAngle: double;
+    FClickAngle: double; // --Z--
     FViewBMP: Graphics.TBitmap;
 
     procedure DrawZoomWindow(ARect: TRect);
@@ -362,10 +369,10 @@ var
 implementation
 
 
-uses Editor, Options, Regstry, Gradient, Render,
+uses Editor, Options, Regstry, {Gradient,} Render,
   FullScreen, FormRender, Mutate, Adjust, Browser, Save, About, CmapData,
-  HtmlHlp, ScriptForm, FormFavorites, Size, FormExport, msMultiPartFormData,
-  ImageColoring, RndFlame;
+  HtmlHlp, ScriptForm, FormFavorites, {Size,} FormExport, msMultiPartFormData,
+  {Sheep,} ImageColoring, RndFlame;
 
 {$R *.DFM}
 
@@ -565,7 +572,7 @@ var
   URL, HelpTopic: string;
 begin
   if EditForm.Active then HelpTopic := 'Transform editor.htm'
-  else if GradientForm.Active then HelpTopic := 'Gradient window.htm'
+//  else if GradientForm.Active then HelpTopic := 'Gradient window.htm'
   else if AdjustForm.Active then HelpTopic := 'Adjust window.htm'
   else if MutateForm.Active then HelpTopic := 'Mutation window.htm'
   else if RenderForm.Active then HelpTopic := 'Render window.htm';
@@ -906,6 +913,10 @@ begin
   btnRedo.Enabled := false;
   EditForm.mnuUndo.Enabled := True;
   EditForm.mnuRedo.Enabled := false;
+  EditForm.tbUndo.enabled := true;
+  EditForm.tbRedo.enabled := false;
+  AdjustForm.btnUndo.enabled := true;
+  AdjustForm.btnRedo.enabled := false;
 end;
 
 function GradientEntries(gFilename: string): string;
@@ -972,7 +983,7 @@ function CleanEntry(ident: string): string;
 var
   i: integer;
 begin
-  for i := 0 to Length(ident) do
+  for i := 1 to Length(ident) do
   begin
     if ident[i] = #32 then
       ident[i] := '_'
@@ -988,7 +999,7 @@ function CleanXMLName(ident: string): string;
 var
   i: integer;
 begin
-  for i := 0 to Length(ident) do
+  for i := 1 to Length(ident) do
   begin
     if ident[i] = '*' then
       ident[i] := '_'
@@ -1004,7 +1015,7 @@ function CleanUPRTitle(ident: string): string;
 var
   i: integer;
 begin
-  for i := 0 to Length(ident) do
+  for i := 1 to Length(ident) do
   begin
     if ident[i] = '}' then
       ident[i] := '_'
@@ -1778,8 +1789,14 @@ begin
   if not Assigned(Renderer) then
   begin
     if (MainCp.width <> Image.Width) or (MainCp.height <> Image.height) then
+    begin
       AdjustScale(MainCp, Image.width, Image.height);
-    AdjustForm.UpdateDisplay;
+      if EditForm.Visible then EditForm.UpdateDisplay(true); // preview only
+    end;
+    if AdjustForm.Visible then AdjustForm.UpdateDisplay;
+
+//z    GradientForm.DrawPreview;
+
     // following needed ?
 //    cp.Zoom := Zoom;
 //    cp.center[0] := center[0];
@@ -2077,7 +2094,7 @@ begin
     mnuListRename.Enabled := True;
     mnuItemDelete.Enabled := True;
     OpenFile := OpenDialog.FileName;
-    MainForm.Caption := 'Apophysis' + ' - ' + OpenFile;
+    MainForm.Caption := 'Apophysis 2.02zx' + ' - ' + OpenFile; // --Z--
     OpenFileType := ftXML;
     if UpperCase(ExtractFileExt(OpenDialog.FileName)) = '.IFS' then
     begin
@@ -2157,6 +2174,11 @@ end;
 procedure TMainForm.mnuOptionsClick(Sender: TObject);
 begin
   OptionsForm.ShowModal;
+  // --Z--
+  StopThread;
+  RedrawTimer.Enabled := True;
+  tbQualityBox.Text := FloatToStr(defSampleDensity);
+  UpdateWindows;
 end;
 
 procedure TMainForm.mnuRefreshClick(Sender: TObject);
@@ -2192,7 +2214,7 @@ begin
   RandomBatch;
   OpenFile := AppPath + 'apophysis.rand';
   OpenFileType := ftXML;
-  MainForm.Caption := 'Apophysis' + ' - Random Batch';
+  MainForm.Caption := 'Apophysis 2.02zx' + ' - Random Batch';
   ListXML(OpenFile, 1);
   ListView.SetFocus;
   if batchsize = 1 then DrawFlame;
@@ -2307,7 +2329,9 @@ begin
   MainCp.name := RandomPrefix + RandomDate + '-' +
     IntToStr(RandomIndex);
   Transforms := TrianglesFromCP(MainCp, MainTriangles);
-  if GradientForm.visible then GradientForm.UpdateGradient(Maincp.cmap);
+//  if GradientForm.visible then GradientForm.UpdateGradient(Maincp.cmap);
+  if AdjustForm.visible then AdjustForm.UpdateGradient(Maincp.cmap);
+
   StatusBar.Panels[2].text := maincp.name;
   ResetLocation;
   RedrawTimer.Enabled := true;
@@ -2516,7 +2540,7 @@ procedure TMainForm.FormCreate(Sender: TObject);
 var
   dte: string;
 begin
-  FMouseMoveState := msZoomWindow;
+  FMouseMoveState := msDrag; // --Z-- was: msZoomWindow;
   LimitVibrancy := True;
   Favorites := TStringList.Create;
   GetScripts;
@@ -2539,6 +2563,8 @@ begin
   if VariationOptions = 0 then VariationOptions := 16383; // it shouldn't hapen but just in case;
   UnpackVariations(VariationOptions);
   FillVariantMenu;
+
+  tbQualityBox.Text := FloatToStr(defSampleDensity);
 end;
 
 procedure TMainForm.FormShow(Sender: TObject);
@@ -2546,7 +2572,7 @@ var
   Registry: TRegistry;
   i: integer;
 begin
-  { Read posution from registry }
+  { Read position from registry }
   Registry := TRegistry.Create;
   try
     Registry.RootKey := HKEY_CURRENT_USER;
@@ -2599,7 +2625,7 @@ begin
     MainCp.Width := image.width;
     MainCp.Height := Image.Height;
     RandomBatch;
-    MainForm.Caption := 'Apophysis' + ' - Random Batch';
+    MainForm.Caption := 'Apophysis 2.02zx' + ' - Random Batch';
     OpenFile := AppPath + 'apophysis.rand';
     ListXML(OpenFile, 1);
     OpenFileType := ftXML;
@@ -2619,15 +2645,23 @@ begin
       OpenFileType := ftXML;
       MainForm.ListView.Selected := MainForm.ListView.Items[0];
     end;
-    MainForm.Caption := 'Apophysis' + ' - ' + defFlameFile;
+    MainForm.Caption := 'Apophysis 2.02zx' + ' - ' + defFlameFile;
   end;
   ListView.SetFocus;
   CanDrawOnResize := True;
   Statusbar.Panels[2].Text := maincp.name;
+{
   gradientForm.cmbPalette.Items.clear;
   for i := 0 to NRCMAPS -1 do
     gradientForm.cmbPalette.Items.Add(cMapnames[i]);
   GradientForm.cmbPalette.ItemIndex := 0;
+}
+  AdjustForm.cmbPalette.Items.clear;
+  for i := 0 to NRCMAPS -1 do
+    AdjustForm.cmbPalette.Items.Add(cMapnames[i]);
+  AdjustForm.cmbPalette.ItemIndex := 0;
+//  AdjustForm.cmbPalette.Items.clear;
+
   ExportDialog.cmbDepth.ItemIndex := 2;
 end;
 
@@ -2642,7 +2676,7 @@ begin
   if AdjustForm.visible then AdjustForm.close;
   if GradientBrowser.visible then GradientBrowser.close;
   if MutateForm.visible then MutateForm.Close;
-  if GradientForm.visible then GradientForm.Close;
+//  if GradientForm.visible then GradientForm.Close;
   if ScriptEditor.visible then ScriptEditor.Close;
   { Stop the render thread }
   if RenderForm.Visible then RenderForm.Close;
@@ -2755,6 +2789,10 @@ begin
     mnuPopRedo.enabled := False;
     EditForm.mnuUndo.Enabled := False;
     EditForm.mnuRedo.enabled := False;
+    EditForm.tbUndo.enabled := false;
+    EditForm.tbRedo.enabled := false;
+    AdjustForm.btnUndo.enabled := false;
+    AdjustForm.btnRedo.enabled := false;
     btnUndo.Enabled := false;
     btnRedo.enabled := false;
 
@@ -2766,6 +2804,9 @@ begin
     Statusbar.Panels[2].Text := Maincp.name;
     RedrawTimer.Enabled := True;
     Application.ProcessMessages;
+
+    EditForm.SelectedTriangle := 1; // --Z--
+
     UpdateWindows;
   finally
     FileStrings.free;
@@ -2888,6 +2929,10 @@ begin
         mnuPopRedo.enabled := False;
         EditForm.mnuUndo.Enabled := False;
         EditForm.mnuRedo.enabled := False;
+        EditForm.tbUndo.enabled := false;
+        EditForm.tbRedo.enabled := false;
+        AdjustForm.btnUndo.enabled := false;
+        AdjustForm.btnRedo.enabled := false;
         btnUndo.Enabled := false;
         btnRedo.enabled := false;
         Transforms := TrianglesFromCP(maincp, MainTriangles);
@@ -2917,8 +2962,11 @@ end;
 
 procedure TMainForm.UpdateWindows;
 begin
-  if GradientForm.visible then GradientForm.UpdateGradient(maincp.cmap);
+  if AdjustForm.visible then AdjustForm.UpdateGradient(maincp.cmap);
+//  if GradientForm.visible then GradientForm.UpdateGradient(maincp.cmap);
+
   if EditForm.visible then EditForm.UpdateDisplay;
+
 //  if AdjustForm.visible then AdjustForm.UpdateDisplay;
   if MutateForm.visible then MutateForm.UpdateDisplay;
 end;
@@ -2988,7 +3036,8 @@ begin
     // Trim undo index from title
     maincp.name := Copy(Fstrings[0], 6, length(Fstrings[0]) - 7);
     if SavedPal then maincp.cmap := palette;
-    if GradientForm.visible then GradientForm.UpdateGradient(maincp.cmap);
+//  if GradientForm.visible then GradientForm.UpdateGradient(maincp.cmap);
+    if AdjustForm.visible then AdjustForm.UpdateGradient(maincp.cmap);
     RedrawTimer.Enabled := True;
     UpdateWindows;
   finally
@@ -3055,8 +3104,11 @@ end;
 
 procedure TMainForm.mnuGradClick(Sender: TObject);
 begin
-  gradientForm.UpdateGradient(maincp.cmap);
-  GradientForm.Show;
+  //gradientForm.UpdateGradient(maincp.cmap);
+  //GradientForm.Show;
+  AdjustForm.UpdateDisplay;
+  AdjustForm.PageControl.TabIndex:=2;
+  AdjustForm.Show;
 end;
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -3230,7 +3282,9 @@ begin
         StopThread;
         UpdateUndo;
         maincp.cmap := Pal;
-        gradientForm.UpdateGradient(Pal);
+//        gradientForm.UpdateGradient(Pal);
+        {if AdjustForm.visible then} AdjustForm.UpdateGradient(maincp.cmap);
+
         if EditForm.Visible then EditForm.UpdateDisplay;
 //        if AdjustForm.Visible then AdjustForm.UpdateDisplay;
         if MutateForm.Visible then MutateForm.UpdateDisplay;
@@ -3276,11 +3330,15 @@ begin
   mnuPopRedo.Enabled := True;
   btnRedo.Enabled := True;
   EditForm.mnuRedo.Enabled := True;
+  EditForm.tbRedo.enabled := true;
+  AdjustForm.btnRedo.enabled := true;
   if UndoIndex = 0 then begin
     mnuUndo.Enabled := false;
     mnuPopUndo.Enabled := false;
     btnUndo.Enabled := false;
     EditForm.mnuUndo.Enabled := false;
+    EditForm.tbUndo.enabled := false;
+    AdjustForm.btnUndo.enabled := false;
   end;
 end;
 
@@ -3294,16 +3352,23 @@ procedure TMainForm.Redo;
 begin
   StopThread;
   Inc(UndoIndex);
+
+  assert(UndoIndex < UndoMax, 'Undo list index out of range!');
+
   LoadUndoFlame(UndoIndex, AppPath + 'apophysis.undo');
   mnuUndo.Enabled := True;
   mnuPopUndo.Enabled := True;
   btnUndo.Enabled := True;
   EditForm.mnuUndo.Enabled := True;
+  EditForm.tbUndo.enabled := true;
+  AdjustForm.btnUndo.enabled := true;
   if UndoIndex = UndoMax then begin
     mnuRedo.Enabled := false;
-    mnuPopRedo.Enabled := True;
+    mnuPopRedo.Enabled := false;
     btnRedo.Enabled := false;
     EditForm.mnuRedo.Enabled := false;
+    EditForm.tbRedo.enabled := false;
+    AdjustForm.btnRedo.enabled := false;
   end;
 end;
 
@@ -3384,6 +3449,7 @@ end;
 procedure TMainForm.mnuAdjustClick(Sender: TObject);
 begin
   AdjustForm.UpdateDisplay;
+  AdjustForm.PageControl.TabIndex := 0;
   AdjustForm.Show;
 end;
 
@@ -3597,30 +3663,37 @@ end;
 
 procedure TMainForm.mnuImageSizeClick(Sender: TObject);
 begin
-  SizeTool.Show;
+//  SizeTool.Show;
+  AdjustForm.UpdateDisplay;
+  AdjustForm.PageControl.TabIndex:=3;
+  AdjustForm.Show;
 end;
 
 procedure TMainForm.ApplicationEventsActivate(Sender: TObject);
 begin
   if GradientInClipboard then
   begin
-    GradientForm.mnuPaste.enabled := true;
-    GradientForm.btnPaste.enabled := true;
+//    GradientForm.mnuPaste.enabled := true;
+//    GradientForm.btnPaste.enabled := true;
+    AdjustForm.mnuPaste.enabled := true;
+    AdjustForm.btnPaste.enabled := true;
   end
   else
   begin
-    GradientForm.mnuPaste.enabled := false;
-    GradientForm.btnPaste.enabled := false;
+//    GradientForm.mnuPaste.enabled := false;
+//    GradientForm.btnPaste.enabled := false;
+    AdjustForm.mnuPaste.enabled := false;
+    AdjustForm.btnPaste.enabled := false;
   end;
   if FlameInClipboard then
   begin
     mnuPaste.enabled := true;
-    btnPaste.enabled := true;
+//z    btnPaste.enabled := true;
   end
   else
   begin
     mnuPaste.enabled := false;
-    btnPaste.enabled := false;
+//z    btnPaste.enabled := false;
   end;
 end;
 
@@ -3653,7 +3726,7 @@ begin
     end;
   end;
 
-  if nxform < 12 then
+  if nxform < NXFORMS then
     for i := nxform to NXFORMS - 1 do
       cp1.xform[i].density := 0;
   NormalizeWeights(cp1);
@@ -3686,9 +3759,12 @@ begin
   txt := Trim(FlameToXML(Maincp, false, true));
   Clipboard.SetTextBuf(PChar(txt));
   mnuPaste.enabled := true;
-  btnPaste.enabled := true;
-  GradientForm.mnuPaste.enabled := False;
-  GradientForm.btnPaste.enabled := False;
+//z  btnPaste.enabled := true;
+
+//  GradientForm.mnuPaste.enabled := False;
+//  GradientForm.btnPaste.enabled := False;
+  AdjustForm.mnuPaste.enabled := False;
+  AdjustForm.btnPaste.enabled := False;
 end;
 
 procedure WinShellExecute(const Operation, AssociatedFile: string);
@@ -3822,11 +3898,13 @@ begin
 end;
 
 procedure TMainForm.mnuPostSheepClick(Sender: TObject);
-//var
-//  URL: string;
-//  StringList: TStringList;
-//  ResponseStream: TMemoryStream;
-//  MultiPartFormDataStream: TmsMultiPartFormDataStream;
+{
+var
+  URL: string;
+  StringList: TStringList;
+  ResponseStream: TMemoryStream;
+  MultiPartFormDataStream: TmsMultiPartFormDataStream;
+}
 begin
 //  if MainCp.HasNewVariants then begin
 //    showMessage('The posting of sheep with new variants (exponential, power, cosine and sawtooth) is disabled in this version.');
@@ -3837,7 +3915,7 @@ begin
 //    showMessage('The posting of sheep with are rotated is disabled in this version.');
 //    Exit;
 //  end;
-(*
+{
   if SheepDialog.ShowModal = mrOK then
   begin
     DeleteFile('apophysis.log');
@@ -3856,7 +3934,7 @@ begin
       MultiPartFormDataStream.AddFormField('nick', SheepDialog.txtNick.text);
       MultiPartFormDataStream.AddFormField('url', SheepDialog.txtURL.text);
       MultiPartFormDataStream.AddFormField('pw', SheepPW); //SheepPw
-    { You must make sure you call this method *before* sending the stream }
+    // You must make sure you call this method *before* sending the stream
       MultiPartFormDataStream.PrepareStreamForDispatch;
       MultiPartFormDataStream.Position := 0;
       URL := URLEncode(SheepServer + 'cgi/apophysis.cgi');
@@ -3877,9 +3955,10 @@ begin
       logFile.Active := False;
     end;
   end;
-*)
+}
 end;
 
+{
 procedure TMainForm.HTTPRedirect(Sender: TObject; var dest: string;
   var NumRedirect: Integer; var Handled: Boolean;
   var VMethod: TIdHTTPMethod);
@@ -3897,6 +3976,7 @@ procedure TMainForm.HTTPStatus(ASender: TObject; const AStatus: TIdStatus;
 begin
   StatusBar.SimpleText := AStatusTExt;
 end;
+}
 
 procedure TMainForm.ListXmlScannerStartTag(Sender: TObject;
   TagName: string; Attributes: TAttrList);
@@ -4147,6 +4227,8 @@ begin
       end;
     msRotate:
       begin
+        FClickAngle:=arctan2(y-Image.Height/2, Image.Width/2-x);
+
         FRotateAngle := 0;
         FSelectRect.Left := x;
         DrawRotateLines(FRotateAngle);
@@ -4189,13 +4271,21 @@ begin
       begin
         DrawRotatelines(FRotateAngle);
 
-        FRotateAngle := FRotateAngle + 0.004 * (FSelectRect.Left - X);
+//        FRotateAngle := FRotateAngle + 0.004 * (FSelectRect.Left - X);
+        FRotateAngle:=arctan2(y-Image.Height/2, Image.Width/2-x) - FClickAngle;
         FSelectRect.Left := x;
 
 //        pdjpointgen.Rotate(FRotateAngle);
 //        FRotateAngle := 0;
 
         DrawRotatelines(FRotateAngle);
+{
+        Image.Refresh;
+if AdjustForm.Visible then begin
+MainCp.FAngle:=-FRotateAngle;
+AdjustForm.UpdateDisplay;
+end;
+}
       end;
   end;
 end;
@@ -4245,8 +4335,9 @@ begin
         FSelectRect.BottomRight := Point(x, y);
         FMouseMoveState := msDrag;
 
-        if (x = 0) and (y = 0) then
-          Exit; // double clicked
+        if ((x = 0) and (y = 0)) or // double clicked
+           ((FSelectRect.left = FSelectRect.right) and (FSelectRect.top = FSelectRect.bottom))
+          then Exit;
 
         StopThread;
         UpdateUndo;
@@ -4261,12 +4352,11 @@ begin
 
         FMouseMoveState := msRotate;
 
-        if (FRotateAngle = 0) then
-          Exit; // double clicked
+        if (FRotateAngle = 0) then Exit; // double clicked
 
         StopThread;
         UpdateUndo;
-        MainCp.Rotate(FRotateAngle);
+        MainCp.Rotate(-FRotateAngle); // "-" by Zueuk
 
         RedrawTimer.Enabled := True;
         UpdateWindows;
@@ -4289,14 +4379,14 @@ begin
   Image.Canvas.Brush.Style := bsClear;
 
 //  Image.Canvas.Rectangle(FSelectRect);
-  points[0].x := -Image.Width div 4;
-  points[0].y := -Image.Height div 4;
-  points[1].x := -Image.Width div 4;
-  points[1].y := Image.Height div 4;
-  points[2].x := Image.Width div 4;
-  points[2].y := Image.Height div 4;
-  points[3].x := Image.Width div 4;
-  points[3].y := -Image.Height div 4;
+  points[0].x := (Image.Width div 2)-1;
+  points[0].y := (Image.Height div 2)-1;
+  points[1].x := (Image.Width div 2)-1;
+  points[1].y := -Image.Height div 2;
+  points[2].x := -Image.Width div 2;
+  points[2].y := -Image.Height div 2;
+  points[3].x := -Image.Width div 2;
+  points[3].y := (Image.Height div 2)-1;
 
   for i := 0 to 3 do begin
     x := points[i].x;
@@ -4378,6 +4468,7 @@ begin
 end;
 
 ///////////////////////////////////////////////////////////////////////////////
+
 procedure TMainForm.VariantMenuClick(Sender: TObject);
 begin
   TMenuItem(Sender).Checked := True;
@@ -4387,6 +4478,100 @@ begin
   ResetLocation;
   RedrawTimer.Enabled := True;
   UpdateWindows;
+end;
+
+//--Z--////////////////////////////////////////////////////////////////////////
+
+procedure TMainForm.tbQualityBoxKeyPress(Sender: TObject; var Key: Char);
+begin
+  if key = #13 then
+  begin
+    tbQualityBoxSet(Sender);
+    key := #0;
+  end
+  else if key = #27 then tbQualityBox.Text := FloatToStr(defSampleDensity);
+end;
+
+procedure TMainForm.tbQualityBoxSet(Sender: TObject);
+var
+  q: double;
+begin
+  try
+    q := StrToFloat(tbQualityBox.Text);
+  except
+    exit;
+  end;
+  defSampleDensity := q;
+
+  StopThread;
+  RedrawTimer.Enabled := True;
+  UpdateWindows;
+end;
+
+procedure TMainForm.ImageDblClick(Sender: TObject);
+begin
+  if FMouseMoveState = msRotateMove then
+  begin
+//        FRotateAngle := 0;
+    StopThread;
+    UpdateUndo;
+    MainCp.FAngle := 0;
+    RedrawTimer.Enabled := True;
+    UpdateWindows;
+  end
+  else mnuResetLocationClick(Sender);
+{    msDragMove:
+      begin
+        FViewBMP.Free;
+        FViewBMP := nil;
+
+        FSelectRect.BottomRight := Point(x, y);
+        FMouseMoveState := msDrag;
+
+        if (x = 0) and (y = 0) then
+          Exit; // double clicked
+
+        StopThread;
+        UpdateUndo;
+        MainCp.MoveRect(FSelectRect);
+
+        RedrawTimer.Enabled := True;
+        UpdateWindows;
+      end;
+    msZoomWindowMove:
+      begin
+        DrawZoomWindow(FSelectRect);
+        FSelectRect.BottomRight := Point(x, y);
+        FMouseMoveState := msZoomWindow;
+        if (abs(FSelectRect.Left - FSelectRect.Right) < 10) or
+           (abs(FSelectRect.Top - FSelectRect.Bottom) < 10) then
+          Exit; // zoom to much or double clicked
+
+        StopThread;
+        UpdateUndo;
+        MainCp.ZoomtoRect(FSelectRect);
+
+        RedrawTimer.Enabled := True;
+        UpdateWindows;
+      end;
+    msZoomOutWindowMove:
+      begin
+        DrawZoomWindow(FSelectRect);
+        FSelectRect.BottomRight := Point(x, y);
+        FMouseMoveState := msZoomOutWindow;
+        if (abs(FSelectRect.Left - FSelectRect.Right) < 10) or
+           (abs(FSelectRect.Top - FSelectRect.Bottom) < 10) then
+          Exit; // zoom to much or double clicked
+
+        StopThread;
+        UpdateUndo;
+        MainCp.ZoomOuttoRect(FSelectRect);
+
+        RedrawTimer.Enabled := True;
+        UpdateWindows;
+      end;
+  end;
+}
 end;
 
 end.

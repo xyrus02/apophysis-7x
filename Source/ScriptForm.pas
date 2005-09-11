@@ -22,7 +22,7 @@ interface
 uses
   Windows, Messages, SysUtils, Classes, Graphics, Controls, Forms, Dialogs,
   ExtCtrls, StdCtrls, ControlPoint, cmap, Buttons, ComCtrls, ToolWin,
-  Menus, atScript, atPascal, AdvMemo, Advmps, XForm;
+  Menus, atScript, atPascal, AdvMemo, Advmps, XForm, GradientHlpr;
 
 const NCPS = 10;
 type
@@ -324,7 +324,7 @@ implementation
 }
 
 uses Main, Editor, Adjust, Global, Mutate, Registry, Preview,
-  ScriptRender, Gradient, ap_math, ap_classes, ap_sysutils, MyTypes,
+  ScriptRender, {Gradient,} ap_math, ap_classes, ap_sysutils, MyTypes,
   SavePreset, ap_windows, ap_FileCtrl, bmdll32;
 
 {$R *.DFM}
@@ -1188,7 +1188,7 @@ end;
 
 procedure TOperationLibrary.RandomGradientProc(AMachine: TatVirtualMachine);
 begin
-  ScriptEditor.cp.cmap := GradientForm.RandomGradient;
+  ScriptEditor.cp.cmap := GradientHelper.RandomGradient;
 end;
 
 procedure TOperationLibrary.CalculateScale(AMachine: TatVirtualMachine);
@@ -1470,7 +1470,7 @@ begin
       HSVToRGB(h, s, v, cp1.cmap[i][0], cp1.cmap[i][1], cp1.cmap[i][2]);
     end;
   end;
-  if nxform < 12 then
+  if nxform < NXFORMS then
     for i := nxform to NXFORMS - 1 do
       cp1.xform[i].density := 0;
   NormalizeWeights(cp1);
@@ -2713,7 +2713,7 @@ begin
   Scripter.AddConstant('V_FAN', 22);
   Scripter.AddConstant('V_RANDOM', -1);
   { Variables }
-  Scripter.AddVariable('SelectedTransform', SelectedTriangle);
+  Scripter.AddVariable('SelectedTransform', EditForm.SelectedTriangle);
   Scripter.AddVariable('Compatibility', Compatibility);
   Scripter.AddVariable('ActiveTransform', ActiveTransform);
   Scripter.AddVariable('UpdateFlame', UpdateIt);
@@ -2863,7 +2863,7 @@ begin
   ResetLocation := False;
   Console.Clear;
   LastError := '';
-  ActiveTransform := SelectedTriangle;
+  ActiveTransform := EditForm.SelectedTriangle;
   NumTransforms := Transforms;
   cp.copy(MainCp);
   cmap := MainCp.cmap;
@@ -2959,7 +2959,8 @@ begin
   if EditForm.Visible then EditForm.UpdateDisplay;
 //  if AdjustForm.Visible then AdjustForm.UpdateDisplay;
   if MutateForm.Visible then MutateForm.UpdateDisplay;
-  if GradientForm.Visible then GradientForm.UpdateGradient(cmap)
+//  if GradientForm.Visible then GradientForm.UpdateGradient(cmap)
+  if AdjustForm.Visible then AdjustForm.UpdateGradient(cmap)
 end;
 
 { ******************************* functions ********************************** }

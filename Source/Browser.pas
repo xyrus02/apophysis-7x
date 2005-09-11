@@ -90,7 +90,7 @@ function CreatePalette(strng: string): TColorMap;
 
 implementation
 
-uses Main, Options, Editor, Gradient, Registry, Adjust, Mutate;
+uses Main, Options, Editor, {Gradient,} Registry, Adjust, Mutate;
 
 {$R *.DFM}
 
@@ -470,7 +470,8 @@ begin
   MainForm.StopThread;
   MainForm.UpdateUndo;
   MainCp.cmap := Palette;
-  gradientForm.UpdateGradient(Palette);
+  //gradientForm.UpdateGradient(Palette);
+  AdjustForm.UpdateGradient(Palette);
   if EditForm.Visible then EditForm.UpdateDisplay;
 //  if AdjustForm.Visible then AdjustForm.UpdateDisplay;
   if MutateForm.Visible then MutateForm.UpdateDisplay;
