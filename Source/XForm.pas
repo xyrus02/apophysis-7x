@@ -235,11 +235,12 @@ end;
 ///////////////////////////////////////////////////////////////////////////////
 procedure TXForm.Spherical;
 var
-  r2: double;
+  r2, rr2: double;
 begin
   r2 := FTx * FTx + FTy * FTy + 1E-6;
-  FPx := FPx + vars[2] * (FTx / r2);
-  FPy := FPy + vars[2] * (FTy / r2);
+  rr2 := 1 / r2;
+  FPx := FPx + vars[2] * (FTx * rr2);
+  FPy := FPy + vars[2] * (FTy * rr2);
 end;
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -273,9 +274,11 @@ end;
 procedure TXForm.Polar;
 var
   ny: double;
+  rPI: double;
 begin
+  rPI := 0.31830989;
   ny := sqrt(FTx * FTx + FTy * FTy) - 1.0;
-  FPx := FPx + vars[5] * (FAngle/PI);
+  FPx := FPx + vars[5] * (FAngle*rPI);
   FPy := FPy + vars[5] * ny;
 end;
 
@@ -304,25 +307,28 @@ end;
 procedure TXForm.Disc;
 var
   nx, ny, r: double;
+  rPI: double;
 begin
+  rPI := 0.31830989;
   nx := FTx * PI;
   ny := FTy * PI;
 
   r := sqrt(nx * nx + ny * ny);
-  FPx := FPx + vars[8] * sin(r) * FAngle / PI;
-  FPy := FPy + vars[8] * cos(r) * FAngle / PI;
+  FPx := FPx + vars[8] * sin(r) * FAngle * rPI;
+  FPy := FPy + vars[8] * cos(r) * FAngle * rPI;
 
 end;
 
 ///////////////////////////////////////////////////////////////////////////////
 procedure TXForm.Spiral;
 var
-  r: double;
+  r, rr: double;
 begin
 //  r := sqrt(FTx * FTx + FTy * FTy) + 1E-6;
   r := Flength + 1E-6;
-  FPx := FPx + vars[9] * (FCosA + sin(r)) / r;
-  FPy := FPy + vars[9] * (FsinA - cos(r)) / r;
+  rr := 1 / r;
+  FPx := FPx + vars[9] * (FCosA + sin(r)) * rr;
+  FPy := FPy + vars[9] * (FsinA - cos(r)) * rr;
 end;
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -367,7 +373,7 @@ var
   a,r: double;
 begin
   r := Math.power(FTx * FTx + FTy * FTy, 0.25);
-  a := FAngle/2 + Trunc(random * 2) * PI;
+  a := FAngle*0.5 + Trunc(random * 2) * PI;
   FPx := FPx + vars[13] * r * cos(a);
   FPy := FPy + vars[13] * r * sin(a);
 end;
