@@ -259,6 +259,7 @@ type
       Shift: TShiftState);
 
     procedure tbFullViewClick(Sender: TObject);
+
     procedure ColorImageMouseDown(Sender: TObject; Button: TMouseButton;
       Shift: TShiftState; X, Y: Integer);
     procedure ColorImageMouseMove(Sender: TObject; Shift: TShiftState; X,
@@ -305,8 +306,6 @@ type
     colorDragX, colorOldX: integer;
     // --
 
-//    intoldx, intoldy: integer;
-
     { Options }
     UseFlameBackground, UseTransformColors: boolean;
     BackGroundColor, ReferenceTrianglecolor: integer;
@@ -318,12 +317,10 @@ type
 
     function GetPivot: TSPoint;
     function GetTriangleColor(n: integer): TColor;
-//    procedure MouseInTriangle(fx, fy: double);
 
-    // --Z-- functions moved from outside
+    // --Z-- functions moved from outside (?)
     procedure ShowSelectedInfo;
     procedure Scale(var fx, fy: double; x, y, Width, Height: integer);
-//unused: function InsideSelected(x, y: double): boolean;
     procedure ReadjustWeights(var cp: TControlPoint);
 
   public
@@ -2531,9 +2528,8 @@ begin
       Allow := False;
     end;
   end;
-  NewVal := Round6(StrToFloat(VEVars.Values[VarNames(i)]));
-//    if NewVal < 0 then NewVal := 0;
-  VEVars.Values[VarNames(i)] := Format('%.6g', [NewVal]);
+  NewVal := Round6(StrToFloat(VEVars.Values[VarNames[i]]));
+  VEVars.Values[VarNames[i]] := Format('%.6g', [NewVal]);
 
 { If it's not the same as the old value and it was valid }
   if (NewVal <> OldVal) and Allow then
@@ -2541,8 +2537,7 @@ begin
     MainForm.UpdateUndo;
 //    EditedVariation := i;
     cp.xform[SelectedTriangle].vars[i] := NewVal;
-//      VarNormalize(cp);
-    VEVars.Values[VarNames(i)] := Format('%.6g', [cp.xform[SelectedTriangle].vars[i]]);
+VEVars.Values[VarNames[i]] := Format('%.6g', [cp.xform[SelectedTriangle].vars[i]]);
     ShowSelectedInfo;
     UpdateFlame(True);
   end;
@@ -2929,7 +2924,7 @@ begin
   tbScale.Down := (editMode = modeScale);
 end;
 
-// --Z-- Value List Editor
+// --Z-- Variation List Editor
 
 procedure TEditForm.VEVarsMouseDown(Sender: TObject; Button: TMouseButton;
   Shift: TShiftState; X, Y: Integer);
@@ -2948,7 +2943,7 @@ begin
     varDragPos:=x;
     SetCaptureControl(VEVars);
 
-    MainForm.UpdateUndo;
+    HasChanged := False;
   end;
 end;
 
@@ -2956,14 +2951,13 @@ procedure TEditForm.VEVarsMouseMove(Sender: TObject; Shift: TShiftState; X,
   Y: Integer);
 var
   v: double;
-//  i: integer;
   cell: TGridCoord;
 begin
   cell := VEVars.MouseCoord(x, y);
   if (cell.Y > 0) and (cell.X = 0) then VEVars.Cursor := crHandPoint
   else VEVars.Cursor := crDefault;
 
-  if varMM then
+  if varMM then // hack
   begin
     varMM:=false;
     varDragPos:=x;
@@ -2971,9 +2965,10 @@ begin
   else
   if varDragMode and (x <> varDragPos) then
   begin
-//    i := EditForm.VEVars.Row - 1;
     v := cp.xform[SelectedTriangle].vars[varDragIndex];
     v := RoundTo(v + ((x-varDragPos)*2)/1000.0, -3);
+
+    // someone keeps rounding my variation values... grrrr >:-((
 
     varDragPos:=x;
     SetCursorPos(MousePos.x, MousePos.y); // hmmm
@@ -2999,6 +2994,7 @@ begin
 
     if HasChanged then
     begin
+      MainForm.UpdateUndo;
       UpdateFlame(true);
       HasChanged := False;
     end;
@@ -3006,12 +3002,10 @@ begin
 end;
 
 procedure TEditForm.VEVarsDblClick(Sender: TObject);
-//var
-//  i: integer;
 begin
-  MainForm.UpdateUndo;
+  if cp.xform[SelectedTriangle].vars[varDragIndex] = 0 then exit;
 
-//  i := EditForm.VEVars.Row - 1;
+  MainForm.UpdateUndo;
   cp.xform[SelectedTriangle].vars[varDragIndex] := 0;
   VEVars.Values[VarNames(varDragIndex)] := '0';
   HasChanged := True;
@@ -3022,18 +3016,18 @@ procedure TEditForm.VEVarsDrawCell(Sender: TObject; ACol, ARow: Integer;
   Rect: TRect; State: TGridDrawState);
 begin
 {
-//  if gdFocused in State then
-    with eqListBox.Canvas do
-  begin
-    Brush.Color:=clBlue;
-    FillRect(Rect);
-  end;
-//  VEVars.DrawCell(Sender, ACol, ARow, Rect, State);
+  if ARow = VEVars.Row then
+    with VEVars.Canvas do
+    begin
+      Brush.Color := clHighlight;
+      FillRect(Rect);
+//      VEVars.Refresh;
+    end;
+  //inherited;
 }
 end;
 
-procedure TEditForm.cbKeyDown(Sender: TObject; var Key: Word;
-  Shift: TShiftState);
+procedure TEditForm.cbKeyDown(Sender: TObject; var Key: Word; Shift: TShiftState);
 begin
   key:=0;
 end;
@@ -3043,7 +3037,7 @@ begin
   MainForm.mnuFullScreenClick(Sender);
 end;
 
-// --Z-- // transform color scroller
+// --Z-- // transform color scroller - TODO
 
 procedure TEditForm.ColorImageMouseDown(Sender: TObject;
   Button: TMouseButton; Shift: TShiftState; X, Y: Integer);
@@ -3063,12 +3057,13 @@ procedure TEditForm.ColorImageMouseMove(Sender: TObject;
 var
   i, offset: integer;
 begin
+{
   if colorDrag and (oldX<>x) then
   begin
     oldX:=x;
     offset := ( ((x - colorDragX) shl 8) div ColorImage.Width ) mod 256;
     colorChanged := true;
-{
+
     for i := 0 to 255 do
     begin
       Palette[i][0] := BackupPal[(255 + i - offset) and $FF][0];
@@ -3078,9 +3073,10 @@ begin
 
     cp.CmapIndex := cmbPalette.ItemIndex;
     cp.cmap := Palette;
-}
+
     colorImage.Refresh;
   end;
+}
 end;
 
 procedure TEditForm.ColorImageMouseUp(Sender: TObject;
