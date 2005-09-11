@@ -2100,7 +2100,7 @@ begin
     mnuListRename.Enabled := True;
     mnuItemDelete.Enabled := True;
     OpenFile := OpenDialog.FileName;
-    MainForm.Caption := 'Apophysis 2.02zx' + ' - ' + OpenFile; // --Z--
+    MainForm.Caption := 'Apophysis 2.02j' + ' - ' + OpenFile; // --Z--
     OpenFileType := ftXML;
     if UpperCase(ExtractFileExt(OpenDialog.FileName)) = '.IFS' then
     begin
@@ -2220,7 +2220,7 @@ begin
   RandomBatch;
   OpenFile := AppPath + 'apophysis.rand';
   OpenFileType := ftXML;
-  MainForm.Caption := 'Apophysis 2.02zx' + ' - Random Batch';
+  MainForm.Caption := 'Apophysis 2.02j' + ' - Random Batch';
   ListXML(OpenFile, 1);
   ListView.SetFocus;
   if batchsize = 1 then DrawFlame;
@@ -2642,7 +2642,7 @@ begin
     MainCp.Width := image.width;
     MainCp.Height := Image.Height;
     RandomBatch;
-    MainForm.Caption := 'Apophysis 2.02zx' + ' - Random Batch';
+    MainForm.Caption := 'Apophysis 2.02j' + ' - Random Batch';
     OpenFile := AppPath + 'apophysis.rand';
     ListXML(OpenFile, 1);
     OpenFileType := ftXML;
@@ -2662,7 +2662,7 @@ begin
       OpenFileType := ftXML;
       MainForm.ListView.Selected := MainForm.ListView.Items[0];
     end;
-    MainForm.Caption := 'Apophysis 2.02zx' + ' - ' + defFlameFile;
+    MainForm.Caption := 'Apophysis 2.02j' + ' - ' + defFlameFile;
   end;
   ListView.SetFocus;
   CanDrawOnResize := True;
