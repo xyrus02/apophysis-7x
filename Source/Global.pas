@@ -144,7 +144,10 @@ end;
 function Round6(x: double): double;
 // Really ugly, but it works
 begin
-  Result := StrToFloat(Format('%.6f', [x]));
+  // --Z-- this is ridiculous:
+  //   Result := StrToFloat(Format('%.6f', [x]));
+  // and yes, this is REALLY ugly :-\
+  Result := RoundTo(x, -6);
 end;
 
 function solve3(x1, x2, x1h, y1, y2, y1h, z1, z2, z1h: double;
