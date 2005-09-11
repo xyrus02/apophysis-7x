@@ -262,7 +262,7 @@ object RenderForm: TRenderForm
       Enabled = False
       ParentBiDiMode = False
       ReadOnly = True
-      TabOrder = 2
+      TabOrder = 1
       Text = '2'
       OnChange = txtOversampleChange
     end
@@ -273,18 +273,8 @@ object RenderForm: TRenderForm
       Height = 21
       BiDiMode = bdRightToLeft
       ParentBiDiMode = False
-      TabOrder = 1
-      OnChange = txtFilterRadiusChange
-    end
-    object txtDensity: TEdit
-      Left = 112
-      Top = 20
-      Width = 57
-      Height = 21
-      BiDiMode = bdRightToLeft
-      ParentBiDiMode = False
       TabOrder = 0
-      OnChange = txtDensityChange
+      OnChange = txtFilterRadiusChange
     end
     object udOversample: TUpDown
       Left = 169
@@ -295,7 +285,24 @@ object RenderForm: TRenderForm
       Min = 1
       Max = 4
       Position = 2
+      TabOrder = 2
+    end
+    object txtDensity: TComboBox
+      Left = 112
+      Top = 20
+      Width = 57
+      Height = 21
+      ItemHeight = 13
+      ItemIndex = 0
       TabOrder = 3
+      Text = '200'
+      OnChange = txtDensityChange
+      Items.Strings = (
+        '200'
+        '500'
+        '1000'
+        '2000'
+        '4000')
     end
   end
   object GroupBox4: TGroupBox

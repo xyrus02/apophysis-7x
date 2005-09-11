@@ -46,7 +46,6 @@ type
     Label4: TLabel;
     txtOversample: TEdit;
     txtFilterRadius: TEdit;
-    txtDensity: TEdit;
     GroupBox4: TGroupBox;
     lblApproxMem: TLabel;
     lblPhysical: TLabel;
@@ -69,6 +68,7 @@ type
     cbPostProcess: TCheckBox;
     edtNrThreads: TEdit;
     Label6: TLabel;
+    txtDensity: TComboBox;
     procedure FormCreate(Sender: TObject);
     procedure FormDestroy(Sender: TObject);
     procedure btnRenderClick(Sender: TObject);
@@ -378,6 +378,7 @@ begin
   cbHeight.Text := IntToStr(MainForm.Image.Height);
   ImageWidth := StrToInt(cbWidth.Text);
   ImageHeight := StrToInt(cbHeight.Text);
+  sample_density:=renderDensity;
   txtDensity.Text := FloatToStr(renderDensity);
   ShowMemoryStatus;
   Ratio := ImageWidth / ImageHeight;
