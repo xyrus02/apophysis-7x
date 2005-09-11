@@ -53,7 +53,7 @@ object EditForm: TEditForm
   TextHeight = 13
   object StatusBar: TStatusBar
     Left = 0
-    Top = 541
+    Top = 547
     Width = 578
     Height = 15
     Panels = <
@@ -325,14 +325,14 @@ object EditForm: TEditForm
     Left = 0
     Top = 24
     Width = 578
-    Height = 517
+    Height = 523
     Align = alClient
     TabOrder = 1
     object Splitter1: TSplitter
       Left = 396
       Top = 1
       Width = 9
-      Height = 515
+      Height = 521
       Align = alRight
       AutoSnap = False
       Beveled = True
@@ -343,7 +343,7 @@ object EditForm: TEditForm
       Left = 1
       Top = 1
       Width = 395
-      Height = 515
+      Height = 521
       Align = alClient
       BevelOuter = bvNone
       Color = clBlack
@@ -353,7 +353,7 @@ object EditForm: TEditForm
         Left = 0
         Top = 0
         Width = 395
-        Height = 515
+        Height = 521
         Align = alClient
         PopupMenu = EditPopup
         OnDblClick = GraphImageDblClick
@@ -366,7 +366,7 @@ object EditForm: TEditForm
       Left = 405
       Top = 1
       Width = 172
-      Height = 515
+      Height = 521
       Align = alRight
       Alignment = taLeftJustify
       BevelOuter = bvNone
@@ -406,7 +406,7 @@ object EditForm: TEditForm
         Left = 0
         Top = 136
         Width = 172
-        Height = 379
+        Height = 385
         Align = alClient
         TabOrder = 0
         object lblTransform: TLabel
@@ -439,10 +439,10 @@ object EditForm: TEditForm
         end
         object PageControl: TPageControl
           Left = 1
-          Top = 20
+          Top = 26
           Width = 170
           Height = 358
-          ActivePage = TabSheet4
+          ActivePage = tabVariations
           Align = alBottom
           Anchors = [akLeft, akTop, akRight, akBottom]
           MultiLine = True

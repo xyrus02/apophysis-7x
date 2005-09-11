@@ -1229,31 +1229,32 @@ begin
 
   if SelectMode then // look for point or triangle under cursor
   begin
-  for i := 0 to Transforms - 1 do
-    for j := 0 to 2 do
-    begin
-      d := dist(fx, fy, MainTriangles[i].x[j], MainTriangles[i].y[j]);
-      if (d * GraphZoom * 50) < 4 then
+    for i := 0 to Transforms - 1 do
+      for j := 0 to 2 do
       begin
-        mouseOverTriangle:=i;
-        mouseOverCorner:=j;
+        d := dist(fx, fy, MainTriangles[i].x[j], MainTriangles[i].y[j]);
+        if (d * GraphZoom * 50) < 4 then
+        begin
+          mouseOverTriangle:=i;
+          mouseOverCorner:=j;
 
-        goto FoundCorner;
+          goto FoundCorner;
+        end;
       end;
-    end;
 
-  i := InsideTriangle(fx, fy);
-  if i >= 0 then // i > -1
-  begin
-    mouseOverTriangle:=i;
-  end
-  else begin
-    mouseOverTriangle:=-2;
-  end;
-  mouseOverCorner:=-1;
+    i := InsideTriangle(fx, fy);
+    if i >= 0 then // i > -1
+    begin
+      mouseOverTriangle:=i;
+    end
+    else begin
+      mouseOverTriangle:=-2;
+    end;
+    mouseOverCorner:=-1;
+
 FoundCorner:
 
-  end; // if selectmode
+  end; // if SelectMode
 
 
   if  (mouseOverTriangle >= 0) and (SelectMode or (mouseOverTriangle = SelectedTriangle)) then
@@ -1327,7 +1328,7 @@ FoundCorner:
     HasChanged := True;
     UpdateFlameX;
 //    UpdateFlame(False);
-StatusBar.Refresh;
+    StatusBar.Refresh;
     exit;
   end
   else if TriangleCaught then { Modify a whole triangle }
@@ -1370,7 +1371,7 @@ StatusBar.Refresh;
     HasChanged := True;
     UpdateFlameX;
 //    UpdateFlame(False);
-  StatusBar.Refresh;
+    StatusBar.Refresh;
     exit;
   end;
   if ((mt <> mouseOverTriangle) or (mc <> MouseOverCorner)) then
@@ -1446,10 +1447,10 @@ begin
           end;
         end;
     end;
-      // so user hasn't selected any vertices,
+      // so user hasn't selected any corners,
       // let's check for triangles then!
 
-//      // --Z-- // alt=rotate, ctrl=scale, shift=move
+// --Z-- // alt=rotate, ctrl=scale, shift=move
 
     if SelectMode then
     begin
@@ -1486,10 +1487,6 @@ end;
 
 procedure TEditForm.GraphImageMouseUp(Sender: TObject; Button: TMouseButton;
   Shift: TShiftState; X, Y: integer);
-//var
-//fx, fy: double;
-//i: integer;
-//transformvalue: double;
 begin
   if Button = mbRight then // --Z-- panning
   begin
@@ -2528,8 +2525,8 @@ begin
       Allow := False;
     end;
   end;
-  NewVal := Round6(StrToFloat(VEVars.Values[VarNames[i]]));
-  VEVars.Values[VarNames[i]] := Format('%.6g', [NewVal]);
+  NewVal := Round6( StrToFloat(VEVars.Values[VarNames(i)]) );
+  VEVars.Values[VarNames(i)] := Format('%.6g', [NewVal]);
 
 { If it's not the same as the old value and it was valid }
   if (NewVal <> OldVal) and Allow then
@@ -2537,7 +2534,7 @@ begin
     MainForm.UpdateUndo;
 //    EditedVariation := i;
     cp.xform[SelectedTriangle].vars[i] := NewVal;
-VEVars.Values[VarNames[i]] := Format('%.6g', [cp.xform[SelectedTriangle].vars[i]]);
+    VEVars.Values[VarNames(i)] := Format('%.6g', [cp.xform[SelectedTriangle].vars[i]]);
     ShowSelectedInfo;
     UpdateFlame(True);
   end;
