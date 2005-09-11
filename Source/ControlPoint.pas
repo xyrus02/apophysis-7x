@@ -21,7 +21,7 @@ unit ControlPoint;
 interface
 
 uses
-  Classes, Windows, Cmap, Xform;
+  Classes, Windows, Cmap, Xform, XFormMan;
 
 const
   EPS = 1E-10;
@@ -30,6 +30,7 @@ const
   PREFILTER_WHITE = (1 shl 26);
   FILTER_CUTOFF = 1.8;
   BRIGHT_ADJUST = 2.3;
+  FUSE = 15;
 
 type
   TVariation = (vLinear, vSinusoidal, vSpherical, vSwirl, vHorseshoe, vPolar,
@@ -131,6 +132,7 @@ type
 
 function add_symmetry_to_control_point(var cp: TControlPoint; sym: integer): integer;
 function CalcUPRMagn(const cp: TControlPoint): double;
+procedure FillVarDisturb;
 
 implementation
 
@@ -139,8 +141,8 @@ uses
   SysUtils, math, global;
 
 var
-  var_distrib: array[0..NRVISVAR + 18] of integer;
-  mixed_var_distrib: array[0..NRVISVAR + 8] of integer;
+  var_distrib: array of integer;
+  mixed_var_distrib: array of integer;
 
 { TControlPoint }
 
@@ -242,6 +244,7 @@ var
   i: Integer;
   px, py, pc: double;
   dx, dy, tx, ty: double;
+  nx, ny: double;
   r: double;
   s, v, a: double;
   n0, n1, m0, m1: double;
@@ -252,7 +255,7 @@ begin
 
   PreparePropTable;
 
-  for i := -100 to NrPoints - 1 do begin
+  for i := -FUSE to NrPoints - 1 do begin
     with xform[PropTable[Random(1024)]] do begin
 
       // first compute the color coord
@@ -481,20 +484,20 @@ begin
   for i := 0 to NXFORMS - 1 do
     xform[i].prepare;
 
-  for i := -100 to NrPoints - 1 do begin
-    try
+  try
+    for i := 0 to FUSE do
       xform[PropTable[Random(1024)]].NextPointXY(px,py);
-    except
-      on EMathError do begin
-        exit;
-      end;
-    end;
-    // store points
-    if i >= 0 then begin
+
+    for i := 0 to NrPoints - 1 do begin
+      xform[PropTable[Random(1024)]].NextPointXY(px,py);
       CurrentPoint := @Points[i];
       CurrentPoint.X := px;
       CurrentPoint.Y := py;
     end
+  except
+    on EMathError do begin
+      exit;
+    end;
   end;
 end;
 
@@ -514,21 +517,21 @@ begin
   for i := 0 to NXFORMS - 1 do
     xform[i].prepare;
 
-  for i := -100 to NrPoints - 1 do begin
-    try
+  try
+    for i := 0 to FUSE do
       xform[PropTable[Random(1024)]].NextPoint(px,py,pc);
-    except
-      on EMathError do begin
-        exit;
-      end;
-    end;
-    // store points
-    if i >= 0 then begin
+
+    for i := 0 to NrPoints - 1 do begin
+      xform[PropTable[Random(1024)]].NextPoint(px,py,pc);
       CurrentPoint := @Points[i];
       CurrentPoint.X := px;
       CurrentPoint.Y := py;
       CurrentPoint.C := pc;
     end
+  except
+    on EMathError do begin
+      exit;
+    end;
   end;
 end;
 
@@ -595,22 +598,22 @@ begin
   for i := 0 to NXFORMS - 1 do
     xform[i].prepare;
 
-  for i := -100 to NrPoints - 1 do begin
-    try
+  try
+    for i := 0 to FUSE do
       xform[PropTable[Random(1024)]].NextPoint2C(px, py, pc1, pc2);
-    except
-      on EMathError do begin
-        exit;
-      end;
-    end;
-    // store points
-    if i >= 0 then begin
+
+    for i := 0 to NrPoints - 1 do begin
+      xform[PropTable[Random(1024)]].NextPoint2C(px, py, pc1, pc2);
       CurrentPoint := @Points[i];
-      CurrentPoint.X  := px;
-      CurrentPoint.Y  := py;
+      CurrentPoint.X := px;
+      CurrentPoint.Y := py;
       CurrentPoint.C1 := pc1;
       CurrentPoint.C2 := pc2;
     end
+  except
+    on EMathError do begin
+      exit;
+    end;
   end;
 end;
 
@@ -635,19 +638,20 @@ begin
   for i := 0 to NXFORMS - 1 do
     xform[i].prepare;
 
-  for i := -100 to NrPoints - 1 do begin
-    try
+  try
+    for i := 0 to FUSE do
       xform[PropTable[Random(1024)]].NextPointXY(px,py);
-      if i >= 0 then begin
-        CurrentPoint := @Points[i];
-        CurrentPoint.X := px;
-        CurrentPoint.Y := py;
-      end
-    except
-      on EMathError do begin
-        Result := True;
-        Exit;
-      end;
+
+    for i := 0 to NrPoints - 1 do begin
+      xform[PropTable[Random(1024)]].NextPointXY(px,py);
+      CurrentPoint := @Points[i];
+      CurrentPoint.X := px;
+      CurrentPoint.Y := py;
+    end;
+  except
+    on EMathError do begin
+      Result := True;
+      Exit;
     end;
   end;
 
@@ -858,8 +862,9 @@ var
   rv: integer;
   VarPossible: boolean;
 begin
+  FillVarDisturb;
   VarPossible := false;
-  for j := 0 to NRVISVAR - 1 do begin
+  for j := 0 to NRVAR - 1 do begin
     VarPossible := VarPossible or Variations[j];
   end;
 
@@ -913,8 +918,9 @@ begin
 //nrXforms := xform_distrib[random(13)];
   nrXforms := random(Max - (Min - 1)) + Min;
 
+  FillVarDisturb;
   VarPossible := false;
-  for j := 0 to NRVISVAR - 1 do begin
+  for j := 0 to NRVAR - 1 do begin
     VarPossible := VarPossible or Variations[j];
   end;
 
@@ -1466,6 +1472,7 @@ end;
 
 function TControlPoint.Clone: TControlPoint;
 var
+  i: integer;
   sl: TStringList;
 begin
   sl := TStringList.Create;
@@ -1477,11 +1484,16 @@ begin
   Result.name := name;
   Result.nick := nick;
   Result.url := url;
+
+  for i := 0 to NXFORMS - 1 do
+    Result.xform[i].assign(xform[i]);
+
   sl.Free;
 end;
 
 procedure TControlPoint.Copy(cp1: TControlPoint);
 var
+  i: integer;
   sl: TStringList;
 begin
   Clear;
@@ -1493,6 +1505,10 @@ begin
   name := cp1.name;
   nick := cp1.nick;
   url := cp1.url;
+
+  for i := 0 to NXFORMS - 1 do
+    xform[i].assign(cp1.xform[i]);
+
   sl.Free;
 end;
 
@@ -1716,27 +1732,6 @@ begin
 end;
 
 ///////////////////////////////////////////////////////////////////////////////
-procedure FillVarDisturb;
-const
-  startvar_distrib: array[0..26] of integer = (-1, -1, -1, -1, -1, -1, -1, 0, 0, 0, 0, 1, 1, 1, 2, 2, 2, 3, 3, 4, 4, 5, 5, 6, 6, 7, 7);
-  startmixed_var_distrib: array[0..16] of integer = (0, 0, 0, 1, 1, 1, 2, 2, 2, 3, 3, 4, 4, 5, 6, 6, 7);
-var
-  i: integer;
-begin
-  for i := 0 to High(startvar_distrib) do
-    var_distrib[i] := startvar_distrib[i];
-
-  for i := High(startvar_distrib) + 1 to high(var_distrib) do
-    var_distrib[i] := 8 + i - High(startvar_distrib) - 1;
-
-  for i := 0 to High(startmixed_var_distrib) do
-    mixed_var_distrib[i] := startmixed_var_distrib[i];
-
-  for i := High(startmixed_var_distrib) + 1 to high(mixed_var_distrib) do
-    mixed_var_distrib[i] := 8 + i - High(startmixed_var_distrib) - 1;
-end;
-
-///////////////////////////////////////////////////////////////////////////////
 function TControlPoint.getppux: double;
 begin
   result := pixels_per_unit * power(2, zoom)
@@ -1749,7 +1744,37 @@ begin
 end;
 
 ///////////////////////////////////////////////////////////////////////////////
-initialization
-  FillVarDisturb
+var
+  vdfilled: boolean = False;
+
+procedure FillVarDisturb;
+const
+  startvar_distrib: array[0..26] of integer = (-1, -1, -1, -1, -1, -1, -1, 0, 0, 0, 0, 1, 1, 1, 2, 2, 2, 3, 3, 4, 4, 5, 5, 6, 6, 7, 7);
+  startmixed_var_distrib: array[0..16] of integer = (0, 0, 0, 1, 1, 1, 2, 2, 2, 3, 3, 4, 4, 5, 6, 6, 7);
+var
+  i: integer;
+begin
+  if vdfilled then
+    Exit;
+
+  setlength(var_distrib, NRVAR + 19);
+  setlength(mixed_var_distrib, NRVAR + 9);
+
+  for i := 0 to High(startvar_distrib) do
+    var_distrib[i] := startvar_distrib[i];
+
+  for i := High(startvar_distrib) + 1 to high(var_distrib) do
+    var_distrib[i] := 8 + i - High(startvar_distrib) - 1;
+
+  for i := 0 to High(startmixed_var_distrib) do
+    mixed_var_distrib[i] := startmixed_var_distrib[i];
+
+  for i := High(startmixed_var_distrib) + 1 to high(mixed_var_distrib) do
+    mixed_var_distrib[i] := 8 + i - High(startmixed_var_distrib) - 1;
+
+  vdfilled := true;
+end;
+
+///////////////////////////////////////////////////////////////////////////////
 end.
 

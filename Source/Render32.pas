@@ -46,6 +46,11 @@ type
   PBucket = ^TBucket;
   TBucketArray = array of TBucket;
 
+  PLongintArray = ^TLongintArray;
+  TLongintArray = array[0..0] of Longint;
+  PByteArray = ^TByteArray;
+  TByteArray = array[0..0] of Byte;
+
 type
   TRenderer32 = class(TBaseRenderer)
   private

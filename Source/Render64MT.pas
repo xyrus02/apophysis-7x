@@ -22,39 +22,14 @@ interface
 
 uses
   Windows, Classes, Graphics,
-   Render, Controlpoint, ImageMaker;
-
-type
-  TPixelRenderThread = class(TThread)
-  private
-    fcp: TControlPoint;
-    points: TPointsArray;
-  public
-    nrbatches: integer;
-    batchcounter: Pinteger;
-
-    BucketWidth: Int64;
-    BucketHeight: Int64;
-    bounds: array[0..3] of extended;
-    size: array[0..1] of extended;
-    Buckets: PBucketArray;
-    ColorMap: TColorMapArray;
-    CriticalSection: TRTLCriticalSection;
-
-    constructor Create(cp: TControlPoint);
-
-    procedure Execute; override;
-
-    procedure AddPointsToBuckets(const points: TPointsArray); overload;
-    procedure AddPointsToBucketsAngle(const points: TPointsArray); overload;
-  end;
+   Render, Controlpoint, ImageMaker, BucketFillerthread;
 
 type
   TRenderer64MT = class(TBaseRenderer)
   private
     oversample: Int64;
     batchcounter: Integer;
-    FNrBatches: Integer;
+    FNrBatches: Int64;
 
     BucketWidth: Int64;
     BucketHeight: Int64;
@@ -71,7 +46,7 @@ type
     size: array[0..1] of extended;
     ppux, ppuy: extended;
     FNrOfTreads: integer;
-    WorkingThreads: array of TPixelRenderThread;
+    WorkingThreads: array of TBucketFillerThread;
     CriticalSection: TRTLCriticalSection;
 
     FImageMaker: TImageMaker;
@@ -87,7 +62,7 @@ type
     procedure SetPixelsMT;
     procedure SetNrOfTreads(const Value: integer);
 
-    function NewThread: TPixelRenderThread;
+    function NewThread: TBucketFillerThread;
   public
     constructor Create; override;
     destructor Destroy; override;
@@ -239,6 +214,7 @@ procedure TRenderer64MT.SetPixelsMT;
 var
   i: integer;
   nsamples: Int64;
+  bc : integer;
 begin
   nsamples := Round(sample_density * bucketSize / (oversample * oversample));
   FNrBatches := Round(nsamples / (fcp.nbatches * SUB_BATCH_SIZE));
@@ -251,13 +227,23 @@ begin
   for i := 0 to NrOfTreads - 1 do
     WorkingThreads[i] := NewThread;
 
-  while (Not FStop) and (batchcounter < FNrBatches) do begin
-    if batchcounter > 0 then
-      Progress(batchcounter / FNrBatches)
-    else
-      Progress(0);
+  for i := 0 to NrOfTreads - 1 do
+    WorkingThreads[i].Resume;
 
-    sleep(200)
+  bc := 0;
+  while (Not FStop) and (bc < FNrBatches) do begin
+    sleep(200);
+    try
+      EnterCriticalSection(CriticalSection);
+      if batchcounter > 0 then
+        Progress(batchcounter / FNrBatches)
+      else
+        Progress(0);
+
+       bc := batchcounter;
+     finally
+       LeaveCriticalSection(CriticalSection);
+     end;
   end;
 
   DeleteCriticalSection(CriticalSection);
@@ -325,146 +311,25 @@ begin
 end;
 
 ///////////////////////////////////////////////////////////////////////////////
-function TRenderer64MT.NewThread: TPixelRenderThread;
+function TRenderer64MT.NewThread: TBucketFillerThread;
 begin
-  Result := TPixelRenderThread.Create(fcp);
-//  Result.OnTerminate := OnThreadTerminated;
+  Result := TBucketFillerThread.Create(fcp);
   Result.BucketWidth := BucketWidth;
   Result.BucketHeight := BucketHeight;
+  Result.Buckets := @Buckets;
   Result.size[0] := size[0];
   Result.size[1] := size[1];
   Result.bounds[0] := Bounds[0];
   Result.bounds[1] := Bounds[1];
   Result.bounds[2] := Bounds[2];
   Result.bounds[3] := Bounds[3];
+  Result.RotationCenter[0] := FCP.Center[0];
+  Result.RotationCenter[1] := FCP.Center[1];
   Result.ColorMap := colorMap;
-  Result.Buckets := @Buckets;
   Result.CriticalSection := CriticalSection;
   Result.Nrbatches := FNrBatches;
   Result.batchcounter := @batchcounter;
-  Result.Resume;
-end;
-
-{ PixelRenderThread }
-
-///////////////////////////////////////////////////////////////////////////////
-procedure TPixelRenderThread.AddPointsToBuckets(const points: TPointsArray);
-var
-  i: integer;
-  px, py: double;
-  bws, bhs: double;
-  bx, by: double;
-  wx, wy: double;
-//  R: double;
-//  V1, v2, v3: integer;
-  Bucket: PBucket;
-  MapColor: PColorMapColor;
-begin
-  bws := (BucketWidth - 0.5)  * size[0];
-  bhs := (BucketHeight - 0.5) * size[1];
-  bx := bounds[0];
-  by := bounds[1];
-  wx := bounds[2] - bounds[0];
-  wy := bounds[3] - bounds[1];
-
-  for i := SUB_BATCH_SIZE - 1 downto 0 do begin
-    px := points[i].x - bx;
-    py := points[i].y - by;
-
-    if ((px < 0) or (px > wx) or
-        (py < 0) or (py > wy)) then
-      continue;
-
-    MapColor := @ColorMap[Round(points[i].c * 255)];
-    Bucket := @TbucketArray(buckets^)[Round(bws * px) + Round(bhs * py) * BucketWidth];
-
-    Inc(Bucket.Red,   MapColor.Red);
-    Inc(Bucket.Green, MapColor.Green);
-    Inc(Bucket.Blue,  MapColor.Blue);
-    Inc(Bucket.Count);
-  end;
-end;
-
-///////////////////////////////////////////////////////////////////////////////
-procedure TPixelRenderThread.AddPointsToBucketsAngle(const points: TPointsArray);
-var
-  i: integer;
-  px, py: double;
-  ca,sa: double;
-  nx, ny: double;
-  bws, bhs: double;
-  bx, by: double;
-  wx, wy: double;
-  Bucket: PBucket;
-  MapColor: PColorMapColor;
-begin
-
-  bws := (BucketWidth - 0.5)  * size[0];
-  bhs := (BucketHeight - 0.5) * size[1];
-  bx := bounds[0];
-  by := bounds[1];
-  wx := bounds[2] - bounds[0];
-  wy := bounds[3] - bounds[1];
-
-  ca := cos(FCP.FAngle);
-  sa := sin(FCP.FAngle);
-
-  for i := SUB_BATCH_SIZE - 1 downto 0 do begin
-    px := points[i].x - FCP.Center[0];
-    py := points[i].y - FCP.Center[1];
-
-    nx := px * ca + py * sa;
-    ny := -px * sa + py * ca;
-
-    px := nx + FCP.Center[0] - bx;
-    py := ny + FCP.Center[1] - by;
-
-    if ((px < 0) or (px > wx) or
-        (py < 0) or (py > wy)) then
-      continue;
-
-    MapColor := @ColorMap[Round(points[i].c * 255)];
-    Bucket := @TbucketArray(buckets^)[Round(bws * px) + Round(bhs * py) * BucketWidth];
-
-    Inc(Bucket.Red,   MapColor.Red);
-    Inc(Bucket.Green, MapColor.Green);
-    Inc(Bucket.Blue,  MapColor.Blue);
-    Inc(Bucket.Count);
-  end;
-end;
-
-///////////////////////////////////////////////////////////////////////////////
-constructor TPixelRenderThread.Create(cp: TControlPoint);
-begin
-  inherited Create(True);
-  Self.FreeOnTerminate := True;
-
-  fcp := cp;
-
-  SetLength(Points, SUB_BATCH_SIZE);
-end;
-
-///////////////////////////////////////////////////////////////////////////////
-procedure TPixelRenderThread.Execute;
-begin
-  inherited;
-
-//  while true do begin
-  while (not Terminated) and (batchcounter^ < Nrbatches) do begin
-    fcp.iterateXYC(SUB_BATCH_SIZE, points);
-    try
-      EnterCriticalSection(CriticalSection);
-
-      if FCP.FAngle = 0 then
-        AddPointsToBuckets(Points)
-      else
-        AddPointsToBucketsAngle(Points);
-
-      Inc(batchcounter^);
-    finally
-      LeaveCriticalSection(CriticalSection);
-    end;
-  end;
+//  Result.Resume;
 end;
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -473,5 +338,6 @@ begin
   FImageMaker.SaveImage(FileName);
 end;
 
+///////////////////////////////////////////////////////////////////////////////
 end.
 

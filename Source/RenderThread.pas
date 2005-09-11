@@ -22,7 +22,7 @@ interface
 
 uses
   Classes, windows, Messages, Graphics,
-   controlPoint, Render, Render64, Render64MT, RenderMM;
+   controlPoint, Render, Render64, Render64MT, RenderMM, RenderMM_MT;
 
 const
   WM_THREAD_COMPLETE = WM_APP + 5437;
@@ -132,7 +132,12 @@ begin
       TRenderer64MT(FRenderer).NrOfTreads := NrThreads;
     end;
   end else begin
-    FRenderer := TRendererMM64.Create;
+    if NrThreads <= 1 then begin
+      FRenderer := TRendererMM64.Create;
+    end else begin
+      FRenderer := TRendererMM64_MT.Create;
+      TRendererMM64_MT(FRenderer).NrOfTreads := NrThreads;
+    end;
     FRenderer.MaxMem := MaxMem
   end;
 

@@ -16,16 +16,16 @@
      along with this program; if not, write to the Free Software
      Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
 }
-unit RenderMM;
+unit RenderMM_MT;
 
 interface
 
 uses
   Windows, Graphics,
-   Render, Controlpoint, ImageMaker;
+   Render, Controlpoint, ImageMaker, BucketFillerThread;
 
 type
-  TRendererMM64 = class(TBaseRenderer)
+  TRendererMM64_MT = class(TBaseRenderer)
   private
     oversample: Integer;
 
@@ -48,6 +48,12 @@ type
     nrSlices: int64;
     Slice: int64;
     FImageMaker: TImageMaker;
+    FNrBatches: int64;
+    batchcounter: Integer;
+
+    FNrOfTreads: integer;
+    WorkingThreads: array of TBucketFillerThread;
+    CriticalSection: TRTLCriticalSection;
 
     procedure InitValues;
     procedure InitBuffers;
@@ -60,6 +66,10 @@ type
     procedure AddPointsToBucketsAngle(const points: TPointsArray); overload;
 
     procedure SetPixels;
+    procedure SetPixelsMT;
+    procedure SetNrOfTreads(const Value: integer);
+
+    function NewThread: TBucketFillerThread;
   protected
     function GetSlice: integer; override;
     function GetNrSlices: integer; override;
@@ -73,6 +83,9 @@ type
 
     procedure Render; override;
 
+    property NrOfTreads: integer
+        read FNrOfTreads
+       write SetNrOfTreads;
   end;
 
 implementation
@@ -80,10 +93,10 @@ implementation
 uses
   Math, Sysutils;
 
-{ TRendererMM64 }
+{ TRendererMM64_MT }
 
 ///////////////////////////////////////////////////////////////////////////////
-procedure TRendererMM64.ClearBuckets;
+procedure TRendererMM64_MT.ClearBuckets;
 var
   i: integer;
 begin
@@ -96,13 +109,13 @@ begin
 end;
 
 ///////////////////////////////////////////////////////////////////////////////
-procedure TRendererMM64.ClearBuffers;
+procedure TRendererMM64_MT.ClearBuffers;
 begin
   ClearBuckets;
 end;
 
 ///////////////////////////////////////////////////////////////////////////////
-procedure TRendererMM64.CreateCamera;
+procedure TRendererMM64_MT.CreateCamera;
 var
   scale: double;
   t0, t1: double;
@@ -134,7 +147,7 @@ begin
 end;
 
 ///////////////////////////////////////////////////////////////////////////////
-procedure TRendererMM64.CreateColorMap;
+procedure TRendererMM64_MT.CreateColorMap;
 var
   i: integer;
 begin
@@ -147,7 +160,7 @@ begin
 end;
 
 ///////////////////////////////////////////////////////////////////////////////
-destructor TRendererMM64.Destroy;
+destructor TRendererMM64_MT.Destroy;
 begin
   FImageMaker.Free;
 
@@ -155,13 +168,13 @@ begin
 end;
 
 ///////////////////////////////////////////////////////////////////////////////
-function TRendererMM64.GetImage: TBitmap;
+function TRendererMM64_MT.GetImage: TBitmap;
 begin
   Result := FImageMaker.GetImage;
 end;
 
 ///////////////////////////////////////////////////////////////////////////////
-procedure TRendererMM64.InitBuffers;
+procedure TRendererMM64_MT.InitBuffers;
 begin
   oversample := fcp.spatial_oversample;
   gutter_width := (FImageMaker.GetFilterSize - oversample) div 2;
@@ -178,7 +191,7 @@ begin
 end;
 
 ///////////////////////////////////////////////////////////////////////////////
-procedure TRendererMM64.InitValues;
+procedure TRendererMM64_MT.InitValues;
 begin
   image_height := fcp.Height;
   image_Width := fcp.Width;
@@ -191,7 +204,7 @@ begin
 end;
 
 ///////////////////////////////////////////////////////////////////////////////
-procedure TRendererMM64.AddPointsToBuckets(const points: TPointsArray);
+procedure TRendererMM64_MT.AddPointsToBuckets(const points: TPointsArray);
 var
   i: integer;
   px, py: double;
@@ -232,7 +245,7 @@ begin
 end;
 
 ///////////////////////////////////////////////////////////////////////////////
-procedure TRendererMM64.AddPointsToBucketsAngle(const points: TPointsArray);
+procedure TRendererMM64_MT.AddPointsToBucketsAngle(const points: TPointsArray);
 var
   i: integer;
   px, py: double;
@@ -285,7 +298,7 @@ begin
 end;
 
 ///////////////////////////////////////////////////////////////////////////////
-procedure TRendererMM64.SetPixels;
+procedure TRendererMM64_MT.SetPixels;
 var
   i: integer;
   nsamples: Int64;
@@ -323,9 +336,8 @@ begin
   Progress(1);
 end;
 
-
 ///////////////////////////////////////////////////////////////////////////////
-constructor TRendererMM64.Create;
+constructor TRendererMM64_MT.Create;
 begin
   inherited Create;
 
@@ -333,7 +345,7 @@ begin
 end;
 
 ///////////////////////////////////////////////////////////////////////////////
-procedure TRendererMM64.Render;
+procedure TRendererMM64_MT.Render;
 const
   Dividers: array[0..15] of integer = (1, 2, 3, 4, 5, 6, 7, 8, 10, 16, 20, 32, 64, 128, 256, 512);
 var
@@ -397,7 +409,7 @@ begin
     fcp.center[1] := center_base + fcp.height * slice / (fcp.pixels_per_unit * zoom_scale);
     CreateCamera;
     ClearBuffers;
-    SetPixels;
+    SetPixelsMT;
 
     if not FStop then begin
       FImageMaker.OnProgress := OnProgress;
@@ -410,21 +422,89 @@ begin
 end;
 
 ///////////////////////////////////////////////////////////////////////////////
-function TRendererMM64.GetSlice: integer;
+function TRendererMM64_MT.GetSlice: integer;
 begin
   Result := Slice;
 end;
 
 ///////////////////////////////////////////////////////////////////////////////
-function TRendererMM64.GetNrSlices: integer;
+function TRendererMM64_MT.GetNrSlices: integer;
 begin
   Result := NrSlices;
 end;
 
 ///////////////////////////////////////////////////////////////////////////////
-procedure TRendererMM64.SaveImage(const FileName: String);
+procedure TRendererMM64_MT.SaveImage(const FileName: String);
 begin
   FImageMaker.SaveImage(FileName);
+end;
+
+///////////////////////////////////////////////////////////////////////////////
+procedure TRendererMM64_MT.SetNrOfTreads(const Value: integer);
+begin
+  FNrOfTreads := Value;
+end;
+
+///////////////////////////////////////////////////////////////////////////////
+procedure TRendererMM64_MT.SetPixelsMT;
+var
+  i: integer;
+  nsamples: Int64;
+  bc : integer;
+begin
+  nsamples := Round(sample_density * bucketSize / (oversample * oversample));
+  FNrBatches := Round(nsamples / (fcp.nbatches * SUB_BATCH_SIZE));
+  batchcounter := 0;
+  Randomize;
+
+  InitializeCriticalSection(CriticalSection);
+
+  SetLength(WorkingThreads, NrOfTreads);
+  for i := 0 to NrOfTreads - 1 do
+    WorkingThreads[i] := NewThread;
+
+  for i := 0 to NrOfTreads - 1 do
+    WorkingThreads[i].Resume;
+
+  bc := 0;
+  while (Not FStop) and (bc < FNrBatches) do begin
+    sleep(200);
+    try
+      EnterCriticalSection(CriticalSection);
+      if batchcounter > 0 then
+        Progress(batchcounter / FNrBatches)
+      else
+        Progress(0);
+
+       bc := batchcounter;
+     finally
+       LeaveCriticalSection(CriticalSection);
+     end;
+  end;
+
+  DeleteCriticalSection(CriticalSection);
+  Progress(1);
+end;
+
+///////////////////////////////////////////////////////////////////////////////
+function TRendererMM64_MT.NewThread: TBucketFillerThread;
+begin
+  Result := TBucketFillerThread.Create(fcp);
+  Result.BucketWidth := BucketWidth;
+  Result.BucketHeight := BucketHeight;
+  Result.Buckets := @Buckets;
+  Result.size[0] := size[0];
+  Result.size[1] := size[1];
+  Result.bounds[0] := Bounds[0];
+  Result.bounds[1] := Bounds[1];
+  Result.bounds[2] := Bounds[2];
+  Result.bounds[3] := Bounds[3];
+  Result.RotationCenter[0] := FRotationCenter[0];
+  Result.RotationCenter[1] := FRotationCenter[1];
+  Result.ColorMap := colorMap;
+  Result.CriticalSection := CriticalSection;
+  Result.Nrbatches := FNrBatches;
+  Result.batchcounter := @batchcounter;
 end;
 
 ///////////////////////////////////////////////////////////////////////////////
