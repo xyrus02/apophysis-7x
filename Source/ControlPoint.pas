@@ -32,6 +32,10 @@ const
   BRIGHT_ADJUST = 2.3;
   FUSE = 15;
 
+type //?
+  PLongintArray = ^TLongintArray;
+  TLongintArray = array[0..8192] of Longint;
+
 type
   TVariation = (vLinear, vSinusoidal, vSpherical, vSwirl, vHorseshoe, vPolar,
     vHandkerchief, vHeart, vDisc, vSpiral, vHyperbolic, vSquare, vEx, vJulia,
@@ -1456,7 +1460,7 @@ begin
     sl.add(format('xform %d density %.3f color %f symmetry %f', [i, xform[i].density, xform[i].color, xform[i].symmetry]));
     s := 'var';
     for j := 0 to NRVAR - 1 do begin
-      s := format('%s %f', [s, xform[i].vars[j]]);
+      s := format('%s %.3f', [s, xform[i].vars[j]]);
     end;
     sl.add(s);
 //    sl.Add(format('coefs %f %f %f %f %f %f',
@@ -1498,8 +1502,11 @@ var
 begin
   Clear;
   sl := TStringList.Create;
+
+  // --Z-- this is quite a weird and unoptimal way to copy things:
   cp1.SaveToStringlist(sl);
   ParseStringlist(sl);
+
   Fangle := cp1.FAngle;
   cmap := cp1.cmap;
   name := cp1.name;
