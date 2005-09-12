@@ -1440,9 +1440,9 @@ begin
   sl.add(format('time %f', [time]));
   if cmapindex >= 0 then
     sl.add(format('cmap %d', [cmapindex]));
-  sl.add(format('zoom %f', [zoom])); // mt
-  sl.add(format('angle %f', [FAngle]));
-  sl.add(format('image_size %d %d center %f %f pixels_per_unit %f',
+  sl.add(format('zoom %.3f', [zoom])); // mt
+  sl.add(format('angle %.3f', [FAngle]));
+  sl.add(format('image_size %d %d center %.3f %.3f pixels_per_unit %f',
     [Width, Height, center[0], center[1], pixels_per_unit]));
   sl.add(format('spatial_oversample %d spatial_filter_radius %f',
     [spatial_oversample, spatial_filter_radius]));
@@ -1457,7 +1457,7 @@ begin
     if xform[i].density = 0 then
       Continue;
 
-    sl.add(format('xform %d density %.3f color %f symmetry %f', [i, xform[i].density, xform[i].color, xform[i].symmetry]));
+    sl.add(format('xform %d density %.3f color %.3f symmetry %f', [i, xform[i].density, xform[i].color, xform[i].symmetry]));
     s := 'var';
     for j := 0 to NRVAR - 1 do begin
       s := format('%s %.3f', [s, xform[i].vars[j]]);
