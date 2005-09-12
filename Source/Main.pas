@@ -38,6 +38,8 @@ const
   RS_XO = 2;
   RS_VO = 3;
 
+  AppVersionString = 'Apophysis 2.02j';
+
 type
   TMouseMoveState = (msUsual, msZoomWindow, msZoomOutWindow, msZoomWindowMove, msZoomOutWindowMove, msDrag, msDragMove, msRotate, msRotateMove);
 
@@ -2100,7 +2102,7 @@ begin
     mnuListRename.Enabled := True;
     mnuItemDelete.Enabled := True;
     OpenFile := OpenDialog.FileName;
-    MainForm.Caption := 'Apophysis 2.02j' + ' - ' + OpenFile; // --Z--
+    MainForm.Caption := AppVersionString + ' - ' + OpenFile; // --Z--
     OpenFileType := ftXML;
     if UpperCase(ExtractFileExt(OpenDialog.FileName)) = '.IFS' then
     begin
@@ -2220,7 +2222,7 @@ begin
   RandomBatch;
   OpenFile := AppPath + 'apophysis.rand';
   OpenFileType := ftXML;
-  MainForm.Caption := 'Apophysis 2.02j' + ' - Random Batch';
+  MainForm.Caption := AppVersionString + ' - Random Batch';
   ListXML(OpenFile, 1);
   ListView.SetFocus;
   if batchsize = 1 then DrawFlame;
@@ -2642,7 +2644,7 @@ begin
     MainCp.Width := image.width;
     MainCp.Height := Image.Height;
     RandomBatch;
-    MainForm.Caption := 'Apophysis 2.02j' + ' - Random Batch';
+    MainForm.Caption := AppVersionString + ' - Random Batch';
     OpenFile := AppPath + 'apophysis.rand';
     ListXML(OpenFile, 1);
     OpenFileType := ftXML;
@@ -2662,7 +2664,7 @@ begin
       OpenFileType := ftXML;
       MainForm.ListView.Selected := MainForm.ListView.Items[0];
     end;
-    MainForm.Caption := 'Apophysis 2.02j' + ' - ' + defFlameFile;
+    MainForm.Caption := AppVersionString + ' - ' + defFlameFile;
   end;
   ListView.SetFocus;
   CanDrawOnResize := True;
@@ -2983,6 +2985,8 @@ begin
 //  if GradientForm.visible then GradientForm.UpdateGradient(maincp.cmap);
 
   if EditForm.visible then EditForm.UpdateDisplay;
+// hmm I think I still have some problems with EditForm updating
+// several times in a row with all these calls :-\
 
 //  if AdjustForm.visible then AdjustForm.UpdateDisplay;
   if MutateForm.visible then MutateForm.UpdateDisplay;
@@ -4551,58 +4555,6 @@ begin
     UpdateWindows;
   end
   else mnuResetLocationClick(Sender);
-{    msDragMove:
-      begin
-        FViewBMP.Free;
-        FViewBMP := nil;
-
-        FSelectRect.BottomRight := Point(x, y);
-        FMouseMoveState := msDrag;
-
-        if (x = 0) and (y = 0) then
-          Exit; // double clicked
-
-        StopThread;
-        UpdateUndo;
-        MainCp.MoveRect(FSelectRect);
-
-        RedrawTimer.Enabled := True;
-        UpdateWindows;
-      end;
-    msZoomWindowMove:
-      begin
-        DrawZoomWindow(FSelectRect);
-        FSelectRect.BottomRight := Point(x, y);
-        FMouseMoveState := msZoomWindow;
-        if (abs(FSelectRect.Left - FSelectRect.Right) < 10) or
-           (abs(FSelectRect.Top - FSelectRect.Bottom) < 10) then
-          Exit; // zoom to much or double clicked
-
-        StopThread;
-        UpdateUndo;
-        MainCp.ZoomtoRect(FSelectRect);
-
-        RedrawTimer.Enabled := True;
-        UpdateWindows;
-      end;
-    msZoomOutWindowMove:
-      begin
-        DrawZoomWindow(FSelectRect);
-        FSelectRect.BottomRight := Point(x, y);
-        FMouseMoveState := msZoomOutWindow;
-        if (abs(FSelectRect.Left - FSelectRect.Right) < 10) or
-           (abs(FSelectRect.Top - FSelectRect.Bottom) < 10) then
-          Exit; // zoom to much or double clicked
-
-        StopThread;
-        UpdateUndo;
-        MainCp.ZoomOuttoRect(FSelectRect);
-
-        RedrawTimer.Enabled := True;
-        UpdateWindows;
-      end;
-  end;
-}
 end;
 {$IFDEF DEBUG}
 ///////////////////////////////////////////////////////////////////////////////
