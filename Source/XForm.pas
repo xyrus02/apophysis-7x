@@ -1031,14 +1031,15 @@ begin
   FFunctionList[20] := Cosine;
   FFunctionList[21] := Fan;
   FFunctionList[22] := Rings;
-  FFunctionList[23] := Triblob;
-  FFunctionList[24] := Daisy;
-  FFunctionList[25] := Checkers;
-  FFunctionList[26] := CRot;
+
+//  FFunctionList[23] := Triblob;
+//  FFunctionList[24] := Daisy;
+//  FFunctionList[25] := Checkers;
+//  FFunctionList[26] := CRot;
 
   //registered
   for i := 0 to High(FRegVariations) do
-    FFunctionList[27 + i] := FRegVariations[i].CalcFunction;
+    FFunctionList[23 + i] := FRegVariations[i].CalcFunction;
 end;
 
 ///////////////////////////////////////////////////////////////////////////////
