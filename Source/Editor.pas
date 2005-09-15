@@ -23,7 +23,7 @@ interface
 uses
   Windows, Messages, SysUtils, Classes, Graphics, Controls, Forms, Dialogs,
   ExtCtrls, StdCtrls, ComCtrls, Math, Menus, ToolWin, Registry, MyTypes,
-  ControlPoint, Render, cmap, Grids, ValEdit, Buttons, ImgList, TriangleGraph;
+  ControlPoint, Render, cmap, Grids, ValEdit, Buttons, ImgList, CustomDrawControl;
 
 const
 //  PixelCountMax = 32768;
@@ -159,19 +159,22 @@ type
     procedure vleVariablesKeyPress(Sender: TObject; var Key: Char);
     procedure vleVariablesExit(Sender: TObject);
     procedure FormCreate(Sender: TObject);
-    procedure GraphImageMouseMove(Sender: TObject; Shift: TShiftState; X,
+    procedure TriangleViewMouseMove(Sender: TObject; Shift: TShiftState; X,
       Y: integer);
-    procedure GraphImageMouseDown(Sender: TObject; Button: TMouseButton;
+    procedure TriangleViewMouseDown(Sender: TObject; Button: TMouseButton;
       Shift: TShiftState; X, Y: integer);
-    procedure GraphImageMouseUp(Sender: TObject; Button: TMouseButton;
+    procedure TriangleViewMouseUp(Sender: TObject; Button: TMouseButton;
       Shift: TShiftState; X, Y: integer);
+    procedure TriangleViewMouseWheel(Sender: TObject; Shift: TShiftState;
+      WheelDelta: Integer; MousePos: TPoint; var Handled: Boolean);
+    procedure TriangleViewDblClick(Sender: TObject);
+    procedure TriangleViewKeyDown(Sender: TObject; var Key: Word; Shift: TShiftState);
+
     procedure FormShow(Sender: TObject);
     procedure mnuDeleteClick(Sender: TObject);
     procedure mnuAddClick(Sender: TObject);
     procedure mnuDupClick(Sender: TObject);
     procedure mnuAutoZoomClick(Sender: TObject);
-//    procedure mnuXFlipClick(Sender: TObject);
-//    procedure mnuYFlipClick(Sender: TObject);
     procedure btnCloseClick(Sender: TObject);
     procedure FormResize(Sender: TObject);
     procedure txtPKeyPress(Sender: TObject; var Key: Char);
@@ -191,7 +194,6 @@ type
     procedure mnuHorizintalFlipAllClick(Sender: TObject);
     procedure mnuFlipVerticalClick(Sender: TObject);
     procedure mnuFlipHorizontalClick(Sender: TObject);
-    procedure GraphImageDblClick(Sender: TObject);
     procedure cbTransformsChange(Sender: TObject);
     procedure CoefKeyPress(Sender: TObject; var Key: Char);
     procedure CoefExit(Sender: TObject);
@@ -206,14 +208,11 @@ type
     procedure txtXFormColorKeyPress(Sender: TObject; var Key: Char);
     procedure txtSymmetryExit(Sender: TObject);
     procedure txtSymmetryKeyPress(Sender: TObject; var Key: Char);
+
     procedure VEVarsKeyPress(Sender: TObject; var Key: Char);
     procedure VEVarsExit(Sender: TObject);
     procedure VEVarsValidate(Sender: TObject; ACol, ARow: Integer;
       const KeyName, KeyValue: String);
-//    procedure mnuRotateRightClick(Sender: TObject);
-//    procedure mnuRotateLeftClick(Sender: TObject);
-//    procedure mnuScaleUpClick(Sender: TObject);
-//    procedure mnuScaleDownClick(Sender: TObject);
 
     procedure btTrgRotateLeftClick(Sender: TObject);
     procedure btTrgRotateRightClick(Sender: TObject);
@@ -226,15 +225,12 @@ type
     procedure btTrgMoveDownClick(Sender: TObject);
     procedure btTrgScaleUpClick(Sender: TObject);
     procedure btTrgScaleDownClick(Sender: TObject);
-    procedure editKeyDown(Sender: TObject; var Key: Word; Shift: TShiftState);
     procedure splitterMoved(Sender: TObject);
     procedure tbSelectClick(Sender: TObject);
     procedure btTrgMoveLUClick(Sender: TObject);
     procedure btTrgMoveLDClick(Sender: TObject);
     procedure btTrgMoveRUClick(Sender: TObject);
     procedure btTrgMoveRDClick(Sender: TObject);
-    procedure editMouseWheel(Sender: TObject; Shift: TShiftState;
-      WheelDelta: Integer; MousePos: TPoint; var Handled: Boolean);
     procedure PreviewImageDblClick(Sender: TObject);
     procedure editKeyPress(Sender: TObject; var Key: Char);
     procedure rgPivotClicked(Sender: TObject);
@@ -254,8 +250,6 @@ type
 
     procedure cbTransformsDrawItem(Control: TWinControl; Index: Integer;
       Rect: TRect; State: TOwnerDrawState);
-    procedure cbKeyDown(Sender: TObject; var Key: Word;
-      Shift: TShiftState);
 
     procedure tbFullViewClick(Sender: TObject);
 
@@ -267,16 +261,15 @@ type
       Shift: TShiftState; X, Y: Integer);
 
   private
-    TriangleGraph: TTriangleGraph;
-    bm: TBitmap;
+    TriangleView: TCustomDrawControl;
+//    bm: TBitmap;
     cmap: TColorMap;
  //   cp1: TControlPoint;
     PreviewDensity: double;
 
     // --Z--
-    graphDragMode, dragged: boolean;
+    viewDragMode, viewDragged: boolean;
     editMode: (modeMove, modeRotate, modeScale);
-    key_handled: boolean; // hack... there must be a better way to do this :-\
 
     MousePos: TPoint; // in screen coordinates
     mouseOverTriangle: integer;
@@ -320,7 +313,7 @@ type
 
     // --Z-- functions moved from outside (?)
     procedure ShowSelectedInfo;
-    procedure Scale(var fx, fy: double; x, y, Width, Height: integer);
+    procedure Scale(var fx, fy: double; x, y: integer);
     procedure ReadjustWeights(var cp: TControlPoint);
 
   public
@@ -331,7 +324,7 @@ type
 
     procedure UpdateDisplay(preview_only: boolean = false);
     procedure AutoZoom;
-    procedure DrawGraph;
+    procedure TriangleViewPaint(Sender: TObject);
   end;
 
 const
@@ -369,10 +362,13 @@ var
   oldTriangle: TTriangle;
   gCenterX: double;
   gCentery: double;
-  gxlength: double;
-  gylength: double;
 
 {$R *.DFM}
+
+procedure DrawGraph;
+begin
+  EditForm.TriangleView.Invalidate;
+end;
 
 { Triangle transformations }
 
@@ -567,7 +563,6 @@ begin
 
   ShowSelectedInfo;
   AutoZoom;
-  DrawGraph;
 end;
 
 procedure TEditForm.DrawPreview;
@@ -692,19 +687,20 @@ begin
   end;
 end;
 
-procedure TEditForm.Scale(var fx, fy: double; x, y, Width, Height: integer);
+procedure TEditForm.Scale(var fx, fy: double; x, y: integer);
 var
   sc: double;
 begin
   sc := 50 * GraphZoom;
-  fx := (x - (Width / 2)) / sc + gCenterX;
-  fy := -((y - (Height / 2)) / sc - gCentery);
+  fx := (x - (TriangleView.Width / 2)) / sc + gCenterX;
+  fy := -((y - (TriangleView.Height / 2)) / sc - gCentery);
 end;
 
 procedure TEditForm.AutoZoom;
 var
   i, j: integer;
   xminz, yminz, xmaxz, ymaxz: double;
+  gxlength, gylength: double;
 begin
   xminz := 0;
   yminz := 0;
@@ -724,15 +720,18 @@ begin
   gylength := ymaxz - yminz;
   gCenterX := xminz + gxlength / 2;
   gCentery := yminz + gylength / 2;
+
   if gxlength >= gylength then
   begin
-    GraphZoom := TriangleGraph.Width / 60 / gxlength;
+    GraphZoom := TriangleView.Width / 60 / gxlength;
   end
   else
   begin
-    GraphZoom := TriangleGraph.Height / 60 / gylength;
+    GraphZoom := TriangleView.Height / 60 / gylength;
   end;
   EditForm.StatusBar.Panels[2].Text := Format('Zoom: %f', [GraphZoom]);
+
+  TriangleView.Invalidate;
 end;
 
 procedure TEditForm.UpdateFlameX;
@@ -757,7 +756,7 @@ begin
   if not chkPreserve.checked then ComputeWeights(cp, MainTriangles, transforms);
   DrawPreview;
   ShowSelectedInfo;
-  DrawGraph;
+  TriangleView.Refresh;;
 end;
 
 procedure TEditForm.UpdateFlame(DrawMain: boolean);
@@ -768,7 +767,7 @@ begin
   if not chkPreserve.Checked then ComputeWeights(cp, MainTriangles, transforms);
   DrawPreview;
   ShowSelectedInfo;
-  DrawGraph;
+  TriangleView.Invalidate;
   if DrawMain then begin
     MainForm.StopThread;
     MainCp.Copy(cp);
@@ -916,35 +915,45 @@ begin
   else Result := clr[n mod 16];
 end;
 
-procedure TEditForm.DrawGraph;
+procedure TEditForm.TriangleViewPaint(Sender: TObject);
+var
+  ix, iy, sc: double;
+
+  function ToScreen(fx, fy: double): TPoint;
+  begin
+    Result.x := integer(round(ix + (fx - gCenterX) * sc));
+    Result.y := integer(round(iy - (fy - gCenterY) * sc));
+  end;
 var
   i: integer;
-  ix, iy, sc: double;
-  ax, ay, bx, by, cx, cy: integer;
+
+  ax, ay {, bx, by, cx, cy}: integer;
+  a, b, c: TPoint;
+
+  BitMap: TBitMap;
   Width, Height: integer;
-//  BitMap: TBitMap;
-  // --Z--
+
   gridX1, gridX2, gridY1, gridY2, gi, gstep: double;
   gp: TRoundToRange;
 label DrawCorner;
 begin
-  // --Z-- hmmm:
-  if SelectedTriangle < 0 then SelectedTriangle := 0
-  else if SelectedTriangle >= Transforms then SelectedTriangle := Transforms-1;
+  assert(SelectedTriangle >= 0);
+  assert(TCustomDrawControl(Sender) = TriangleView);
+  if SelectedTriangle >= Transforms then SelectedTriangle := Transforms-1;
 
-//  BitMap := TBitMap.Create;
+  BitMap := TBitMap.Create;
+  Width := TriangleView.Width;
+  Height := TriangleView.Height;
+  Bitmap.Width := Width;
+  Bitmap.Height := Height;
+  ix := Width / 2;
+  iy := Height / 2;
+  sc := 50 * GraphZoom;
   try
-    Width := TriangleGraph.Width;
-    Height := TriangleGraph.Height;
-//    BitMap.Width := Width;
-//    BitMap.Height := Height;
-    ix := Width / 2;
-    iy := Height / 2;
-    sc := 50 * GraphZoom;
-//    with Bitmap.canvas do
-    with TriangleGraph.Canvas do
+    with Bitmap.Canvas do
     begin
       brush.Color := pnlBackColor.Color;
+//if not TriangleView.Focused then brush.Color := brush.Color xor $1f1f1f;
       FillRect(rect(0, 0, Width, Height));
 
       Pen.Width := 1;
@@ -996,6 +1005,7 @@ begin
       {Reference Triangle}
       Pen.Style := psDot;
       Pen.color := pnlReference.Color;
+{
       ax := integer(round(ix + (MainTriangles[-1].x[0] - gCenterX) * sc));
       ay := integer(round(iy - (MainTriangles[-1].y[0] - gCenterY) * sc));
       bx := integer(round(ix + (MainTriangles[-1].x[1] - gCenterX) * sc));
@@ -1003,62 +1013,47 @@ begin
       cx := integer(round(ix + (MainTriangles[-1].x[2] - gCenterX) * sc));
       cy := integer(round(iy - (MainTriangles[-1].y[2] - gCenterY) * sc));
       Polyline([Point(ax,ay), Point(bx,by), Point(cx,cy), Point(ax,ay)]);
+}
+      a := ToScreen(MainTriangles[-1].x[0], MainTriangles[-1].y[0]);
+      b := ToScreen(MainTriangles[-1].x[1], MainTriangles[-1].y[1]);
+      c := ToScreen(MainTriangles[-1].x[2], MainTriangles[-1].y[2]);
+      Polyline([a, b, c, a]);
+
       Font.color := Pen.color;
-      TextOut(ax, ay, 'A');
-      TextOut(bx, by, 'B');
-      TextOut(cx, cy, 'C');
+      TextOut(a.x, a.y, 'A');
+      TextOut(b.x, b.y, 'B');
+      TextOut(c.x, c.y, 'C');
 
       Pen.Style := psSolid;
 
       {Transforms}
       for i := 0 to Transforms - 1 do
       begin
+{
         ax := integer(round(ix + (MainTriangles[i].x[0] - gCenterX) * sc));
         ay := integer(round(iy - (MainTriangles[i].y[0] - gCenterY) * sc));
         bx := integer(round(ix + (MainTriangles[i].x[1] - gCenterX) * sc));
         by := integer(round(iy - (MainTriangles[i].y[1] - gCenterY) * sc));
         cx := integer(round(ix + (MainTriangles[i].x[2] - gCenterX) * sc));
         cy := integer(round(iy - (MainTriangles[i].y[2] - gCenterY) * sc));
-{
-        TrgPoints[0].x := integer(round(ix + (MainTriangles[i].x[0] - gCenterX) * sc));
-        TrgPoints[0].y := integer(round(iy - (MainTriangles[i].y[0] - gCenterY) * sc));
-        TrgPoints[1].x := integer(round(ix + (MainTriangles[i].x[1] - gCenterX) * sc));
-        TrgPoints[1].y := integer(round(iy - (MainTriangles[i].y[1] - gCenterY) * sc));
-        TrgPoints[2].x := integer(round(ix + (MainTriangles[i].x[2] - gCenterX) * sc));
-        TrgPoints[2].y := integer(round(iy - (MainTriangles[i].y[2] - gCenterY) * sc));
 }
-        //brush.Color := pnlBackColor.Color;
+        a := ToScreen(MainTriangles[i].x[0], MainTriangles[i].y[0]);
+        b := ToScreen(MainTriangles[i].x[1], MainTriangles[i].y[1]);
+        c := ToScreen(MainTriangles[i].x[2], MainTriangles[i].y[2]);
 
         Pen.Color := GetTriangleColor(i);
-
         if i <> SelectedTriangle then Pen.Style := psDot;
-        //MoveTo(ax, ay); LineTo(bx, by); LineTo(cx, cy); LineTo(ax, ay);
-        Polyline([Point(ax,ay), Point(bx,by), Point(cx,cy), Point(ax,ay)]);
+        Polyline([a, b, c, a]);
 
         Pen.Style := psSolid;
-        Ellipse(ax - 4, ay - 4, ax + 4, ay + 4);
-        Ellipse(bx - 4, by - 4, bx + 4, by + 4);
-        Ellipse(cx - 4, cy - 4, cx + 4, cy + 4);
+        Ellipse(a.x - 4, a.y - 4, a.x + 4, a.y + 4);
+        Ellipse(b.x - 4, b.y - 4, b.x + 4, b.y + 4);
+        Ellipse(c.x - 4, c.y - 4, c.x + 4, c.y + 4);
 
         Font.color := Pen.color;
-        //brush.Color := pnlBackColor.Color;
-        TextOut(ax, ay, 'A');
-        TextOut(bx, by, 'B');
-        TextOut(cx, cy, 'C');
-{
-        brush.style:=bsClear;
-        Font.color := pnlBackColor.Color;
-        font.style:=[fsBold];
-        TextOut(ax+2, ay+2, 'A');
-        TextOut(bx+2, by+2, 'B');
-        TextOut(cx+2, cy+2, 'C');
-        font.style:=[];
-
-        Font.color := Pen.color;
-        TextOut(ax+1, ay+1, 'A');
-        TextOut(bx+1, by+1, 'B');
-        TextOut(cx+1, cy+1, 'C');
-}
+        TextOut(a.x, a.y, 'A');
+        TextOut(b.x, b.y, 'B');
+        TextOut(c.x, c.y, 'C');
       end;
 
       // if dragging, draw pivot axis
@@ -1067,28 +1062,32 @@ begin
         Pen.Mode := pmMerge;
         Pen.Color := $555555;
         Pen.Style := psDot;
-        ax := integer(round(ix + (Pivot.x - gCenterX)*sc));
-        ay := integer(round(iy + (gCentery - Pivot.y)*sc));
-        MoveTo(ax, 0);
-        LineTo(ax, Height);
-        MoveTo(0, ay);
-        LineTo(Width, ay);
+//        ax := integer(round(ix + (Pivot.x - gCenterX)*sc));
+//        ay := integer(round(iy + (gCentery - Pivot.y)*sc));
+        a := ToScreen(Pivot.x, Pivot.y);
+        MoveTo(a.x, 0);
+        LineTo(a.x, Height);
+        MoveTo(0, a.y);
+        LineTo(Width, a.y);
         Pen.Color := $707070;
         Pen.Style := psSolid;
         Pen.Mode := pmXor;
         if CornerCaught then
         begin
-          ax := integer(round(ix + (MainTriangles[SelectedTriangle].x[SelectedCorner] - gCenterX)*sc));
-          ay := integer(round(iy - (MainTriangles[SelectedTriangle].y[SelectedCorner] - gCenterY)*sc));
+//          ax := integer(round(ix + (MainTriangles[SelectedTriangle].x[SelectedCorner] - gCenterX)*sc));
+//          ay := integer(round(iy - (MainTriangles[SelectedTriangle].y[SelectedCorner] - gCenterY)*sc));
+          a := ToScreen(MainTriangles[SelectedTriangle].x[SelectedCorner],
+                        MainTriangles[SelectedTriangle].y[SelectedCorner]);
         end
         else begin
-          ax := integer(round(ix + (GetPivot.x - gCenterX)*sc));
-          ay := integer(round(iy - (GetPivot.y - gCenterY)*sc));
+//          ax := integer(round(ix + (GetPivot.x - gCenterX)*sc));
+//          ay := integer(round(iy - (GetPivot.y - gCenterY)*sc));
+          a := ToScreen(GetPivot.x, GetPivot.y);
         end;
-        MoveTo(ax, 0);
-        LineTo(ax, Height);
-        MoveTo(0, ay);
-        LineTo(Width, ay);
+        MoveTo(a.x, 0);
+        LineTo(a.x, Height);
+        MoveTo(0, a.y);
+        LineTo(Width, a.y);
         Pen.Mode := pmCopy;
 
         mouseOverTriangle := SelectedTriangle;
@@ -1096,26 +1095,31 @@ begin
 
       if (mouseOverTriangle >= 0) then // highlight triangle under cursor
       begin
+{
         ax := integer(round(ix + (MainTriangles[mouseOverTriangle].x[0] - gCenterX) * sc));
         ay := integer(round(iy - (MainTriangles[mouseOverTriangle].y[0] - gCenterY) * sc));
         bx := integer(round(ix + (MainTriangles[mouseOverTriangle].x[1] - gCenterX) * sc));
         by := integer(round(iy - (MainTriangles[mouseOverTriangle].y[1] - gCenterY) * sc));
         cx := integer(round(ix + (MainTriangles[mouseOverTriangle].x[2] - gCenterX) * sc));
         cy := integer(round(iy - (MainTriangles[mouseOverTriangle].y[2] - gCenterY) * sc));
-//          Pen.Style:=psSolid;
+}
+        a := ToScreen(MainTriangles[mouseOverTriangle].x[0], MainTriangles[mouseOverTriangle].y[0]);
+        b := ToScreen(MainTriangles[mouseOverTriangle].x[1], MainTriangles[mouseOverTriangle].y[1]);
+        c := ToScreen(MainTriangles[mouseOverTriangle].x[2], MainTriangles[mouseOverTriangle].y[2]);
+
         pen.Width:=2;
         Pen.Color:=GetTriangleColor(mouseOverTriangle) shr 1 and $7f7f7f;
-        Pen.Mode:=pmMerge;//pmXor;
+        Pen.Mode:=pmMerge;
         brush.Color:=Pen.Color shr 1 and $7f7f7f;
-        //Polyline([Point(ax,ay), Point(bx,by), Point(cx,cy), Point(ax,ay)]);
-        Polygon([Point(ax,ay), Point(bx,by), Point(cx,cy)]);
+//        Polygon([Point(ax,ay), Point(bx,by), Point(cx,cy)]);
+        Polygon([a, b, c]);
+
         pen.width:=4;
-        Ellipse(ax - 3, ay - 3, ax + 3, ay + 3);
-        Ellipse(bx - 3, by - 3, bx + 3, by + 3);
-        Ellipse(cx - 3, cy - 3, cx + 3, cy + 3);
+        Ellipse(a.x - 3, a.y - 3, a.x + 3, a.y + 3);
+        Ellipse(b.x - 3, b.y - 3, b.x + 3, b.y + 3);
+        Ellipse(c.x - 3, c.y - 3, c.x + 3, c.y + 3);
         pen.width:=1;
         pen.mode:=pmCopy;
-//        brush.Color := pen.Color;
       end;
 
       pen.color := clWhite;
@@ -1128,7 +1132,6 @@ begin
       end
       else if (mouseOverTriangle>=0) and (mouseOverCorner >= 0) then // highlight corner under cursor
       begin
-//        brush.Color := GetTriangleColor(mouseOverTriangle) shr 1 and $7f7f7f;
         ax := integer(round(ix + (MainTriangles[mouseOverTriangle].x[mouseOverCorner] - gCenterX) * sc));
         ay := integer(round(iy - (MainTriangles[mouseOverTriangle].y[mouseOverCorner] - gCenterY) * sc));
         Ellipse(ax - 4, ay - 4, ax + 4, ay + 4);
@@ -1141,19 +1144,11 @@ begin
       pen.Color:=clWhite;
       brush.Color:=clSilver;
       Ellipse(ax - 2, ay - 2, ax + 2, ay + 2);
-{
-      MoveTo(ax-3, ay);
-      LineTo(ax, ay-3);
-      LineTo(ax+3, ay);
-      LineTo(ax, ay+3);
-      LineTo(ax-3, ay);
-}
       // --
     end;
-//    GraphImage.Picture.Graphic := Bitmap;
-//    GraphImage.Refresh;
+    TriangleView.Canvas.Draw(0, 0, Bitmap);
   finally
-//    BitMap.Free;
+    BitMap.Free;
   end;
 end;
 
@@ -1161,22 +1156,25 @@ procedure TEditForm.FormCreate(Sender: TObject);
 var
   i: integer;
 begin
-//
-  TriangleGraph := TTriangleGraph.Create(self);
-  TriangleGraph.TabStop := True;
-  TriangleGraph.Parent := GrphPnl;
-  TriangleGraph.Align := alClient;
-  TriangleGraph.Visible := True;
+// Custom control setup
+  TriangleView := TCustomDrawControl.Create(self);
+  TriangleView.TabStop := True;
+  TriangleView.TabOrder := 0;
+  TriangleView.Parent := GrphPnl;
+  TriangleView.Align := alClient;
+  TriangleView.Visible := True;
 
-  TriangleGraph.OnDblClick := GraphImageDblClick;
-  TriangleGraph.OnMouseDown := GraphImageMouseDown;
-  TriangleGraph.OnMouseMove := GraphImageMouseMove;
-  TriangleGraph.OnMouseUp := GraphImageMouseUp;
-  TriangleGraph.OnMouseWheel := EditMouseWheel;
-  TriangleGraph.OnKeyDown := EditKeyDown;
+  TriangleView.OnPaint := TriangleViewPaint;
 
-//  TriangleGraph.PopupMenu := EditPopup;
-//  TriangleGraph.OnPaint :=
+  TriangleView.OnDblClick   := TriangleViewDblClick;
+  TriangleView.OnMouseDown  := TriangleViewMouseDown;
+  TriangleView.OnMouseMove  := TriangleViewMouseMove;
+  TriangleView.OnMouseUp    := TriangleViewMouseUp;
+  TriangleView.OnMouseWheel := TriangleViewMouseWheel;
+  TriangleView.OnKeyDown    := TriangleViewKeyDown;
+
+  TriangleView.OnEnter := rgPivotClicked; // hack:
+  TriangleView.OnExit  := rgPivotClicked; // there's only Invalidate() in there :)
 //
 
   for i:= 0 to NRVAR - 1 do begin
@@ -1187,7 +1185,7 @@ begin
     vleVariables.InsertRow(GetVariableNameAt(i), '0', True);
   end;
 
-  bm := TBitmap.Create;
+//  bm := TBitmap.Create;
   GraphZoom := 1;
 
   case EditPrevQual of
@@ -1216,7 +1214,7 @@ begin
     VarsCache[i] := MinDouble;
 end;
 
-procedure TEditForm.GraphImageMouseMove(Sender: TObject; Shift: TShiftState;
+procedure TEditForm.TriangleViewMouseMove(Sender: TObject; Shift: TShiftState;
   X, Y: integer);
 var
   vx, vy, fx, fy: double;
@@ -1226,7 +1224,7 @@ var
   d: double;
 label FoundCorner;
 begin
-  Scale(fx, fy, x, y, TriangleGraph.Width, TriangleGraph.Height);
+  Scale(fx, fy, x, y);
   // --Z--
   StatusBar.Panels[0].Text := Format('X: %f', [fx]);
   StatusBar.Panels[1].Text := Format('Y: %f', [fy]);
@@ -1265,16 +1263,16 @@ FoundCorner:
 
 
   if  (mouseOverTriangle >= 0) and (SelectMode or (mouseOverTriangle = SelectedTriangle)) then
-    TriangleGraph.Cursor := crHandPoint
+    TriangleView.Cursor := crHandPoint
   else
-    TriangleGraph.Cursor := crArrow;
+    TriangleView.Cursor := crArrow;
 
-  if graphDragMode then // graph panning
+  if viewDragMode then // graph panning
   begin
-    dragged := true;
+    viewDragged := true;
     GcenterX := GcenterX - (fx - oldx);
     GcenterY := GcenterY - (fy - oldy);
-    DrawGraph;
+    TriangleView.Refresh;
     exit;
   end;
 
@@ -1386,24 +1384,24 @@ FoundCorner:
     if (mouseOverTriangle >= 0) then
       StatusBar.Panels[2].Text := Format('Transform #%d', [mouseOverTriangle+1])
     else StatusBar.Panels[2].Text := '';
-    DrawGraph;
+    TriangleView.Refresh;;
   end
 end;
 
-procedure TEditForm.GraphImageMouseDown(Sender: TObject; Button: TMouseButton;
+procedure TEditForm.TriangleViewMouseDown(Sender: TObject; Button: TMouseButton;
   Shift: TShiftState; X, Y: integer);
 var
   d, fx, fy: double;
   i, j: integer;
 //label GotCorner;
 begin
-//  intoldx := x;
-//  intoldy := y;
+  TWinControl(Sender).SetFocus;
+
   CornerCaught := False;
   TriangleCaught := False;
-  dragged := false; // --Z--
-  Scale(fx, fy, x, y, TriangleGraph.Width, TriangleGraph.Height);
-  Shift := Shift - [ssLeft]; // --Z--
+  viewDragged := false;
+  Scale(fx, fy, x, y);
+  Shift := Shift - [ssLeft];
   if Button = mbLeft then
   begin
     if SelectMode = false then // Only change the selected triangle
@@ -1424,7 +1422,7 @@ begin
           CornerCaught := True;
           DrawPreview;
           ShowSelectedInfo;
-          DrawGraph;
+          TriangleView.Invalidate;
           exit;
 //
         end;
@@ -1449,7 +1447,7 @@ begin
             CornerCaught := True;
             DrawPreview;
             ShowSelectedInfo;
-            DrawGraph;
+            TriangleView.Invalidate;
             exit;
           end;
         end;
@@ -1478,32 +1476,32 @@ begin
 
     DrawPreview;
     ShowSelectedInfo;
-    DrawGraph;
+    TriangleView.Invalidate;
     exit;
   end
   else if Button = mbRight then // graph panning
   begin
-    SetCaptureControl(TriangleGraph);
+    SetCaptureControl(TriangleView);
     Screen.Cursor := crSizeAll;
 
-    graphDragMode := true;
+    viewDragMode := true;
     oldx := fx;
     oldY := fy;
   end;
 end;
 
-procedure TEditForm.GraphImageMouseUp(Sender: TObject; Button: TMouseButton;
+procedure TEditForm.TriangleViewMouseUp(Sender: TObject; Button: TMouseButton;
   Shift: TShiftState; X, Y: integer);
 begin
   if Button = mbRight then // --Z-- panning
   begin
-    graphDragMode := false;
-    if dragged=false then // haven't dragged - popup menu then
+    viewDragMode := false;
+    if viewDragged=false then // haven't dragged - popup menu then
     begin
       GetCursorPos(mousepos); // hmmm
       EditPopup.Popup(mousepos.x, mousepos.y);
     end
-    else dragged := false;
+    else viewDragged := false;
     Screen.Cursor := crDefault;
     SetCaptureControl(nil);
     exit;
@@ -1516,7 +1514,7 @@ begin
     UpdateFlame(true);
     HasChanged := False;
   end
-  else DrawGraph;
+  else TriangleView.Invalidate;
 end;
 
 {
@@ -1670,6 +1668,7 @@ begin
   pnlGridColor1.Color := GridColor1;
   pnlGridColor2.Color := GridColor2;
   pnlReference.color := TColor(ReferenceTriangleColor);
+
   UpdateDisplay;
 end;
 
@@ -1723,27 +1722,7 @@ end;
 procedure TEditForm.mnuAutoZoomClick(Sender: TObject);
 begin
   AutoZoom;
-  DrawGraph;
 end;
-{
-procedure TEditForm.mnuXFlipClick(Sender: TObject);
-begin
-//  MainTriangles[SelectedTriangle] := FlipTriangleHorizontal(MainTriangles[SelectedTriangle]);
-  with MainTriangles[SelectedTriangle] do // --Z--
-  begin
-    x[0] := GetPivot.x - x[0];
-    x[1] := x[1];
-    x[2] := x[2];
-  end;
-  UpdateFlame(True);
-end;
-
-procedure TEditForm.mnuYFlipClick(Sender: TObject);
-begin
-  MainTriangles[SelectedTriangle] := FlipTriangleVertical(MainTriangles[SelectedTriangle]);
-  UpdateFlame(True);
-end;
-}
 
 procedure TEditForm.btnCloseClick(Sender: TObject);
 begin
@@ -1753,7 +1732,6 @@ end;
 procedure TEditForm.FormResize(Sender: TObject);
 begin
   Autozoom;
-  DrawGraph;
 end;
 
 procedure TEditForm.CornerEditExit(Sender: TObject);
@@ -1992,7 +1970,7 @@ end;
 
 procedure TEditForm.FormDestroy(Sender: TObject);
 begin
-  bm.free;
+//  bm.free;
   cp.free;
   Render.free;
 end;
@@ -2104,17 +2082,16 @@ begin
   UpdateFlame(True);
 end;
 
-procedure TEditForm.GraphImageDblClick(Sender: TObject);
+procedure TEditForm.TriangleViewDblClick(Sender: TObject);
 begin
   AutoZoom;
-  DrawGraph;
 end;
 
 procedure TEditForm.cbTransformsChange(Sender: TObject);
 begin
   if SelectedTriangle <> cbTransforms.ItemIndex then SelectedTriangle := cbTransforms.ItemIndex;
   ShowSelectedInfo;
-  DrawGraph;
+  TriangleView.Invalidate;
 end;
 
 procedure TEditForm.cbTransformsDrawItem(Control: TWinControl;
@@ -2304,13 +2281,13 @@ end;
 procedure TEditForm.chkUseXFormColorClick(Sender: TObject);
 begin
   UseTransformColors := chkUseXFormColor.checked;
-  DrawGraph;
+  TriangleView.Invalidate;
 end;
 
 procedure TEditForm.chkFlameBackClick(Sender: TObject);
 begin
   UseFlameBackground := chkFlameBack.checked;
-  DrawGraph;
+  TriangleView.Invalidate;
 end;
 
 procedure TEditForm.pnlBackColorClick(Sender: TObject);
@@ -2321,7 +2298,7 @@ begin
     pnlBackColor.Color := AdjustForm.ColorDialog.Color;
     BackgroundColor := Integer(pnlBackColor.color);
     GrphPnl.Color := BackgroundColor;
-    DrawGraph;
+    TriangleView.Invalidate;
   end;
 end;
 
@@ -2332,7 +2309,7 @@ begin
   begin
     pnlReference.Color := AdjustForm.ColorDialog.Color;
     ReferenceTriangleColor := Integer(pnlReference.color);
-    DrawGraph;
+    TriangleView.Invalidate;
   end;
 end;
 
@@ -2343,7 +2320,7 @@ begin
   begin
     pnlGridColor1.Color := AdjustForm.ColorDialog.Color;
     GridColor1 := Integer(pnlGridColor1.color);
-    DrawGraph;
+    TriangleView.Invalidate;
   end;
 end;
 
@@ -2354,7 +2331,7 @@ begin
   begin
     pnlGridColor2.Color := AdjustForm.ColorDialog.Color;
     GridColor2 := Integer(pnlGridColor2.color);
-    DrawGraph;
+    TriangleView.Invalidate;
   end;
 end;
 
@@ -2772,11 +2749,10 @@ begin
   end;
 end;
 
-procedure TEditForm.editKeyDown(Sender: TObject; var Key: Word;
+procedure TEditForm.TriangleViewKeyDown(Sender: TObject; var Key: Word;
  Shift: TShiftState);
 var
   coeff: double;
-label goNext;
 begin
   if Shift = [ssShift] then coeff := 10
   else if Shift = [ssCtrl] then coeff := 0.1
@@ -2784,47 +2760,36 @@ begin
 
 //  if (PageControl.TabIndex <> 2) or    // variations
 //     (PageControl.TabIndex <> 3) then  // variables
-  begin
-//    MainForm.UpdateUndo;
-    case key of
-      VK_LEFT:
-        if Shift = [ssAlt] then btTrgRotateLeftClick(Sender)
-        else TrgMove(-coeff,0);
-      VK_RIGHT:
-        if Shift = [ssAlt] then btTrgRotateRightClick(Sender)
-        else TrgMove(coeff,0);
-      VK_UP:
-        if Shift = [ssAlt] then btTrgScaleUpClick(Sender)
-        else TrgMove(0,coeff);
-      VK_DOWN:
-        if Shift = [ssAlt] then btTrgScaleDownClick(Sender)
-        else TrgMove(0,-coeff);
-      VK_PRIOR: btTrgRotateLeftClick(Sender);
-      VK_NEXT: btTrgRotateRightClick(Sender);
-      VK_HOME: btTrgScaleUpClick(Sender);
-      VK_END: btTrgScaleDownClick(Sender);
-      VK_INSERT: mnuDupClick(Sender);
-      VK_DELETE: {if Shift = [ssShift] then} mnuDeleteClick(Sender);
-      else goto goNext;
-    end;
-//    HasChanged := True;
-    key_handled:=true;
-    exit;
-  end;
-
-goNext:
-
   case key of
+    VK_LEFT:
+    if Shift = [ssAlt] then btTrgRotateLeftClick(Sender)
+    else TrgMove(-coeff,0);
+    VK_RIGHT:
+      if Shift = [ssAlt] then btTrgRotateRightClick(Sender)
+      else TrgMove(coeff,0);
+    VK_UP:
+      if Shift = [ssAlt] then btTrgScaleUpClick(Sender)
+      else TrgMove(0,coeff);
+    VK_DOWN:
+      if Shift = [ssAlt] then btTrgScaleDownClick(Sender)
+      else TrgMove(0,-coeff);
+    VK_PRIOR: btTrgRotateLeftClick(Sender);
+    VK_NEXT: btTrgRotateRightClick(Sender);
+    VK_HOME: btTrgScaleUpClick(Sender);
+    VK_END: btTrgScaleDownClick(Sender);
+    VK_INSERT: mnuDupClick(Sender);
+    VK_DELETE: {if Shift = [ssShift] then} mnuDeleteClick(Sender);
+
     VK_ADD:
       if SelectedTriangle < Transforms-1 then begin
         Inc(SelectedTriangle);
-        DrawGraph;
+        TriangleView.Invalidate;
         ShowSelectedInfo;
       end;
     VK_SUBTRACT:
       if SelectedTriangle > 0 then begin
         Dec(SelectedTriangle);
-        DrawGraph;
+        TriangleView.Invalidate;
         ShowSelectedInfo;
       end;
     VK_SPACE: EditForm.tbSelectClick(Sender);
@@ -2844,11 +2809,9 @@ goNext:
     Ord('V'): EditForm.rgPivot.ItemIndex:=3;
     Ord('B'): EditForm.rgPivot.ItemIndex:=4;
   else
-    key_handled := false;
     exit;
   end;
   key := 0;
-  key_handled := true;
 end;
 
 procedure TEditForm.editKeyPress(Sender: TObject; var Key: Char);
@@ -2881,14 +2844,14 @@ begin
   SetCursorPos(MousePos.x, MousePos.y);
 end;
 
-procedure TEditForm.editMouseWheel(Sender: TObject; Shift: TShiftState;
+procedure TEditForm.TriangleViewMouseWheel(Sender: TObject; Shift: TShiftState;
   WheelDelta: Integer; MousePos: TPoint; var Handled: Boolean);
 begin
   if WheelDelta > 0 then GraphZoom := GraphZoom * 1.25
   else GraphZoom := GraphZoom * 0.8;
   EditForm.StatusBar.Panels[2].Text := Format('Zoom: %f', [GraphZoom]);
 
-  DrawGraph;
+  TriangleView.Invalidate;
   Handled := true;
 end;
 
@@ -2902,16 +2865,8 @@ end;
 
 procedure TEditForm.rgPivotClicked(Sender: TObject);
 begin
-  DrawGraph;
+  TriangleView.Invalidate;
 end;
-
-{
-procedure TEditForm.VEVarsSelectCell(Sender: TObject; ACol, ARow: Integer;
-  var CanSelect: Boolean);
-begin
-  DrawGraph;
-end;
-}
 
 procedure TEditForm.tbEditModeClick(Sender: TObject);
 begin
@@ -3022,11 +2977,6 @@ begin
     end;
   //inherited;
 }
-end;
-
-procedure TEditForm.cbKeyDown(Sender: TObject; var Key: Word; Shift: TShiftState);
-begin
-  key:=0;
 end;
 
 procedure TEditForm.tbFullViewClick(Sender: TObject);

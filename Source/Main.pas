@@ -2444,8 +2444,7 @@ end;
 
 procedure TMainForm.mnuAutoZoomClick(Sender: TObject);
 begin
-  EditForm.AutoZoom;
-  EditForm.DrawGraph;
+  EditForm.AutoZoom; // redraw included
 end;
 
 function GradTitle(str: string): string;

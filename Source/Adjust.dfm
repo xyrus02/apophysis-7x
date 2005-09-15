@@ -173,7 +173,7 @@ object AdjustForm: TAdjustForm
     Top = 133
     Width = 390
     Height = 131
-    ActivePage = TabSheet3
+    ActivePage = TabSheet1
     Align = alBottom
     TabOrder = 1
     object TabSheet1: TTabSheet
@@ -450,6 +450,7 @@ object AdjustForm: TAdjustForm
         Top = 76
         Width = 113
         Height = 21
+        Cursor = crHandPoint
         BevelOuter = bvLowered
         Color = clBlack
         TabOrder = 6

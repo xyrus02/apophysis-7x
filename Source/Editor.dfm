@@ -417,11 +417,9 @@ object EditForm: TEditForm
           Color = clBlack
           DropDownCount = 12
           ItemHeight = 13
-          TabOrder = 1
-          TabStop = False
+          TabOrder = 0
           OnChange = cbTransformsChange
           OnDrawItem = cbTransformsDrawItem
-          OnKeyDown = cbKeyDown
         end
         object PageControl: TPageControl
           Left = 1
@@ -432,7 +430,7 @@ object EditForm: TEditForm
           Align = alBottom
           Anchors = [akLeft, akTop, akRight, akBottom]
           MultiLine = True
-          TabOrder = 0
+          TabOrder = 1
           TabStop = False
           object TriangleTab: TTabSheet
             Caption = 'Triangle'
@@ -1419,6 +1417,7 @@ object EditForm: TEditForm
                 Top = 72
                 Width = 129
                 Height = 17
+                Cursor = crHandPoint
                 BevelOuter = bvLowered
                 Color = clBlack
                 TabOrder = 0
@@ -1448,6 +1447,7 @@ object EditForm: TEditForm
                 Top = 152
                 Width = 129
                 Height = 17
+                Cursor = crHandPoint
                 BevelOuter = bvLowered
                 Color = clGray
                 TabOrder = 3
@@ -1458,6 +1458,7 @@ object EditForm: TEditForm
                 Top = 112
                 Width = 62
                 Height = 17
+                Cursor = crHandPoint
                 BevelOuter = bvLowered
                 Color = clBlack
                 TabOrder = 4
@@ -1468,6 +1469,7 @@ object EditForm: TEditForm
                 Top = 112
                 Width = 62
                 Height = 17
+                Cursor = crHandPoint
                 BevelOuter = bvLowered
                 Color = clBlack
                 TabOrder = 5
