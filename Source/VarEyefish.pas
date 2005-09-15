@@ -24,13 +24,11 @@ uses
 ///////////////////////////////////////////////////////////////////////////////
 procedure TVariationEyefish.CalcFunction;
 var
-  Flength, r: double;
+  r: double;
 begin
-  Flength := sqrt(FTx^ * FTx^ + FTy^ * FTy^);
-
-  r := 2 * Flength / (Flength + 1);
-  FPx^ := FPx^ + vvar * r * FTx^ / Flength;
-  FPy^ := FPy^ + vvar * r * FTy^ / Flength;
+  r := 2 / (sqrt(FTx^ * FTx^ + FTy^ * FTy^) + 1);
+  FPx^ := FPx^ + vvar * r * FTx^;
+  FPy^ := FPy^ + vvar * r * FTy^;
 end;
 
 ///////////////////////////////////////////////////////////////////////////////
