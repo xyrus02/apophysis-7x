@@ -1291,8 +1291,7 @@ object EditForm: TEditForm
                 'Variation'
                 'Value')
               OnDblClick = VEVarsDblClick
-              OnDrawCell = VEVarsDrawCell
-              OnExit = VEVarsExit
+              OnExit = VEVarsChange
               OnKeyPress = VEVarsKeyPress
               OnMouseDown = VEVarsMouseDown
               OnMouseMove = VEVarsMouseMove
@@ -1310,15 +1309,19 @@ object EditForm: TEditForm
               Left = 0
               Top = 0
               Width = 162
-              Height = 312
+              Height = 322
               Align = alClient
               ScrollBars = ssVertical
               TabOrder = 0
               TitleCaptions.Strings = (
-                'Variation'
+                'Variable'
                 'Value')
+              OnDblClick = VEVarsDblClick
               OnExit = vleVariablesExit
               OnKeyPress = vleVariablesKeyPress
+              OnMouseDown = VEVarsMouseDown
+              OnMouseMove = VEVarsMouseMove
+              OnMouseUp = VEVarsMouseUp
               OnValidate = vleVariablesValidate
               ColWidths = (
                 93

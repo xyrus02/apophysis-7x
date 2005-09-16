@@ -155,9 +155,11 @@ type
     ColorImage: TImage;
     TabSheet4: TTabSheet;
     vleVariables: TValueListEditor;
+    procedure ValidateVariable;
     procedure vleVariablesValidate(Sender: TObject; ACol, ARow: Integer; const KeyName, KeyValue: string);
     procedure vleVariablesKeyPress(Sender: TObject; var Key: Char);
     procedure vleVariablesExit(Sender: TObject);
+
     procedure FormCreate(Sender: TObject);
     procedure TriangleViewMouseMove(Sender: TObject; Shift: TShiftState; X,
       Y: integer);
@@ -209,11 +211,6 @@ type
     procedure txtSymmetryExit(Sender: TObject);
     procedure txtSymmetryKeyPress(Sender: TObject; var Key: Char);
 
-    procedure VEVarsKeyPress(Sender: TObject; var Key: Char);
-    procedure VEVarsExit(Sender: TObject);
-    procedure VEVarsValidate(Sender: TObject; ACol, ARow: Integer;
-      const KeyName, KeyValue: String);
-
     procedure btTrgRotateLeftClick(Sender: TObject);
     procedure btTrgRotateRightClick(Sender: TObject);
     procedure btTrgRotateLeft90Click(Sender: TObject);
@@ -238,6 +235,12 @@ type
     procedure pnlGridColor1Click(Sender: TObject);
     procedure pnlGridColor2Click(Sender: TObject);
 
+    procedure ValidateVariation;
+//    procedure ValidateValue(Sender: TObject);
+    procedure VEVarsKeyPress(Sender: TObject; var Key: Char);
+    procedure VEVarsChange(Sender: TObject);
+    procedure VEVarsValidate(Sender: TObject; ACol, ARow: Integer;
+      const KeyName, KeyValue: String);
     procedure VEVarsMouseDown(Sender: TObject; Button: TMouseButton;
       Shift: TShiftState; X, Y: Integer);
     procedure VEVarsMouseMove(Sender: TObject; Shift: TShiftState; X,
@@ -245,8 +248,10 @@ type
     procedure VEVarsMouseUp(Sender: TObject; Button: TMouseButton;
       Shift: TShiftState; X, Y: Integer);
     procedure VEVarsDblClick(Sender: TObject);
-    procedure VEVarsDrawCell(Sender: TObject; ACol, ARow: Integer;
-      Rect: TRect; State: TGridDrawState);
+//    procedure VEVarsDrawCell(Sender: TObject; ACol, ARow: Integer;
+//      Rect: TRect; State: TGridDrawState);
+//    procedure VEVarsSetEditText(Sender: TObject; ACol, ARow: Integer;
+//      const Value: String);
 
     procedure cbTransformsDrawItem(Control: TWinControl; Index: Integer;
       Rect: TRect; State: TOwnerDrawState);
@@ -293,7 +298,7 @@ type
     // --Z--
     olddist: double;
     Pivot: TSPoint;
-    VarsCache: array[0..64] of double; // hack
+    VarsCache: array[0..64] of double; // hack: to prevent slow valuelist redraw
 
     colorDrag, colorChanged: boolean;
     colorDragX, colorOldX: integer;
@@ -622,7 +627,7 @@ var
   i: integer;
   a, b, c, d, e, f: double;
   v: double;
-  val: double;
+  strval: string;
 begin
   t := SelectedTriangle; // why 't' ?
 
@@ -682,8 +687,11 @@ begin
   end;
 
   for i:= 0 to GetNrVariableNames - 1 do begin
-    EditForm.cp.xform[SelectedTriangle].GetVariable(GetVariableNameAt(i), val);
-    EditForm.vleVariables.Values[GetVariableNameAt(i)] := Format('%.6g', [val]);
+    cp.xform[SelectedTriangle].GetVariable(GetVariableNameAt(i), v);
+    strval := Format('%.6g', [v]);
+    // kinda funny, but it's really helped...
+    if vleVariables.Values[GetVariableNameAt(i)] <> strval then
+      vleVariables.Values[GetVariableNameAt(i)] := strval;
   end;
 end;
 
@@ -2446,49 +2454,13 @@ begin
   end;
 end;
 
-procedure TEditForm.VEVarsKeyPress(Sender: TObject; var Key: Char);
-var
-  Allow: boolean;
-  i: integer;
-  NewVal, OldVal: double;
-begin
-  if key = #13 then
-  begin
-    key := #0;
-    Allow := True;
+// -- Variation List Editor ----------------------------------------------------
 
-    i := EditForm.VEVars.Row - 1;
+// --Z-- Guys, you are STRANGE! ;)
+// to write the same code THREE times in a row!?! 8-()
+// and in two places! 8-)
 
-    OldVal := Round6(cp.xform[SelectedTriangle].vars[i]);
-  { Test that it's a valid floating point number }
-    try
-      StrToFloat(VEVars.Values[VarNames(i)]);
-    except on Exception do
-      begin
-      { It's not, so we restore the old value }
-        VEVars.Values[VarNames(i)] := Format('%.6g', [OldVal]);
-        Allow := False;
-      end;
-    end;
-    NewVal := Round6(StrToFloat(VEVars.Values[VarNames(i)]));
-//    if NewVal < 0 then NewVal := 0;
-    VEVars.Values[VarNames(i)] := Format('%.6g', [NewVal]);
-
-  { If it's not the same as the old value and it was valid }
-    if (NewVal <> OldVal) and Allow then
-    begin
-      MainForm.UpdateUndo;
-//      EditedVariation := i;
-      cp.xform[SelectedTriangle].vars[i] := NewVal;
-//      VarNormalize(cp);
-      VEVars.Values[VarNames(i)] := Format('%.6g', [cp.xform[SelectedTriangle].vars[i]]);
-      ShowSelectedInfo;
-      UpdateFlame(True);
-    end;
-  end;
-end;
-
-procedure TEditForm.VEVarsExit(Sender: TObject);
+procedure TEditForm.ValidateVariation;
 var
   Allow: boolean;
   i: integer;
@@ -2496,45 +2468,9 @@ var
 begin
   Allow := True;
 
-  i := EditForm.VEVars.Row - 1;
+  i := VEVars.Row - 1;
 
-  OldVal := Round6(cp.xform[SelectedTriangle].vars[i]);
-{ Test that it's a valid floating point number }
-  try
-    StrToFloat(VEVars.Values[VarNames(i)]);
-  except on Exception do
-    begin
-    { It's not, so we restore the old value }
-      VEVars.Values[VarNames(i)] := Format('%.6g', [OldVal]);
-      Allow := False;
-    end;
-  end;
-  NewVal := Round6( StrToFloat(VEVars.Values[VarNames(i)]) );
-  VEVars.Values[VarNames(i)] := Format('%.6g', [NewVal]);
-
-{ If it's not the same as the old value and it was valid }
-  if (NewVal <> OldVal) and Allow then
-  begin
-    MainForm.UpdateUndo;
-//    EditedVariation := i;
-    cp.xform[SelectedTriangle].vars[i] := NewVal;
-    VEVars.Values[VarNames(i)] := Format('%.6g', [cp.xform[SelectedTriangle].vars[i]]);
-    ShowSelectedInfo;
-    UpdateFlame(True);
-  end;
-end;
-
-procedure TEditForm.VEVarsValidate(Sender: TObject; ACol, ARow: Integer; const KeyName, KeyValue: String);
-var
-  Allow: boolean;
-  i: integer;
-  NewVal, OldVal: double;
-begin
-  Allow := True;
-
-  i := EditForm.VEVars.Row - 1;
-
-  OldVal := Round6(cp.xform[SelectedTriangle].vars[i]);
+  OldVal := cp.xform[SelectedTriangle].vars[i];
 { Test that it's a valid floating point number }
   try
     StrToFloat(VEVars.Values[VarNames(i)]);
@@ -2546,21 +2482,220 @@ begin
     end;
   end;
   NewVal := Round6(StrToFloat(VEVars.Values[VarNames(i)]));
-//    if NewVal < 0 then NewVal := 0;
   VEVars.Values[VarNames(i)] := Format('%.6g', [NewVal]);
 
 { If it's not the same as the old value and it was valid }
   if (NewVal <> OldVal) and Allow then
   begin
     MainForm.UpdateUndo;
-//    EditedVariation := i;
     cp.xform[SelectedTriangle].vars[i] := NewVal;
-//      VarNormalize(cp);
     VEVars.Values[VarNames(i)] := Format('%.6g', [cp.xform[SelectedTriangle].vars[i]]);
     ShowSelectedInfo;
     UpdateFlame(True);
   end;
 end;
+
+(*
+
+// here's another way to do this -
+// we could use it with variables value editor,
+// only if we had an *array* of variables
+
+type
+  TDblArray = array of double;
+  PDblArray = ^TDblArray;
+
+procedure ValidateValue(Sender: TValueListEditor; values: PDblArray);
+var
+  Allow: boolean;
+  i: integer;
+  NewVal, OldVal: double;
+begin
+  Allow := True;
+
+  i := Sender.Row - 1;
+
+  OldVal := values^[i];
+{ Test that it's a valid floating point number }
+  try
+    StrToFloat(Sender.Values[VarNames(i)]);
+  except on Exception do
+    begin
+    { It's not, so we restore the old value }
+      Sender.Values[VarNames(i)] := Format('%.6g', [OldVal]);
+      Allow := False;
+    end;
+  end;
+  NewVal := Round6(StrToFloat(Sender.Values[VarNames(i)]));
+  Sender.Values[VarNames(i)] := Format('%.6g', [NewVal]);
+
+{ If it's not the same as the old value and it was valid }
+  if (NewVal <> OldVal) and Allow then
+  begin
+    MainForm.UpdateUndo;
+    values^[i] := NewVal;
+    Sender.Values[VarNames(i)] := Format('%.6g', [values^[i]]);
+    EditForm.ShowSelectedInfo;
+    EditForm.UpdateFlame(True);
+  end;
+end;
+*)
+
+procedure TEditForm.VEVarsKeyPress(Sender: TObject; var Key: Char);
+begin
+  if key = #13 then
+  begin
+    key := #0;
+    ValidateVariation;
+  end;
+end;
+
+procedure TEditForm.VEVarsChange(Sender: TObject);
+begin
+  ValidateVariation;
+end;
+
+procedure TEditForm.VEVarsValidate(Sender: TObject; ACol, ARow: Integer; const KeyName, KeyValue: String);
+begin
+  ValidateVariation;
+end;
+
+// -- ValueList mouse stuff ----------------------------------------------------
+
+procedure TEditForm.VEVarsMouseDown(Sender: TObject; Button: TMouseButton;
+  Shift: TShiftState; X, Y: Integer);
+var
+  cell: TGridCoord;
+begin
+  if Button = mbLeft then begin
+    cell := TValueListEditor(Sender).MouseCoord(x, y);
+
+    if (cell.y < 1) or (cell.y >= TValueListEditor(Sender).RowCount) or
+       (cell.x <> 0) then exit;
+
+    TValueListEditor(Sender).Row := cell.Y;
+
+    varDragIndex := cell.Y-1;
+
+    Screen.Cursor := crHSplit;
+
+    GetCursorPos(mousepos); // hmmm
+
+    varDragMode:=true;
+    varDragPos:=x;
+    SetCaptureControl(TValueListEditor(Sender));
+
+    HasChanged := False;
+  end;
+end;
+
+procedure TEditForm.VEVarsMouseMove(Sender: TObject; Shift: TShiftState; X,
+  Y: Integer);
+var
+  v: double;
+  cell: TGridCoord;
+begin
+  cell := TValueListEditor(Sender).MouseCoord(x, y);
+  if (cell.Y > 0) and (cell.X = 0) then TValueListEditor(Sender).Cursor := crHandPoint
+  else TValueListEditor(Sender).Cursor := crDefault;
+
+  if varMM then // hack
+  begin
+    varMM:=false;
+    varDragPos:=x;
+  end
+  else
+  if varDragMode and (x <> varDragPos) then
+  begin
+//  v := StrToFloat(TValueListEditor(Sender).Values[VarNames(varDragIndex)]);
+    if Sender = VEVars then
+      v := cp.xform[SelectedTriangle].vars[varDragIndex]
+    else
+      cp.xform[SelectedTriangle].GetVariable(vleVariables.Keys[varDragIndex+1], v);
+    v := {RoundTo(} v + ((x-varDragPos)*2)/1000.0; {, -6)};
+
+    varDragPos:=x;
+    SetCursorPos(MousePos.x, MousePos.y); // hmmm
+    varMM:=true;
+
+    //cp.xform[SelectedTriangle].vars[varDragIndex] := v;
+    if Sender = VEVars then
+    begin
+      cp.xform[SelectedTriangle].vars[varDragIndex] := v;
+      TValueListEditor(Sender).Values[VarNames(varDragIndex)] := Format('%.6g', [v]);
+    end
+    else begin
+      cp.xform[SelectedTriangle].SetVariable(vleVariables.Keys[varDragIndex+1], v);
+      vleVariables.Values[vleVariables.Keys[varDragIndex+1]] := Format('%.6g', [v]);
+    end;
+
+    HasChanged := True;
+    UpdateFlameX;
+  end;
+end;
+
+procedure TEditForm.VEVarsMouseUp(Sender: TObject; Button: TMouseButton;
+  Shift: TShiftState; X, Y: Integer);
+begin
+  if Button <> mbLeft then exit;
+  SetCaptureControl(nil);
+  if varDragMode then
+  begin
+    varDragMode:=false;
+    Screen.Cursor := crDefault;
+
+    if HasChanged then
+    begin
+      MainForm.UpdateUndo;
+
+      //...(?)
+      UpdateFlame(true);
+      HasChanged := False;
+    end;
+  end;
+end;
+
+procedure TEditForm.VEVarsDblClick(Sender: TObject);
+var
+  v: double;
+begin
+  if TValueListEditor(Sender).Values[VarNames(varDragIndex)] = '0' then exit;
+
+//begin
+//  if cp.xform[SelectedTriangle].vars[varDragIndex] = 0 then exit;
+
+  MainForm.UpdateUndo;
+//  cp.xform[SelectedTriangle].vars[varDragIndex] := 0;
+  if Sender = VEVars then
+  begin
+    cp.xform[SelectedTriangle].vars[varDragIndex] := 0;
+    VEVars.Values[VarNames(varDragIndex)] := '0';
+  end
+  else begin
+    v := 0; // <<<----- hey!!! why it's 'var' in SETvariable???
+    cp.xform[SelectedTriangle].SetVariable(vleVariables.Keys[varDragIndex+1], v);
+    vleVariables.Values[vleVariables.Keys[varDragIndex+1]] := '0';
+  end;
+
+  UpdateFlameX;
+end;
+
+{
+procedure TEditForm.VEVarsSetEditText(Sender: TObject; ACol, ARow: Integer;
+  const Value: String);
+var
+  v: double;
+begin
+  try
+    v := RoundTo(StrToFloat(Value), -3);
+  except
+    v := 0;
+  end;
+  cp.xform[SelectedTriangle].vars[ARow-1] := v;
+  TValueListEditor(Sender).refresh;
+  UpdateFlameX;
+end;
+}
 
 { **************************************************************************** }
 
@@ -2878,107 +3013,6 @@ begin
   tbScale.Down := (editMode = modeScale);
 end;
 
-// --Z-- Variation List Editor
-
-procedure TEditForm.VEVarsMouseDown(Sender: TObject; Button: TMouseButton;
-  Shift: TShiftState; X, Y: Integer);
-var
-  cell: TGridCoord;
-begin
-  if Button = mbLeft then begin
-    cell:=VEVars.MouseCoord(x, y);
-    VEVars.Row := cell.Y;
-    varDragIndex := cell.Y-1;
-    Screen.Cursor := crHSplit;
-
-    GetCursorPos(mousepos); // hmmm
-
-    varDragMode:=true;
-    varDragPos:=x;
-    SetCaptureControl(VEVars);
-
-    HasChanged := False;
-  end;
-end;
-
-procedure TEditForm.VEVarsMouseMove(Sender: TObject; Shift: TShiftState; X,
-  Y: Integer);
-var
-  v: double;
-  cell: TGridCoord;
-begin
-  cell := VEVars.MouseCoord(x, y);
-  if (cell.Y > 0) and (cell.X = 0) then VEVars.Cursor := crHandPoint
-  else VEVars.Cursor := crDefault;
-
-  if varMM then // hack
-  begin
-    varMM:=false;
-    varDragPos:=x;
-  end
-  else
-  if varDragMode and (x <> varDragPos) then
-  begin
-    v := cp.xform[SelectedTriangle].vars[varDragIndex];
-    v := RoundTo(v + ((x-varDragPos)*2)/1000.0, -3);
-
-    varDragPos:=x;
-    SetCursorPos(MousePos.x, MousePos.y); // hmmm
-    varMM:=true;
-
-    cp.xform[SelectedTriangle].vars[varDragIndex] := v;
-    VEVars.Values[VarNames(varDragIndex)] := Format('%.6g', [v]);
-
-    HasChanged := True;
-    UpdateFlameX;
-  end;
-end;
-
-procedure TEditForm.VEVarsMouseUp(Sender: TObject; Button: TMouseButton;
-  Shift: TShiftState; X, Y: Integer);
-begin
-  if Button <> mbLeft then exit;
-  SetCaptureControl(nil);
-  if varDragMode then
-  begin
-    varDragMode:=false;
-    Screen.Cursor := crDefault;
-
-    if HasChanged then
-    begin
-      MainForm.UpdateUndo;
-      UpdateFlame(true);
-      HasChanged := False;
-    end;
-  end;
-end;
-
-procedure TEditForm.VEVarsDblClick(Sender: TObject);
-begin
-  if cp.xform[SelectedTriangle].vars[varDragIndex] = 0 then exit;
-
-  MainForm.UpdateUndo;
-  cp.xform[SelectedTriangle].vars[varDragIndex] := 0;
-  VEVars.Values[VarNames(varDragIndex)] := '0';
-  HasChanged := True;
-  UpdateFlameX;
-end;
-
-procedure TEditForm.VEVarsDrawCell(Sender: TObject; ACol, ARow: Integer;
-  Rect: TRect; State: TGridDrawState);
-begin
-{
-  if ARow = VEVars.Row then
-    with VEVars.Canvas do
-    begin
-      Brush.Color := clHighlight;
-      FillRect(Rect);
-//      VEVars.Refresh;
-    end;
-  //inherited;
-}
-end;
-
 procedure TEditForm.tbFullViewClick(Sender: TObject);
 begin
   MainForm.mnuFullScreenClick(Sender);
@@ -3042,7 +3076,15 @@ begin
   end;
 end;
 
-procedure TEditForm.vleVariablesExit(Sender: TObject);
+//-- Variable List -------------------------------------------------------------
+
+// --Z-- hmmmm!
+// this procedure is EXACT copy of ValidateVariation,
+// the only difference is Set/Get-Variable instead of array access,
+// which kinda is not good! :-\
+// I think we should make an array of variables, maybe just for the editor...
+
+procedure TEditForm.ValidateVariable;
 var
   Allow: boolean;
   i: integer;
@@ -3076,6 +3118,11 @@ begin
     ShowSelectedInfo;
     UpdateFlame(True);
   end;
+end;
+
+procedure TEditForm.vleVariablesExit(Sender: TObject);
+begin
+  ValidateVariable;
 end;
 
 procedure TEditForm.vleVariablesKeyPress(Sender: TObject; var Key: Char);
@@ -3084,75 +3131,15 @@ var
   i: integer;
   NewVal, OldVal: double;
 begin
-  if key <> #13 then
-    Exit;
-
+  if key <> #13 then Exit;
   key := #0;
 
-  Allow := True;
-
-  i := vleVariables.Row;
-
-  cp.xform[SelectedTriangle].GetVariable(vleVariables.Keys[i], OldVal);
-  { Test that it's a valid floating point number }
-  try
-    StrToFloat(vleVariables.Values[vleVariables.Keys[i]]);
-  except on Exception do
-    begin
-    { It's not, so we restore the old value }
-      vleVariables.Values[vleVariables.Keys[i]] := Format('%.6g', [OldVal]);
-      Allow := False;
-    end;
-  end;
-
-  NewVal := Round6(StrToFloat(vleVariables.Values[vleVariables.Keys[i]]));
-  vleVariables.Values[vleVariables.Keys[i]] := Format('%.6g', [NewVal]);
-
-  { If it's not the same as the old value and it was valid }
-  if (NewVal <> OldVal) and Allow then
-  begin
-    MainForm.UpdateUndo;
-    cp.xform[SelectedTriangle].SetVariable(vleVariables.Keys[i], NewVal);
-    vleVariables.Values[vleVariables.Keys[i]] := Format('%.6g', [NewVal]);
-    ShowSelectedInfo;
-    UpdateFlame(True);
-  end;
+  ValidateVariable;
 end;
 
 procedure TEditForm.vleVariablesValidate(Sender: TObject; ACol, ARow: Integer; const KeyName, KeyValue: string);
-var
-  Allow: boolean;
-  i: integer;
-  NewVal, OldVal: double;
 begin
-  Allow := True;
-
-  i := vleVariables.Row;
-
-  cp.xform[SelectedTriangle].GetVariable(vleVariables.Keys[i], OldVal);
-  { Test that it's a valid floating point number }
-  try
-    StrToFloat(vleVariables.Values[vleVariables.Keys[i]]);
-  except on Exception do
-    begin
-    { It's not, so we restore the old value }
-      vleVariables.Values[vleVariables.Keys[i]] := Format('%.6g', [OldVal]);
-      Allow := False;
-    end;
-  end;
-
-  NewVal := Round6(StrToFloat(vleVariables.Values[vleVariables.Keys[i]]));
-  vleVariables.Values[vleVariables.Keys[i]] := Format('%.6g', [NewVal]);
-
-  { If it's not the same as the old value and it was valid }
-  if (NewVal <> OldVal) and Allow then
-  begin
-    MainForm.UpdateUndo;
-    cp.xform[SelectedTriangle].SetVariable(vleVariables.Keys[i], NewVal);
-    vleVariables.Values[vleVariables.Keys[i]] := Format('%.6g', [NewVal]);
-    ShowSelectedInfo;
-    UpdateFlame(True);
-  end;
+  ValidateVariable;
 end;
 
 end.
