@@ -452,7 +452,8 @@ var
   dx, dy: double;
   sinr, cosr: extended;
 begin
-  dx := exp(FTx)/ 2.718281828459045;
+  dx := exp(FTx - 1); // exp(FTx)/ 2.718281828459045;
+  // --Z-- (e^x)/e = e^(x-1), isn't it?!
   dy := PI * FTy;
   SinCos(dy, sinr, cosr);
   FPx := FPx + vars[18] * cosr * dx;

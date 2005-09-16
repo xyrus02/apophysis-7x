@@ -88,8 +88,8 @@ begin
     FHigh := Value;
     Result := True;
   end else if Name = 'blob_waves' then begin
-    Value := Round(Value);
-    FWaves := Value;
+    //???????????? what for?: // Value := Round(Value);
+    FWaves := Round(Value);
     Result := True;
   end
 end;
