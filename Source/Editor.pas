@@ -333,12 +333,12 @@ type
   end;
 
 const
-  clr: array[-1..15] of TColor = (clGray,
-    clYellow, $ff55ff, clRed,  clLime, clAqua, clGreen, $007fff, clNavy,
-    clOlive, clPurple, clTeal, clBlue, clFuchsia, clMoneyGreen, clSkyBlue, clCream);
+  TrgColors: array[-1..13] of TColor = (clGray,
+    $0000ff, $007fff, $00ffff, $33ff33, $ffff00, $ff3333, $ff55ff,
+    $aa00ff, $55aaff, $aaffff, $aaffaa, $ffffaa, $ffaaaa, $ffaaff);
 var
   EditForm: TEditForm;
-  pcenterx, pcentery, pscale: double;
+//  pcenterx, pcentery, pscale: double;
 
 function ColorValToColor(c: TColorMap; index: double): TColor;
 function FlipTriangleVertical(t: TTriangle): TTriangle;
@@ -920,7 +920,7 @@ function TEditForm.GetTriangleColor(n: integer): TColor;
 begin
   if chkUseXFormColor.checked then
     Result := ColorValToColor(MainCp.cmap, cp.xform[n].color)
-  else Result := clr[n mod 16];
+  else Result := TrgColors[n mod 14];
 end;
 
 procedure TEditForm.TriangleViewPaint(Sender: TObject);
@@ -2599,7 +2599,7 @@ begin
   if (cell.Y > 0) and (cell.X = 0) then TValueListEditor(Sender).Cursor := crHandPoint
   else TValueListEditor(Sender).Cursor := crDefault;
 
-  if varMM then // hack
+  if varMM then // hack: to skip MouseMove event
   begin
     varMM:=false;
     varDragPos:=x;
@@ -2612,10 +2612,13 @@ begin
       v := cp.xform[SelectedTriangle].vars[varDragIndex]
     else
       cp.xform[SelectedTriangle].GetVariable(vleVariables.Keys[varDragIndex+1], v);
-    v := {RoundTo(} v + ((x-varDragPos)*2)/1000.0; {, -6)};
+    v := v + ((x-varDragPos)*2)/1000.0;
 
     varDragPos:=x;
     SetCursorPos(MousePos.x, MousePos.y); // hmmm
+    // this Delphi is WEIRD!
+    // why GetCursorPos deals with TPoint,
+    // and SetCursorPos - with two integers?????????
     varMM:=true;
 
     //cp.xform[SelectedTriangle].vars[varDragIndex] := v;
@@ -2659,20 +2662,17 @@ procedure TEditForm.VEVarsDblClick(Sender: TObject);
 var
   v: double;
 begin
-  if TValueListEditor(Sender).Values[VarNames(varDragIndex)] = '0' then exit;
-
-//begin
-//  if cp.xform[SelectedTriangle].vars[varDragIndex] = 0 then exit;
+  if (TValueListEditor(Sender).Values[VarNames(varDragIndex)] = '0') or
+     (varDragPos >  TValueListEditor(Sender).ColWidths[0]) then exit;
 
   MainForm.UpdateUndo;
-//  cp.xform[SelectedTriangle].vars[varDragIndex] := 0;
   if Sender = VEVars then
   begin
     cp.xform[SelectedTriangle].vars[varDragIndex] := 0;
     VEVars.Values[VarNames(varDragIndex)] := '0';
   end
   else begin
-    v := 0; // <<<----- hey!!! why it's 'var' in SETvariable???
+    v := 0; // <<<----- hey!!! why there is 'var' in SETvariable???
     cp.xform[SelectedTriangle].SetVariable(vleVariables.Keys[varDragIndex+1], v);
     vleVariables.Values[vleVariables.Keys[varDragIndex+1]] := '0';
   end;

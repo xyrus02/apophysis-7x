@@ -25,7 +25,7 @@ uses
 
 const
   EPS = 1E-10;
-  NXFORMS = 12;
+  NXFORMS = 100; // --Z-- I don't like limitations! 8-[]
   SUB_BATCH_SIZE = 10000;
   PREFILTER_WHITE = (1 shl 26);
   FILTER_CUTOFF = 1.8;
