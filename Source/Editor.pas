@@ -334,8 +334,8 @@ type
 
 const
   TrgColors: array[-1..13] of TColor = (clGray,
-    $0000ff, $007fff, $00ffff, $33ff33, $ffff00, $ff3333, $ff55ff,
-    $aa00ff, $55aaff, $aaffff, $aaffaa, $ffffaa, $ffaaaa, $ffaaff);
+    $0000ff, $00ffff, $00ff00, $ffff00, $ff0000, $ff00ff, $007fff,
+    $7f00ff, $55ffff, $ccffcc, $ffffaa, $ff7f7f, $ffaaff, $55ccff );
 var
   EditForm: TEditForm;
 //  pcenterx, pcentery, pscale: double;
@@ -631,8 +631,6 @@ var
 begin
   t := SelectedTriangle; // why 't' ?
 
-  assert(t < Transforms); // ?? hmm..
-
   if (t >= Transforms) then t := Transforms - 1;
   //if EditForm.cbTransforms.ItemIndex <> t then EditForm.cbTransforms.ItemIndex := t;
   EditForm.cbTransforms.ItemIndex := t;
@@ -775,7 +773,7 @@ begin
   if not chkPreserve.Checked then ComputeWeights(cp, MainTriangles, transforms);
   DrawPreview;
   ShowSelectedInfo;
-  TriangleView.Invalidate;
+  TriangleView.Refresh;
   if DrawMain then begin
     MainForm.StopThread;
     MainCp.Copy(cp);
@@ -1128,6 +1126,21 @@ begin
         Ellipse(c.x - 3, c.y - 3, c.x + 3, c.y + 3);
         pen.width:=1;
         pen.mode:=pmCopy;
+
+        if not (CornerCaught or TriangleCaught) then // show used variations
+        begin
+          font.Color := GetTriangleColor(mouseOverTriangle);
+          brush.Style := bsClear;
+          ay := Height-2 + font.Height; // font.height is < 0... weird :-\
+          for i:= NRVAR - 1 downto 0 do
+            if cp.xform[mouseOverTriangle].vars[i] <> 0 then
+            begin
+              ax := Width-2 - TextWidth(Varnames(i));
+              TextOut(ax, ay, Varnames(i));
+              Inc(ay, font.Height);
+            end;
+//        brush.Style := bsSolid;
+        end;
       end;
 
       pen.color := clWhite;
