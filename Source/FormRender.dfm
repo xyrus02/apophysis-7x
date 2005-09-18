@@ -201,7 +201,9 @@ object RenderForm: TRenderForm
         '1024'
         '1280'
         '1600'
-        '2048')
+        '2048'
+        '2560'
+        '3200')
     end
     object cbHeight: TComboBox
       Left = 112
@@ -222,7 +224,9 @@ object RenderForm: TRenderForm
         '768'
         '1024'
         '1200'
-        '2048')
+        '1920'
+        '2048'
+        '2400')
     end
   end
   object GroupBox3: TGroupBox
