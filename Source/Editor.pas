@@ -370,11 +370,6 @@ var
 
 {$R *.DFM}
 
-procedure DrawGraph;
-begin
-  EditForm.TriangleView.Invalidate;
-end;
-
 { Triangle transformations }
 
 function OffsetTriangleRandom(t: TTriangle): TTriangle;
@@ -1239,7 +1234,7 @@ procedure TEditForm.TriangleViewMouseMove(Sender: TObject; Shift: TShiftState;
   X, Y: integer);
 var
   vx, vy, fx, fy: double;
-  mt,mc: integer;
+  mt, mc: integer;
 
   i, j: integer;
   d: double;
@@ -1336,19 +1331,21 @@ FoundCorner:
       if Shift = [ssShift] then // snap to axis
       begin
         if abs(fx-Pivot.X) > abs(fy-Pivot.Y) then begin
-          MainTriangles[SelectedTriangle].x[SelectedCorner] := fx;
-          MainTriangles[SelectedTriangle].y[SelectedCorner] := Pivot.Y;
+          vx := fx;
+          vy := Pivot.Y;
         end
         else begin
-          MainTriangles[SelectedTriangle].x[SelectedCorner] := Pivot.x;
-          MainTriangles[SelectedTriangle].y[SelectedCorner] := fy;
+          vx := Pivot.x;
+          vy := fy;
         end;
       end
       else begin // just move
-        MainTriangles[SelectedTriangle].x[SelectedCorner] := fx;
-        MainTriangles[SelectedTriangle].y[SelectedCorner] := fy;
+        vx := fx;
+        vy := fy;
       end;
-      StatusBar.Panels[2].Text := Format('Move: %3.3f ; %3.3f', [fx-(Pivot.X+oldx), fy-(Pivot.Y+oldy)]);
+      MainTriangles[SelectedTriangle].x[SelectedCorner] := vx;
+      MainTriangles[SelectedTriangle].y[SelectedCorner] := vy;
+      StatusBar.Panels[2].Text := Format('Move: %3.3f ; %3.3f', [vx-(Pivot.X+oldx), vy-(Pivot.Y+oldy)]);
     end;
     // --
     HasChanged := True;
@@ -2131,12 +2128,10 @@ begin
     FillRect(Rect);
 
     Font.Color := clWhite;
-    //TextOut(Rect.Left+h+2, Rect.Top, eqListBox.Items[Index]);
-    TextOut(Rect.Left+h+2, Rect.Top, IntToStr(Index+1)); // hack
+    TextOut(Rect.Left+h+2, Rect.Top, IntToStr(Index+1));
 
     pen.Color := TrgColor;
     brush.Color := pen.Color shr 1 and $7f7f7f;
-    //pen.Style := psClear;
 
     ax:=Rect.Left+h-2;
     ay:=Rect.Top+1;
