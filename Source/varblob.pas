@@ -88,8 +88,10 @@ begin
     FHigh := Value;
     Result := True;
   end else if Name = 'blob_waves' then begin
-    //???????????? what for?: // Value := Round(Value);
-    FWaves := Round(Value);
+    //???????????? what for?:
+    // Value is a var variable the checked/changed value is returned for showing 
+    Value := Round(Value);
+    FWaves := Value;
     Result := True;
   end
 end;
