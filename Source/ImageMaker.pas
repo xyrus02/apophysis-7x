@@ -146,8 +146,10 @@ end;
 ///////////////////////////////////////////////////////////////////////////////
 function TImageMaker.GetImage: TBitmap;
 begin
-//  Result := GetTransparentImage;
-  Result := FBitmap;
+  if ShowTransparency then
+    Result := GetTransparentImage
+  else
+    Result := FBitmap;
 end;
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -193,8 +195,14 @@ end;
 ///////////////////////////////////////////////////////////////////////////////
 procedure TImageMaker.CreateImage(YOffset: integer);
 begin
-  CreateImage_Flame3(YOffset);
-//  CreateImage_MB(YOffset);
+  Case PNGTransparency of
+  0,1:
+    CreateImage_Flame3(YOffset);
+  2:
+    CreateImage_MB(YOffset);
+  else
+    Exception.CreateFmt('Unexpected value of PNGTransparency [%d]', [PNGTransparency]);
+  end;
 end;
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -586,13 +594,22 @@ begin
   if UpperCase(ExtractFileExt(FileName)) = '.PNG' then begin
     PngObject := TPngObject.Create;
     PngObject.Assign(FBitmap);
-    PngObject.CreateAlpha;
-    for i:= 0 to FAlphaBitmap.Height - 1 do begin
-      rowbm := PByteArray(FAlphaBitmap.scanline[i]);
-      rowpng := PByteArray(PngObject.AlphaScanline[i]);
-      for row := 0 to FAlphaBitmap.Width -1 do begin
-        rowpng[row] := rowbm[row];
+    Case PNGTransparency of
+    0:
+      ; // do nothing
+    1,2:
+      begin
+        PngObject.CreateAlpha;
+        for i:= 0 to FAlphaBitmap.Height - 1 do begin
+          rowbm := PByteArray(FAlphaBitmap.scanline[i]);
+          rowpng := PByteArray(PngObject.AlphaScanline[i]);
+          for row := 0 to FAlphaBitmap.Width -1 do begin
+            rowpng[row] := rowbm[row];
+          end;
+        end;
       end;
+    else
+      Exception.CreateFmt('Unexpected value of PNGTransparency [%d]', [PNGTransparency]);
     end;
 
     PngObject.SaveToFile(FileName);

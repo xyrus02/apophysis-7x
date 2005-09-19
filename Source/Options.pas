@@ -174,6 +174,13 @@ type
     Label37: TLabel;
     txtLibrary: TEdit;
     clbVarEnabled: TCheckListBox;
+    GroupBox15: TGroupBox;
+    RadioButton1: TRadioButton;
+    RadioButton2: TRadioButton;
+    RadioButton3: TRadioButton;
+    GroupBox16: TGroupBox;
+    cbNrTheads: TComboBox;
+    cbShowTransparancy: TCheckBox;
     procedure btnCancelClick(Sender: TObject);
     procedure FormShow(Sender: TObject);
     procedure btnOKClick(Sender: TObject);
@@ -250,6 +257,17 @@ begin
   chkFixedReference.Checked := FixedReference;
   udBatchSize.Position := BatchSize;
   chkResize.checked := ResizeOnLoad;
+  case PNGTransparency of
+  0: RadioButton1.Checked := True;
+  1: RadioButton2.Checked := True;
+  2: RadioButton3.Checked := True;
+  else
+  end;
+  if NrTreads <= 1 then
+    cbNrTheads.ItemIndex := 0
+  else
+    cbNrTheads.text := intTostr(NrTreads);
+  cbShowTransparancy.Checked := ShowTransparency;
 
   { Display tab }
   txtSampleDensity.Text := FloatToStr(defSampleDensity);
@@ -345,6 +363,16 @@ begin
   if BatchSize < 1 then BatchSize := 1;
   if BatchSize > 300 then BatchSize := 300;
 
+  if RadioButton1.Checked then
+    PNGTransparency := 0
+  else if RadioButton2.Checked then
+    PNGTransparency := 1
+  else if RadioButton3.Checked then
+    PNGTransparency := 2;
+
+  ShowTransparency := cbShowTransparancy.Checked;
+
+  NrTreads := StrToIntDef(cbNrTheads.text, 0);
   ConfirmDelete := chkConfirmDel.Checked;
   FixedReference := chkFixedReference.Checked;
   ResizeOnLoad := chkResize.checked;

@@ -66,8 +66,6 @@ type
     StatusBar: TStatusBar;
     chkShutdown: TCheckBox;
     cbPostProcess: TCheckBox;
-    edtNrThreads: TEdit;
-    Label6: TLabel;
     txtDensity: TComboBox;
     procedure FormCreate(Sender: TObject);
     procedure FormDestroy(Sender: TObject);
@@ -339,7 +337,7 @@ begin
     Renderer.Compatibility := compatibility;
     Renderer.SetCP(cp);
     Renderer.Priority := tpLower;
-    Renderer.NrThreads := StrToInt(edtNrThreads.text);
+    Renderer.NrThreads := NrTreads;
     Renderer.Resume;
 
     // enable screensaver

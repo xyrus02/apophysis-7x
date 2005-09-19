@@ -161,6 +161,68 @@ object OptionsForm: TOptionsForm
         Caption = 'Resize on load'
         TabOrder = 5
       end
+      object GroupBox15: TGroupBox
+        Left = 8
+        Top = 134
+        Width = 129
+        Height = 83
+        Caption = 'PNG Transparency'
+        TabOrder = 6
+        object RadioButton1: TRadioButton
+          Left = 12
+          Top = 16
+          Width = 113
+          Height = 17
+          Caption = 'No transparency'
+          TabOrder = 0
+        end
+        object RadioButton2: TRadioButton
+          Left = 12
+          Top = 32
+          Width = 113
+          Height = 17
+          Caption = 'Like Flame3'
+          TabOrder = 1
+        end
+        object RadioButton3: TRadioButton
+          Left = 12
+          Top = 48
+          Width = 113
+          Height = 17
+          Caption = 'Like Flamesong'
+          TabOrder = 2
+        end
+      end
+      object GroupBox16: TGroupBox
+        Left = 140
+        Top = 134
+        Width = 117
+        Height = 51
+        Caption = 'Nr processors'
+        TabOrder = 7
+        object cbNrTheads: TComboBox
+          Left = 12
+          Top = 20
+          Width = 89
+          Height = 21
+          ItemHeight = 13
+          TabOrder = 0
+          Text = '200'
+          Items.Strings = (
+            'Off'
+            '2'
+            '4'
+            '8')
+        end
+      end
+      object cbShowTransparancy: TCheckBox
+        Left = 144
+        Top = 196
+        Width = 169
+        Height = 17
+        Caption = 'Show Transparancy'
+        TabOrder = 8
+      end
     end
     object DisplayPage: TTabSheet
       Caption = 'Display'
@@ -553,10 +615,11 @@ object OptionsForm: TOptionsForm
         object clbVarEnabled: TCheckListBox
           Left = 12
           Top = 16
-          Width = 205
+          Width = 309
           Height = 189
           ItemHeight = 13
           TabOrder = 0
+          TabWidth = 100
         end
       end
       object btnSetAll: TButton

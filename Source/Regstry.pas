@@ -480,10 +480,28 @@ begin
       if Registry.ValueExists('ShowProgress') then
       begin
         ShowProgress := Registry.ReadBool('ShowProgress');
-      end
-      else
-      begin
+      end else begin
         ShowProgress := true;
+      end;
+      if Registry.ValueExists('PNGTransparency') then begin
+        PNGTransparency := Registry.ReadInteger('PNGTransparency');
+      end else begin
+        PNGTransparency := 2
+      end;
+      if Registry.ValueExists('ShowTransparency') then begin
+        ShowTransparency := Registry.ReadBool('ShowTransparency');
+      end else begin
+        ShowTransparency := False;
+      end;
+      if Registry.ValueExists('NrTreads') then begin
+        NrTreads := Registry.ReadInteger('NrTreads');
+      end else begin
+        NrTreads := 1;
+      end;
+      if Registry.ValueExists('UseNrThreads') then begin
+        UseNrThreads := Registry.ReadInteger('UseNrThreads');
+      end else begin
+        UseNrThreads := 1;
       end;
     end
     else
@@ -542,6 +560,10 @@ begin
       SheepServer := 'http://v2d5.sheepserver.net/';
       ResizeOnLoad := False;
       ShowProgress := true;
+      PNGTransparency := 2;
+      ShowTransparency := False;
+      NrTreads := 1;
+      UseNrThreads := 1;
     end;
     Registry.CloseKey;
     { Render }
@@ -876,6 +898,11 @@ begin
       Registry.WriteBool('ShowProgress', ShowProgress);
       Registry.WriteBool('KeepBackground', KeepBackground);
       Registry.WriteString('FunctionLibrary', defLibrary);
+
+      Registry.WriteBool('ShowTransparency', ShowTransparency);
+      Registry.WriteInteger('PNGTransparency', PNGTransparency);
+      Registry.WriteInteger('NrTreads', NrTreads);
+      Registry.WriteInteger('UseNrThreads', UseNrThreads);
     end;
     { Display }
     if Registry.OpenKey('\Software\' + APP_NAME + '\Display', True) then

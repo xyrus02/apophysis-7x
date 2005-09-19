@@ -127,7 +127,10 @@ var
   defLibrary: string;
   LimitVibrancy: Boolean;
   DefaultPalette: TColorMap;
-
+  PNGTransparency: integer;
+  ShowTransparency: boolean;
+  NrTreads: Integer;
+  UseNrThreads: integer;
 
 function Round6(x: double): double;
 

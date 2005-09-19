@@ -49,13 +49,6 @@ object RenderForm: TRenderForm
   OnShow = FormShow
   PixelsPerInch = 96
   TextHeight = 13
-  object Label6: TLabel
-    Left = 204
-    Top = 340
-    Width = 118
-    Height = 13
-    Caption = 'TestValue Nr Of Threads'
-  end
   object ProgressBar: TProgressBar
     Left = 0
     Top = 392
@@ -468,16 +461,6 @@ object RenderForm: TRenderForm
     Height = 17
     Caption = 'Post render'
     TabOrder = 9
-  end
-  object edtNrThreads: TEdit
-    Left = 336
-    Top = 336
-    Width = 73
-    Height = 21
-    BiDiMode = bdRightToLeft
-    ParentBiDiMode = False
-    TabOrder = 13
-    Text = '1'
   end
   object SaveDialog: TSaveDialog
     Left = 368
