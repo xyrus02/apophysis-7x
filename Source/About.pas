@@ -37,6 +37,10 @@ type
     Label5: TLabel;
     Bevel1: TBevel;
     lblCredit: TLabel;
+    Label6: TLabel;
+    Label7: TLabel;
+    Label8: TLabel;
+    Label9: TLabel;
     procedure btnOKClick(Sender: TObject);
     procedure Label4Click(Sender: TObject);
     procedure lblFlamecomClick(Sender: TObject);

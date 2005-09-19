@@ -3,7 +3,7 @@ object AboutForm: TAboutForm
   Top = 320
   BorderStyle = bsDialog
   Caption = 'About Apophysis'
-  ClientHeight = 259
+  ClientHeight = 279
   ClientWidth = 345
   Color = clBtnFace
   Font.Charset = DEFAULT_CHARSET
@@ -18,7 +18,7 @@ object AboutForm: TAboutForm
   TextHeight = 13
   object Image1: TImage
     Left = 8
-    Top = 8
+    Top = 16
     Width = 81
     Height = 249
     Picture.Data = {
@@ -1906,21 +1906,21 @@ object AboutForm: TAboutForm
   end
   object Label10: TLabel
     Left = 120
-    Top = 112
+    Top = 180
     Width = 178
     Height = 13
     Caption = 'flame - cosmic recursive fractal flames'
   end
   object Label11: TLabel
     Left = 120
-    Top = 128
+    Top = 196
     Width = 178
     Height = 13
-    Caption = 'Copyright '#169' 1992-2003  Scott Draves'
+    Caption = 'Copyright '#169' 1992-2005  Scott Draves'
   end
   object lblFlamecom: TLabel
     Left = 120
-    Top = 144
+    Top = 212
     Width = 79
     Height = 13
     Caption = 'http://flam3.com'
@@ -1934,21 +1934,22 @@ object AboutForm: TAboutForm
   end
   object Label5: TLabel
     Left = 120
-    Top = 192
+    Top = 260
     Width = 108
     Height = 13
     Caption = 'This flame designed by'
+    Visible = False
   end
   object Bevel1: TBevel
     Left = 120
-    Top = 168
+    Top = 232
     Width = 193
     Height = 10
     Shape = bsBottomLine
   end
   object lblCredit: TLabel
     Left = 234
-    Top = 192
+    Top = 260
     Width = 23
     Height = 13
     Caption = 'Wub'
@@ -1958,11 +1959,40 @@ object AboutForm: TAboutForm
     Font.Name = 'MS Sans Serif'
     Font.Style = [fsUnderline]
     ParentFont = False
+    Visible = False
     OnClick = lblCreditClick
+  end
+  object Label6: TLabel
+    Left = 120
+    Top = 104
+    Width = 86
+    Height = 13
+    Caption = 'Copyright '#169' 2005 '
+  end
+  object Label7: TLabel
+    Left = 140
+    Top = 120
+    Width = 109
+    Height = 13
+    Caption = 'Peter '#39'Zueuk'#39' Sdobnov'
+  end
+  object Label8: TLabel
+    Left = 140
+    Top = 136
+    Width = 90
+    Height = 13
+    Caption = 'Piotr '#39'utak3r'#39' Borys '
+  end
+  object Label9: TLabel
+    Left = 140
+    Top = 152
+    Width = 70
+    Height = 13
+    Caption = 'Ronald Hordijk'
   end
   object btnOK: TButton
     Left = 264
-    Top = 224
+    Top = 248
     Width = 75
     Height = 25
     Caption = 'OK'
