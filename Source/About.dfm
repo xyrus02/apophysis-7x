@@ -1878,7 +1878,7 @@ object AboutForm: TAboutForm
   end
   object Label2: TLabel
     Left = 120
-    Top = 56
+    Top = 48
     Width = 61
     Height = 13
     Caption = 'Version 2.02j'
@@ -1895,6 +1895,8 @@ object AboutForm: TAboutForm
     Top = 88
     Width = 123
     Height = 13
+    Cursor = crHandPoint
+    Hint = 'http://www.apophysis.org'
     Caption = 'http://www.apophysis.org'
     Font.Charset = DEFAULT_CHARSET
     Font.Color = clBlue
@@ -1906,23 +1908,25 @@ object AboutForm: TAboutForm
   end
   object Label10: TLabel
     Left = 120
-    Top = 180
+    Top = 196
     Width = 178
     Height = 13
     Caption = 'flame - cosmic recursive fractal flames'
   end
   object Label11: TLabel
     Left = 120
-    Top = 196
+    Top = 212
     Width = 178
     Height = 13
     Caption = 'Copyright '#169' 1992-2005  Scott Draves'
   end
   object lblFlamecom: TLabel
     Left = 120
-    Top = 212
+    Top = 228
     Width = 79
     Height = 13
+    Cursor = crHandPoint
+    Hint = 'http://flam3.com'
     Caption = 'http://flam3.com'
     Font.Charset = DEFAULT_CHARSET
     Font.Color = clBlue
@@ -1942,7 +1946,7 @@ object AboutForm: TAboutForm
   end
   object Bevel1: TBevel
     Left = 120
-    Top = 232
+    Top = 184
     Width = 193
     Height = 10
     Shape = bsBottomLine
@@ -1964,35 +1968,53 @@ object AboutForm: TAboutForm
   end
   object Label6: TLabel
     Left = 120
-    Top = 104
+    Top = 112
     Width = 86
     Height = 13
     Caption = 'Copyright '#169' 2005 '
   end
   object Label7: TLabel
     Left = 140
-    Top = 120
-    Width = 109
+    Top = 128
+    Width = 115
     Height = 13
-    Caption = 'Peter '#39'Zueuk'#39' Sdobnov'
+    Cursor = crHandPoint
+    Hint = 'http://zueuk.deviantart.com'
+    Caption = 'Peter "Zueuk" Sdobnov'
+    Font.Charset = DEFAULT_CHARSET
+    Font.Color = clBlue
+    Font.Height = -11
+    Font.Name = 'MS Sans Serif'
+    Font.Style = [fsUnderline]
+    ParentFont = False
+    OnClick = DevelopersClick
   end
   object Label8: TLabel
     Left = 140
-    Top = 136
-    Width = 90
+    Top = 144
+    Width = 96
     Height = 13
-    Caption = 'Piotr '#39'utak3r'#39' Borys '
+    Cursor = crHandPoint
+    Hint = 'http://utak3r.deviantart.com'
+    Caption = 'Piotr "utak3r" Borys '
+    Font.Charset = DEFAULT_CHARSET
+    Font.Color = clBlue
+    Font.Height = -11
+    Font.Name = 'MS Sans Serif'
+    Font.Style = [fsUnderline]
+    ParentFont = False
+    OnClick = DevelopersClick
   end
   object Label9: TLabel
     Left = 140
-    Top = 152
+    Top = 160
     Width = 70
     Height = 13
     Caption = 'Ronald Hordijk'
   end
   object btnOK: TButton
-    Left = 264
-    Top = 248
+    Left = 256
+    Top = 240
     Width = 75
     Height = 25
     Caption = 'OK'

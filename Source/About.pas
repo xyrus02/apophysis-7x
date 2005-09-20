@@ -46,6 +46,7 @@ type
     procedure lblFlamecomClick(Sender: TObject);
     procedure FormShow(Sender: TObject);
     procedure lblCreditClick(Sender: TObject);
+    procedure DevelopersClick(Sender: TObject);
   private
     { Private declarations }
     URL :String;
@@ -90,6 +91,12 @@ procedure TAboutForm.lblCreditClick(Sender: TObject);
 begin
   if URL <> '' then
   ShellExecute(ValidParentForm(Self).Handle, 'open', PChar(URL),
+    nil, nil, SW_SHOWNORMAL);
+end;
+
+procedure TAboutForm.DevelopersClick(Sender: TObject);
+begin
+  ShellExecute(ValidParentForm(Self).Handle, 'open', PChar(TLabel(Sender).Hint),
     nil, nil, SW_SHOWNORMAL);
 end;
 
