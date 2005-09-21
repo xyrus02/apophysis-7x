@@ -35,7 +35,7 @@ type
     FCosA: double;
     FLength: double;
     CalculateAngle: boolean;
-    CalculateLength: boolean;
+//    CalculateLength: boolean;
     CalculateSinCos: boolean;
 
     FRegVariations: array of TBaseVariation;
@@ -211,9 +211,9 @@ begin
 
   CalculateAngle := (vars[5] <> 0.0) or (vars[6] <> 0.0) or (vars[7] <> 0.0) or (vars[8] <> 0.0) or
                     (vars[12] <> 0.0) or (vars[13] <> 0.0) or (vars[21] <> 0.0) or (vars[22] <> 0.0);
-  CalculateLength := False;
-  CalculateSinCos := (vars[4] <> 0.0) or (vars[9] <> 0.0) or (vars[10] <> 0.0) or
-                     (vars[11] <> 0.0) or (vars[16] <> 0.0) or (vars[19] <> 0.0) or
+//  CalculateLength := False;
+  CalculateSinCos := (vars[4] <> 0.0) or (vars[9] <> 0.0) or {z! (vars[10] <> 0.0) or}
+                     (vars[11] <> 0.0) or {z! (vars[16] <> 0.0)} or (vars[19] <> 0.0) or
                      (vars[21] <> 0.0);
 
 end;
@@ -272,7 +272,7 @@ end;
 
 ///////////////////////////////////////////////////////////////////////////////
 procedure TXForm.Polar;
-var
+{var
   ny: double;
   rPI: double;
 begin
@@ -280,6 +280,10 @@ begin
   ny := sqrt(FTx * FTx + FTy * FTy) - 1.0;
   FPx := FPx + vars[5] * (FAngle*rPI);
   FPy := FPy + vars[5] * ny;
+}
+begin
+  FPx := FPx + vars[5] * FAngle * 0.31830989;
+  FPy := FPy + vars[5] * (sqrt(FTx * FTx + FTy * FTy) - 1.0);
 end;
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -305,12 +309,12 @@ end;
 
 ///////////////////////////////////////////////////////////////////////////////
 procedure TXForm.Disc;
+const
+  rPI: double = 0.31830989;
 var
   nx, ny, r: double;
-  rPI: double;
   sinr, cosr: extended;
 begin
-  rPI := 0.31830989;
   nx := FTx * PI;
   ny := FTy * PI;
 
@@ -318,7 +322,6 @@ begin
   SinCos(r, sinr, cosr);
   FPx := FPx + vars[8] * sinr * FAngle * rPI;
   FPy := FPy + vars[8] * cosr * FAngle * rPI;
-
 end;
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -336,14 +339,25 @@ begin
 end;
 
 ///////////////////////////////////////////////////////////////////////////////
-procedure TXForm.hyperbolic;
+procedure TXForm.Hyperbolic;
+{
 var
   r: double;
 begin
-//  r := sqrt(FTx * FTx + FTy * FTy) + 1E-6;
   r := Flength + 1E-6;
   FPx := FPx + vars[10] * FSinA / r;
   FPy := FPy + vars[10] * FCosA * r;
+}
+
+// --Z-- Yikes!!! SOMEONE SHOULD GO BACK TO SCHOOL!!!!!!!
+// Scott Draves, you aren't so cool after all! :-))
+// And did no one niticed it?!!
+// After ALL THESE YEARS!!!
+
+// Now watch and learn how to do this WITHOUT calculating sin and cos:
+begin
+  FPx := FPx + vars[10] * FTx / (FTx * FTx + FTy * FTy + 1E-6);
+  FPy := FPy + vars[10] * FTy;
 end;
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -419,12 +433,18 @@ procedure TXForm.Fisheye;
 var
  { a,} r: double;
 begin
+{
 //  r := sqrt(FTx * FTx + FTy * FTy);
 //  a := arctan2(FTx, FTy);
 //  r := 2 * r / (r + 1);
   r := 2 * Flength / (Flength + 1);
   FPx := FPx + vars[16] * r * FCosA;
   FPy := FPy + vars[16] * r * FSinA;
+}
+// --Z-- and again, sin & cos are NOT necessary here:
+  r := 2 / (sqrt(FTx * FTx + FTy * FTy) + 1);
+  FPx := FPx + vars[16] * r * FTy;
+  FPy := FPy + vars[16] * r * FTx;
 
 end;
 
