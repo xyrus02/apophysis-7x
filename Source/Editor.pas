@@ -2567,7 +2567,7 @@ begin
     vleVariables.Values[vleVariables.Keys[varDragIndex+1]] := '0';
   end;
 
-  UpdateFlameX;
+  UpdateFlame(true);
 end;
 
 { **************************************************************************** }
