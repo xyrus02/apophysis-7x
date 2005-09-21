@@ -11,8 +11,8 @@ type
     FOnPaint: TNotifyEvent;
 
     procedure WMEraseBkgnd(var Message: TWMEraseBkgnd); message WM_ERASEBKGND;
-//    procedure WMSetFocus(var Message: TWMSetFocus); message WM_SETFOCUS;
-//    procedure WMKillFocus(var Message: TWMKillFocus); message WM_KILLFOCUS;
+    procedure WMSetFocus(var Message: TWMSetFocus); message WM_SETFOCUS;
+    procedure WMKillFocus(var Message: TWMKillFocus); message WM_KILLFOCUS;
     procedure WMGetDlgCode(var Message: TMessage); message WM_GETDLGCODE;
   protected
 
@@ -25,7 +25,7 @@ type
     property OnDblClick;
     property OnKeyDown;
 //    property OnKeyPress;
-//    property OnKeyUp;
+    property OnKeyUp;
     property OnMouseDown;
     property OnMouseMove;
     property OnMouseUp;
@@ -43,7 +43,6 @@ begin
   Message.Result := 1;
 end;
 
-{
 procedure TCustomDrawControl.WMSetFocus(var Message: TWMSetFocus);
 begin
   Invalidate;
@@ -51,9 +50,9 @@ end;
 
 procedure TCustomDrawControl.WMKillFocus(var Message: TWMKillFocus);
 begin
+  if assigned(OnExit) then OnExit(self);
   Invalidate;
 end;
-}
 
 procedure TCustomDrawControl.WMGetDlgCode(var Message: TMessage);
 begin

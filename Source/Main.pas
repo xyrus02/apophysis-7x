@@ -1802,9 +1802,6 @@ begin
       if EditForm.Visible then EditForm.UpdateDisplay(true); // preview only
     end;
     if AdjustForm.Visible then AdjustForm.UpdateDisplay;
-
-//z    GradientForm.DrawPreview;
-
     // following needed ?
 //    cp.Zoom := Zoom;
 //    cp.center[0] := center[0];
@@ -3302,11 +3299,9 @@ begin
         StopThread;
         UpdateUndo;
         maincp.cmap := Pal;
-//        gradientForm.UpdateGradient(Pal);
-        {if AdjustForm.visible then} AdjustForm.UpdateGradient(maincp.cmap);
+        AdjustForm.UpdateGradient(maincp.cmap);
 
         if EditForm.Visible then EditForm.UpdateDisplay;
-//        if AdjustForm.Visible then AdjustForm.UpdateDisplay;
         if MutateForm.Visible then MutateForm.UpdateDisplay;
         RedrawTimer.enabled := true;
 

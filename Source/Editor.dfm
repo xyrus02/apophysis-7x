@@ -46,6 +46,8 @@ object EditForm: TEditForm
   OnClose = FormClose
   OnCreate = FormCreate
   OnDestroy = FormDestroy
+  OnKeyDown = EditKeyDown
+  OnKeyPress = EditKeyPress
   OnResize = FormResize
   OnShow = FormShow
   PixelsPerInch = 96
@@ -172,9 +174,12 @@ object EditForm: TEditForm
         Top = 0
         Hint = 'Move Triangle'
         Caption = 'Move'
+        Down = True
+        Grouped = True
         ImageIndex = 6
         ParentShowHint = False
         ShowHint = True
+        Style = tbsCheck
         OnClick = tbEditModeClick
       end
       object tbRotate: TToolButton
@@ -182,9 +187,11 @@ object EditForm: TEditForm
         Top = 0
         Hint = 'Rotate triangle'
         Caption = 'Rotate'
+        Grouped = True
         ImageIndex = 7
         ParentShowHint = False
         ShowHint = True
+        Style = tbsCheck
         OnClick = tbEditModeClick
       end
       object tbScale: TToolButton
@@ -192,9 +199,11 @@ object EditForm: TEditForm
         Top = 0
         Hint = 'Scale triangle'
         Caption = 'Scale'
+        Grouped = True
         ImageIndex = 8
         ParentShowHint = False
         ShowHint = True
+        Style = tbsCheck
         OnClick = tbEditModeClick
       end
       object ToolButton5: TToolButton
@@ -1092,6 +1101,8 @@ object EditForm: TEditForm
                   ItemIndex = 3
                   TabOrder = 9
                   Text = '0.1'
+                  OnExit = txtValidateValue
+                  OnKeyPress = txtValKeyPress
                   Items.Strings = (
                     '1'
                     '0.5'
@@ -1110,6 +1121,8 @@ object EditForm: TEditForm
                   ItemIndex = 1
                   TabOrder = 8
                   Text = '15'
+                  OnExit = txtValidateValue
+                  OnKeyPress = txtValKeyPress
                   Items.Strings = (
                     '5'
                     '15'
@@ -1126,14 +1139,16 @@ object EditForm: TEditForm
                   ItemHeight = 13
                   ItemIndex = 1
                   TabOrder = 10
-                  Text = '0.1'
+                  Text = '110'
+                  OnExit = txtValidateValue
+                  OnKeyPress = txtValKeyPress
                   Items.Strings = (
-                    '0.05'
-                    '0.1'
-                    '0.25'
-                    '0.5'
-                    '0.75'
-                    '0.9')
+                    '105'
+                    '110'
+                    '125'
+                    '150'
+                    '175'
+                    '200')
                 end
               end
             end
