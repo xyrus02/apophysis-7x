@@ -78,7 +78,6 @@ type
     btnMenu: TSpeedButton;
     btnOpen: TSpeedButton;
     btnSmoothPalette: TSpeedButton;
-    Label1: TLabel;
     btnPaste: TSpeedButton;
     btnCopy: TSpeedButton;
     cmbPalette: TComboBox;
@@ -125,10 +124,10 @@ type
     txtHeight: TComboBox;
     Bevel1: TBevel;
     Bevel2: TBevel;
-    trkQuality: TTrackBar;
     btnUndo: TSpeedButton;
     btnRedo: TSpeedButton;
     chkTransparent: TCheckBox;
+    btnColorPreset: TSpeedButton;
     procedure FormCreate(Sender: TObject);
     procedure FormClose(Sender: TObject; var Action: TCloseAction);
     procedure FormDestroy(Sender: TObject);
@@ -243,6 +242,7 @@ type
     procedure btnUndoClick(Sender: TObject);
     procedure btnRedoClick(Sender: TObject);
     procedure GradientImageDblClick(Sender: TObject);
+    procedure btnColorPresetClick(Sender: TObject);
 
   private
     Resetting: boolean;
@@ -1635,13 +1635,6 @@ begin
   SaveMap(AppPath + 'default.map');
 end;
 
-{
-function RandomGradient: TColorMap;
-begin
-  Result := GradientHelper.RandomGradient;
-end;
-}
-
 procedure TAdjustForm.mnuRandomizeClick(Sender: TObject);
 begin
   UpdateGradient(GradientHelper.RandomGradient);
@@ -1871,6 +1864,12 @@ end;
 procedure TAdjustForm.btnRedoClick(Sender: TObject);
 begin
   MainForm.Redo;
+end;
+
+procedure TAdjustForm.btnColorPresetClick(Sender: TObject);
+begin
+  cmbPalette.ItemIndex := random(701);
+  cmbPaletteChange(Sender);
 end;
 
 end.

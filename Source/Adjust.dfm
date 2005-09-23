@@ -173,7 +173,7 @@ object AdjustForm: TAdjustForm
     Top = 133
     Width = 390
     Height = 131
-    ActivePage = TabSheet1
+    ActivePage = TabSheet2
     Align = alBottom
     TabOrder = 1
     object TabSheet1: TTabSheet
@@ -446,8 +446,8 @@ object AdjustForm: TAdjustForm
         OnKeyPress = txtVibrancyKeyPress
       end
       object ColorPanel: TPanel
-        Left = 104
-        Top = 76
+        Left = 112
+        Top = 78
         Width = 113
         Height = 21
         Cursor = crHandPoint
@@ -457,8 +457,8 @@ object AdjustForm: TAdjustForm
         OnClick = ColorPanelClick
       end
       object cbColor: TComboBox
-        Left = 224
-        Top = 76
+        Left = 232
+        Top = 78
         Width = 59
         Height = 21
         Enabled = False
@@ -466,6 +466,7 @@ object AdjustForm: TAdjustForm
         ItemIndex = 0
         TabOrder = 7
         Text = '000000'
+        Visible = False
         Items.Strings = (
           '000000'
           'FFFFFF')
@@ -473,11 +474,12 @@ object AdjustForm: TAdjustForm
       object chkTransparent: TCheckBox
         Left = 296
         Top = 80
-        Width = 97
+        Width = 81
         Height = 17
         Caption = 'Transparent'
         Enabled = False
         TabOrder = 8
+        Visible = False
       end
     end
     object TabSheet3: TTabSheet
@@ -491,9 +493,9 @@ object AdjustForm: TAdjustForm
         Caption = '0'
       end
       object btnMenu: TSpeedButton
-        Left = 6
+        Left = 4
         Top = 52
-        Width = 75
+        Width = 61
         Height = 21
         Hint = 'Click for menu'
         Caption = 'Rotate'
@@ -504,7 +506,7 @@ object AdjustForm: TAdjustForm
       end
       object btnOpen: TSpeedButton
         Left = 333
-        Top = 77
+        Top = 78
         Width = 23
         Height = 22
         Hint = 'Open Gradient Browser'
@@ -544,7 +546,7 @@ object AdjustForm: TAdjustForm
       end
       object btnSmoothPalette: TSpeedButton
         Left = 357
-        Top = 77
+        Top = 78
         Width = 23
         Height = 22
         Hint = 'Smooth Palette'
@@ -580,18 +582,9 @@ object AdjustForm: TAdjustForm
         ShowHint = True
         OnClick = mnuSmoothPaletteClick
       end
-      object Label1: TLabel
-        Left = 5
-        Top = 80
-        Width = 57
-        Height = 13
-        Alignment = taCenter
-        AutoSize = False
-        Caption = 'Preset'
-      end
       object btnPaste: TSpeedButton
         Left = 309
-        Top = 77
+        Top = 78
         Width = 23
         Height = 22
         Hint = 'Paste fradient from clipboard'
@@ -629,7 +622,7 @@ object AdjustForm: TAdjustForm
       end
       object btnCopy: TSpeedButton
         Left = 285
-        Top = 77
+        Top = 78
         Width = 23
         Height = 22
         Hint = 'Copy gradient to clipboard'
@@ -665,6 +658,18 @@ object AdjustForm: TAdjustForm
         ShowHint = True
         OnClick = btnCopyClick
       end
+      object btnColorPreset: TSpeedButton
+        Left = 4
+        Top = 78
+        Width = 61
+        Height = 21
+        Hint = 'Click to choose random preset'
+        Caption = 'Preset'
+        Flat = True
+        ParentShowHint = False
+        ShowHint = True
+        OnClick = btnColorPresetClick
+      end
       object GradientPnl: TPanel
         Left = 0
         Top = 0
@@ -689,9 +694,9 @@ object AdjustForm: TAdjustForm
         end
       end
       object ScrollBar: TScrollBar
-        Left = 88
+        Left = 72
         Top = 55
-        Width = 255
+        Width = 271
         Height = 15
         LargeChange = 16
         Max = 128
@@ -702,9 +707,9 @@ object AdjustForm: TAdjustForm
         OnScroll = ScrollBarScroll
       end
       object cmbPalette: TComboBox
-        Left = 69
+        Left = 72
         Top = 79
-        Width = 201
+        Width = 206
         Height = 19
         Style = csOwnerDrawFixed
         Color = clBlack
@@ -941,23 +946,6 @@ object AdjustForm: TAdjustForm
           '1024')
       end
     end
-  end
-  object trkQuality: TTrackBar
-    Left = 288
-    Top = 0
-    Width = 33
-    Height = 129
-    Hint = 'Preview image quality'
-    Max = 5
-    Min = 1
-    Orientation = trVertical
-    ParentShowHint = False
-    Position = 3
-    ShowHint = True
-    TabOrder = 2
-    TabStop = False
-    ThumbLength = 18
-    Visible = False
   end
   object QualityPopup: TPopupMenu
     Images = MainForm.Buttons
