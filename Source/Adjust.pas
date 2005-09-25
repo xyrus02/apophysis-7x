@@ -281,6 +281,7 @@ type
     procedure WritePreset(n: integer);
     function PresetToStr(n: integer): string;
 
+    procedure UpdateGradient(Pal: TColorMap);
     // --
   public
     PreviewDensity: double;
@@ -291,7 +292,6 @@ type
     procedure UpdateDisplay;
     procedure UpdateFlame;
 
-    procedure UpdateGradient(Pal: TColorMap);
   end;
 
 var
@@ -364,7 +364,12 @@ begin
   Resetting := False;
   DrawPreview;
 
-  Palette:=cp.cmap;
+  // gradient
+  if cp.cmapindex >= 0 then
+    cmbPalette.ItemIndex := cp.cmapindex;
+  ScrollBar.Position := 0;
+  Palette := cp.cmap;
+  BackupPal := cp.cmap;
   DrawPalette;
 end;
 

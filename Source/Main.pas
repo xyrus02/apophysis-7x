@@ -1363,11 +1363,11 @@ begin
   x := cp1.center[0];
   y := cp1.center[1];
   pal := ''; hue := '';
-  if sheep then
-  begin
+//  if sheep then
+//  begin
     pal := 'palette="' + IntToStr(cp1.cmapindex) + '" ';
     hue := 'hue="' + format('%g', [cp1.hue_rotation]) + '" ';
-  end;
+//  end;
   if Trim(SheepNick) <> '' then nick := 'nick="' + Trim(SheepNick) + '"';
   if Trim(SheepURL) <> '' then url := 'url="' + Trim(SheepURL) + '" ';
   try
@@ -1386,6 +1386,7 @@ begin
       format('brightness="%g" ', [cp1.brightness]) +
       format('gamma="%g" ', [cp1.gamma]) +
       format('vibrancy="%g" ', [cp1.vibrancy]) + hue + url + nick + '>');
+
    { Write transform parameters }
     t := NumXForms(cp1);
     for i := 0 to t - 1 do  begin
@@ -2334,8 +2335,9 @@ begin
   MainCp.name := RandomPrefix + RandomDate + '-' +
     IntToStr(RandomIndex);
   Transforms := TrianglesFromCP(MainCp, MainTriangles);
-//  if GradientForm.visible then GradientForm.UpdateGradient(Maincp.cmap);
-  if AdjustForm.visible then AdjustForm.UpdateGradient(Maincp.cmap);
+
+  if AdjustForm.visible then
+    AdjustForm.UpdateDisplay;
 
   StatusBar.Panels[2].text := maincp.name;
   ResetLocation;
@@ -2977,8 +2979,8 @@ end;
 
 procedure TMainForm.UpdateWindows;
 begin
-  if AdjustForm.visible then AdjustForm.UpdateGradient(maincp.cmap);
-//  if GradientForm.visible then GradientForm.UpdateGradient(maincp.cmap);
+  if AdjustForm.visible then
+    AdjustForm.UpdateDisplay;
 
   if EditForm.visible then EditForm.UpdateDisplay;
 // hmm I think I still have some problems with EditForm updating
@@ -3052,9 +3054,12 @@ begin
     Transforms := TrianglesFromCP(maincp, MainTriangles);
     // Trim undo index from title
     maincp.name := Copy(Fstrings[0], 6, length(Fstrings[0]) - 7);
-    if SavedPal then maincp.cmap := palette;
-//  if GradientForm.visible then GradientForm.UpdateGradient(maincp.cmap);
-    if AdjustForm.visible then AdjustForm.UpdateGradient(maincp.cmap);
+
+    if SavedPal then
+      maincp.cmap := palette;
+    if AdjustForm.visible then
+      AdjustForm.UpdateDisplay;
+
     RedrawTimer.Enabled := True;
     UpdateWindows;
   finally
@@ -3121,8 +3126,6 @@ end;
 
 procedure TMainForm.mnuGradClick(Sender: TObject);
 begin
-  //gradientForm.UpdateGradient(maincp.cmap);
-  //GradientForm.Show;
   AdjustForm.UpdateDisplay;
   AdjustForm.PageControl.TabIndex:=2;
   AdjustForm.Show;
@@ -3299,7 +3302,7 @@ begin
         StopThread;
         UpdateUndo;
         maincp.cmap := Pal;
-        AdjustForm.UpdateGradient(maincp.cmap);
+        AdjustForm.UpdateDisplay;
 
         if EditForm.Visible then EditForm.UpdateDisplay;
         if MutateForm.Visible then MutateForm.UpdateDisplay;
@@ -3720,24 +3723,25 @@ begin
   ScriptEditor.Stopped := True;
   StopThread;
   nxform := 0;
+  Parsecp.cmapindex := -2; // generate pallet from cmapindex and hue (apo 1 and earlier)
   ParseCp.symmetry := 0;
   XMLScanner.LoadFromBuffer(params);
   XMLScanner.Execute;
   cp1.copy(ParseCp);
-  if Parsecp.cmapindex <> -1 then
+  if Parsecp.cmapindex = -2 then
   begin
     if cp1.cmapindex < NRCMAPS then
       GetCMap(cp1.cmapindex, 1, cp1.cmap)
     else
       ShowMessage('Palette index too high');
-  end;
-  if (cp1.hue_rotation > 0) and (cp1.hue_rotation < 1) then
-  begin
-    for i := 0 to 255 do
-    begin
-      RGBToHSV(cp1.cmap[i][0], cp1.cmap[i][1], cp1.cmap[i][2], h, s, v);
-      h := Round(360 + h + (cp1.hue_rotation * 360)) mod 360;
-      HSVToRGB(h, s, v, cp1.cmap[i][0], cp1.cmap[i][1], cp1.cmap[i][2]);
+
+    if (cp1.hue_rotation > 0) and (cp1.hue_rotation < 1) then begin
+      for i := 0 to 255 do
+      begin
+        RGBToHSV(cp1.cmap[i][0], cp1.cmap[i][1], cp1.cmap[i][2], h, s, v);
+        h := Round(360 + h + (cp1.hue_rotation * 360)) mod 360;
+        HSVToRGB(h, s, v, cp1.cmap[i][0], cp1.cmap[i][1], cp1.cmap[i][2]);
+      end;
     end;
   end;
 
@@ -4094,6 +4098,10 @@ procedure ParseCompactcolors(cp: TControlPoint; count: integer; data: string);
 var
   i: integer;
 begin
+  // diable generating pallete
+  if Parsecp.cmapindex = -2 then
+    Parsecp.cmapindex := -1;
+
   Assert(Count = 256,'only 256 color Colormaps are supported at the moment');
   Assert((Count * 8) = Length(data),'Data size MisMatch');
   for i := 0 to Count -1 do begin
@@ -4172,6 +4180,10 @@ begin
     end;
     if TagName = 'color' then
     begin
+      // diable generating pallete
+      if Parsecp.cmapindex = -2 then
+        Parsecp.cmapindex := -1;
+
       i := StrToInt(Attributes.value('index'));
       v := Attributes.value('rgb');
       GetTokens(v, tokens);

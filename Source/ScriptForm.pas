@@ -2958,10 +2958,8 @@ begin
   MainCp.cmap := cp.cmap;
   MainForm.RedrawTimer.enabled := true;
   if EditForm.Visible then EditForm.UpdateDisplay;
-//  if AdjustForm.Visible then AdjustForm.UpdateDisplay;
+  if AdjustForm.Visible then AdjustForm.UpdateDisplay;
   if MutateForm.Visible then MutateForm.UpdateDisplay;
-//  if GradientForm.Visible then GradientForm.UpdateGradient(cmap)
-  if AdjustForm.Visible then AdjustForm.UpdateGradient(cmap)
 end;
 
 { ******************************* functions ********************************** }

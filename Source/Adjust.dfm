@@ -173,7 +173,7 @@ object AdjustForm: TAdjustForm
     Top = 133
     Width = 390
     Height = 131
-    ActivePage = TabSheet2
+    ActivePage = TabSheet3
     Align = alBottom
     TabOrder = 1
     object TabSheet1: TTabSheet
@@ -912,7 +912,7 @@ object AdjustForm: TAdjustForm
         Top = 12
         Width = 73
         Height = 21
-        ItemHeight = 13
+        ItemHeight = 0
         ItemIndex = 0
         TabOrder = 7
         Text = '512'
@@ -930,7 +930,7 @@ object AdjustForm: TAdjustForm
         Top = 36
         Width = 73
         Height = 21
-        ItemHeight = 13
+        ItemHeight = 0
         ItemIndex = 0
         TabOrder = 8
         Text = '384'

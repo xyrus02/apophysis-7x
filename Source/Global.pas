@@ -76,7 +76,6 @@ var
   UPRHeight: Integer;
   ImageFolder: string;
   UPRPath: string; // Name and folder of last UPR file
-  UpdateGradient: boolean;
   cmap_index: integer; // Index to current gradient
   Variation: TVariation; // Current variation
   NumTries, TryLength: integer; // Settings for smooth palette

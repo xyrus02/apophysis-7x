@@ -43,7 +43,6 @@ object GradientBrowser: TGradientBrowser
     0000800300008003000080030000800300008003000080030000800300008003
     000080030000800300008003000080070000800F0000801F0000803F0000}
   OldCreateOrder = False
-  Position = poDefaultPosOnly
   OnClose = FormClose
   OnCreate = FormCreate
   OnDestroy = FormDestroy
@@ -54,7 +53,7 @@ object GradientBrowser: TGradientBrowser
     Left = 0
     Top = 4
     Width = 372
-    Height = 105
+    Height = 99
     Align = alClient
     BevelOuter = bvNone
     TabOrder = 0
@@ -98,7 +97,7 @@ object GradientBrowser: TGradientBrowser
   end
   object pnlControls: TPanel
     Left = 0
-    Top = 109
+    Top = 103
     Width = 372
     Height = 51
     Align = alBottom

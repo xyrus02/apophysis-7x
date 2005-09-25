@@ -38,7 +38,7 @@ begin
       begin
         cmap_index := Random(NRCMAPS);
         GetCMap(cmap_index, 1, DestCP.cmap);
-        cmap_index := DestCP.cmapindex;
+//        cmap_index := DestCP.cmapindex;
         DestCP.cmapIndex := cmap_index;
       end;
     1:
