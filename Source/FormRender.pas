@@ -306,8 +306,8 @@ begin
   cbMaxMemory.Enabled := false;
   cmbPreset.enabled := false;
   chkSave.enabled := false;
-  cbPostProcess.enabled := false;
-  chkShutdown.enabled := false;
+//  cbPostProcess.enabled := false;
+//  chkShutdown.enabled := false;
   btnSavePreset.enabled := false;
   btnDeletePreset.enabled := false;
   btnRender.Enabled := false;
