@@ -2,7 +2,7 @@ object MainForm: TMainForm
   Left = 387
   Top = 166
   Width = 605
-  Height = 575
+  Height = 595
   Caption = 'Apophysis'
   Color = clBtnFace
   Font.Charset = ANSI_CHARSET
@@ -313,7 +313,7 @@ object MainForm: TMainForm
       Left = 1
       Top = 1
       Width = 431
-      Height = 478
+      Height = 492
       Align = alClient
       AutoSize = True
       PopupMenu = DisplayPopup

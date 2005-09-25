@@ -1561,17 +1561,23 @@ begin
       try
         FileList.LoadFromFile(filename);
 
-        if pos('<flame', FileList.text) <> 0 then
+        // fix first line
+        if (FileList.Count > 0) then begin
+          FileList[0] := '<Flames name="' + Tag + '">';
+        end;
+
+        if pos('<flame ', FileList.text) <> 0 then
           repeat
             FileList.Delete(FileList.Count - 1);
           until (Pos('</flame>', FileList[FileList.count - 1]) <> 0)
         else
           repeat
             FileList.Delete(FileList.Count - 1);
-          until (Pos('<' + Tag + '>', FileList[FileList.count - 1]) <> 0);
+          until (Pos('<' + Tag + '>', FileList[FileList.count - 1]) <> 0) or
+                (Pos('</Flames>', FileList[FileList.count - 1]) <> 0);
 
         FileList.Add(Trim(FlameToXML(cp1, false)));
-        FileList.Add('</' + Tag + '>');
+        FileList.Add('</Flames>');
         FileList.SaveToFile(filename);
 
       finally
@@ -1583,9 +1589,9 @@ begin
     // New file ... easy
       AssignFile(IFile, filename);
       ReWrite(IFile);
-      Writeln(IFile, '<' + Tag + '>');
+      Writeln(IFile, '<Flames name="' + Tag + '">');
       Write(IFile, FlameToXML(cp1, false));
-      Writeln(IFile, '</' + Tag + '>');
+      Writeln(IFile, '</Flames>');
       CloseFile(IFile);
     end;
   except on E: EInOutError do
