@@ -9,11 +9,13 @@ type
   TCustomDrawControl = class(TCustomControl)
   private
     FOnPaint: TNotifyEvent;
+    FOnLeave: TNotifyEvent;
 
     procedure WMEraseBkgnd(var Message: TWMEraseBkgnd); message WM_ERASEBKGND;
     procedure WMSetFocus(var Message: TWMSetFocus); message WM_SETFOCUS;
     procedure WMKillFocus(var Message: TWMKillFocus); message WM_KILLFOCUS;
     procedure WMGetDlgCode(var Message: TMessage); message WM_GETDLGCODE;
+    procedure CMMouseLeave(var Message: TMessage); message CM_MOUSELEAVE;
   protected
 
   public
@@ -34,6 +36,7 @@ type
 //    property OnMouseWheelUp;
     property OnEnter;
     property OnExit;
+    property OnMouseLeave: TNotifyEvent read FOnLeave write FOnLeave;
   end;
 
 implementation
@@ -58,6 +61,11 @@ procedure TCustomDrawControl.WMGetDlgCode(var Message: TMessage);
 begin
   inherited;
   Message.Result :=  Message.Result or DLGC_WANTARROWS;
+end;
+
+procedure TCustomDrawControl.CMMouseLeave(var Message: TMessage); 
+begin
+  if Assigned(FOnLeave) then FOnLeave(Self);
 end;
 
 procedure TCustomDrawControl.Paint;

@@ -88,7 +88,7 @@ type
     Label21: TLabel;
     pnlBackColor: TPanel;
     chkUseXFormColor: TCheckBox;
-    chkFlameBack: TCheckBox;
+    chkHelpers: TCheckBox;
     pnlReference: TPanel;
     TriangleScrollBox: TScrollBox;
     TrianglePanel: TPanel;
@@ -176,6 +176,7 @@ type
     procedure TriangleViewKeyUp(Sender: TObject; var Key: Word;
       Shift: TShiftState);
     procedure TriangleViewExit(Sender: TObject);
+    procedure TriangleViewMouseLeave(Sender: TObject);
 
     procedure FormShow(Sender: TObject);
     procedure mnuDeleteClick(Sender: TObject);
@@ -208,7 +209,7 @@ type
       ScrollCode: TScrollCode; var ScrollPos: Integer);
     procedure scrlXFormColorChange(Sender: TObject);
     procedure chkUseXFormColorClick(Sender: TObject);
-    procedure chkFlameBackClick(Sender: TObject);
+    procedure chkHelpersClick(Sender: TObject);
     procedure pnlBackColorClick(Sender: TObject);
     procedure pnlReferenceClick(Sender: TObject);
     procedure txtXFormColorExit(Sender: TObject);
@@ -301,9 +302,7 @@ type
     SelectMode: boolean;
     HasChanged: boolean;
 
-    oldx, oldy: double;
-    // --Z--
-    olddist: double;
+    oldx, oldy, olddist: double;
     Pivot: TSPoint;
     VarsCache: array[0..64] of double; // hack: to prevent slow valuelist redraw
 
@@ -374,6 +373,8 @@ var
   oldTriangle: TTriangle;
   gCenterX: double;
   gCenterY: double;
+
+  HelpersEnabled: boolean = true;
 
 {$R *.DFM}
 
@@ -880,6 +881,9 @@ begin
 end;
 
 procedure TEditForm.TriangleViewPaint(Sender: TObject);
+const
+  foc_ofs = 4;
+  foc_size = 32;
 var
   ix, iy, sc: double;
 
@@ -890,6 +894,8 @@ var
   end;
 var
   i: integer;
+  d, d1, dx, dy, k: double;
+  tx, ty: double;
 
   ax, ay: integer;
   a, b, c: TPoint;
@@ -919,17 +925,10 @@ begin
       brush.Color := pnlBackColor.Color;
       FillRect(Rect(0, 0, Width, Height));
 
-      if TWinControl(Sender).Focused then
-      begin
-        brush.Color := GridColor1;
-        FrameRect(Rect(1, 1, Width-1, Height-1));
-//        Rectangle(Rect(1, 1, Width-1, Height-1));
-        brush.Color := pnlBackColor.Color;
-      end;
-
-      // draw grid
       Pen.Style := psSolid;
       Pen.Width := 1;
+
+      // draw grid
       Pen.Color := GridColor2;
       gridX1:=gCenterX-ix/sc;
       gridX2:=gCenterX+(Width-ix)/sc;
@@ -972,16 +971,15 @@ begin
       {Reference Triangle}
       Pen.Style := psDot;
       Pen.color := pnlReference.Color;
-
       a := ToScreen(MainTriangles[-1].x[0], MainTriangles[-1].y[0]);
       b := ToScreen(MainTriangles[-1].x[1], MainTriangles[-1].y[1]);
       c := ToScreen(MainTriangles[-1].x[2], MainTriangles[-1].y[2]);
       Polyline([a, b, c, a]);
 
       Font.color := Pen.color;
-      TextOut(a.x, a.y, 'A');
-      TextOut(b.x, b.y, 'B');
-      TextOut(c.x, c.y, 'C');
+      TextOut(a.x+2, a.y+1, 'A');
+      TextOut(b.x+2, b.y+1, 'B');
+      TextOut(c.x+2, c.y+1, 'C');
 
       Pen.Style := psSolid;
 
@@ -1002,46 +1000,105 @@ begin
         Ellipse(c.x - 4, c.y - 4, c.x + 4, c.y + 4);
 
         Font.color := Pen.color;
-        TextOut(a.x, a.y, 'A');
-        TextOut(b.x, b.y, 'B');
-        TextOut(c.x, c.y, 'C');
+        TextOut(c.x+2, c.y+1, 'C');
+        TextOut(b.x+2, b.y+1, 'B');
+        TextOut(a.x+2, a.y+1, 'A');
       end;
 
-      // if dragging, draw pivot axis
-      if TriangleCaught or CornerCaught then
+
+      if (TriangleCaught or CornerCaught) then // if dragging, draw pivot axis
       begin
-        Pen.Mode := pmMerge;
-        Pen.Color := $555555;
-        Pen.Style := psDot;
-//        ax := integer(round(ix + (Pivot.x - gCenterX)*sc));
-//        ay := integer(round(iy + (gCentery - Pivot.y)*sc));
+       if HelpersEnabled then
+       begin
+        pen.Color := $808080;
+        //pen.Color := 0;
+        //brush.Color := $808080;
+        pen.Mode := pmMerge;
+        pen.Style := psSolid;//psDot;
         a := ToScreen(Pivot.x, Pivot.y);
         MoveTo(a.x, 0);
         LineTo(a.x, Height);
         MoveTo(0, a.y);
         LineTo(Width, a.y);
-        Pen.Color := $808080;
-        Pen.Style := psSolid;
-        Pen.Mode := pmXor;
-        if CornerCaught then
+        if (editMode = modeRotate) or (editMode = modeScale) then // draw circle
         begin
-//          ax := integer(round(ix + (MainTriangles[SelectedTriangle].x[SelectedCorner] - gCenterX)*sc));
-//          ay := integer(round(iy - (MainTriangles[SelectedTriangle].y[SelectedCorner] - gCenterY)*sc));
-          a := ToScreen(MainTriangles[SelectedTriangle].x[SelectedCorner],
-                        MainTriangles[SelectedTriangle].y[SelectedCorner]);
-        end
-        else begin
-//          ax := integer(round(ix + (GetPivot.x - gCenterX)*sc));
-//          ay := integer(round(iy - (GetPivot.y - gCenterY)*sc));
-          a := ToScreen(GetPivot.x, GetPivot.y);
-        end;
-        MoveTo(a.x, 0);
-        LineTo(a.x, Height);
-        MoveTo(0, a.y);
-        LineTo(Width, a.y);
-        Pen.Mode := pmCopy;
+          if CornerCaught then begin
+            dx := MainTriangles[SelectedTriangle].x[SelectedCorner] - Pivot.x;
+            dy := MainTriangles[SelectedTriangle].y[SelectedCorner] - Pivot.y;
+            d := Hypot(dx, dy);
+//            d := dist(Pivot.x, Pivot.y,
+//              MainTriangles[SelectedTriangle].x[SelectedCorner], MainTriangles[SelectedTriangle].y[SelectedCorner]);
+          end
+          else begin
+//            d := MinDouble;
+            dx := MainTriangles[SelectedTriangle].x[0] - Pivot.x;
+            dy := MainTriangles[SelectedTriangle].y[0] - Pivot.y;
+            d := Hypot(dx, dy);
+            for i := 1 to 2 do
+            begin
+//              tx := MainTriangles[SelectedTriangle].x[i] - Pivot.x;
+//              ty := MainTriangles[SelectedTriangle].y[i] - Pivot.y;
+              d1 := Hypot(tx, ty);
+              d1 := dist(Pivot.x, Pivot.y, MainTriangles[SelectedTriangle].x[i], MainTriangles[SelectedTriangle].y[i]);
+              if d1 > d then begin
+                d := d1;
+//                dx := tx;
+//                dy := ty;
+              end;
+            end;
+            d1 := Hypot(dx, dy);
+            if (d1 <> d) and (d1 <> 0) then
+            begin
+              dx := dx/d1 * d;
+              dy := dy/d1 * d;
+            end;
+          end;
 
-        mouseOverTriangle := SelectedTriangle;
+          //i := min( min(Width, Height), integer(round(dmax * sc)));
+          i := integer(round(d * sc));
+          if i > 4 then begin
+            pen.Color := $808080;
+            brush.Style := bsClear;
+            Ellipse(a.x - i, a.y - i, a.x + i, a.y + i);
+
+            a := ToScreen(Pivot.x - dy, Pivot.y + dx);
+            b := ToScreen(Pivot.x + dy, Pivot.y - dx);
+            MoveTo(a.x, a.y);
+            LineTo(b.X, b.y);
+          end;
+
+          // rotated axis
+          if (dx <> 0) and (dy <> 0) then
+          begin
+            k := dy / dx;
+            if abs(k) < 1 then begin
+              MoveTo(0,     round(iy - sc*(Pivot.y - ( ix/sc-GCenterX+Pivot.x)*k - GCenterY)));
+              LineTo(Width, round(iy - sc*(Pivot.y - (-ix/sc-GCenterX+Pivot.x)*k - GCenterY)));
+            end
+            else begin
+              MoveTo(round(ix + sc*(Pivot.x - (-iy/sc-GCenterY+Pivot.y)/k - GCenterX)), 0);
+              LineTo(round(ix + sc*(Pivot.x - ( iy/sc-GCenterY+Pivot.y)/k - GCenterX)), Height);
+            end;
+          end;
+        end
+        else //if editMode = modeMove then // draw target axis
+        begin
+          Pen.Color := $808080;
+          Pen.Mode := pmMerge;//Xor;
+          brush.Color := 0;
+          if CornerCaught then
+            a := ToScreen(MainTriangles[SelectedTriangle].x[SelectedCorner],
+                          MainTriangles[SelectedTriangle].y[SelectedCorner])
+          else
+            a := ToScreen(GetPivot.x, GetPivot.y);
+          MoveTo(a.x, 0);
+          LineTo(a.x, Height);
+          MoveTo(0, a.y);
+          LineTo(Width, a.y);
+          Pen.Mode := pmCopy;
+        end;
+       end; // endif HelpersEnabled
+       mouseOverTriangle := SelectedTriangle;
       end;
 
       if (mouseOverTriangle >= 0) then // highlight triangle under cursor
@@ -1071,11 +1128,11 @@ begin
         begin
           font.Color := GetTriangleColor(mouseOverTriangle);
           brush.Style := bsClear;
-          ay := Height-3 + font.Height; // font.height < 0
+          ay := Height-foc_ofs*2 + font.Height; // font.height < 0
           for i:= NRVAR - 1 downto 0 do
             if cp.xform[mouseOverTriangle].vars[i] <> 0 then
             begin
-              ax := Width-3 - TextWidth(Varnames(i));
+              ax := Width-foc_ofs*2 - TextWidth(Varnames(i));
               TextOut(ax, ay, Varnames(i));
               Inc(ay, font.Height);
             end;
@@ -1087,28 +1144,39 @@ begin
       brush.Color:=clSilver;
       if CornerCaught then // draw selected corner
       begin
-//        ax := integer(round(ix + (MainTriangles[SelectedTriangle].x[SelectedCorner] - gCenterX) * sc));
-//        ay := integer(round(iy - (MainTriangles[SelectedTriangle].y[SelectedCorner] - gCenterY) * sc));
         a := ToScreen(MainTriangles[SelectedTriangle].x[SelectedCorner], MainTriangles[SelectedTriangle].y[SelectedCorner]);
         Ellipse(a.x - 4, a.y - 4, a.x + 4, a.y + 4);
       end
       else if (mouseOverTriangle>=0) and (mouseOverCorner >= 0) then // highlight corner under cursor
       begin
-//        ax := integer(round(ix + (MainTriangles[mouseOverTriangle].x[mouseOverCorner] - gCenterX) * sc));
-//        ay := integer(round(iy - (MainTriangles[mouseOverTriangle].y[mouseOverCorner] - gCenterY) * sc));
         a := ToScreen(MainTriangles[mouseOverTriangle].x[mouseOverCorner], MainTriangles[mouseOverTriangle].y[mouseOverCorner]);
         Ellipse(a.x - 4, a.y - 4, a.x + 4, a.y + 4);
       end;
 
       // draw pivot point
-//      ax := integer(round(ix + (GetPivot.x - gCenterX) * sc));
-//      ay := integer(round(iy - (GetPivot.y - gCenterY) * sc));
       a := ToScreen(GetPivot.x, GetPivot.y);
       Pen.Style := psSolid;
-      pen.Color:=clWhite;
-      brush.Color:=clSilver;
+      pen.Color := clWhite;
+      brush.Color := clSilver;
       Ellipse(a.x - 2, a.y - 2, a.x + 2, a.y + 2);
-      // --
+
+      if TWinControl(Sender).Focused then
+      begin
+        pen.Color := $808080;
+        pen.Mode := pmXor;
+        MoveTo(foc_ofs, foc_size);
+        LineTo(foc_ofs, foc_ofs);
+        LineTo(foc_size, foc_ofs);
+        MoveTo(Width-1-foc_ofs, foc_size);
+        LineTo(Width-1-foc_ofs, foc_ofs);
+        LineTo(Width-1-foc_size, foc_ofs);
+        MoveTo(Width-1-foc_ofs, Height-1-foc_size);
+        LineTo(Width-1-foc_ofs, Height-1-foc_ofs);
+        LineTo(Width-1-foc_size, Height-1-foc_ofs);
+        MoveTo(foc_ofs, Height-1-foc_size);
+        LineTo(foc_ofs, Height-1-foc_ofs);
+        LineTo(foc_size, Height-1-foc_ofs);
+      end;
     end;
     TriangleView.Canvas.Draw(0, 0, Bitmap);
   finally
@@ -1122,11 +1190,11 @@ var
 begin
 // Custom control setup
   TriangleView := TCustomDrawControl.Create(self);
-  TriangleView.TabStop := True;
+  TriangleView.TabStop  := True;
   TriangleView.TabOrder := 0;
-  TriangleView.Parent := GrphPnl;
-  TriangleView.Align := alClient;
-  TriangleView.Visible := True;
+  TriangleView.Parent   := GrphPnl;
+  TriangleView.Align    := alClient;
+  TriangleView.Visible  := True;
 
   TriangleView.OnPaint := TriangleViewPaint;
 
@@ -1138,8 +1206,9 @@ begin
   TriangleView.OnKeyDown    := TriangleViewKeyDown;
   TriangleView.OnKeyUp      := TriangleViewKeyUp;
 
-  TriangleView.OnEnter := rgPivotClicked;   // hack:
-  TriangleView.OnExit  := TriangleViewExit; // there's only Invalidate() in there :)
+  TriangleView.OnEnter      := rgPivotClicked;   // hack: it's only Invalidate() in there :)
+  TriangleView.OnExit       := TriangleViewExit;
+  TriangleView.OnMouseLeave := TriangleViewmouseLeave;
 //
 
   for i:= 0 to NRVAR - 1 do begin
@@ -1192,12 +1261,21 @@ var
   d: double;
 
   i0, i1: integer;
-label FoundCorner;
+label FoundCorner, Skip1, Skip2;
 begin
   Scale(fx, fy, x, y);
   // --Z--
   StatusBar.Panels[0].Text := Format('X: %f', [fx]);
   StatusBar.Panels[1].Text := Format('Y: %f', [fy]);
+
+  if viewDragMode then // graph panning
+  begin
+    viewDragged := true;
+    GcenterX := GcenterX - (fx - oldx);
+    GcenterY := GcenterY - (fy - oldy);
+    TriangleView.Refresh;
+    exit;
+  end;
 
   mt:=mouseOverTriangle;
   mc:=MouseOverCorner;
@@ -1241,40 +1319,52 @@ FoundCorner:
   else
     TriangleView.Cursor := crArrow;
 
-  if viewDragMode then // graph panning
-  begin
-    viewDragged := true;
-    GcenterX := GcenterX - (fx - oldx);
-    GcenterY := GcenterY - (fy - oldy);
-    TriangleView.Refresh;
-    exit;
-  end;
-
   Shift := Shift - [ssLeft];
 
-  if CornerCaught then
-  begin { Drag a corner }
+  if CornerCaught then // Modify a point ///////////////////////////////////////
+  begin
 //    if (Shift = [ssAlt]) or ((editMode = modeRotate) and (Shift = [])) then
     if (editMode = modeRotate) then // rotate point
     begin // rotate point around pivot
       d := dist(Pivot.X, Pivot.Y, fx, fy);
       if d<>0 then begin
-        vx := (fx-Pivot.X)*olddist/d;
-        vy := (fy-Pivot.Y)*olddist/d;
+        if ssShift in Shift then // angle snap
+        begin
+          try
+            t := StrToFloat(txtTrgRotateValue.Text)/180*PI;
+            //assert(t<>0);
+          except
+            t := 15.0*PI/180.0;
+            txtTrgRotateValue.Text := '15';
+          end;
+          if t = 0 then goto Skip1; //?
+
+          a := Round(arctan2(fy-Pivot.Y, fx-Pivot.X)/t)*t;
+          vx := olddist*cos(a);
+          vy := olddist*sin(a);
+        end
+        else begin
+Skip1:
+          vx := (fx-Pivot.X)*olddist/d;
+          vy := (fy-Pivot.Y)*olddist/d;
+          a := arctan2(vy,vx) - arctan2(oldy,oldx);
+        end;
+        MainTriangles[SelectedTriangle].x[SelectedCorner] := Pivot.X+vx;
+        MainTriangles[SelectedTriangle].y[SelectedCorner] := Pivot.Y+vy;
       end
-      else begin
-        vx := 0;
-        vy := 0;
-      end;
-      MainTriangles[SelectedTriangle].x[SelectedCorner] := Pivot.X+vx;
-      MainTriangles[SelectedTriangle].y[SelectedCorner] := Pivot.Y+vy;
-      vx:=arctan2(vy,vx);
-      vy:=arctan2(oldy,oldx);
-      StatusBar.Panels[2].Text := Format('Rotate: %3.2f°', [(vx-vy)*180/PI]);
+      else a := 0;
+      vy := abs(
+        arctan2(MainTriangles[SelectedTriangle].y[0]-MainTriangles[SelectedTriangle].y[1],
+                MainTriangles[SelectedTriangle].x[0]-MainTriangles[SelectedTriangle].x[1])
+       -arctan2(MainTriangles[SelectedTriangle].y[2]-MainTriangles[SelectedTriangle].y[1],
+                MainTriangles[SelectedTriangle].x[2]-MainTriangles[SelectedTriangle].x[1])
+                );
+      if vy > PI then vy := 2*PI - vy;
+      StatusBar.Panels[2].Text := Format('Rotate: %3.2f°  <ABC: %3.2f°', [a*180/PI, vy*180/PI]);
     end
 //    else if (Shift = [ssCtrl]) or ((editMode = modeScale) and (Shift = [])) then
     else if (editMode = modeScale) then
-    begin // move point along vector
+    begin // move point along vector ("scale")
       if olddist<>0 then begin
         vy := (oldx*(fx-Pivot.X) + oldy*(fy-Pivot.Y))/(olddist*olddist);
         MainTriangles[SelectedTriangle].x[SelectedCorner] := Pivot.X+oldx*vy;
@@ -1313,26 +1403,36 @@ FoundCorner:
     StatusBar.Refresh;
     exit;
   end
-  else if TriangleCaught then { Modify a whole triangle }
+  else if TriangleCaught then // Modify a whole triangle ///////////////////////
   begin
 //    if (Shift = [ssAlt]) or ((editMode = modeRotate) and (Shift = [])) then // rotate
     if (editMode = modeRotate) then // rotate triangle
     begin
       a := arctan2(fy-Pivot.Y, fx-Pivot.X) - arctan2(oldy, oldx);
-      if ssShift in Shift then
+      if ssShift in Shift then // angle snap
       begin
         try
           t := StrToFloat(txtTrgRotateValue.Text)/180*PI;
-          assert(t<>0);
+          //assert(t<>0);
         except
           t := 15.0*PI/180.0;
           txtTrgRotateValue.Text := '15';
         end;
+        if t = 0 then goto Skip2;
+
         a := Round(a/t)*t
       end;
+Skip2:
       MainTriangles[SelectedTriangle] :=
         RotateTrianglePoint(OldTriangle, Pivot.X, Pivot.Y, a);
-      StatusBar.Panels[2].Text := Format('Rotate: %3.2f°', [a*180/PI]);
+
+      vx := MainTriangles[SelectedTriangle].x[0]-MainTriangles[SelectedTriangle].x[1];
+      vy := MainTriangles[SelectedTriangle].y[0]-MainTriangles[SelectedTriangle].y[1];
+      if abs(vx*(MainTriangles[SelectedTriangle].x[2]-MainTriangles[SelectedTriangle].x[1])+
+             vy*(MainTriangles[SelectedTriangle].y[2]-MainTriangles[SelectedTriangle].y[1])) < 0.001
+      then
+        StatusBar.Panels[2].Text := Format('Rotate: %3.2f°  Local axis: %3.2f°', [a*180/PI, arctan2(vy, vx)*180/PI])
+      else StatusBar.Panels[2].Text := Format('Rotate: %3.2f°', [a*180/PI]);
     end
 //    else if (Shift = [ssCtrl]) or ((editMode = modeScale) and (Shift = [])) then
     else if (editMode = modeScale) then // scale
@@ -1433,7 +1533,7 @@ begin
       i := InsideTriangle(fx, fy);
       if i >= 0 then SelectedTriangle := i
       else
-        if Shift * [ssAlt,ssCtrl,ssShift] = [] then exit;
+        if oldMode = modeNone then exit; 
     end;
     TriangleCaught := True;
 
@@ -1449,7 +1549,7 @@ begin
     TriangleView.Invalidate;
     exit;
   end
-  else if (Button = mbRight) and
+  else if (Button = mbRight) and 
       not (TriangleCaught or CornerCaught) then // graph panning
   begin
     SetCaptureControl(TriangleView);
@@ -1475,7 +1575,7 @@ begin
     end
     else TriangleView.Invalidate;
   end
-  else if (Button = mbRight) and viewDragMode then // --Z-- panning
+  else if (Button = mbRight) and viewDragMode then
   begin
     viewDragMode := false;
     if viewDragged=false then // haven't dragged - popup menu then
@@ -1540,7 +1640,7 @@ begin
       if Registry.ValueExists('ReferenceTriangleColor') then
         ReferenceTriangleColor := Registry.ReadInteger('ReferenceTriangleColor')
       else
-        ReferenceTriangleColor := integer(clGray);
+        ReferenceTriangleColor := $7f7f7f;
       if Registry.ValueExists('ResetLocation') then
         mnuResetLoc.checked := Registry.ReadBool('ResetLocation')
       else mnuResetLoc.checked := true;
@@ -1561,7 +1661,7 @@ begin
     Registry.Free;
   end;
   chkUseXFormColor.checked := UseTransformColors;
-  chkFlameBack.checked := UseFlameBackground;
+//  chkFlameBack.checked := UseFlameBackground;
   pnlBackColor.Color := TColor(BackgroundColor);
   GrphPnl.Color := TColor(BackgroundColor);
   pnlGridColor1.Color := GridColor1;
@@ -2179,9 +2279,9 @@ begin
   TriangleView.Invalidate;
 end;
 
-procedure TEditForm.chkFlameBackClick(Sender: TObject);
+procedure TEditForm.chkHelpersClick(Sender: TObject);
 begin
-  UseFlameBackground := chkFlameBack.checked;
+  HelpersEnabled := chkHelpers.checked;
   TriangleView.Invalidate;
 end;
 
@@ -2451,8 +2551,8 @@ var
   cell: TGridCoord;
 begin
   if Button = mbLeft then begin
+    varDragOld:=x;
     cell := TValueListEditor(Sender).MouseCoord(x, y);
-
     if (cell.y < 1) or (cell.y >= TValueListEditor(Sender).RowCount) or
        (cell.x <> 0) then exit;
 
@@ -2465,8 +2565,7 @@ begin
     GetCursorPos(mousepos); // hmmm
 
     varDragMode:=true;
-    varDragOld:=x;
-    varDragPos:=x;
+    varDragPos:=0;
     SetCaptureControl(TValueListEditor(Sender));
     if Sender = VEVars then
       varDragValue := cp.xform[SelectedTriangle].vars[varDragIndex]
@@ -2553,7 +2652,7 @@ var
   v: double;
 begin
   if (TValueListEditor(Sender).Values[VarNames(varDragIndex)] = '0') or
-     (varDragPos >=  TValueListEditor(Sender).ColWidths[0]) then exit;
+     (varDragOld >=  TValueListEditor(Sender).ColWidths[0]) then exit;
 
   MainForm.UpdateUndo;
   if Sender = VEVars then
@@ -2820,8 +2919,11 @@ procedure TEditForm.TriangleViewKeyUp(Sender: TObject; var Key: Word;
   Shift: TShiftState);
 begin
 
-  if (oldMode <> modeNone) and
-     (key in [VK_SHIFT, VK_MENU, VK_CONTROL]) then
+  if (oldMode <> modeNone) and (
+       ((key = VK_SHIFT) and (editMode = modeMove)) or
+       ((key = VK_MENU) and (editMode = modeRotate)) or
+       ((key = VK_CONTROL) and (editMode = modeScale))
+     ) then
   begin
     editMode := oldMode;
     oldMode := modeNone;
@@ -2833,8 +2935,6 @@ end;
 
 procedure TEditForm.TriangleViewExit(Sender: TObject);
 begin
-  mouseOverTriangle := -1;
-
   if oldMode <> modeNone then
   begin
     editMode := oldMode;
@@ -2844,7 +2944,17 @@ begin
     tbScale.Down  := (editMode = modeScale);
   end;
 
+  mouseOverTriangle := -1;
   TriangleView.Invalidate;
+end;
+
+procedure TEditForm.TriangleViewMouseLeave(Sender: TObject);
+begin
+  if viewDragMode = false then
+  begin
+    mouseOverTriangle := -1;
+    TriangleView.Invalidate;
+  end;
 end;
 
 procedure TEditForm.EditKeyDown(Sender: TObject; var Key: Word;
@@ -2863,6 +2973,8 @@ begin
         TriangleView.Invalidate;
         ShowSelectedInfo;
       end;
+{   // these keys are not so good, must think about it... 
+
     VK_SPACE: EditForm.tbSelectClick(Sender);
 
     Ord('Q'): EditForm.tbEditModeClick(tbMove);
@@ -2879,6 +2991,7 @@ begin
     Ord('C'): EditForm.rgPivot.ItemIndex:=2;
     Ord('V'): EditForm.rgPivot.ItemIndex:=3;
     Ord('B'): EditForm.rgPivot.ItemIndex:=4;
+}
   else
     key_handled := false;
     exit;
@@ -2911,7 +3024,7 @@ begin
     StatusBar.Panels[2].Text := 'Select OFF';
   end;
 
-  // hack (to generate MouseMove event):
+  // hack: to generate MouseMove event
   GetCursorPos(MousePos);
   SetCursorPos(MousePos.x, MousePos.y);
 end;

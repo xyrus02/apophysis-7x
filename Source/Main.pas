@@ -1916,9 +1916,9 @@ begin
   end
   else
   begin
-    Triangles[-1].x[0] := 0; Triangles[-1].y[0] := 0;
-    Triangles[-1].x[1] := 1; Triangles[-1].y[1] := 0;
-    Triangles[-1].x[2] := 1; Triangles[-1].y[2] := 1.5;
+    Triangles[-1].x[0] := 1; Triangles[-1].y[0] := 0; // "x"
+    Triangles[-1].x[1] := 0; Triangles[-1].y[1] := 0; // "0"
+    Triangles[-1].x[2] := 0; Triangles[-1].y[2] := -1; // "y"
   end;
 
   for j := 0 to xforms - 1 do
@@ -1931,10 +1931,8 @@ begin
     f := cp1.xform[j].c[2][1];
     for i := 0 to 2 do
     begin
-      triangles[j].x[i] := Triangles[-1].x[i] * a + Triangles[-1].y[i] *
-        c + e;
-      triangles[j].y[i] := Triangles[-1].x[i] * b + Triangles[-1].y[i] *
-        d + f;
+      triangles[j].x[i] := Triangles[-1].x[i] * a + Triangles[-1].y[i] * c + e;
+      triangles[j].y[i] := Triangles[-1].x[i] * b + Triangles[-1].y[i] * d + f;
     end;
   end;
   for i := -1 to xforms - 1 do

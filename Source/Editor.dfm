@@ -1,8 +1,8 @@
 object EditForm: TEditForm
-  Left = 377
-  Top = 179
+  Left = 350
+  Top = 163
   Width = 586
-  Height = 600
+  Height = 586
   Caption = 'Transform Editor'
   Color = clBtnFace
   Constraints.MinHeight = 400
@@ -54,7 +54,7 @@ object EditForm: TEditForm
   TextHeight = 13
   object StatusBar: TStatusBar
     Left = 0
-    Top = 557
+    Top = 543
     Width = 578
     Height = 15
     Panels = <
@@ -333,14 +333,14 @@ object EditForm: TEditForm
     Left = 0
     Top = 24
     Width = 578
-    Height = 533
+    Height = 519
     Align = alClient
     TabOrder = 1
     object Splitter1: TSplitter
       Left = 396
       Top = 1
       Width = 9
-      Height = 531
+      Height = 517
       Align = alRight
       AutoSnap = False
       Beveled = True
@@ -351,7 +351,7 @@ object EditForm: TEditForm
       Left = 1
       Top = 1
       Width = 395
-      Height = 531
+      Height = 517
       Align = alClient
       BevelOuter = bvNone
       Color = clAppWorkSpace
@@ -361,7 +361,7 @@ object EditForm: TEditForm
       Left = 405
       Top = 1
       Width = 172
-      Height = 531
+      Height = 517
       Align = alRight
       Alignment = taLeftJustify
       BevelOuter = bvNone
@@ -401,7 +401,7 @@ object EditForm: TEditForm
         Left = 0
         Top = 136
         Width = 172
-        Height = 395
+        Height = 381
         Align = alClient
         TabOrder = 0
         object lblTransform: TLabel
@@ -434,7 +434,7 @@ object EditForm: TEditForm
           Left = 1
           Top = 26
           Width = 170
-          Height = 368
+          Height = 354
           ActivePage = TriangleTab
           Align = alBottom
           Anchors = [akLeft, akTop, akRight, akBottom]
@@ -447,7 +447,7 @@ object EditForm: TEditForm
               Left = 0
               Top = 0
               Width = 162
-              Height = 322
+              Height = 308
               HorzScrollBar.Visible = False
               VertScrollBar.Smooth = True
               VertScrollBar.Style = ssFlat
@@ -1156,65 +1156,65 @@ object EditForm: TEditForm
           object tabXForm: TTabSheet
             Caption = 'Transform'
             object lbla: TLabel
-              Left = 9
-              Top = 12
+              Left = 4
+              Top = 8
               Width = 10
               Height = 13
               Caption = 'a:'
             end
             object Label1: TLabel
-              Left = 9
-              Top = 36
+              Left = 82
+              Top = 8
               Width = 10
               Height = 13
               Caption = 'b:'
             end
             object Label2: TLabel
-              Left = 9
-              Top = 60
+              Left = 4
+              Top = 32
               Width = 9
               Height = 13
               Caption = 'c:'
             end
             object Label3: TLabel
-              Left = 9
-              Top = 84
+              Left = 82
+              Top = 32
               Width = 10
               Height = 13
               Caption = 'd:'
             end
             object Label4: TLabel
-              Left = 9
-              Top = 108
+              Left = 4
+              Top = 56
               Width = 10
               Height = 13
               Caption = 'e:'
             end
             object Label5: TLabel
-              Left = 9
-              Top = 132
+              Left = 82
+              Top = 56
               Width = 8
               Height = 13
               Caption = 'f:'
             end
             object Label6: TLabel
-              Left = 9
-              Top = 156
+              Left = 36
+              Top = 84
               Width = 38
               Height = 13
               Caption = 'Weight:'
             end
             object Label29: TLabel
-              Left = 9
-              Top = 180
+              Left = 36
+              Top = 108
               Width = 52
               Height = 13
               Caption = 'Symmetry:'
             end
             object txtA: TEdit
-              Left = 32
-              Top = 8
-              Width = 110
+              Left = 20
+              Top = 4
+              Width = 57
               Height = 21
               TabOrder = 0
               Text = '0'
@@ -1222,9 +1222,9 @@ object EditForm: TEditForm
               OnKeyPress = CoefKeyPress
             end
             object txtB: TEdit
-              Left = 32
-              Top = 32
-              Width = 110
+              Left = 96
+              Top = 4
+              Width = 57
               Height = 21
               TabOrder = 1
               Text = '0'
@@ -1232,9 +1232,9 @@ object EditForm: TEditForm
               OnKeyPress = CoefKeyPress
             end
             object txtC: TEdit
-              Left = 32
-              Top = 56
-              Width = 110
+              Left = 20
+              Top = 28
+              Width = 57
               Height = 21
               TabOrder = 2
               Text = '0'
@@ -1242,9 +1242,9 @@ object EditForm: TEditForm
               OnKeyPress = CoefKeyPress
             end
             object txtD: TEdit
-              Left = 32
-              Top = 80
-              Width = 110
+              Left = 96
+              Top = 28
+              Width = 57
               Height = 21
               TabOrder = 3
               Text = '0'
@@ -1252,9 +1252,9 @@ object EditForm: TEditForm
               OnKeyPress = CoefKeyPress
             end
             object txtE: TEdit
-              Left = 32
-              Top = 104
-              Width = 110
+              Left = 20
+              Top = 52
+              Width = 57
               Height = 21
               TabOrder = 4
               Text = '0'
@@ -1262,9 +1262,9 @@ object EditForm: TEditForm
               OnKeyPress = CoefKeyPress
             end
             object txtF: TEdit
-              Left = 32
-              Top = 128
-              Width = 110
+              Left = 96
+              Top = 52
+              Width = 57
               Height = 21
               TabOrder = 5
               Text = '0'
@@ -1272,9 +1272,9 @@ object EditForm: TEditForm
               OnKeyPress = CoefKeyPress
             end
             object txtP: TEdit
-              Left = 72
-              Top = 152
-              Width = 70
+              Left = 96
+              Top = 80
+              Width = 57
               Height = 21
               TabOrder = 6
               Text = '0'
@@ -1282,9 +1282,9 @@ object EditForm: TEditForm
               OnKeyPress = txtPKeyPress
             end
             object txtSymmetry: TEdit
-              Left = 72
-              Top = 176
-              Width = 70
+              Left = 96
+              Top = 104
+              Width = 57
               Height = 21
               TabOrder = 7
               Text = '0'
@@ -1298,7 +1298,7 @@ object EditForm: TEditForm
               Left = 0
               Top = 0
               Width = 162
-              Height = 322
+              Height = 308
               Align = alClient
               ScrollBars = ssVertical
               TabOrder = 0
@@ -1324,7 +1324,7 @@ object EditForm: TEditForm
               Left = 0
               Top = 0
               Width = 162
-              Height = 322
+              Height = 308
               Align = alClient
               ScrollBars = ssVertical
               TabOrder = 0
@@ -1450,15 +1450,16 @@ object EditForm: TEditForm
                 TabOrder = 1
                 OnClick = chkUseXFormColorClick
               end
-              object chkFlameBack: TCheckBox
+              object chkHelpers: TCheckBox
                 Left = 8
                 Top = 36
                 Width = 129
                 Height = 17
-                Caption = 'Use flame background'
-                Enabled = False
+                Caption = 'Enable helpers'
+                Checked = True
+                State = cbChecked
                 TabOrder = 2
-                OnClick = chkFlameBackClick
+                OnClick = chkHelpersClick
               end
               object pnlReference: TPanel
                 Left = 8
@@ -1502,7 +1503,7 @@ object EditForm: TEditForm
   object EditPopup: TPopupMenu
     AutoPopup = False
     Images = EditorTB
-    Left = 360
+    Left = 352
     Top = 40
     object mnuAutoZoom: TMenuItem
       Caption = 'Auto Zoom'
@@ -1613,7 +1614,7 @@ object EditForm: TEditForm
     end
   end
   object EditorTB: TImageList
-    Left = 361
+    Left = 353
     Top = 80
     Bitmap = {
       494C01010D000E00040010001000FFFFFFFFFF10FFFFFFFFFFFFFFFF424D3600
