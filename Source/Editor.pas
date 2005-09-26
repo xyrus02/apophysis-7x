@@ -29,6 +29,11 @@ const
 //  PixelCountMax = 32768;
   WM_PTHREAD_COMPLETE = WM_APP + 5438;
 
+  crEditArrow = 20;
+  crEditMove = 21;
+  crEditRotate = 22;
+  crEditScale = 23;
+
 type
   TEditForm = class(TForm)
     GrphPnl: TPanel;
@@ -155,6 +160,9 @@ type
     ColorImage: TImage;
     TabSheet4: TTabSheet;
     vleVariables: TValueListEditor;
+    mnuReset: TMenuItem;
+    mnuResetAll: TMenuItem;
+    tbResetAll: TToolButton;
     procedure ValidateVariable;
     procedure vleVariablesValidate(Sender: TObject; ACol, ARow: Integer; const KeyName, KeyValue: string);
     procedure vleVariablesKeyPress(Sender: TObject; var Key: Char);
@@ -272,6 +280,8 @@ type
       Shift: TShiftState);
     procedure txtValidateValue(Sender: TObject);
     procedure txtValKeyPress(Sender: TObject; var Key: Char);
+    procedure mnuResetClick(Sender: TObject);
+    procedure mnuResetAllClick(Sender: TObject);
 
   private
     TriangleView: TCustomDrawControl;
@@ -752,7 +762,7 @@ begin
   end;
   EditForm.StatusBar.Panels[2].Text := Format('Zoom: %f', [GraphZoom]);
 
-  TriangleView.Refresh;
+  TriangleView.Invalidate;//Refresh;
 end;
 
 procedure TEditForm.UpdateFlameX;
@@ -1063,7 +1073,9 @@ begin
 
             a := ToScreen(Pivot.x - dy, Pivot.y + dx);
             b := ToScreen(Pivot.x + dy, Pivot.y - dx);
+            c := ToScreen(Pivot.x, Pivot.y);
             MoveTo(a.x, a.y);
+            LineTo(c.X, c.y); // not necessary but it looks better with it...
             LineTo(b.X, b.y);
           end;
 
@@ -1188,7 +1200,12 @@ procedure TEditForm.FormCreate(Sender: TObject);
 var
   i: integer;
 begin
-// Custom control setup
+  Screen.Cursors[crEditArrow]  := LoadCursor(HInstance, 'CUR_ARROW');
+  Screen.Cursors[crEditMove]   := LoadCursor(HInstance, 'CUR_MOVE');
+  Screen.Cursors[crEditRotate] := LoadCursor(HInstance, 'CUR_ROTATE');
+  Screen.Cursors[crEditScale]  := LoadCursor(HInstance, 'CUR_SCALE');
+
+  // Custom control setup
   TriangleView := TCustomDrawControl.Create(self);
   TriangleView.TabStop  := True;
   TriangleView.TabOrder := 0;
@@ -1313,11 +1330,17 @@ begin
 FoundCorner:
   end;
 
-  if (mouseOverTriangle >= 0) and
-     (SelectMode or (mouseOverTriangle = SelectedTriangle)) then
-    TriangleView.Cursor := crHandPoint
+  if (mouseOverTriangle >= 0) or (SelectMode = false) or (oldMode <> modeNone) then
+    case editMode of
+      modeMove:
+        TriangleView.Cursor := crEditMove;
+      modeRotate:
+        TriangleView.Cursor := crEditRotate;
+      modeScale:
+        TriangleView.Cursor := crEditScale;
+    end
   else
-    TriangleView.Cursor := crArrow;
+    TriangleView.Cursor := crEditArrow; //crDefault;
 
   Shift := Shift - [ssLeft];
 
@@ -2445,34 +2468,22 @@ end;
 
 procedure TEditForm.ValidateVariation;
 var
-  Allow: boolean;
   i: integer;
   NewVal, OldVal: double;
 begin
-  Allow := True;
-
   i := VEVars.Row - 1;
-
   OldVal := Round6(cp.xform[SelectedTriangle].vars[i]);
-{ Test that it's a valid floating point number }
   try
-    StrToFloat(VEVars.Values[VarNames(i)]);
-  except on Exception do
-    begin
-    { It's not, so we restore the old value }
+    NewVal := Round6(StrToFloat(VEVars.Values[VarNames(i)]));
+  except
       VEVars.Values[VarNames(i)] := Format('%.6g', [OldVal]);
-      Allow := False;
-    end;
+      exit;
   end;
-  NewVal := Round6(StrToFloat(VEVars.Values[VarNames(i)]));
-  VEVars.Values[VarNames(i)] := Format('%.6g', [NewVal]);
-
-{ If it's not the same as the old value and it was valid }
-  if (NewVal <> OldVal) and Allow then
+  if (NewVal <> OldVal) then
   begin
     MainForm.UpdateUndo;
     cp.xform[SelectedTriangle].vars[i] := NewVal;
-    VEVars.Values[VarNames(i)] := Format('%.6g', [cp.xform[SelectedTriangle].vars[i]]);
+    VEVars.Values[VarNames(i)] := Format('%.6g', [NewVal]);
     ShowSelectedInfo;
     UpdateFlame(True);
   end;
@@ -2517,7 +2528,7 @@ begin
   begin
     MainForm.UpdateUndo;
     values^[i] := NewVal;
-    Sender.Values[VarNames(i)] := Format('%.6g', [values^[i]]);
+    Sender.Values[VarNames(i)] := Format('%.6g', [NewVal]);
     EditForm.ShowSelectedInfo;
     EditForm.UpdateFlame(True);
   end;
@@ -2877,17 +2888,23 @@ begin
       VK_MENU:
         begin
           editMode := modeRotate;
-          tbRotate.Down := true;
+//          tbRotate.Down := true;
+//          if (mouseOverTriangle >= 0) or (SelectMode = false) then
+          TriangleView.Cursor := crEditRotate;
         end;
       VK_CONTROL:
         begin
           editMode := modeScale;
-          tbScale.Down := true;
+//          tbScale.Down := true;
+//          if (mouseOverTriangle >= 0) or (SelectMode = false) then
+          TriangleView.Cursor := crEditScale;
         end;
       else //VK_SHIFT:
         begin
           editMode := modeMove;
-          tbMove.Down := true;
+//          tbMove.Down := true;
+//          if (mouseOverTriangle >= 0) or (SelectMode = false) then
+          TriangleView.Cursor := crEditMove;
         end;
     end;
     EditorToolBar.Refresh;
@@ -2927,9 +2944,13 @@ begin
   begin
     editMode := oldMode;
     oldMode := modeNone;
-    tbMove.Down   := (editMode = modeMove);
-    tbRotate.Down := (editMode = modeRotate);
-    tbScale.Down  := (editMode = modeScale);
+//    tbMove.Down   := (editMode = modeMove);
+//    tbRotate.Down := (editMode = modeRotate);
+//    tbScale.Down  := (editMode = modeScale);
+
+    // hack: to generate MouseMove event
+    GetCursorPos(MousePos);
+    SetCursorPos(MousePos.x, MousePos.y);
   end;
 end;
 
@@ -2939,9 +2960,9 @@ begin
   begin
     editMode := oldMode;
     oldMode := modeNone;
-    tbMove.Down   := (editMode = modeMove);
-    tbRotate.Down := (editMode = modeRotate);
-    tbScale.Down  := (editMode = modeScale);
+//    tbMove.Down   := (editMode = modeMove);
+//    tbRotate.Down := (editMode = modeRotate);
+//    tbScale.Down  := (editMode = modeScale);
   end;
 
   mouseOverTriangle := -1;
@@ -3091,9 +3112,9 @@ procedure TEditForm.ColorImageMouseDown(Sender: TObject;
 begin
   if Button = mbLeft then
   begin
-    colorDragX:=x;
+    SetCaptureControl(ColorImage);
+    colorDragX:=0;
     colorOldX:=x;
-//    BackupPal:=Palette;
     colorDrag:=true;
     colorChanged:=false;
   end;
@@ -3104,10 +3125,9 @@ procedure TEditForm.ColorImageMouseMove(Sender: TObject;
 var
   i, offset: integer;
 begin
-{
-  if colorDrag and (oldX<>x) then
+  if colorDrag and (OldX<>x) then
   begin
-    oldX:=x;
+{    oldX:=x;
     offset := ( ((x - colorDragX) shl 8) div ColorImage.Width ) mod 256;
     colorChanged := true;
 
@@ -3122,14 +3142,13 @@ begin
     cp.cmap := Palette;
 
     colorImage.Refresh;
-  end;
-}
+}  end;
 end;
 
 procedure TEditForm.ColorImageMouseUp(Sender: TObject;
   Button: TMouseButton; Shift: TShiftState; X, Y: Integer);
 begin
-  if colorDrag then
+  if (Button = mbLeft) and colorDrag then
   begin
     colorDrag := false;
 
@@ -3138,6 +3157,7 @@ begin
     // cp.xxx := xxx;
     // MainCP.copy(cp);
     // UpdateXXXX;
+    SetCaptureControl(nil);
     end;
   end;
 end;
@@ -3152,31 +3172,22 @@ end;
 
 procedure TEditForm.ValidateVariable;
 var
-  Allow: boolean;
   i: integer;
   NewVal, OldVal: double;
 begin
-  Allow := True;
-
   i := vleVariables.Row;
 
   cp.xform[SelectedTriangle].GetVariable(vleVariables.Keys[i], OldVal);
   { Test that it's a valid floating point number }
   try
-    StrToFloat(vleVariables.Values[vleVariables.Keys[i]]);
-  except on Exception do
-    begin
+    NewVal := Round6(StrToFloat(vleVariables.Values[vleVariables.Keys[i]]));
+  except
     { It's not, so we restore the old value }
-      vleVariables.Values[vleVariables.Keys[i]] := Format('%.6g', [OldVal]);
-      Allow := False;
-    end;
+    vleVariables.Values[vleVariables.Keys[i]] := Format('%.6g', [OldVal]);
+    exit;
   end;
-
-  NewVal := Round6(StrToFloat(vleVariables.Values[vleVariables.Keys[i]]));
-  vleVariables.Values[vleVariables.Keys[i]] := Format('%.6g', [NewVal]);
-
   { If it's not the same as the old value and it was valid }
-  if (NewVal <> OldVal) and Allow then
+  if (NewVal <> OldVal) then
   begin
     MainForm.UpdateUndo;
     cp.xform[SelectedTriangle].SetVariable(vleVariables.Keys[i], NewVal);
@@ -3211,14 +3222,51 @@ begin
   try
     t := StrToFloat(TComboBox(Sender).Text);
     if t <> 0 then exit;
-  finally
+  except
     TComboBox(Sender).ItemIndex := 1;
   end;
 end;
 
 procedure TEditForm.txtValKeyPress(Sender: TObject; var Key: Char);
 begin
-  if key = #13 then txtValidateValue(Sender);
+  if key <> #13 then exit;
+  key := #0;
+  txtValidateValue(Sender);
+end;
+
+procedure TEditForm.mnuResetClick(Sender: TObject);
+begin
+  MainForm.UpdateUndo;
+  MainTriangles[SelectedTriangle] := MainTriangles[-1];
+  UpdateFlame(True);
+end;
+
+procedure TEditForm.mnuResetAllClick(Sender: TObject);
+var
+  i: integer;
+begin
+  MainForm.UpdateUndo;
+  for i := 2 to Transforms-1 do cp.xform[i].density := 0;
+
+  Transforms := 2;
+  SelectedTriangle := 1;
+  MainTriangles[0] := MainTriangles[-1];
+  cp.xform[0].density := 0.5;
+  cp.xform[0].vars[0] := 1;
+  MainTriangles[1] := MainTriangles[-1];
+  cp.xform[1].density := 0.5;
+  cp.xform[1].vars[0] := 1;
+  for i := 1 to NRVAR - 1 do
+  begin
+    cp.xform[0].vars[i] := 0;
+    cp.xform[1].vars[i] := 0;
+  end;
+
+  cbTransforms.clear;
+  cbTransforms.Items.Add('1');
+  cbTransforms.Items.Add('2');
+  AutoZoom;
+  UpdateFlame(True);
 end;
 
 end.

@@ -27,7 +27,7 @@ object MainForm: TMainForm
     Left = 160
     Top = 28
     Width = 4
-    Height = 494
+    Height = 498
   end
   object ToolBar: TToolBar
     Left = 0
@@ -112,6 +112,7 @@ object MainForm: TMainForm
       Width = 40
       Height = 21
       Hint = 'Rendering quality|Rendering quality of the main window'
+      AutoComplete = False
       ItemHeight = 13
       ItemIndex = 0
       TabOrder = 0
@@ -283,7 +284,7 @@ object MainForm: TMainForm
     Left = 0
     Top = 28
     Width = 160
-    Height = 494
+    Height = 498
     Align = alLeft
     Columns = <
       item
@@ -302,7 +303,7 @@ object MainForm: TMainForm
     Left = 164
     Top = 28
     Width = 433
-    Height = 494
+    Height = 498
     Align = alClient
     BevelInner = bvLowered
     BevelOuter = bvNone
@@ -313,7 +314,7 @@ object MainForm: TMainForm
       Left = 1
       Top = 1
       Width = 431
-      Height = 492
+      Height = 496
       Align = alClient
       AutoSize = True
       PopupMenu = DisplayPopup
@@ -326,7 +327,7 @@ object MainForm: TMainForm
   end
   object StatusBar: TStatusBar
     Left = 0
-    Top = 522
+    Top = 526
     Width = 597
     Height = 19
     Panels = <
