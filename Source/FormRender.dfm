@@ -289,6 +289,7 @@ object RenderForm: TRenderForm
       Top = 20
       Width = 57
       Height = 21
+      AutoComplete = False
       ItemHeight = 13
       ItemIndex = 0
       TabOrder = 3

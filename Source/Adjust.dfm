@@ -912,7 +912,7 @@ object AdjustForm: TAdjustForm
         Top = 12
         Width = 73
         Height = 21
-        ItemHeight = 0
+        ItemHeight = 13
         ItemIndex = 0
         TabOrder = 7
         Text = '512'
@@ -930,7 +930,7 @@ object AdjustForm: TAdjustForm
         Top = 36
         Width = 73
         Height = 21
-        ItemHeight = 0
+        ItemHeight = 13
         ItemIndex = 0
         TabOrder = 8
         Text = '384'

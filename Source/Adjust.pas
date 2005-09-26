@@ -1292,6 +1292,7 @@ begin
   GradientChanged:=true; // hmm
 
   lblVal.Caption := IntToStr(ScrollBar.Position);
+  lblVal.Refresh;
 {
   wtf???? this is ridiculous!
 
