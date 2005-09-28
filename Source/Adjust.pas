@@ -1393,7 +1393,7 @@ begin
   if ScrollCode = scEndScroll then
   begin
     GradientChanged:=false;
-    Apply;
+    //Apply;
   end;
 end;
 
