@@ -292,6 +292,7 @@ type
     // --Z--
     viewDragMode, viewDragged: boolean;
     editMode, oldMode: (modeNone, modeMove, modeRotate, modeScale);
+    modeKey: word;
     key_handled: boolean;
 
     MousePos: TPoint; // in screen coordinates
@@ -318,7 +319,6 @@ type
 
     colorDrag, colorChanged: boolean;
     colorDragX, colorOldX: integer;
-    // --
 
     { Options }
     UseFlameBackground, UseTransformColors: boolean;
@@ -1346,7 +1346,6 @@ FoundCorner:
 
   if CornerCaught then // Modify a point ///////////////////////////////////////
   begin
-//    if (Shift = [ssAlt]) or ((editMode = modeRotate) and (Shift = [])) then
     if (editMode = modeRotate) then // rotate point
     begin // rotate point around pivot
       d := dist(Pivot.X, Pivot.Y, fx, fy);
@@ -1385,7 +1384,6 @@ Skip1:
       if vy > PI then vy := 2*PI - vy;
       StatusBar.Panels[2].Text := Format('Rotate: %3.2f°  <ABC: %3.2f°', [a*180/PI, vy*180/PI]);
     end
-//    else if (Shift = [ssCtrl]) or ((editMode = modeScale) and (Shift = [])) then
     else if (editMode = modeScale) then
     begin // move point along vector ("scale")
       if olddist<>0 then begin
@@ -1400,7 +1398,7 @@ Skip1:
       end;
     end
     else begin // snap/move
-      if Shift = [ssShift] then // snap to axis
+      if ssShift in Shift then // snap to axis
       begin
         if abs(fx-Pivot.X) > abs(fy-Pivot.Y) then begin
           vx := fx;
@@ -1428,7 +1426,6 @@ Skip1:
   end
   else if TriangleCaught then // Modify a whole triangle ///////////////////////
   begin
-//    if (Shift = [ssAlt]) or ((editMode = modeRotate) and (Shift = [])) then // rotate
     if (editMode = modeRotate) then // rotate triangle
     begin
       a := arctan2(fy-Pivot.Y, fx-Pivot.X) - arctan2(oldy, oldx);
@@ -1457,7 +1454,6 @@ Skip2:
         StatusBar.Panels[2].Text := Format('Rotate: %3.2f°  Local axis: %3.2f°', [a*180/PI, arctan2(vy, vx)*180/PI])
       else StatusBar.Panels[2].Text := Format('Rotate: %3.2f°', [a*180/PI]);
     end
-//    else if (Shift = [ssCtrl]) or ((editMode = modeScale) and (Shift = [])) then
     else if (editMode = modeScale) then // scale
     begin
       if olddist<>0 then begin
@@ -1471,7 +1467,7 @@ Skip2:
     else begin // snap/move
       vx := fx - (Pivot.x + oldx);
       vy := fy - (Pivot.y + oldy);
-      if Shift = [ssShift] then // snap to axis
+      if ssShift in Shift then // snap to axis
       begin
         if abs(vx) > abs(vy) then vy := 0
         else vx := 0;
@@ -1495,7 +1491,7 @@ Skip2:
     if (mouseOverTriangle >= 0) then
       StatusBar.Panels[2].Text := Format('Transform #%d', [mouseOverTriangle+1])
     else StatusBar.Panels[2].Text := '';
-    TriangleView.Refresh;;
+    TriangleView.Refresh;
   end
 end;
 
@@ -1992,7 +1988,6 @@ end;
 
 procedure TEditForm.FormDestroy(Sender: TObject);
 begin
-//  bm.free;
   cp.free;
   Render.free;
 end;
@@ -2605,15 +2600,13 @@ begin
   if varDragMode and (x <> varDragOld) then
   begin
     Inc(varDragPos, x - varDragOld);
-//  v := StrToFloat(TValueListEditor(Sender).Values[VarNames(varDragIndex)]);
-{
-    if Sender = VEVars then
-      v := cp.xform[SelectedTriangle].vars[varDragIndex]
-    else
-      cp.xform[SelectedTriangle].GetVariable(vleVariables.Keys[varDragIndex+1], v);
-    v := v + (varDragPos*2)/1000.0;
-}
-    v := Round6(varDragValue + varDragPos/500.0);
+
+    if GetKeyState(VK_MENU) < 0 then v := 100000
+    else if GetKeyState(VK_CONTROL) < 0 then v := 10000
+    else if GetKeyState(VK_SHIFT) < 0 then v := 100
+    else v := 1000;
+
+    v := Round6(varDragValue + varDragPos/v);
 
     SetCursorPos(MousePos.x, MousePos.y); // hmmm
     // this Delphi is WEIRD!
@@ -2881,33 +2874,56 @@ procedure TEditForm.TriangleViewKeyDown(Sender: TObject; var Key: Word;
  Shift: TShiftState);
 begin
   if (oldMode = modeNone) and
-     (key in [VK_SHIFT, VK_MENU, VK_CONTROL]) then
+     (key in [{VK_SHIFT,} VK_MENU, VK_CONTROL]) then
   begin
     oldMode := editMode;
+    modeKey := key;
+
+    if key = VK_MENU then
+      if editMode <> modeRotate then
+      begin
+        editMode := modeRotate;
+        TriangleView.Cursor := crEditRotate;
+      end
+      else begin
+        editMode := modeMove;
+        TriangleView.Cursor := crEditMove;
+      end
+    else {if key = VK_CONTROL then}
+    begin
+      if editMode <> modeScale then
+      begin
+        editMode := modeScale;
+        TriangleView.Cursor := crEditScale;
+      end
+      else begin
+        editMode := modeMove;
+        TriangleView.Cursor := crEditMove;
+      end
+    end;
+{
     case key of
       VK_MENU:
         begin
           editMode := modeRotate;
 //          tbRotate.Down := true;
-//          if (mouseOverTriangle >= 0) or (SelectMode = false) then
           TriangleView.Cursor := crEditRotate;
         end;
       VK_CONTROL:
         begin
           editMode := modeScale;
 //          tbScale.Down := true;
-//          if (mouseOverTriangle >= 0) or (SelectMode = false) then
           TriangleView.Cursor := crEditScale;
         end;
       else //VK_SHIFT:
         begin
           editMode := modeMove;
 //          tbMove.Down := true;
-//          if (mouseOverTriangle >= 0) or (SelectMode = false) then
           TriangleView.Cursor := crEditMove;
         end;
     end;
-    EditorToolBar.Refresh;
+//    EditorToolBar.Refresh;
+}
   end
   else
   case key of
@@ -2935,13 +2951,10 @@ end;
 procedure TEditForm.TriangleViewKeyUp(Sender: TObject; var Key: Word;
   Shift: TShiftState);
 begin
-
-  if (oldMode <> modeNone) and (
-       ((key = VK_SHIFT) and (editMode = modeMove)) or
-       ((key = VK_MENU) and (editMode = modeRotate)) or
-       ((key = VK_CONTROL) and (editMode = modeScale))
-     ) then
+  if (oldMode <> modeNone) and (key = modeKey) then
   begin
+    assert(key in [VK_MENU, VK_CONTROL]);
+
     editMode := oldMode;
     oldMode := modeNone;
 //    tbMove.Down   := (editMode = modeMove);
@@ -2994,7 +3007,7 @@ begin
         TriangleView.Invalidate;
         ShowSelectedInfo;
       end;
-{   // these keys are not so good, must think about it... 
+{   // these keys are not so good, must think about it...
 
     VK_SPACE: EditForm.tbSelectClick(Sender);
 
@@ -3235,9 +3248,16 @@ begin
 end;
 
 procedure TEditForm.mnuResetClick(Sender: TObject);
+var
+  i: integer;
 begin
   MainForm.UpdateUndo;
   MainTriangles[SelectedTriangle] := MainTriangles[-1];
+  cp.xform[SelectedTriangle].vars[0] := 1;
+  for i := 1 to NRVAR - 1 do
+  begin
+    cp.xform[SelectedTriangle].vars[i] := 0;
+  end;
   UpdateFlame(True);
 end;
 
