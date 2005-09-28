@@ -121,6 +121,15 @@ uses
 const
   EPS = 1E-10;
 
+procedure SinCos(const Theta: double; var Sin, Cos: double); // I'm not sure, but maybe it'll help...
+asm
+    FLD     Theta
+    FSINCOS
+    FSTP    qword ptr [edx]    // Cos
+    FSTP    qword ptr [eax]    // Sin
+    FWAIT
+end;
+
 { TXForm }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -212,8 +221,8 @@ begin
   CalculateAngle := (vars[5] <> 0.0) or (vars[6] <> 0.0) or (vars[7] <> 0.0) or (vars[8] <> 0.0) or
                     (vars[12] <> 0.0) or (vars[13] <> 0.0) or (vars[21] <> 0.0) or (vars[22] <> 0.0);
 //  CalculateLength := False;
-  CalculateSinCos := (vars[4] <> 0.0) or (vars[9] <> 0.0) or {z! (vars[10] <> 0.0) or}
-                     (vars[11] <> 0.0) or {z! (vars[16] <> 0.0) or} (vars[19] <> 0.0) or
+  CalculateSinCos := {z! (vars[4] <> 0.0) or} (vars[9] <> 0.0) or
+                     (vars[11] <> 0.0) or (vars[19] <> 0.0) or
                      (vars[21] <> 0.0);
 
 end;
@@ -235,39 +244,52 @@ end;
 //--2--////////////////////////////////////////////////////////////////////////
 procedure TXForm.Spherical;
 var
-  r2, rr2: double;
+  r: double;
 begin
-  r2 := FTx * FTx + FTy * FTy + 1E-6;
-  rr2 := 1 / r2;
-  FPx := FPx + vars[2] * (FTx * rr2);
-  FPy := FPy + vars[2] * (FTy * rr2);
+  r := vars[2] / (FTx * FTx + FTy * FTy + 1E-6);
+  FPx := FPx + FTx * r;
+  FPy := FPy + FTy * r;
 end;
 
 //--3--////////////////////////////////////////////////////////////////////////
 procedure TXForm.Swirl;
 var
-  c1, c2, r2: double;
+  rsin, rcos: double;
 begin
+{
   r2 := FTx * FTx + FTy * FTy;
   c1 := sin(r2);
   c2 := cos(r2);
   FPx := FPx + vars[3] * (c1 * FTx - c2 * FTy);
   FPy := FPy + vars[3] * (c2 * FTx + c1 * FTy);
+}
+  SinCos(FTx * FTx + FTy * FTy, rsin, rcos);
+  FPx := FPx + vars[3] * (rsin * FTx - rcos * FTy);
+  FPy := FPy + vars[3] * (rcos * FTx + rsin * FTy);
 end;
 
 //--4--////////////////////////////////////////////////////////////////////////
 procedure TXForm.Horseshoe;
 //var
 //  a, c1, c2: double;
-begin
+//begin
 //  if (FTx < -EPS) or (FTx > EPS) or (FTy < -EPS) or (FTy > EPS) then
 //    a := arctan2(FTx, FTy)
 //  else
 //    a := 0.0;
 //  c1 := sin(FAngle);
 //  c2 := cos(FAngle);
-  FPx := FPx + vars[4] * (FSinA * FTx - FCosA * FTy);
-  FPy := FPy + vars[4] * (FCosA* FTx + FSinA * FTy);
+
+// --Z-- he he he...
+//                       FTx/FLength   FTy/FLength
+//  FPx := FPx + vars[4] * (FSinA * FTx - FCosA * FTy);
+//  FPy := FPy + vars[4] * (FCosA* FTx + FSinA * FTy);
+var
+  r: double;
+begin
+  r := vars[4] / sqrt(FTx * FTx + FTy * FTy);
+  FPx := FPx + (FTx - FTy) * (FTx + FTy) * r;
+  FPy := FPy + (2*FTx*FTy) * r;
 end;
 
 //--5--////////////////////////////////////////////////////////////////////////
@@ -291,9 +313,9 @@ procedure TXForm.FoldedHandkerchief;
 var
   r: double;
 begin
-  r := sqrt(FTx * FTx + FTy * FTy);
-  FPx := FPx + vars[6] * sin(FAngle + r) * r;
-  FPy := FPy + vars[6] * cos(FAngle - r) * r;
+  r := vars[6] * sqrt(FTx * FTx + FTy * FTy);
+  FPx := FPx + sin(FAngle + r) * r;
+  FPy := FPy + cos(FAngle - r) * r;
 end;
 
 //--7--////////////////////////////////////////////////////////////////////////
@@ -301,10 +323,10 @@ procedure TXForm.Heart;
 var
   r: double;
 begin
-  r := sqrt(FTx * FTx + FTy * FTy);
+  r := vars[7] * sqrt(FTx * FTx + FTy * FTy);
 
-  FPx := FPx + vars[7] * sin(FAngle * r) * r;
-  FPy := FPy + vars[7] * cos(FAngle * r) * -r;
+  FPx := FPx + sin(FAngle * r) * r;
+  FPy := FPy - cos(FAngle * r) * r;
 end;
 
 //--8--////////////////////////////////////////////////////////////////////////
@@ -313,29 +335,32 @@ const
   rPI: double = 0.31830989;
 var
   nx, ny, r: double;
-  sinr, cosr: extended;
+  sinr, cosr: double;
 begin
   nx := FTx * PI;
   ny := FTy * PI;
 
   r := sqrt(nx * nx + ny * ny);
   SinCos(r, sinr, cosr);
-  FPx := FPx + vars[8] * sinr * FAngle * rPI;
-  FPy := FPy + vars[8] * cosr * FAngle * rPI;
+//  FPx := FPx + vars[8] * sinr * FAngle * rPI;
+//  FPy := FPy + vars[8] * cosr * FAngle * rPI;
+  r := vars[8] * FAngle * rPI;
+  FPx := FPx + sinr * r;
+  FPy := FPy + cosr * r;
 end;
 
 //--9--////////////////////////////////////////////////////////////////////////
 procedure TXForm.Spiral;
 var
   r, rr: double;
-  sinr, cosr: extended;
+  sinr, cosr: double;
 begin
 //  r := sqrt(FTx * FTx + FTy * FTy) + 1E-6;
   r := Flength + 1E-6;
-  rr := 1 / r;
+  rr := vars[9] / r;
   SinCos(r, sinr, cosr);
-  FPx := FPx + vars[9] * (FCosA + sinr) * rr;
-  FPy := FPy + vars[9] * (FsinA - cosr) * rr;
+  FPx := FPx + (FCosA + sinr) * rr;
+  FPy := FPy + (FsinA - cosr) * rr;
 end;
 
 //--10--///////////////////////////////////////////////////////////////////////
@@ -364,10 +389,10 @@ end;
 procedure TXForm.Square;
 var
 //  r: double;
-  sinr, cosr: extended;
+  sinr, cosr: double;
 begin
 //  r := sqrt(FTx * FTx + FTy * FTy);
-  SinCos(Flength, sinr, cosr);
+  SinCos(FLength, sinr, cosr);
   FPx := FPx + vars[11] * FSinA * cosr;
   FPy := FPy + vars[11] * FCosA * sinr;
 end;
@@ -376,7 +401,7 @@ end;
 procedure TXForm.Ex;
 var
   r: double;
-  n0,n1, m0, m1: double;
+  n0, n1, m0, m1: double;
 begin
   r := sqrt(FTx * FTx + FTy * FTy);
   n0 := sin(FAngle + r);
@@ -391,13 +416,13 @@ end;
 procedure TXForm.Julia;
 var
   a,r: double;
-  sinr, cosr: extended;
+  sinr, cosr: double;
 begin
-  r := Math.power(FTx * FTx + FTy * FTy, 0.25);
   a := FAngle*0.5 + Trunc(random * 2) * PI;
   SinCos(a, sinr, cosr);
-  FPx := FPx + vars[13] * r * cosr;
-  FPy := FPy + vars[13] * r * sinr;
+  r := vars[13] * sqrt(sqrt(FTx * FTx + FTy * FTy)); //Math.power(FTx * FTx + FTy * FTy, 0.25);
+  FPx := FPx +  r * cosr;
+  FPy := FPy +  r * sinr;
 end;
 
 //--14--///////////////////////////////////////////////////////////////////////
@@ -417,6 +442,7 @@ end;
 
 //--15--///////////////////////////////////////////////////////////////////////
 procedure TXForm.Waves;
+{
 var
   dx,dy,nx,ny: double;
 begin
@@ -426,12 +452,16 @@ begin
   ny := FTy + c11 * sin(FTx / ((dy * dy) + EPS));
   FPx := FPx + vars[15] * nx;
   FPy := FPy + vars[15] * ny;
+}
+begin
+  FPx := FPx + vars[15] * (FTx + c10 * sin(FTy / ((c20 * c20) + EPS)));
+  FPy := FPy + vars[15] * (FTy + c11 * sin(FTx / ((c21 * c21) + EPS)));
 end;
 
 //--16--///////////////////////////////////////////////////////////////////////
 procedure TXForm.Fisheye;
 var
- { a,} r: double;
+  r: double;
 begin
 {
 //  r := sqrt(FTx * FTx + FTy * FTy);
@@ -442,9 +472,10 @@ begin
   FPy := FPy + vars[16] * r * FSinA;
 }
 // --Z-- and again, sin & cos are NOT necessary here:
-  r := 2 / (sqrt(FTx * FTx + FTy * FTy) + 1);
-  FPx := FPx + vars[16] * r * FTy;
-  FPy := FPy + vars[16] * r * FTx;
+  r := 2 * vars[16] / (sqrt(FTx * FTx + FTy * FTy) + 1);
+// by the way, now we can clearly see that the original author messed X and Y:
+  FPx := FPx +  r * FTy;
+  FPy := FPy +  r * FTx;
 
 end;
 
@@ -452,7 +483,7 @@ end;
 procedure TXForm.Popcorn;
 var
   dx, dy: double;
-  nx, ny: double;
+//  nx, ny: double;
 begin
   dx := tan(3 * FTy);
   if (dx <> dx) then
@@ -460,24 +491,24 @@ begin
   dy := tan(3 * FTx);            // NAN will raise an exception...
   if (dy <> dy) then
     dy := 0.0;                  // remove for speed?
-  nx := FTx + c20 * sin(dx);
-  ny := FTy + c21 * sin(dy);
-  FPx := FPx + vars[17] * nx;
-  FPy := FPy + vars[17] * ny;
+//  nx := FTx + c20 * sin(dx);
+//  ny := FTy + c21 * sin(dy);
+//  FPx := FPx + vars[17] * nx;
+//  FPy := FPy + vars[17] * ny;
+  FPx := FPx + vars[17] * (FTx + c20 * sin(dx));
+  FPy := FPy + vars[17] * (FTy + c21 * sin(dy));
 end;
 
 //--18--///////////////////////////////////////////////////////////////////////
 procedure TXForm.Exponential;
 var
-  dx, dy: double;
-  sinr, cosr: extended;
+  d: double;
+  sinr, cosr: double;
 begin
-  dx := exp(FTx - 1); // exp(FTx)/ 2.718281828459045;
-  // --Z-- (e^x)/e = e^(x-1), isn't it?!
-  dy := PI * FTy;
-  SinCos(dy, sinr, cosr);
-  FPx := FPx + vars[18] * cosr * dx;
-  FPy := FPy + vars[18] * sinr * dx;
+  SinCos(PI * FTy, sinr, cosr);
+  d := vars[18] * exp(FTx - 1); // --Z-- (e^x)/e = e^(x-1), isn't it?!
+  FPx := FPx +  cosr * d;
+  FPy := FPy +  sinr * d;
 end;
 
 //--19--///////////////////////////////////////////////////////////////////////
@@ -488,24 +519,26 @@ var
 begin
 //  r := sqrt(FTx * FTx + FTy * FTy);
 //  sa := sin(FAngle);
-  r := Math.Power(FLength, FSinA);
+  r := vars[19] * Math.Power(FLength, FSinA);
 //  nx := r * FCosA;
 //  ny := r * FSinA;
-  FPx := FPx + vars[19] * r * FCosA;
-  FPy := FPy + vars[19] * r * FSinA;
+  FPx := FPx + r * FCosA;
+  FPy := FPy + r * FSinA;
 end;
 
 //--20--///////////////////////////////////////////////////////////////////////
 procedure TXForm.Cosine;
 var
-  nx, ny: double;
-  sinr, cosr: extended;
+//  nx, ny: double;
+  sinr, cosr: double;
 begin
   SinCos(FTx * PI, sinr, cosr);
-  nx := cosr * cosh(FTy);
-  ny := -sinr * sinh(FTy);
-  FPx := FPx + vars[20] * nx;
-  FPy := FPy + vars[20] * ny;
+//  nx := cosr * cosh(FTy);
+//  ny := -sinr * sinh(FTy);
+//  FPx := FPx + vars[20] * nx;
+//  FPy := FPy + vars[20] * ny;
+  FPx := FPx + vars[20] * cosr * cosh(FTy);
+  FPy := FPy - vars[20] * sinr * sinh(FTy);
 end;
 
 //--21--///////////////////////////////////////////////////////////////////////
@@ -513,14 +546,21 @@ procedure TXForm.Rings;
 var
   r: double;
   dx: double;
-  sinr, cosr: extended;
+//  sinr, cosr: extended;
 begin
   dx := sqr(c20) + EPS;
-  r := FLength;
-  r := r + dx - System.Int((r + dx)/(2 * dx)) * 2 * dx - dx + r * (1-dx);
-  SinCos(FAngle, sinr, cosr);
-  FPx := FPx + vars[21] * r * cosr;
-  FPy := FPy + vars[21] * r * sinr;
+//  r := FLength;
+//  r := r + dx - System.Int((r + dx)/(2 * dx)) * 2 * dx - dx + r * (1-dx);
+// --Z--   ^^^^               heheeeee :-)               ^^^^
+
+//  SinCos(FAngle, sinr, cosr);
+//  FPx := FPx + vars[21] * r * cosr;
+//  FPy := FPy + vars[21] * r * sinr;
+  r := vars[21] * (
+         2 * FLength + dx * (System.Int(FLength/(2 * dx) + 0.5) * 2 - FLength)
+       );
+  FPx := FPx + r * FCosA;
+  FPy := FPy + r * FSinA;
 end;
 
 //--22--///////////////////////////////////////////////////////////////////////
@@ -528,13 +568,13 @@ procedure TXForm.Fan;
 var
   r,t,a : double;
   dx, dy, dx2: double;
-  sinr, cosr: extended;
+  sinr, cosr: double;
 begin
   dy := c21;
   dx := PI * (sqr(c20) + EPS);
   dx2 := dx/2;
 
-  r := sqrt(FTx * FTx + FTy * FTy);
+  r := vars[22] * sqrt(FTx * FTx + FTy * FTy);
 
   t := FAngle+dy - System.Int((FAngle + dy)/dx) * dx;
   if (t > dx2) then
@@ -543,8 +583,8 @@ begin
     a := FAngle + dx2;
   SinCos(a, sinr, cosr);
 
-  FPx := FPx + vars[22] * r * cosr;
-  FPy := FPy + vars[22] * r * sinr;
+  FPx := FPx + r * cosr;
+  FPy := FPy + r * sinr;
 end;
 
 
@@ -553,7 +593,7 @@ procedure TXForm.Triblob;
 var
   r : double;
   Angle: double;
-  sinr, cosr: extended;
+  sinr, cosr: double;
 begin
   r := sqrt(FTx * FTx + FTy * FTy);
   if (FTx < -EPS) or (FTx > EPS) or (FTy < -EPS) or (FTy > EPS) then
@@ -573,7 +613,7 @@ procedure TXForm.Daisy;
 var
   r : double;
   Angle: double;
-  sinr, cosr: extended;
+  sinr, cosr: double;
 begin
   r := sqrt(FTx * FTx + FTy * FTy);
   if (FTx < -EPS) or (FTx > EPS) or (FTy < -EPS) or (FTy > EPS) then
@@ -608,7 +648,7 @@ procedure TXForm.CRot;
 var
   r : double;
   Angle: double;
-  sinr, cosr: extended;
+  sinr, cosr: double;
 begin
   r := sqrt(FTx * FTx + FTy * FTy);
   if (FTx < -EPS) or (FTx > EPS) or (FTy < -EPS) or (FTy > EPS) then
@@ -1113,7 +1153,7 @@ begin
   result := Format('   <xform weight="%g" color="%g" symmetry="%g" ', [density, color, symmetry]);
   for i := 0 to nrvar - 1 do begin
     if vars[i] <> 0 then
-      Result := Result + varnames(i) + format('="%f" ', [vars[i]]);
+      Result := Result + varnames(i) + format('="%g" ', [vars[i]]);
   end;
   Result := Result + Format('coefs="%g %g %g %g %g %g" ', [c[0,0], c[0,1], c[1,0], c[1,1], c[2,0], c[2,1]]);
 //  Result := Result + Format('post="%g %g %g %g %g %g" ', [p[0,0], p[0,1], p[1,0], p[1,1], p[2,0], p[2,1]]);
