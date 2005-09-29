@@ -32,9 +32,7 @@ type
     Tabs: TPageControl;
     GeneralPage: TTabSheet;
     chkConfirmDel: TCheckBox;
-    GroupBox13: TGroupBox;
     JPEG: TGroupBox;
-    txtJPEGQuality: TEdit;
     DisplayPage: TTabSheet;
     GroupBox2: TGroupBox;
     Label4: TLabel;
@@ -86,10 +84,6 @@ type
     GroupBox17: TGroupBox;
     btnSetAll: TButton;
     btnClearAll: TButton;
-    Label8: TLabel;
-    txtNumtries: TEdit;
-    Label10: TLabel;
-    txtTryLength: TEdit;
     TabSheet1: TTabSheet;
     grpGradient: TRadioGroup;
     GroupBox3: TGroupBox;
@@ -122,7 +116,6 @@ type
     udMinMutate: TUpDown;
     udMaxMutate: TUpDown;
     udSymOrder: TUpDown;
-    chkFixedReference: TCheckBox;
     GroupBox1: TGroupBox;
     txtBatchSize: TEdit;
     udBatchSize: TUpDown;
@@ -174,13 +167,17 @@ type
     Label37: TLabel;
     txtLibrary: TEdit;
     clbVarEnabled: TCheckListBox;
-    GroupBox15: TGroupBox;
-    RadioButton1: TRadioButton;
-    RadioButton2: TRadioButton;
-    RadioButton3: TRadioButton;
     GroupBox16: TGroupBox;
     cbNrTheads: TComboBox;
-    cbShowTransparancy: TCheckBox;
+    chkShowTransparency: TCheckBox;
+    rgReferenceMode: TRadioGroup;
+    GroupBox13: TGroupBox;
+    Label8: TLabel;
+    Label10: TLabel;
+    txtNumtries: TEdit;
+    txtTryLength: TEdit;
+    txtJPEGquality: TComboBox;
+    rgTransparency: TRadioGroup;
     procedure btnCancelClick(Sender: TObject);
     procedure FormShow(Sender: TObject);
     procedure btnOKClick(Sender: TObject);
@@ -254,20 +251,15 @@ begin
   txtTryLength.text := IntToStr(Trylength);
   chkConfirmDel.Checked := ConfirmDelete;
   txtJPEGQuality.text := IntToStr(JPEGQuality);
-  chkFixedReference.Checked := FixedReference;
+  rgReferenceMode.IteMindex := ReferenceMode;
   udBatchSize.Position := BatchSize;
   chkResize.checked := ResizeOnLoad;
-  case PNGTransparency of
-  0: RadioButton1.Checked := True;
-  1: RadioButton2.Checked := True;
-  2: RadioButton3.Checked := True;
-  else
-  end;
+  rgTransparency.ItemIndex :=  PNGTransparency;
+  chkShowTransparency.Checked := ShowTransparency;
   if NrTreads <= 1 then
     cbNrTheads.ItemIndex := 0
   else
     cbNrTheads.text := intTostr(NrTreads);
-  cbShowTransparancy.Checked := ShowTransparency;
 
   { Display tab }
   txtSampleDensity.Text := FloatToStr(defSampleDensity);
@@ -363,18 +355,12 @@ begin
   if BatchSize < 1 then BatchSize := 1;
   if BatchSize > 300 then BatchSize := 300;
 
-  if RadioButton1.Checked then
-    PNGTransparency := 0
-  else if RadioButton2.Checked then
-    PNGTransparency := 1
-  else if RadioButton3.Checked then
-    PNGTransparency := 2;
-
-  ShowTransparency := cbShowTransparancy.Checked;
+  PNGTransparency := rgTransparency.ItemIndex;
+  ShowTransparency := chkShowTransparency.Checked;
 
   NrTreads := StrToIntDef(cbNrTheads.text, 0);
   ConfirmDelete := chkConfirmDel.Checked;
-  FixedReference := chkFixedReference.Checked;
+  ReferenceMode := rgReferenceMode.ItemIndex;
   ResizeOnLoad := chkResize.checked;
   { Display tab }
   defSampleDensity := StrToFloat(txtSampleDensity.Text);

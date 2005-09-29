@@ -333,14 +333,16 @@ begin
       begin
         MaxSat := 100;
       end;
+{
       if Registry.ValueExists('FixedReference') then
       begin
         FixedReference := Registry.ReadBool('FixedReference');
       end
-      else
-      begin
-        FixedReference := False;
-      end;
+      else FixedReference := False;
+}
+      if Registry.ValueExists('ReferenceMode') then
+        ReferenceMode := Registry.ReadInteger('ReferenceMode')
+      else ReferenceMode := 0;
       if Registry.ValueExists('MaxLum') then
       begin
         MaxLum := Registry.ReadInteger('MaxLum');
@@ -506,7 +508,7 @@ begin
     end
     else
     begin
-      FixedReference := false;
+      ReferenceMode := 0;
       EditPrevQual := 1;
       MutatePrevQual := 1;
       AdjustPrevQual := 1;
@@ -871,7 +873,7 @@ begin
       Registry.WriteInteger('SymmetryType', SymmetryType);
       Registry.WriteInteger('SymmetryOrder', SymmetryOrder);
       Registry.WriteInteger('VariationOptions', VariationOptions);
-      Registry.WriteBool('FixedReference', FixedReference);
+      Registry.WriteInteger('ReferenceMode', ReferenceMode);
       Registry.WriteInteger('MinNodes', MinNodes);
       Registry.WriteInteger('MinHue', MinHue);
       Registry.WriteInteger('MinSat', MinSat);

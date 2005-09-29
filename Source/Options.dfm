@@ -5,7 +5,7 @@ object OptionsForm: TOptionsForm
   BorderStyle = bsDialog
   Caption = 'Options'
   ClientHeight = 296
-  ClientWidth = 470
+  ClientWidth = 467
   Color = clBtnFace
   Font.Charset = ANSI_CHARSET
   Font.Color = clWindowText
@@ -42,7 +42,7 @@ object OptionsForm: TOptionsForm
   object Tabs: TPageControl
     Left = 8
     Top = 8
-    Width = 449
+    Width = 451
     Height = 249
     ActivePage = GeneralPage
     TabOrder = 0
@@ -51,86 +51,44 @@ object OptionsForm: TOptionsForm
       HelpContext = 1
       Caption = 'General'
       object chkConfirmDel: TCheckBox
-        Left = 208
-        Top = 8
+        Left = 144
+        Top = 139
         Width = 97
         Height = 17
         HelpContext = 1005
         Caption = 'Confirm delete'
-        TabOrder = 2
-      end
-      object GroupBox13: TGroupBox
-        Left = 8
-        Top = 2
-        Width = 193
-        Height = 71
-        Caption = 'Smooth palette'
-        TabOrder = 0
-        object Label8: TLabel
-          Left = 10
-          Top = 18
-          Width = 78
-          Height = 13
-          Caption = 'Number of tries:'
-        end
-        object Label10: TLabel
-          Left = 26
-          Top = 42
-          Width = 53
-          Height = 13
-          Caption = 'Try length:'
-        end
-        object txtNumtries: TEdit
-          Left = 96
-          Top = 16
-          Width = 73
-          Height = 21
-          HelpContext = 1002
-          TabOrder = 0
-          Text = '50'
-        end
-        object txtTryLength: TEdit
-          Left = 96
-          Top = 40
-          Width = 73
-          Height = 21
-          HelpContext = 1003
-          TabOrder = 1
-          Text = '10000'
-        end
+        TabOrder = 1
       end
       object JPEG: TGroupBox
         Left = 8
-        Top = 74
+        Top = 72
         Width = 121
         Height = 57
         Caption = 'JPEG Quality'
-        TabOrder = 1
-        object txtJPEGQuality: TEdit
+        TabOrder = 0
+        object txtJPEGquality: TComboBox
           Left = 16
           Top = 24
-          Width = 73
+          Width = 89
           Height = 21
-          HelpContext = 1004
+          ItemHeight = 13
+          ItemIndex = 2
           TabOrder = 0
-          Text = '80'
+          Text = '100'
+          Items.Strings = (
+            '60'
+            '80'
+            '100'
+            '120')
         end
       end
-      object chkFixedReference: TCheckBox
-        Left = 208
-        Top = 24
-        Width = 145
-        Height = 17
-        Caption = 'Fixed reference triangle'
-        TabOrder = 3
-      end
       object GroupBox1: TGroupBox
-        Left = 136
-        Top = 74
+        Left = 8
+        Top = 4
         Width = 121
         Height = 57
         Caption = 'Batch size'
-        TabOrder = 4
+        TabOrder = 2
         object txtBatchSize: TEdit
           Left = 16
           Top = 24
@@ -154,60 +112,29 @@ object OptionsForm: TOptionsForm
         end
       end
       object chkResize: TCheckBox
-        Left = 208
-        Top = 40
+        Left = 144
+        Top = 157
         Width = 169
         Height = 17
         Caption = 'Resize on load'
-        TabOrder = 5
-      end
-      object GroupBox15: TGroupBox
-        Left = 8
-        Top = 134
-        Width = 129
-        Height = 83
-        Caption = 'PNG Transparency'
-        TabOrder = 6
-        object RadioButton1: TRadioButton
-          Left = 12
-          Top = 16
-          Width = 113
-          Height = 17
-          Caption = 'No transparency'
-          TabOrder = 0
-        end
-        object RadioButton2: TRadioButton
-          Left = 12
-          Top = 32
-          Width = 113
-          Height = 17
-          Caption = 'Like Flame3'
-          TabOrder = 1
-        end
-        object RadioButton3: TRadioButton
-          Left = 12
-          Top = 48
-          Width = 113
-          Height = 17
-          Caption = 'Like Flamesong'
-          TabOrder = 2
-        end
+        TabOrder = 3
       end
       object GroupBox16: TGroupBox
-        Left = 140
+        Left = 8
         Top = 134
-        Width = 117
-        Height = 51
+        Width = 121
+        Height = 59
         Caption = 'Nr processors'
-        TabOrder = 7
+        TabOrder = 4
         object cbNrTheads: TComboBox
-          Left = 12
-          Top = 20
+          Left = 16
+          Top = 24
           Width = 89
           Height = 21
           ItemHeight = 13
+          ItemIndex = 0
           TabOrder = 0
-          Text = '200'
+          Text = 'Off'
           Items.Strings = (
             'Off'
             '2'
@@ -215,21 +142,46 @@ object OptionsForm: TOptionsForm
             '8')
         end
       end
-      object cbShowTransparancy: TCheckBox
+      object chkShowTransparency: TCheckBox
         Left = 144
-        Top = 196
+        Top = 175
         Width = 169
         Height = 17
-        Caption = 'Show Transparancy'
-        TabOrder = 8
+        Caption = 'Show Transparency'
+        TabOrder = 5
+      end
+      object rgReferenceMode: TRadioGroup
+        Left = 280
+        Top = 4
+        Width = 153
+        Height = 69
+        Caption = 'Reference Triangle'
+        ItemIndex = 0
+        Items.Strings = (
+          'Normal'
+          'Proportional'
+          'Wandering (old-style)')
+        TabOrder = 6
+      end
+      object rgTransparency: TRadioGroup
+        Left = 136
+        Top = 4
+        Width = 137
+        Height = 69
+        Caption = 'PNG Transparency'
+        Items.Strings = (
+          'No transparency'
+          'Flam3-style'
+          'Flamesong-style')
+        TabOrder = 7
       end
     end
     object DisplayPage: TTabSheet
       Caption = 'Display'
       object GroupBox2: TGroupBox
         Left = 184
-        Top = 8
-        Width = 250
+        Top = 4
+        Width = 193
         Height = 97
         Caption = 'Preview density'
         TabOrder = 1
@@ -257,34 +209,31 @@ object OptionsForm: TOptionsForm
         object txtLowQuality: TEdit
           Left = 112
           Top = 16
-          Width = 121
+          Width = 65
           Height = 21
           HelpContext = 1012
           TabOrder = 0
-          Text = 'txtLowQuality'
         end
         object txtMediumQuality: TEdit
           Left = 112
           Top = 40
-          Width = 121
+          Width = 65
           Height = 21
           HelpContext = 1013
           TabOrder = 1
-          Text = 'txtMediumQuality'
         end
         object txtHighQuality: TEdit
           Left = 112
           Top = 64
-          Width = 121
+          Width = 65
           Height = 21
           HelpContext = 1014
           TabOrder = 2
-          Text = 'txtHighQuality'
         end
       end
       object grpRendering: TGroupBox
         Left = 8
-        Top = 6
+        Top = 4
         Width = 169
         Height = 169
         Caption = 'Rendering'
@@ -648,9 +597,9 @@ object OptionsForm: TOptionsForm
       ImageIndex = 5
       object grpGradient: TRadioGroup
         Left = 8
-        Top = 8
+        Top = 4
         Width = 137
-        Height = 121
+        Height = 97
         HelpContext = 1029
         Caption = 'On random flame'
         ItemIndex = 0
@@ -662,28 +611,28 @@ object OptionsForm: TOptionsForm
         TabOrder = 0
       end
       object GroupBox3: TGroupBox
-        Left = 152
-        Top = 8
+        Left = 153
+        Top = 4
         Width = 281
-        Height = 193
+        Height = 189
         Caption = 'Randomize'
         TabOrder = 1
         object Label18: TLabel
-          Left = 8
+          Left = 16
           Top = 24
           Width = 128
           Height = 13
           Caption = 'Minimum number of nodes:'
         end
         object Label19: TLabel
-          Left = 8
+          Left = 16
           Top = 56
           Width = 128
           Height = 13
           Caption = 'Maximum number of nodes'
         end
         object Label31: TLabel
-          Left = 8
+          Left = 16
           Top = 88
           Width = 64
           Height = 13
@@ -697,7 +646,7 @@ object OptionsForm: TOptionsForm
           Caption = 'and'
         end
         object Label33: TLabel
-          Left = 8
+          Left = 16
           Top = 120
           Width = 95
           Height = 13
@@ -711,7 +660,7 @@ object OptionsForm: TOptionsForm
           Caption = 'and'
         end
         object Label35: TLabel
-          Left = 8
+          Left = 16
           Top = 152
           Width = 95
           Height = 13
@@ -745,8 +694,8 @@ object OptionsForm: TOptionsForm
           OnChange = txtMaxNodesChange
         end
         object txtMinHue: TEdit
-          Left = 112
-          Top = 88
+          Left = 117
+          Top = 85
           Width = 49
           Height = 21
           HelpContext = 1032
@@ -756,7 +705,7 @@ object OptionsForm: TOptionsForm
         end
         object txtMaxHue: TEdit
           Left = 208
-          Top = 88
+          Top = 85
           Width = 49
           Height = 21
           HelpContext = 1033
@@ -765,8 +714,8 @@ object OptionsForm: TOptionsForm
           OnChange = txtMaxHueChange
         end
         object txtMinSat: TEdit
-          Left = 112
-          Top = 120
+          Left = 117
+          Top = 117
           Width = 49
           Height = 21
           HelpContext = 1034
@@ -776,7 +725,7 @@ object OptionsForm: TOptionsForm
         end
         object txtMaxSat: TEdit
           Left = 208
-          Top = 120
+          Top = 117
           Width = 49
           Height = 21
           HelpContext = 1035
@@ -785,8 +734,8 @@ object OptionsForm: TOptionsForm
           OnChange = txtMaxSatChange
         end
         object txtMinLum: TEdit
-          Left = 112
-          Top = 152
+          Left = 117
+          Top = 149
           Width = 49
           Height = 21
           HelpContext = 1036
@@ -796,7 +745,7 @@ object OptionsForm: TOptionsForm
         end
         object txtMaxLum: TEdit
           Left = 208
-          Top = 152
+          Top = 149
           Width = 49
           Height = 21
           HelpContext = 1037
@@ -829,8 +778,8 @@ object OptionsForm: TOptionsForm
           TabOrder = 9
         end
         object udMinHue: TUpDown
-          Left = 161
-          Top = 88
+          Left = 166
+          Top = 85
           Width = 12
           Height = 21
           HelpContext = 1032
@@ -840,7 +789,7 @@ object OptionsForm: TOptionsForm
         end
         object udMaxHue: TUpDown
           Left = 257
-          Top = 88
+          Top = 85
           Width = 12
           Height = 21
           HelpContext = 1033
@@ -850,8 +799,8 @@ object OptionsForm: TOptionsForm
           TabOrder = 11
         end
         object udMinSat: TUpDown
-          Left = 161
-          Top = 120
+          Left = 166
+          Top = 117
           Width = 12
           Height = 21
           HelpContext = 1034
@@ -860,7 +809,7 @@ object OptionsForm: TOptionsForm
         end
         object udmaxSat: TUpDown
           Left = 257
-          Top = 120
+          Top = 117
           Width = 12
           Height = 21
           HelpContext = 1035
@@ -869,8 +818,8 @@ object OptionsForm: TOptionsForm
           TabOrder = 13
         end
         object udMinLum: TUpDown
-          Left = 161
-          Top = 152
+          Left = 166
+          Top = 149
           Width = 12
           Height = 21
           HelpContext = 1036
@@ -879,13 +828,53 @@ object OptionsForm: TOptionsForm
         end
         object udMaxLum: TUpDown
           Left = 257
-          Top = 152
+          Top = 149
           Width = 12
           Height = 21
           HelpContext = 1037
           Associate = txtMaxLum
           Position = 100
           TabOrder = 15
+        end
+      end
+      object GroupBox13: TGroupBox
+        Left = 8
+        Top = 106
+        Width = 137
+        Height = 87
+        Caption = 'Smooth palette'
+        TabOrder = 2
+        object Label8: TLabel
+          Left = 10
+          Top = 18
+          Width = 49
+          Height = 13
+          Caption = '# of tries:'
+        end
+        object Label10: TLabel
+          Left = 10
+          Top = 50
+          Width = 53
+          Height = 13
+          Caption = 'Try length:'
+        end
+        object txtNumtries: TEdit
+          Left = 80
+          Top = 16
+          Width = 49
+          Height = 21
+          HelpContext = 1002
+          TabOrder = 0
+          Text = '50'
+        end
+        object txtTryLength: TEdit
+          Left = 80
+          Top = 48
+          Width = 49
+          Height = 21
+          HelpContext = 1003
+          TabOrder = 1
+          Text = '10000'
         end
       end
     end

@@ -133,6 +133,8 @@ begin
 end;
 
 ///////////////////////////////////////////////////////////////////////////////
+(* --Z-- hmm, exactly the same function exists in module Main
+
 function TrianglesFromCP(const cp1: TControlPoint; var Triangles: TTriangles): integer;
 { Sets up the triangles from the IFS code }
 var
@@ -213,6 +215,7 @@ begin
     for j := 0 to 2 do
       triangles[i].y[j] := -triangles[i].y[j];
 end;
+*)
 
 ///////////////////////////////////////////////////////////////////////////////
 procedure EqualizeWeights(var cp: TControlPoint);
@@ -377,7 +380,7 @@ begin
               Result.xform[i].density := 1 / Transforms;
           end;
       end; // case
-      TrianglesFromCp(Result, Triangles);
+      Result.TrianglesFromCp(Triangles);
       if Random(2) > 0 then
         ComputeWeights(Result, Triangles, transforms)
       else

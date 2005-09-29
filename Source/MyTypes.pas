@@ -17,9 +17,9 @@
 }
 unit MyTypes;
 
-
 interface
-uses ControlPoint;
+
+{uses ControlPoint;
 
 type
   TTriangle = record
@@ -45,7 +45,7 @@ type
   pPreviewPixArray = ^TPreviewPixArray;
   TPreviewPixArray = array[0..159, 0..119, 0..3] of integer;
   TFileType = (ftIfs, ftFla, ftXML);
-
+}
 implementation
 
 end.

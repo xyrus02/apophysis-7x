@@ -708,9 +708,11 @@ object AdjustForm: TAdjustForm
       end
       object cmbPalette: TComboBox
         Left = 72
-        Top = 79
+        Top = 78
         Width = 206
-        Height = 19
+        Height = 21
+        BevelInner = bvLowered
+        BevelOuter = bvRaised
         Style = csOwnerDrawFixed
         Color = clBlack
         DropDownCount = 20
@@ -719,7 +721,7 @@ object AdjustForm: TAdjustForm
         Font.Height = -11
         Font.Name = 'Tahoma'
         Font.Style = []
-        ItemHeight = 13
+        ItemHeight = 15
         ParentFont = False
         ParentShowHint = False
         ShowHint = False
@@ -816,105 +818,114 @@ object AdjustForm: TAdjustForm
     object TabSheet4: TTabSheet
       Caption = 'Image Size'
       ImageIndex = 3
+      object Bevel2: TBevel
+        Left = 4
+        Top = 4
+        Width = 137
+        Height = 93
+        Shape = bsFrame
+      end
+      object Bevel1: TBevel
+        Left = 148
+        Top = 4
+        Width = 148
+        Height = 93
+        Shape = bsFrame
+      end
       object Label2: TLabel
-        Left = 58
+        Left = 14
         Top = 15
         Width = 28
         Height = 13
         Caption = 'Width'
       end
       object Label3: TLabel
-        Left = 58
-        Top = 39
+        Left = 14
+        Top = 41
         Width = 31
         Height = 13
         Caption = 'Height'
       end
-      object Bevel1: TBevel
-        Left = 48
-        Top = 4
-        Width = 137
-        Height = 93
-        Shape = bsFrame
-      end
-      object Bevel2: TBevel
-        Left = 192
-        Top = 4
-        Width = 148
-        Height = 93
-        Shape = bsFrame
-      end
-      object chkMaintain: TCheckBox
-        Left = 56
-        Top = 68
-        Width = 121
-        Height = 17
-        Caption = 'Maintain aspect ratio'
-        TabOrder = 0
-        OnClick = chkMaintainClick
-      end
       object btnPreset1: TButton
-        Left = 200
+        Left = 156
         Top = 12
         Width = 105
         Height = 25
         Caption = 'Preset 1'
-        TabOrder = 1
+        TabOrder = 0
         OnClick = btnPreset1Click
       end
       object btnPreset2: TButton
-        Left = 200
+        Left = 156
         Top = 38
         Width = 105
         Height = 25
         Caption = 'Preset 2'
-        TabOrder = 2
+        TabOrder = 1
         OnClick = btnPreset2Click
       end
       object btnPreset3: TButton
-        Left = 200
+        Left = 156
         Top = 64
         Width = 105
         Height = 25
         Caption = 'Preset 3'
-        TabOrder = 3
+        TabOrder = 2
         OnClick = btnPreset3Click
       end
       object btnSet1: TButton
-        Left = 304
+        Left = 260
         Top = 12
         Width = 27
         Height = 25
         Caption = 'Set'
-        TabOrder = 4
+        TabOrder = 3
         OnClick = btnSet1Click
       end
       object btnSet2: TButton
-        Left = 304
+        Left = 260
         Top = 38
         Width = 27
         Height = 25
         Caption = 'Set'
-        TabOrder = 5
+        TabOrder = 4
         OnClick = btnSet2Click
       end
       object btnSet3: TButton
-        Left = 304
+        Left = 260
         Top = 64
         Width = 27
         Height = 25
         Caption = 'Set'
-        TabOrder = 6
+        TabOrder = 5
         OnClick = btnSet3Click
       end
+      object btnApplySize: TBitBtn
+        Left = 302
+        Top = 72
+        Width = 75
+        Height = 25
+        Caption = 'Apply'
+        TabOrder = 6
+        OnClick = btnApplySizeClick
+      end
+      object chkMaintain: TCheckBox
+        Left = 14
+        Top = 70
+        Width = 121
+        Height = 19
+        Caption = 'Maintain aspect ratio'
+        TabOrder = 7
+        OnClick = chkMaintainClick
+      end
       object txtWidth: TComboBox
-        Left = 104
+        Left = 60
         Top = 12
         Width = 73
         Height = 21
         ItemHeight = 13
         ItemIndex = 0
-        TabOrder = 7
+        TabOrder = 8
         Text = '512'
         OnChange = txtWidthChange
         OnKeyPress = txtSizeKeyPress
@@ -926,13 +937,13 @@ object AdjustForm: TAdjustForm
           '1280')
       end
       object txtHeight: TComboBox
-        Left = 104
-        Top = 36
+        Left = 60
+        Top = 38
         Width = 73
         Height = 21
         ItemHeight = 13
         ItemIndex = 0
-        TabOrder = 8
+        TabOrder = 9
         Text = '384'
         OnChange = txtHeightChange
         OnKeyPress = txtSizeKeyPress

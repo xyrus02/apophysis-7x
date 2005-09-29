@@ -335,7 +335,7 @@ type
     // --Z-- functions moved from outside (?)
     procedure ShowSelectedInfo;
     procedure Scale(var fx, fy: double; x, y: integer);
-    procedure ReadjustWeights(var cp: TControlPoint);
+//    procedure ReadjustWeights(var cp: TControlPoint);
 
   public
     cp: TControlPoint;
@@ -620,8 +620,10 @@ begin
   PreviewImage.refresh;
 end;
 
+(*
 procedure TEditForm.ReadjustWeights(var cp: TControlPoint);
-{ Thanks to Rudy...code from Chaos}
+{ Thanks to Rudy...code from Chaos }
+// --Z-- and thanks to me for removing this! ;-)
 var
   total, othertotals, excess: double;
   t, i: integer;
@@ -645,6 +647,7 @@ begin
 //z      cp.xform[i].density := cp.xform[i].density - cp.xform[i].density / othertotals * excess;
       cp.xform[i].density := cp.xform[i].density * excess; // --Z--
 end;
+*)
 
 procedure TEditForm.ShowSelectedInfo;
 var
@@ -783,8 +786,8 @@ begin
       cp.xform[i].c[0][1], cp.xform[i].c[1][1], cp.xform[i].c[2][1]);
   end;
 
-  GetXForms(cp, MainTriangles, transforms);
-  if not chkPreserve.checked then ComputeWeights(cp, MainTriangles, transforms);
+  cp.GetFromTriangles(MainTriangles, transforms);
+//  if not chkPreserve.checked then ComputeWeights(cp, MainTriangles, transforms);
   DrawPreview;
   ShowSelectedInfo;
   TriangleView.Refresh;;
@@ -794,8 +797,8 @@ procedure TEditForm.UpdateFlame(DrawMain: boolean);
 begin
 //;    MainForm.StopThread;
   StatusBar.Panels[2].Text := Format('Zoom: %f', [GraphZoom]);
-  GetXForms(cp, MainTriangles, transforms);
-  if not chkPreserve.Checked then ComputeWeights(cp, MainTriangles, transforms);
+  cp.GetFromTriangles(MainTriangles, transforms);
+//  if not chkPreserve.Checked then ComputeWeights(cp, MainTriangles, transforms);
   DrawPreview;
   ShowSelectedInfo;
   TriangleView.Refresh;
@@ -970,7 +973,6 @@ begin
       end;
       // draw axis
       Pen.Color := GridColor1;
-//      Pen.Style := psSolid;
       ax := integer(round(ix - gCenterX*sc));
       ay := integer(round(iy + gCentery*sc));
       MoveTo(ax, 0);
@@ -981,15 +983,17 @@ begin
       {Reference Triangle}
       Pen.Style := psDot;
       Pen.color := pnlReference.Color;
+      brush.Color := gridColor1 shr 1 and $7f7f7f;
       a := ToScreen(MainTriangles[-1].x[0], MainTriangles[-1].y[0]);
       b := ToScreen(MainTriangles[-1].x[1], MainTriangles[-1].y[1]);
       c := ToScreen(MainTriangles[-1].x[2], MainTriangles[-1].y[2]);
       Polyline([a, b, c, a]);
 
+      brush.Color := pnlBackColor.Color;
       Font.color := Pen.color;
+      TextOut(c.x-9, c.y-12, 'C');
+      TextOut(b.x-8, b.y+1, 'B');
       TextOut(a.x+2, a.y+1, 'A');
-      TextOut(b.x+2, b.y+1, 'B');
-      TextOut(c.x+2, c.y+1, 'C');
 
       Pen.Style := psSolid;
 
@@ -1036,24 +1040,17 @@ begin
             dx := MainTriangles[SelectedTriangle].x[SelectedCorner] - Pivot.x;
             dy := MainTriangles[SelectedTriangle].y[SelectedCorner] - Pivot.y;
             d := Hypot(dx, dy);
-//            d := dist(Pivot.x, Pivot.y,
-//              MainTriangles[SelectedTriangle].x[SelectedCorner], MainTriangles[SelectedTriangle].y[SelectedCorner]);
           end
           else begin
-//            d := MinDouble;
             dx := MainTriangles[SelectedTriangle].x[0] - Pivot.x;
             dy := MainTriangles[SelectedTriangle].y[0] - Pivot.y;
             d := Hypot(dx, dy);
             for i := 1 to 2 do
             begin
-//              tx := MainTriangles[SelectedTriangle].x[i] - Pivot.x;
-//              ty := MainTriangles[SelectedTriangle].y[i] - Pivot.y;
               d1 := Hypot(tx, ty);
               d1 := dist(Pivot.x, Pivot.y, MainTriangles[SelectedTriangle].x[i], MainTriangles[SelectedTriangle].y[i]);
               if d1 > d then begin
                 d := d1;
-//                dx := tx;
-//                dy := ty;
               end;
             end;
             d1 := Hypot(dx, dy);
@@ -1705,7 +1702,8 @@ begin
     Transforms := Transforms + 1;
     MainTriangles[Transforms - 1] := MainTriangles[-1];
     SelectedTriangle := Transforms - 1;
-    ComputeWeights(cp, MainTriangles, transforms);
+//    ComputeWeights(cp, MainTriangles, transforms);
+    cp.xform[Transforms - 1].density := 0.5;
     cp.xform[Transforms - 1].vars[0] := 1;
     for i := 1 to NRVAR - 1 do
       cp.xform[Transforms - 1].vars[i] := 0;
@@ -1725,7 +1723,8 @@ begin
     MainForm.UpdateUndo;
     Transforms := Transforms + 1;
     MainTriangles[Transforms - 1] := MainTriangles[SelectedTriangle];
-    ComputeWeights(cp, MainTriangles, transforms);
+//    ComputeWeights(cp, MainTriangles, transforms);
+    cp.xform[Transforms - 1].density := cp.xform[SelectedTriangle].density;
     for i := 0 to NRVAR - 1 do
       cp.xform[Transforms - 1].vars[i] := cp.xform[SelectedTriangle].vars[i];
     SelectedTriangle := Transforms - 1;
@@ -1802,7 +1801,7 @@ begin
     else if Sender = txtP then
     begin
       cp.xform[SelectedTriangle].density := StrToFloat(TEdit(Sender).Text);
-      ReadjustWeights(cp);
+      //ReadjustWeights(cp);
       TEdit(Sender).Text := Format('%.6g', [cp.xform[SelectedTriangle].density]);
     end;
     MainForm.UpdateUndo;
@@ -1864,7 +1863,7 @@ begin
       else if Sender = txtP then
       begin
         cp.xform[SelectedTriangle].density := StrToFloat(TEdit(Sender).Text);
-        ReadjustWeights(cp);
+        //ReadjustWeights(cp);
         TEdit(Sender).Text := Format('%.6g', [cp.xform[SelectedTriangle].density]);
       end;
       MainForm.UpdateUndo;
@@ -1905,7 +1904,7 @@ begin
     begin
       MainForm.UpdateUndo;
       cp.xform[SelectedTriangle].density := NewVal;
-      ReadjustWeights(cp);
+      //ReadjustWeights(cp);
       UpdateFlame(True);
     end;
   end;
@@ -1937,7 +1936,7 @@ begin
   begin
     MainForm.UpdateUndo;
     cp.xform[SelectedTriangle].density := NewVal;
-    ReadjustWeights(cp);
+    //ReadjustWeights(cp);
     UpdateFlame(True);
   end;
 end;
@@ -2195,7 +2194,7 @@ begin
         4: cp.xform[SelectedTriangle].c[2][0] := NewVal; //e
         5: cp.xform[SelectedTriangle].c[2][1] := NewVal; //f
       end;
-      MainForm.TrianglesFromCP(cp, MainTriangles);
+      cp.TrianglesFromCP(MainTriangles);
       ShowSelectedInfo;
       UpdateFlame(true);
     end;
@@ -2256,7 +2255,7 @@ begin
       4: cp.xform[SelectedTriangle].c[2][0] := NewVal; //e
       5: cp.xform[SelectedTriangle].c[2][1] := NewVal; //f
     end;
-    MainForm.TrianglesFromCP(cp, MainTriangles);
+    cp.TrianglesFromCP(MainTriangles);
     ShowSelectedInfo;
     UpdateFlame(true);
   end;
@@ -2356,7 +2355,7 @@ begin
     v := StrToFloat(txtXFormColor.Text);
   except on EConvertError do
     begin
-      txtXformColor.text := Format('%1.3f', [cp.xform[SelectedTriangle].color]);//FLoatToStr(cp.xform[SelectedTriangle].color);
+      txtXformColor.text := Format('%1.3f', [cp.xform[SelectedTriangle].color]);
       exit;
     end;
   end;
@@ -2380,7 +2379,7 @@ begin
       v := StrToFloat(txtXFormColor.Text);
     except on EConvertError do
       begin
-        txtXformColor.text := Format('%1.3f', [cp.xform[SelectedTriangle].color]);//FLoattoStr(cp.xform[SelectedTriangle].color);
+        txtXformColor.text := Format('%1.3f', [cp.xform[SelectedTriangle].color]);
         exit;
       end;
     end;

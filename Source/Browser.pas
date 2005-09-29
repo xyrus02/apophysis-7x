@@ -470,6 +470,7 @@ begin
   MainForm.StopThread;
   MainForm.UpdateUndo;
   MainCp.cmap := Palette;
+  MainCP.cmapindex := -1;
   if EditForm.Visible then EditForm.UpdateDisplay;
   if AdjustForm.Visible then AdjustForm.UpdateDisplay;
   if MutateForm.Visible then MutateForm.UpdateDisplay;

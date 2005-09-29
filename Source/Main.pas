@@ -319,7 +319,7 @@ type
     procedure ParseXML(var cp1: TControlPoint; const params: PCHAR);
     function SaveFlame(cp1: TControlPoint; title, filename: string): boolean;
     function SaveXMLFlame(const cp1: TControlPoint; title, filename: string): boolean;
-    function TrianglesFromCP(const cp1: TControlPoint; var Triangles: TTriangles): integer;
+    //function TrianglesFromCP(const cp1: TControlPoint; var Triangles: TTriangles): integer;
     procedure DisplayHint(Sender: TObject);
     procedure OnProgress(prog: double);
     procedure DrawFlame;
@@ -345,17 +345,16 @@ type
 procedure ListXML(FileName: string; sel: integer);
 function EntryExists(En, Fl: string): boolean;
 function XMLEntryExists(title, filename: string): boolean;
-procedure ComputeWeights(var cp1: TControlPoint; Triangles: TTriangles; t: integer);
+//procedure ComputeWeights(var cp1: TControlPoint; Triangles: TTriangles; t: integer);
 function DeleteEntry(Entry, FileName: string): boolean;
 function CleanIdentifier(ident: string): string;
 function CleanUPRTitle(ident: string): string;
-procedure GetXForms(var cp1: TControlPoint; const Triangles: TTriangles; const t: integer);
 function GradientString(c: TColorMap): string;
 function PackVariations: cardinal;
 procedure UnpackVariations(v: integer);
 function NumXForms(const cp: TControlPoint): integer;
-procedure NormalizeWeights(var cp: TControlPoint);
-procedure EqualizeWeights(var cp: TControlPoint);
+//procedure NormalizeWeights(var cp: TControlPoint);
+//procedure EqualizeWeights(var cp: TControlPoint);
 procedure MultMatrix(var s: TMatrix; const m: TMatrix);
 procedure ListFlames(FileName: string; sel: integer);
 procedure ListIFS(FileName: string; sel: integer);
@@ -473,6 +472,7 @@ begin
   end;
 end;
 
+{
 procedure EqualizeWeights(var cp: TControlPoint);
 var
   t, i: integer;
@@ -496,6 +496,7 @@ begin
     for i := 0 to NumXForms(cp) - 1 do
       cp.xform[i].Density := cp.xform[i].Density / td;
 end;
+}
 
 function PackVariations: cardinal;
 { Packs the variation options into an integer with Linear as lowest bit }
@@ -1365,7 +1366,7 @@ begin
   pal := ''; hue := '';
 //  if sheep then
 //  begin
-    pal := 'palette="' + IntToStr(cp1.cmapindex) + '" ';
+    if cp1.cmapindex >= 0 then pal := 'palette="' + IntToStr(cp1.cmapindex) + '" ';
     hue := 'hue="' + format('%g', [cp1.hue_rotation]) + '" ';
 //  end;
   if Trim(SheepNick) <> '' then nick := 'nick="' + Trim(SheepNick) + '"';
@@ -1832,113 +1833,9 @@ end;
 
 { ************************** IFS and triangle stuff ************************* }
 
-procedure ComputeWeights(var cp1: TControlPoint; Triangles: TTriangles; t: integer);
-{ Caclulates transform weight from triangles }
-var
-  i: integer;
-  total_area: double;
-begin
-  total_area := 0.0;
-  for i := 0 to t - 1 do
-  begin
-    cp1.xform[i].Density := triangle_area(Triangles[i]);
-    total_area := total_area + cp1.xform[i].Density;
-  end;
-  for i := 0 to t - 1 do
-  begin
-    cp1.xform[i].Density := cp1.xform[i].Density / total_area;
-  end;
-  NormalizeWeights(cp1);
-end;
+                   { ---Z--- moved to ControlPoint ---Z--- }
 
-procedure RandomWeights(var cp1: TControlPoint);
-{ Randomizes xform weights }
-var
-  i: integer;
-begin
-  for i := 0 to Transforms - 1 do
-    cp1.xform[i].Density := random;
-  NormalizeWeights(cp1);
-end;
-
-function TMainForm.TrianglesFromCP(const cp1: TControlPoint; var Triangles: TTriangles): integer;
-{ Sets up the triangles from the IFS code }
-var
-  xforms: integer;
-  i, j: integer;
-  temp_x, temp_y, xset, yset: double;
-  left, top, bottom, right: double;
-  a, b, c, d, e, f: double;
-begin
-  top := 0; bottom := 0; right := 0; left := 0;
-  xforms := NumXForms(cp1);
-  Result := xforms;
-  if not FixedReference then
-  begin
-    for i := 0 to xforms - 1 do
-    begin
-      a := cp1.xform[i].c[0][0];
-      b := cp1.xform[i].c[0][1];
-      c := cp1.xform[i].c[1][0];
-      d := cp1.xform[i].c[1][1];
-      e := cp1.xform[i].c[2][0];
-      f := cp1.xform[i].c[2][1];
-      xset := 1.0;
-      yset := 1.0;
-      for j := 0 to 5 do
-      begin
-        temp_x := xset * a + yset * c + e;
-        temp_y := xset * b + yset * d + f;
-        xset := temp_x;
-        yset := temp_y;
-      end;
-      if (i = 0) then
-      begin
-        left := xset;
-        right := xset;
-        top := yset;
-        bottom := yset;
-      end
-      else
-      begin
-        if (xset < left) then left := xset;
-        if (xset > right) then right := xset;
-        if (yset < top) then top := yset;
-        if (yset > bottom) then bottom := yset;
-      end;
-    end;
-    Triangles[-1].x[0] := left;
-    Triangles[-1].x[1] := right;
-    Triangles[-1].x[2] := right;
-    Triangles[-1].y[0] := bottom;
-    Triangles[-1].y[1] := bottom;
-    Triangles[-1].y[2] := top;
-  end
-  else
-  begin
-    Triangles[-1].x[0] := 1; Triangles[-1].y[0] := 0; // "x"
-    Triangles[-1].x[1] := 0; Triangles[-1].y[1] := 0; // "0"
-    Triangles[-1].x[2] := 0; Triangles[-1].y[2] := -1; // "y"
-  end;
-
-  for j := 0 to xforms - 1 do
-  begin
-    a := cp1.xform[j].c[0][0];
-    b := cp1.xform[j].c[0][1];
-    c := cp1.xform[j].c[1][0];
-    d := cp1.xform[j].c[1][1];
-    e := cp1.xform[j].c[2][0];
-    f := cp1.xform[j].c[2][1];
-    for i := 0 to 2 do
-    begin
-      triangles[j].x[i] := Triangles[-1].x[i] * a + Triangles[-1].y[i] * c + e;
-      triangles[j].y[i] := Triangles[-1].x[i] * b + Triangles[-1].y[i] * d + f;
-    end;
-  end;
-  for i := -1 to xforms - 1 do
-    for j := 0 to 2 do
-      triangles[i].y[j] := -triangles[i].y[j];
-end;
+{ // unused function, hmmm...
 
 procedure CP_compute(var cp1: TControlPoint; t1, t0: TTriangle; const i: integer);
 begin
@@ -1952,25 +1849,7 @@ begin
     t0.x[2], t0.y[2], t1.y[2],
     cp1.xform[i].c[0][1], cp1.xform[i].c[1][1], cp1.xform[i].c[2][1]);
 end;
-
-procedure GetXForms(var cp1: TControlPoint; const Triangles: TTriangles; const t: integer);
-var
-  i: integer;
-begin
-  for i := 0 to t - 1 do
-  begin
-    solve3(Triangles[-1].x[0], -Triangles[-1].y[0], Triangles[i].x[0],
-      Triangles[-1].x[1], -Triangles[-1].y[1], Triangles[i].x[1],
-      Triangles[-1].x[2], -Triangles[-1].y[2], Triangles[i].x[2],
-      cp1.xform[i].c[0][0], cp1.xform[i].c[1][0], cp1.xform[i].c[2][0]);
-
-    solve3(Triangles[-1].x[0], -Triangles[-1].y[0], -Triangles[i].y[0],
-      Triangles[-1].x[1], -Triangles[-1].y[1], -Triangles[i].y[1],
-      Triangles[-1].x[2], -Triangles[-1].y[2], -Triangles[i].y[2],
-      cp1.xform[i].c[0][1], cp1.xform[i].c[1][1], cp1.xform[i].c[2][1]);
-  end;
-
-end;
+}
 
 function FlameToString(Title: string): string;
 { Creates a string containing the formated flame parameter set }
@@ -2200,7 +2079,8 @@ procedure TMainForm.mnuNormalWeightsClick(Sender: TObject);
 begin
   StopThread;
   UpdateUndo;
-  ComputeWeights(MainCp, MainTriangles, transforms);
+// TODO: ...something
+//  ComputeWeights(MainCp, MainTriangles, transforms);
   RedrawTimer.Enabled := True;
   UpdateWindows;
 end;
@@ -2211,7 +2091,7 @@ begin
   UpdateUndo;
   inc(MainSeed);
   RandSeed := MainSeed;
-  RandomWeights(MainCp);
+  MainCp.RandomizeWeights;
   RedrawTimer.Enabled := True;
   UpdateWindows;
 end;
@@ -2338,7 +2218,7 @@ begin
   inc(RandomIndex);
   MainCp.name := RandomPrefix + RandomDate + '-' +
     IntToStr(RandomIndex);
-  Transforms := TrianglesFromCP(MainCp, MainTriangles);
+  Transforms := MainCp.TrianglesFromCP(MainTriangles);
 
   if AdjustForm.visible then
     AdjustForm.UpdateDisplay;
@@ -2353,7 +2233,7 @@ procedure TMainForm.mnuEqualizeClick(Sender: TObject);
 begin
   StopThread;
   UpdateUndo;
-  EqualizeWeights(maincp);
+  MainCP.EqualizeWeights;
   RedrawTimer.Enabled := True;
   UpdateWindows;
 end;
@@ -2817,7 +2697,7 @@ begin
     btnUndo.Enabled := false;
     btnRedo.enabled := false;
 
-    Transforms := TrianglesFromCP(MainCp, MainTriangles);
+    Transforms := MainCp.TrianglesFromCP(MainTriangles);
 
     UndoIndex := 0;
     UndoMax := 0;
@@ -2942,7 +2822,7 @@ begin
 //        Zoom := maincp.zoom;
         Center[0] := maincp.Center[0];
         Center[1] := maincp.Center[1];
-        NormalizeWeights(maincp);
+        MainCP.NormalizeWeights;
         mnuSaveUndo.Enabled := false;
         mnuUndo.Enabled := False;
         mnuPopUndo.Enabled := False;
@@ -2956,7 +2836,7 @@ begin
         AdjustForm.btnRedo.enabled := false;
         btnUndo.Enabled := false;
         btnRedo.enabled := false;
-        Transforms := TrianglesFromCP(maincp, MainTriangles);
+        Transforms := MainCp.TrianglesFromCP(MainTriangles);
       // Fix Apophysis 1.0 parameters with negative color parameteres!
         for i := 0 to Transforms - 1 do
           if maincp.xform[i].color < 0 then maincp.xform[i].color := 0;
@@ -3054,8 +2934,8 @@ begin
     Center[0] := maincp.Center[0];
     Center[1] := maincp.Center[1];
 //    cp.CalcBoundbox;
-    NormalizeWeights(maincp);
-    Transforms := TrianglesFromCP(maincp, MainTriangles);
+    MainCP.NormalizeWeights;
+    Transforms := MainCp.TrianglesFromCP(MainTriangles);
     // Trim undo index from title
     maincp.name := Copy(Fstrings[0], 6, length(Fstrings[0]) - 7);
 
@@ -3306,6 +3186,7 @@ begin
         StopThread;
         UpdateUndo;
         maincp.cmap := Pal;
+        maincp.cmapindex := -1;
         AdjustForm.UpdateDisplay;
 
         if EditForm.Visible then EditForm.UpdateDisplay;
@@ -3613,7 +3494,7 @@ begin
       center[1] := maincp.center[1];
       RedrawTimer.Enabled := True;
       Application.ProcessMessages;
-      Transforms := TrianglesFromCP(maincp, MainTriangles);
+      Transforms := MainCp.TrianglesFromCP(MainTriangles);
       UpdateWindows;
     end;
   finally
@@ -3752,7 +3633,7 @@ begin
   if nxform < NXFORMS then
     for i := nxform to NXFORMS - 1 do
       cp1.xform[i].density := 0;
-  NormalizeWeights(cp1);
+  cp1.NormalizeWeights;
   // Check for symmetry parameter
   if ParseCp.symmetry <> 0 then
   begin
@@ -3766,7 +3647,7 @@ begin
   if Clipboard.HasFormat(CF_TEXT) then begin
     UpdateUndo;
     ParseXML(MainCP, PCHAR(Clipboard.AsText));
-    Transforms := TrianglesFromCP(MainCp, MainTriangles);
+    Transforms := MainCp.TrianglesFromCP(MainTriangles);
     Statusbar.Panels[2].Text := MainCp.name;
     if ResizeOnLoad then ResizeWindow;
     RedrawTimer.Enabled := True;
@@ -3782,10 +3663,7 @@ begin
   txt := Trim(FlameToXML(Maincp, false, true));
   Clipboard.SetTextBuf(PChar(txt));
   mnuPaste.enabled := true;
-//z  btnPaste.enabled := true;
 
-//  GradientForm.mnuPaste.enabled := False;
-//  GradientForm.btnPaste.enabled := False;
   AdjustForm.mnuPaste.enabled := False;
   AdjustForm.btnPaste.enabled := False;
 end;

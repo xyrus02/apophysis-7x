@@ -310,7 +310,7 @@ var
   FileList: TStringList;
 
 function Mul33(M1, M2: TMatrix): TMatrix;
-procedure Normalize(var cp: TControlPoint);
+//procedure Normalize(var cp: TControlPoint);
 
 implementation
 
@@ -493,13 +493,14 @@ end;
 procedure TScriptEditor.GetFixedReference(AMachine: TatVirtualMachine);
 begin
   with AMachine do
-    ReturnOutPutArg(FixedReference);
+    ReturnOutPutArg(ReferenceMode = 0);
 end;
 
 procedure TScriptEditor.SetFixedReference(AMachine: TatVirtualMachine);
 begin
   with AMachine do
-    FixedReference := GetInputArgAsBoolean(0);
+    if GetInputArgAsBoolean(0) then ReferenceMode := 0
+    else ReferenceMode := 1;
 end;
 
 procedure TScriptEditor.GetSampleDensity(AMachine: TatVirtualMachine);
@@ -1474,7 +1475,7 @@ begin
   if nxform < NXFORMS then
     for i := nxform to NXFORMS - 1 do
       cp1.xform[i].density := 0;
-  NormalizeWeights(cp1);
+  cp1.NormalizeWeights;
   // Check for symmetry parameter
   if cp1.symmetry <> 0 then
   begin
@@ -1516,7 +1517,7 @@ begin
     for i := 0 to NXFORMS - 1 do
       if ScriptEditor.cp.xform[i].density = 0 then break;
     NumTransforms := i;
-    NormalizeWeights(ScriptEditor.cp);
+    ScriptEditor.cp.NormalizeWeights;
 //    FlameName := FileList[index];
   finally
     IFSStrings.Free;
@@ -1588,7 +1589,7 @@ begin
     for i := 0 to NXFORMS - 1 do
       if ScriptEditor.cp.xform[i].density = 0 then break;
     NumTransforms := i;
-    NormalizeWeights(ScriptEditor.cp);
+    ScriptEditor.cp.NormalizeWeights;
     if SavedPal then ScriptEditor.cp.cmap := Palette;
     ScriptEditor.cp.name := FileList[index];
   finally
@@ -1620,13 +1621,13 @@ var
   i: integer;
   r: double;
 begin
-  MainForm.TrianglesFromCp(ScriptEditor.cp, Triangles);
+  ScriptEditor.cp.TrianglesFromCp(Triangles);
   r := AMachine.GetInputArgAsFloat(0) * pi / 180;
   for i := -1 to NumTransforms - 1 do
   begin
     Triangles[i] := RotateTriangle(Triangles[i], r);
   end;
-  GetXForms(ScriptEditor.cp, Triangles, NumTransforms);
+  ScriptEditor.cp.GetFromTriangles(Triangles, NumTransforms);
 end;
 
 procedure TOperationLibrary.AddSymmetryProc(AMachine: TatVirtualMachine);
@@ -1644,10 +1645,10 @@ var
   Triangles: TTriangles;
   r: double;
 begin
-  MainForm.TrianglesFromCp(ScriptEditor.cp, Triangles);
+  ScriptEditor.cp.TrianglesFromCp(Triangles);
   r := AMachine.GetInputArgAsFloat(0) * pi / 180;
   Triangles[-1] := RotateTriangle(Triangles[-1], r);
-  GetXForms(ScriptEditor.cp, Triangles, NumTransforms);
+  ScriptEditor.cp.GetFromTriangles(Triangles, NumTransforms);
 end;
 
 procedure TOperationLibrary.ScaleProc(AMachine: TatVirtualMachine);
@@ -1748,7 +1749,7 @@ begin
   if NumTransforms > 1 then
   begin
     AMachine.Paused := True;
-    Normalize(ScriptEditor.cp);
+    ScriptEditor.cp.NormalizeWeights;
     PreviewForm.cp.Copy(ScriptEditor.cp);
     AdjustScale(PreviewForm.cp, PreviewForm.Image.Width, PreviewForm.Image.Height);
     PreviewForm.Show;
@@ -1763,7 +1764,7 @@ procedure TOperationLibrary.RenderProc(AMachine: TatVirtualMachine);
 begin
   if NumTransforms > 1 then
   begin
-    Normalize(ScriptEditor.cp);
+    ScriptEditor.cp.NormalizeWeights;
     ScriptRenderForm.cp.Copy(ScriptEditor.cp);
     ScriptRenderForm.Caption := 'Rendering ' + ScriptEditor.Renderer.Filename; ;
     ScriptRenderForm.Show;
@@ -2912,7 +2913,7 @@ begin
   else
     if (LastError = '') and UpdateIt then
     begin
-      Normalize(cp);
+      cp.NormalizeWeights;
       MainForm.UpdateUndo;
       MainCp.Copy(cp);
       UpdateFlame;
@@ -2944,10 +2945,10 @@ procedure TScriptEditor.UpdateFlame;
 begin
   MainForm.StopThread;
   MainForm.UpdateUndo;
-  Normalize(cp);
+  cp.NormalizeWeights;
   MainCp.Copy(cp);
 //  MainCp.name := FlameName;
-  Transforms := MainForm.TrianglesFromCP(MainCp, MainTriangles);
+  Transforms := MainCp.TrianglesFromCP(MainTriangles);
   AdjustScale(MainCp, MainForm.Image.Width, MainForm.Image.Height);
   if ResetLocation then MainCp.CalcBoundBox else
   begin;
@@ -2966,21 +2967,6 @@ end;
 
 
 { ******************************* Parseing *********************************** }
-
-procedure Normalize(var cp: TControlPoint);
-var
-  i: integer;
-  td: double;
-begin
-  td := 0.0;
-  for i := 0 to NumTransforms - 1 do
-    td := td + cp.xform[i].Density;
-  if (td < 0.001) then
-    EqualizeWeights(cp)
-  else
-    for i := 0 to NumTransforms - 1 do
-      cp.xform[i].Density := cp.xform[i].Density / td;
-end;
 
 procedure copyxform(var dest: Txform; const source: TXform);
 var

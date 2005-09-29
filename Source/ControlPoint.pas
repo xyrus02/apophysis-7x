@@ -21,16 +21,47 @@ unit ControlPoint;
 interface
 
 uses
-  Classes, Windows, Cmap, Xform, XFormMan;
+  Classes, Windows, Cmap, XForm, XFormMan;
 
 const
   EPS = 1E-10;
+
   NXFORMS = 100; // --Z-- I don't like limitations! 8-[]
+
   SUB_BATCH_SIZE = 10000;
   PREFILTER_WHITE = (1 shl 26);
   FILTER_CUTOFF = 1.8;
   BRIGHT_ADJUST = 2.3;
   FUSE = 15;
+
+// ---- MyTypes ----
+
+type
+  TTriangle = record
+    x: array[0..2] of double;
+    y: array[0..2] of double;
+  end;
+  TTriangles = array[-1..NXFORMS] of TTriangle;
+  TSPoint = record
+    x: double;
+    y: double;
+  end;
+  TMapPalette = record
+    Red: array[0..255] of byte;
+    Green: array[0..255] of byte;
+    Blue: array[0..255] of byte;
+  end;
+  TColorMaps = record
+    Identifier: string;
+    UGRFile: string;
+  end;
+  pPixArray = ^TPixArray;
+  TPixArray = array[0..1279, 0..1023, 0..3] of integer;
+  pPreviewPixArray = ^TPreviewPixArray;
+  TPreviewPixArray = array[0..159, 0..119, 0..3] of integer;
+  TFileType = (ftIfs, ftFla, ftXML);
+
+// -----
 
 type //?
   PLongintArray = ^TLongintArray;
@@ -120,6 +151,15 @@ type
     procedure Copy(cp1: TControlPoint);
 
     function HasNewVariants: boolean;
+
+    // CP-specific functions moved from unit Main 
+    function NumXForms: integer;
+    function TrianglesFromCP(var Triangles: TTriangles): integer;
+    procedure EqualizeWeights;
+    procedure NormalizeWeights;
+    procedure RandomizeWeights;
+    procedure ComputeWeights(Triangles: TTriangles; t: integer);
+    procedure GetFromTriangles(const Triangles: TTriangles; const t: integer);
 
     constructor Create;
     destructor Destroy; override;
@@ -1783,5 +1823,185 @@ begin
 end;
 
 ///////////////////////////////////////////////////////////////////////////////
+//
+// --Z-- cp-specific functions moved here from MainForm
+//
+
+function TControlPoint.NumXForms: integer;
+var
+  i: integer;
+begin
+//...
+  Result := NXFORMS;
+  for i := 0 to NXFORMS - 1 do
+  begin
+    if xform[i].density = 0 then
+    begin
+      Result := i;
+      Break;
+    end;
+  end;
+  Result := i;
+end;
+
+function TControlPoint.TrianglesFromCP(var Triangles: TTriangles): integer;
+{ Sets up the triangles from the IFS code }
+var
+  i, j: integer;
+  temp_x, temp_y, xset, yset: double;
+  left, top, bottom, right: double;
+  a, b, c, d, e, f: double;
+begin
+  top := 0; bottom := 0; right := 0; left := 0;
+  Result := NumXForms;
+  if ReferenceMode > 0 then
+  begin
+    for i := 0 to Result-1 do
+    begin
+      a := xform[i].c[0][0];
+      b := xform[i].c[0][1];
+      c := xform[i].c[1][0];
+      d := xform[i].c[1][1];
+      e := xform[i].c[2][0];
+      f := xform[i].c[2][1];
+      xset := 1.0;
+      yset := 1.0;
+      for j := 0 to 5 do
+      begin
+        temp_x := xset * a + yset * c + e;
+        temp_y := xset * b + yset * d + f;
+        xset := temp_x;
+        yset := temp_y;
+      end;
+      if (i = 0) then
+      begin
+        left := xset;
+        right := xset;
+        top := yset;
+        bottom := yset;
+      end
+      else
+      begin
+        if (xset < left) then left := xset;
+        if (xset > right) then right := xset;
+        if (yset > top) then top := yset;
+        if (yset < bottom) then bottom := yset;
+      end;
+    end;
+
+    if ReferenceMode = 1 then
+    begin
+      Triangles[-1].x[0] := right-left;
+      Triangles[-1].y[0] := 0;
+      Triangles[-1].x[1] := 0;
+      Triangles[-1].y[1] := 0;
+      Triangles[-1].x[2] := 0;
+      Triangles[-1].y[2] := -(top-bottom);
+    end
+    else begin
+      Triangles[-1].x[0] := right;
+      Triangles[-1].y[0] := -bottom;
+      Triangles[-1].x[1] := left;
+      Triangles[-1].y[1] := -bottom;
+      Triangles[-1].x[2] := left;
+      Triangles[-1].y[2] := -top;
+    end;
+  end
+  else
+  begin
+    Triangles[-1].x[0] := 1; Triangles[-1].y[0] := 0; // "x"
+    Triangles[-1].x[1] := 0; Triangles[-1].y[1] := 0; // "0"
+    Triangles[-1].x[2] := 0; Triangles[-1].y[2] := -1; // "y"
+  end;
+
+  for j := 0 to Result-1 do
+  begin
+    a := xform[j].c[0][0];
+    b := xform[j].c[0][1];
+    c := xform[j].c[1][0];
+    d := xform[j].c[1][1];
+    e := xform[j].c[2][0];
+    f := xform[j].c[2][1];
+    for i := 0 to 2 do
+    begin
+      triangles[j].x[i] := Triangles[-1].x[i] * a + Triangles[-1].y[i] * c + e;
+      triangles[j].y[i] := Triangles[-1].x[i] * b + Triangles[-1].y[i] * d + f;
+    end;
+  end;
+
+  for j := -1 to Result-1 do
+    for i := 0 to 2 do
+      triangles[j].y[i] := -triangles[j].y[i];
+end;
+
+procedure TControlPoint.EqualizeWeights;
+var
+  t, i: integer;
+begin
+  t := NumXForms;
+  for i := 0 to t - 1 do
+    xform[i].density := 0.5;
+end;
+
+procedure TControlPoint.NormalizeWeights;
+var
+  i: integer;
+  td: double;
+begin
+  td := 0.0;
+  for i := 0 to NumXForms - 1 do
+    td := td + xform[i].Density;
+  if (td < 0.001) then
+    EqualizeWeights
+  else
+    for i := 0 to NumXForms - 1 do
+      xform[i].Density := xform[i].Density / td;
+end;
+
+procedure TControlPoint.RandomizeWeights;
+var
+  i: integer;
+begin
+  for i := 0 to Transforms - 1 do
+    xform[i].Density := Random;
+end;
+
+procedure TControlPoint.ComputeWeights(Triangles: TTriangles; t: integer);
+// Caclulate transform weight from triangle areas
+var
+  i: integer;
+  total_area: double;
+begin
+  total_area := 0;
+  for i := 0 to t - 1 do
+  begin
+    xform[i].Density := triangle_area(Triangles[i]);
+    total_area := total_area + xform[i].Density;
+  end;
+  for i := 0 to t - 1 do
+  begin
+    xform[i].Density := xform[i].Density / total_area;
+  end;
+  //? cp1.NormalizeWeights;
+end;
+
+procedure TControlPoint.GetFromTriangles(const Triangles: TTriangles; const t: integer);
+var
+  i: integer;
+begin
+  for i := 0 to t-1 do
+  begin
+    solve3(Triangles[-1].x[0], -Triangles[-1].y[0], Triangles[i].x[0],
+      Triangles[-1].x[1], -Triangles[-1].y[1], Triangles[i].x[1],
+      Triangles[-1].x[2], -Triangles[-1].y[2], Triangles[i].x[2],
+      xform[i].c[0][0], xform[i].c[1][0], xform[i].c[2][0]);
+
+    solve3(Triangles[-1].x[0], -Triangles[-1].y[0], -Triangles[i].y[0],
+      Triangles[-1].x[1], -Triangles[-1].y[1], -Triangles[i].y[1],
+      Triangles[-1].x[2], -Triangles[-1].y[2], -Triangles[i].y[2],
+      xform[i].c[0][1], xform[i].c[1][1], xform[i].c[2][1]);
+  end;
+end;
+
 end.
 

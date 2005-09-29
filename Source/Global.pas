@@ -111,7 +111,7 @@ var
   VariationOptions: int64;
   { For random gradients }
   MinNodes, MaxNodes, MinHue, MaxHue, MinSat, MaxSat, MinLum, MaxLum: integer;
-  FixedReference: boolean;
+  ReferenceMode: integer;//FixedReference: boolean;
   BatchSize: Integer;
   Compatibility: integer; //0 = original, 1 = Drave's
   Favorites: TStringList;
@@ -183,6 +183,7 @@ function dist(x1, y1, x2, y2: double): double;
 var
   d2: double;
 begin
+(*
   { From FDesign source
   { float pt_pt_distance(float x1, float y1, float x2, float y2) }
   d2 := (x1 - x2) * (x1 - x2) + (y1 - y2) * (y1 - y2);
@@ -193,6 +194,12 @@ begin
   end
   else
     Result := sqrt(d2);
+*)
+
+  // --Z-- This is just amazing... :-\
+  // Someone needed an 'FDesign source' -  to compute distance between two points??!?
+
+  Result := Hypot(x2-x1, y2-y1);
 end;
 
 function line_dist(x, y, x1, y1, x2, y2: double): double;

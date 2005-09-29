@@ -119,7 +119,7 @@ begin
   MainForm.StopThread;
   MainForm.UpdateUndo;
   MainCp.Copy(cps[0]);
-  Transforms := MainForm.TrianglesFromCP(MainCp, MainTriangles);
+  Transforms := MainCp.TrianglesFromCP(MainTriangles);
   MainCp.cmap := cmap;
   MainCp.name := name;
   MainCp.nick := nick;

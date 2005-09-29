@@ -111,23 +111,24 @@ type
     ApplicationEvents: TApplicationEvents;
     lblOffset: TLabel;
     TabSheet4: TTabSheet;
-    Label2: TLabel;
-    Label3: TLabel;
-    chkMaintain: TCheckBox;
     btnPreset1: TButton;
     btnPreset2: TButton;
     btnPreset3: TButton;
     btnSet1: TButton;
     btnSet2: TButton;
     btnSet3: TButton;
-    txtWidth: TComboBox;
-    txtHeight: TComboBox;
-    Bevel1: TBevel;
-    Bevel2: TBevel;
     btnUndo: TSpeedButton;
     btnRedo: TSpeedButton;
     chkTransparent: TCheckBox;
     btnColorPreset: TSpeedButton;
+    Bevel1: TBevel;
+    btnApplySize: TBitBtn;
+    Label2: TLabel;
+    Label3: TLabel;
+    chkMaintain: TCheckBox;
+    txtWidth: TComboBox;
+    txtHeight: TComboBox;
+    Bevel2: TBevel;
     procedure FormCreate(Sender: TObject);
     procedure FormClose(Sender: TObject; var Action: TCloseAction);
     procedure FormDestroy(Sender: TObject);
@@ -194,7 +195,7 @@ type
 
     // --Z-- // gradient functions
     procedure cmbPaletteChange(Sender: TObject);
-    procedure DrawPalette;
+//    procedure DrawPalette;
     procedure mnuReverseClick(Sender: TObject);
     procedure mnuInvertClick(Sender: TObject);
     procedure btnMenuClick(Sender: TObject);
@@ -243,6 +244,7 @@ type
     procedure btnRedoClick(Sender: TObject);
     procedure GradientImageDblClick(Sender: TObject);
     procedure btnColorPresetClick(Sender: TObject);
+    procedure btnApplySizeClick(Sender: TObject);
 
   private
     Resetting: boolean;
@@ -320,7 +322,6 @@ begin
   pw := PrevPnl.Width - 2;
   ph := PrevPnl.Height - 2;
   cp.copy(MainCp);
-// --Z-- actually this isn not correct: // if cp.width > cp.height then
   if (cp.width / cp.height) > (PrevPnl.Width / PrevPnl.Height) then
   begin
     PreviewImage.Width := pw;
@@ -361,16 +362,17 @@ begin
 
   GetMainWindowSize;
 
-  Resetting := False;
-  DrawPreview;
-
   // gradient
   if cp.cmapindex >= 0 then
     cmbPalette.ItemIndex := cp.cmapindex;
-  ScrollBar.Position := 0;
+//  ScrollBar.Position := 0;
   Palette := cp.cmap;
   BackupPal := cp.cmap;
-  DrawPalette;
+
+  Resetting := False;
+  DrawPreview;
+
+  //DrawPalette;
 end;
 
 procedure TAdjustForm.UpdateFlame;
@@ -388,6 +390,10 @@ begin
 end;
 
 procedure TAdjustForm.DrawPreview;
+var
+  i: integer;
+  Row: pRGBTripleArray;
+  BitMap: TBitMap;
 begin
   if not Resetting then begin
     Render.Stop;
@@ -406,7 +412,30 @@ begin
 
     PreviewImage.Refresh; // --Z-- why was commented out? ;-)
 
-    DrawPalette; // (?)
+//--begin DrawPalette
+    BitMap := TBitMap.Create;
+    try
+      Bitmap.PixelFormat := pf24bit;
+      BitMap.Width := 256;
+      BitMap.Height := 1;
+
+      Row := Bitmap.Scanline[0];
+      for i := 0 to 255 do
+      begin
+        with Row[i] do
+        begin
+          rgbtRed   := Palette[i][0];
+          rgbtGreen := Palette[i][1];
+          rgbtBlue  := Palette[i][2];
+        end;
+      end;
+
+      GradientImage.Picture.Graphic := Bitmap;
+      GradientImage.Refresh;
+    finally
+      BitMap.Free;
+    end;
+//--end DrawPalette
   end;
 end;
 
@@ -1004,7 +1033,7 @@ begin
 
   MainCp.CmapIndex := cmbPalette.ItemIndex;
   MainCp.cmap := Palette;
-  BackupPal := Palette;
+//  BackupPal := Palette;
   if EditForm.visible then EditForm.UpdateDisplay;
   if MutateForm.Visible then MutateForm.UpdateDisplay;
 
@@ -1046,10 +1075,10 @@ begin
 
   Palette := Pal;
   BackupPal := Pal;
-  DrawPalette;
+//  DrawPalette;
 
   cp.copy(MainCp);
-//?  DrawPreview;
+{//?}  DrawPreview;
 end;
 
 procedure HSVToRGB(H, S, V: real; var Rb, Gb, Bb: integer);
@@ -1204,6 +1233,7 @@ begin
   end;
 end;
 
+{
 procedure TAdjustForm.DrawPalette;
 var
   i: integer;
@@ -1235,16 +1265,19 @@ begin
     BitMap.Free;
   end;
 end;
+}
 
 procedure TAdjustForm.cmbPaletteChange(Sender: TObject);
 var
   i: integer;
 begin
+  if Resetting then exit;
+
   i := cmbPalette.ItemIndex;
   GetCmap(i, 1, Palette);
   BackupPal := Palette;
   ScrollBar.Position := 0;
-  DrawPalette;
+  //DrawPalette;
 //  MainForm.UpdateUndo;
   Apply;
 end;
@@ -1393,7 +1426,7 @@ begin
   if ScrollCode = scEndScroll then
   begin
     GradientChanged:=false;
-    //Apply;
+    Apply;
   end;
 end;
 
@@ -1680,9 +1713,9 @@ begin
 
     for i := 0 to 255 do
     begin
-      Palette[i][0] := BackupPal[(255 + i - offset) and $FF][0];
-      Palette[i][1] := BackupPal[(255 + i - offset) and $FF][1];
-      Palette[i][2] := BackupPal[(255 + i - offset) and $FF][2];
+      Palette[i][0] := BackupPal[(256 + i - offset) and $FF][0];
+      Palette[i][1] := BackupPal[(256 + i - offset) and $FF][1];
+      Palette[i][2] := BackupPal[(256 + i - offset) and $FF][2];
     end;
     cp.CmapIndex := cmbPalette.ItemIndex;
     cp.cmap := Palette;
@@ -1773,9 +1806,6 @@ procedure TAdjustForm.SetMainWindowSize;
 var
   xtot, ytot: integer;
 begin
-//  xdif := MainForm.Width - MainForm.Image.Width;
-//  ydif := MainForm.Height - MainForm.Image.Height;
-
   xtot := ImageWidth + (MainForm.Width - MainForm.Image.Width);
   ytot := ImageHeight + (MainForm.Height - MainForm.Image.Height);
   if xtot > Screen.Width then
@@ -1876,6 +1906,11 @@ procedure TAdjustForm.btnColorPresetClick(Sender: TObject);
 begin
   cmbPalette.ItemIndex := random(701);
   cmbPaletteChange(Sender);
+end;
+
+procedure TAdjustForm.btnApplySizeClick(Sender: TObject);
+begin
+  SetMainWindowSize;
 end;
 
 end.
