@@ -488,7 +488,7 @@ begin
       if Registry.ValueExists('PNGTransparency') then begin
         PNGTransparency := Registry.ReadInteger('PNGTransparency');
       end else begin
-        PNGTransparency := 2
+        PNGTransparency := 1
       end;
       if Registry.ValueExists('ShowTransparency') then begin
         ShowTransparency := Registry.ReadBool('ShowTransparency');
