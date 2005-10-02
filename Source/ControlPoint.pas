@@ -1686,18 +1686,19 @@ end;
 ///////////////////////////////////////////////////////////////////////////////
 function TControlPoint.HasNewVariants: boolean;
 var
-  i: integer;
+  i,v: integer;
 begin
   Result := false;
 
-  for i:= 0 to NXFORMS -1 do begin
-    if (xform[i].vars[18] > 0) or
-       (xform[i].vars[19] > 0) or
-       (xform[i].vars[20] > 0) or
-       (xform[i].vars[21] > 0) then begin
-      Result := True;
-      Exit;
-    end;
+  for i:= 0 to NXFORMS - 1 do begin
+    if xform[i].density = 0 then
+      break;
+
+    for v := 23 to NrVar - 1 do
+      result := Result or (xform[i].vars[v] > 0);
+
+    if result then
+      break;
   end;
 end;
 
@@ -1841,7 +1842,6 @@ begin
       Break;
     end;
   end;
-  Result := i;
 end;
 
 function TControlPoint.TrianglesFromCP(var Triangles: TTriangles): integer;
