@@ -410,7 +410,7 @@ begin
     BM.Assign(Render.GetImage);
     PreviewImage.Picture.Graphic := bm;
 
-    PreviewImage.Refresh; // --Z-- why was commented out? ;-)
+//    PreviewImage.Refresh; // --Z-- why was commented out? ;-)
 
 //--begin DrawPalette
     BitMap := TBitMap.Create;
@@ -1037,7 +1037,7 @@ begin
   if EditForm.visible then EditForm.UpdateDisplay;
   if MutateForm.Visible then MutateForm.UpdateDisplay;
 
-  DrawPreview; //hmm
+//  DrawPreview; //hmm
   MainForm.RedrawTimer.enabled := true;
 end;
 
@@ -1078,7 +1078,7 @@ begin
 //  DrawPalette;
 
   cp.copy(MainCp);
-{//?}  DrawPreview;
+//  DrawPreview;
 end;
 
 procedure HSVToRGB(H, S, V: real; var Rb, Gb, Bb: integer);
