@@ -1364,11 +1364,14 @@ begin
   x := cp1.center[0];
   y := cp1.center[1];
   pal := ''; hue := '';
-//  if sheep then
-//  begin
+  if sheep then begin
     if cp1.cmapindex >= 0 then pal := 'palette="' + IntToStr(cp1.cmapindex) + '" ';
     hue := 'hue="' + format('%g', [cp1.hue_rotation]) + '" ';
-//  end;
+  end;
+
+  if cp1.cmapindex >= 0 then
+    pal := pal + 'gradient="' + IntToStr(cp1.cmapindex) + '" ';
+
   if Trim(SheepNick) <> '' then nick := 'nick="' + Trim(SheepNick) + '"';
   if Trim(SheepURL) <> '' then url := 'url="' + Trim(SheepURL) + '" ';
   try
@@ -3697,10 +3700,10 @@ var
   Ext, ex, Path: string;
   cp1: TControlPoint;
 begin
-//  if MainCp.FAngle <> 0 then begin
-//    showMessage('This flame is rotated. It cannot be correctly rendered this way');
-//    Exit;
-//  end;
+  if (MainCp.NumXForms > 12) or
+     (MainCP.HasNewVariants) then begin
+    showMessage('This flame will not be correctly rendered this way. Please use the internal renderer.');
+  end;
 
   if not FileExists(HqiPath) then
   begin
@@ -3899,6 +3902,11 @@ begin
     v := Attributes.Value('time');
     if v <> '' then Parsecp.Time := StrToFloat(v);
     v := Attributes.value('palette');
+    if v <> '' then
+      Parsecp.cmapindex := StrToInt(v)
+    else
+      Parsecp.cmapindex := -1;
+    v := Attributes.value('gradient');
     if v <> '' then
       Parsecp.cmapindex := StrToInt(v)
     else

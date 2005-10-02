@@ -2,7 +2,7 @@ object MainForm: TMainForm
   Left = 387
   Top = 166
   Width = 605
-  Height = 595
+  Height = 615
   Caption = 'Apophysis'
   Color = clBtnFace
   Font.Charset = ANSI_CHARSET
@@ -27,7 +27,7 @@ object MainForm: TMainForm
     Left = 160
     Top = 28
     Width = 4
-    Height = 498
+    Height = 514
   end
   object ToolBar: TToolBar
     Left = 0
@@ -284,7 +284,7 @@ object MainForm: TMainForm
     Left = 0
     Top = 28
     Width = 160
-    Height = 498
+    Height = 514
     Align = alLeft
     Columns = <
       item
@@ -303,7 +303,7 @@ object MainForm: TMainForm
     Left = 164
     Top = 28
     Width = 433
-    Height = 498
+    Height = 514
     Align = alClient
     BevelInner = bvLowered
     BevelOuter = bvNone
@@ -314,7 +314,7 @@ object MainForm: TMainForm
       Left = 1
       Top = 1
       Width = 431
-      Height = 496
+      Height = 512
       Align = alClient
       AutoSize = True
       PopupMenu = DisplayPopup
@@ -327,7 +327,7 @@ object MainForm: TMainForm
   end
   object StatusBar: TStatusBar
     Left = 0
-    Top = 526
+    Top = 542
     Width = 597
     Height = 19
     Panels = <
