@@ -27,7 +27,7 @@ object MainForm: TMainForm
     Left = 160
     Top = 28
     Width = 4
-    Height = 514
+    Height = 522
   end
   object ToolBar: TToolBar
     Left = 0
@@ -284,7 +284,7 @@ object MainForm: TMainForm
     Left = 0
     Top = 28
     Width = 160
-    Height = 514
+    Height = 522
     Align = alLeft
     Columns = <
       item
@@ -303,7 +303,7 @@ object MainForm: TMainForm
     Left = 164
     Top = 28
     Width = 433
-    Height = 514
+    Height = 522
     Align = alClient
     BevelInner = bvLowered
     BevelOuter = bvNone
@@ -314,7 +314,7 @@ object MainForm: TMainForm
       Left = 1
       Top = 1
       Width = 431
-      Height = 512
+      Height = 520
       Align = alClient
       AutoSize = True
       PopupMenu = DisplayPopup
@@ -327,7 +327,7 @@ object MainForm: TMainForm
   end
   object StatusBar: TStatusBar
     Left = 0
-    Top = 542
+    Top = 550
     Width = 597
     Height = 19
     Panels = <
@@ -2626,7 +2626,7 @@ object MainForm: TMainForm
         Caption = 'Full Screen'
         Hint = 'Show the flame in fullscreen mode'
         ImageIndex = 52
-        ShortCut = 114
+        ShortCut = 16454
         OnClick = mnuFullScreenClick
       end
       object N4: TMenuItem
@@ -2636,28 +2636,28 @@ object MainForm: TMainForm
         Caption = '&Editor'
         Hint = 'Show the Transform Editor'
         ImageIndex = 19
-        ShortCut = 115
+        ShortCut = 16453
         OnClick = mnuEditorClick
       end
       object mnuAdjust: TMenuItem
         Caption = 'Adjust'
         Hint = 'Show the Adjust window'
         ImageIndex = 18
-        ShortCut = 116
+        ShortCut = 16449
         OnClick = mnuAdjustClick
       end
       object mnuGrad: TMenuItem
         Caption = 'Gradient'
         Hint = 'Show the Gradient window'
         ImageIndex = 11
-        ShortCut = 117
+        ShortCut = 16455
         OnClick = mnuGradClick
       end
       object mnuMutate: TMenuItem
         Caption = 'Mutation'
         Hint = 'Show the Mutation window'
         ImageIndex = 17
-        ShortCut = 118
+        ShortCut = 16461
         OnClick = mnuMutateClick
       end
       object mnuimage: TMenuItem
@@ -2671,7 +2671,7 @@ object MainForm: TMainForm
       object mnuImageSize: TMenuItem
         Caption = 'Image Size'
         ImageIndex = 51
-        ShortCut = 113
+        ShortCut = 16457
         OnClick = mnuImageSizeClick
       end
     end
@@ -2691,21 +2691,25 @@ object MainForm: TMainForm
       object mnuRandom: TMenuItem
         Caption = '&Randomize'
         Hint = 'Randomize flame parameters'
+        ShortCut = 120
         OnClick = mnuRandomClick
       end
       object mnuRWeights: TMenuItem
         Caption = 'Random &Weights'
         Hint = 'Randomize transform weights'
+        ShortCut = 116
         OnClick = mnuRWeightsClick
       end
       object mnuEqualize: TMenuItem
         Caption = '&Equalize Weights'
         Hint = 'Set all weights to the same value'
+        ShortCut = 117
         OnClick = mnuEqualizeClick
       end
       object mnuNormalWeights: TMenuItem
         Caption = 'Compute  Weights'
         Hint = 'Compute weights from triangle areas'
+        ShortCut = 118
         OnClick = mnuNormalWeightsClick
       end
       object N7: TMenuItem
