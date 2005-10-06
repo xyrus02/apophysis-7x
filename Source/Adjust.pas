@@ -129,6 +129,8 @@ type
     txtWidth: TComboBox;
     txtHeight: TComboBox;
     Bevel2: TBevel;
+    N8: TMenuItem;
+    mnuInstantPreview: TMenuItem;
     procedure FormCreate(Sender: TObject);
     procedure FormClose(Sender: TObject; var Action: TCloseAction);
     procedure FormDestroy(Sender: TObject);
@@ -245,6 +247,7 @@ type
     procedure GradientImageDblClick(Sender: TObject);
     procedure btnColorPresetClick(Sender: TObject);
     procedure btnApplySizeClick(Sender: TObject);
+    procedure mnuInstantPreviewClick(Sender: TObject);
 
   private
     Resetting: boolean;
@@ -410,7 +413,8 @@ begin
     BM.Assign(Render.GetImage);
     PreviewImage.Picture.Graphic := bm;
 
-//    PreviewImage.Refresh; // --Z-- why was commented out? ;-)
+    if mnuInstantPreview.Checked then
+      PreviewImage.Refresh;
 
 //--begin DrawPalette
     BitMap := TBitMap.Create;
@@ -475,6 +479,7 @@ begin
     begin
       Registry.WriteInteger('Top', AdjustForm.Top);
       Registry.WriteInteger('Left', AdjustForm.Left);
+      Registry.WriteBool('InstantPreview', mnuInstantPreview.Checked);
     end;
   finally
     Registry.Free;
@@ -523,6 +528,8 @@ begin
         AdjustForm.Left := Registry.ReadInteger('Left');
       if Registry.ValueExists('Top') then
         AdjustForm.Top := Registry.ReadInteger('Top');
+      if Registry.ValueExists('InstantPreview') then
+        mnuInstantPreview.Checked := Registry.ReadBool('InstantPreview');
       Registry.CloseKey;
     end;
 
@@ -1033,11 +1040,13 @@ begin
 
   MainCp.CmapIndex := cmbPalette.ItemIndex;
   MainCp.cmap := Palette;
-//  BackupPal := Palette;
+
   if EditForm.visible then EditForm.UpdateDisplay;
   if MutateForm.Visible then MutateForm.UpdateDisplay;
 
-//  DrawPreview; //hmm
+  if mnuInstantPreview.Checked then
+    DrawPreview; //hmm
+
   MainForm.RedrawTimer.enabled := true;
 end;
 
@@ -1078,7 +1087,9 @@ begin
 //  DrawPalette;
 
   cp.copy(MainCp);
-//  DrawPreview;
+
+  if mnuInstantPreview.Checked then
+    DrawPreview; //hmm
 end;
 
 procedure HSVToRGB(H, S, V: real; var Rb, Gb, Bb: integer);
@@ -1911,6 +1922,11 @@ end;
 procedure TAdjustForm.btnApplySizeClick(Sender: TObject);
 begin
   SetMainWindowSize;
+end;
+
+procedure TAdjustForm.mnuInstantPreviewClick(Sender: TObject);
+begin
+  mnuInstantPreview.Checked := not mnuInstantPreview.Checked;
 end;
 
 end.

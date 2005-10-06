@@ -173,7 +173,7 @@ object AdjustForm: TAdjustForm
     Top = 133
     Width = 390
     Height = 131
-    ActivePage = TabSheet3
+    ActivePage = TabSheet1
     Align = alBottom
     TabOrder = 1
     object TabSheet1: TTabSheet
@@ -960,8 +960,8 @@ object AdjustForm: TAdjustForm
   end
   object QualityPopup: TPopupMenu
     Images = MainForm.Buttons
-    Left = 320
-    Top = 8
+    Left = 200
+    Top = 16
     object mnuLowQuality: TMenuItem
       Caption = 'Low Quality'
       RadioItem = True
@@ -978,16 +978,23 @@ object AdjustForm: TAdjustForm
       RadioItem = True
       OnClick = mnuHighQualityClick
     end
+    object N8: TMenuItem
+      Caption = '-'
+    end
+    object mnuInstantPreview: TMenuItem
+      Caption = 'Instant Preview'
+      OnClick = mnuInstantPreviewClick
+    end
   end
   object ColorDialog: TColorDialog
     Options = [cdFullOpen]
-    Left = 352
-    Top = 8
+    Left = 232
+    Top = 16
   end
   object GradientPopup: TPopupMenu
     Images = MainForm.Buttons
-    Left = 320
-    Top = 48
+    Left = 200
+    Top = 56
     object mnuRandomize: TMenuItem
       Caption = 'Randomize'
       OnClick = mnuRandomizeClick
@@ -1052,8 +1059,8 @@ object AdjustForm: TAdjustForm
   object scrollModePopup: TPopupMenu
     AutoHotkeys = maManual
     AutoPopup = False
-    Left = 352
-    Top = 48
+    Left = 232
+    Top = 56
     object mnuRotate: TMenuItem
       Caption = 'Rotate'
       OnClick = mnuRotateClick
@@ -1092,12 +1099,12 @@ object AdjustForm: TAdjustForm
   object SaveDialog: TSaveDialog
     DefaultExt = 'map'
     Filter = 'Map files|*.map'
-    Left = 320
-    Top = 80
+    Left = 200
+    Top = 88
   end
   object ApplicationEvents: TApplicationEvents
     OnActivate = ApplicationEventsActivate
-    Left = 352
-    Top = 80
+    Left = 232
+    Top = 88
   end
 end
