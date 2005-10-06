@@ -54,7 +54,7 @@ object EditForm: TEditForm
   TextHeight = 13
   object StatusBar: TStatusBar
     Left = 0
-    Top = 544
+    Top = 543
     Width = 578
     Height = 15
     Panels = <
@@ -343,14 +343,14 @@ object EditForm: TEditForm
     Left = 0
     Top = 24
     Width = 578
-    Height = 520
+    Height = 519
     Align = alClient
     TabOrder = 1
     object Splitter1: TSplitter
       Left = 396
       Top = 1
       Width = 9
-      Height = 518
+      Height = 517
       Align = alRight
       AutoSnap = False
       Beveled = True
@@ -361,7 +361,7 @@ object EditForm: TEditForm
       Left = 1
       Top = 1
       Width = 395
-      Height = 518
+      Height = 517
       Align = alClient
       BevelOuter = bvNone
       Color = clAppWorkSpace
@@ -371,7 +371,7 @@ object EditForm: TEditForm
       Left = 405
       Top = 1
       Width = 172
-      Height = 518
+      Height = 517
       Align = alRight
       Alignment = taLeftJustify
       BevelOuter = bvNone
@@ -411,7 +411,7 @@ object EditForm: TEditForm
         Left = 0
         Top = 136
         Width = 172
-        Height = 382
+        Height = 381
         Align = alClient
         TabOrder = 0
         object lblTransform: TLabel
@@ -442,10 +442,10 @@ object EditForm: TEditForm
         end
         object PageControl: TPageControl
           Left = 1
-          Top = 27
+          Top = 26
           Width = 170
           Height = 354
-          ActivePage = tabColors
+          ActivePage = TriangleTab
           Align = alBottom
           Anchors = [akLeft, akTop, akRight, akBottom]
           MultiLine = True
@@ -1361,16 +1361,16 @@ object EditForm: TEditForm
             ImageIndex = 3
             object GroupBox1: TGroupBox
               Left = 8
-              Top = 0
+              Top = 2
               Width = 145
-              Height = 97
+              Height = 70
               Caption = 'Transform color'
               TabOrder = 0
               object scrlXFormColor: TScrollBar
                 Left = 8
-                Top = 48
+                Top = 44
                 Width = 129
-                Height = 15
+                Height = 17
                 LargeChange = 10
                 Max = 1000
                 PageSize = 0
@@ -1382,7 +1382,7 @@ object EditForm: TEditForm
                 Left = 8
                 Top = 16
                 Width = 65
-                Height = 25
+                Height = 21
                 BevelOuter = bvLowered
                 TabOrder = 1
               end
@@ -1395,31 +1395,12 @@ object EditForm: TEditForm
                 OnExit = txtXFormColorExit
                 OnKeyPress = txtXFormColorKeyPress
               end
-              object Panel1: TPanel
-                Left = 8
-                Top = 70
-                Width = 129
-                Height = 19
-                BevelOuter = bvLowered
-                TabOrder = 3
-                object ColorImage: TImage
-                  Left = 1
-                  Top = 1
-                  Width = 127
-                  Height = 17
-                  Cursor = crHandPoint
-                  Align = alClient
-                  OnMouseDown = ColorImageMouseDown
-                  OnMouseMove = ColorImageMouseMove
-                  OnMouseUp = ColorImageMouseUp
-                end
-              end
             end
             object GroupBox2: TGroupBox
               Left = 8
-              Top = 104
+              Top = 77
               Width = 145
-              Height = 177
+              Height = 217
               Caption = 'Graph'
               TabOrder = 1
               object Label20: TLabel
@@ -1431,7 +1412,7 @@ object EditForm: TEditForm
               end
               object Label21: TLabel
                 Left = 8
-                Top = 136
+                Top = 176
                 Width = 89
                 Height = 13
                 Caption = 'Reference triangle'
@@ -1442,6 +1423,13 @@ object EditForm: TEditForm
                 Width = 50
                 Height = 13
                 Caption = 'Grid colors'
+              end
+              object Label10: TLabel
+                Left = 8
+                Top = 136
+                Width = 62
+                Height = 13
+                Caption = 'Helpers color'
               end
               object pnlBackColor: TPanel
                 Left = 8
@@ -1476,7 +1464,7 @@ object EditForm: TEditForm
               end
               object pnlReference: TPanel
                 Left = 8
-                Top = 152
+                Top = 192
                 Width = 129
                 Height = 17
                 Cursor = crHandPoint
@@ -1506,6 +1494,17 @@ object EditForm: TEditForm
                 Color = clBlack
                 TabOrder = 5
                 OnClick = pnlGridColor2Click
+              end
+              object pnlHelpersColor: TPanel
+                Left = 8
+                Top = 152
+                Width = 129
+                Height = 17
+                Cursor = crHandPoint
+                BevelOuter = bvLowered
+                Color = clGray
+                TabOrder = 6
+                OnClick = pnlHelpersColorClick
               end
             end
           end
