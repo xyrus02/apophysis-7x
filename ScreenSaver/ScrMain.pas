@@ -26,6 +26,7 @@ type
     Quality: integer;
     bSave: boolean;
     bShowOtherImages: boolean;
+    bShowRenderInfo: boolean;
     Oversample: Integer;
     FilterSize: double;
     Density: double;
@@ -277,32 +278,34 @@ begin
 //  Canvas.Fillrect(Rect(5, ClientHeight - 15, ClientWidth - 5, ClientHeight - 5));
 
 
-  Canvas.Brush.Color := clYellow;
+  Canvas.Brush.Color := clGray;
   Canvas.FrameRect(Rect(5, ClientHeight - 15, ClientWidth - 5, ClientHeight - 5));
-  Canvas.Brush.Color := clYellow;
+  Canvas.Brush.Color := clGray;
   Canvas.Fillrect(Rect(7, ClientHeight - 13, 7 + Round(prog * (ClientWidth - 14)), ClientHeight - 7));
   Canvas.Brush.Color := clBlack;
   Canvas.Fillrect(Rect(7 + Round(prog * (ClientWidth - 14)), ClientHeight - 13, ClientWidth - 7, ClientHeight - 7));
 
-  Elapsed := Now - StartTime;
-  Canvas.Brush.Color := clBlack;
-  Canvas.TextOut(5, ClientHeight - 25 - 2 * Canvas.TextHeight('X'), Format('Elapsed %2.2d:%2.2d:%2.2d.%2.2d',
-                     [Trunc(Elapsed * 24),
-                       Trunc((Elapsed * 24 - Trunc(Elapsed * 24)) * 60),
-                        Trunc((Elapsed * 24 * 60 - Trunc(Elapsed * 24 * 60)) * 60),
-                         Trunc((Elapsed * 24 * 60 * 60 - Trunc(Elapsed * 24 * 60 * 60)) * 100)]));
+  if bShowRenderInfo then
+  begin
+    Elapsed := Now - StartTime;
+    Canvas.Brush.Color := clBlack;
+    Canvas.TextOut(5, ClientHeight - 25 - 2 * Canvas.TextHeight('X'), Format('Elapsed %2.2d:%2.2d:%2.2d.%2.2d',
+                       [Trunc(Elapsed * 24),
+                         Trunc((Elapsed * 24 - Trunc(Elapsed * 24)) * 60),
+                          Trunc((Elapsed * 24 * 60 - Trunc(Elapsed * 24 * 60)) * 60),
+                           Trunc((Elapsed * 24 * 60 * 60 - Trunc(Elapsed * 24 * 60 * 60)) * 100)]));
 
-  if prog > 0 then
+    if prog > 0 then
     Remainder := Min(Remainder, Elapsed * (power(1/prog, 1.2) - 1));
 
-  Canvas.TextOut(5, ClientHeight - 20 - Canvas.TextHeight('X'), Format('Remainder %2.2d:%2.2d:%2.2d.%2.2d',
-                     [Trunc(Remainder * 24),
-                       Trunc((Remainder * 24 - Trunc(Remainder * 24)) * 60),
-                        Trunc((Remainder * 24 * 60 - Trunc(Remainder * 24 * 60)) * 60),
-                         Trunc((Remainder * 24 * 60 * 60 - Trunc(Remainder * 24 * 60 * 60)) * 100)]));
+    Canvas.TextOut(5, ClientHeight - 20 - Canvas.TextHeight('X'), Format('Remainder %2.2d:%2.2d:%2.2d.%2.2d',
+                       [Trunc(Remainder * 24),
+                         Trunc((Remainder * 24 - Trunc(Remainder * 24)) * 60),
+                          Trunc((Remainder * 24 * 60 - Trunc(Remainder * 24 * 60)) * 60),
+                           Trunc((Remainder * 24 * 60 * 60 - Trunc(Remainder * 24 * 60 * 60)) * 100)]));
 
-  Canvas.TextOut(5, ClientHeight - 50 - Canvas.TextHeight('X'), IncludeTrailingPathDelimiter(ExtractFileDir(paramstr(0))) + 'images');
-
+    Canvas.TextOut(5, ClientHeight - 50 - Canvas.TextHeight('X'), IncludeTrailingPathDelimiter(ExtractFileDir(paramstr(0))) + 'images');
+  end;
   Application.ProcessMessages;
 end;
 
@@ -354,6 +357,11 @@ begin
         bShowOtherImages := Registry.ReadBool('ShowOtherImages');
       end else begin
         bShowOtherImages := False;
+      end;
+      if Registry.ValueExists('ShowRenderInfo') then begin
+        bShowRenderInfo := Registry.ReadBool('ShowRenderInfo');
+      end else begin
+        bShowRenderInfo := False;
       end;
       if Registry.ValueExists('Quality') then begin
         Quality := Registry.ReadInteger('Quality');

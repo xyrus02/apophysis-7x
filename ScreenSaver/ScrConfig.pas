@@ -24,6 +24,7 @@ type
     Label3: TLabel;
     Label4: TLabel;
     pnlFilterpixels: TPanel;
+    chkShowRndInfo: TCheckBox;
     procedure btnCancelClick(Sender: TObject);
     procedure FormCreate(Sender: TObject);
     procedure btnOkClick(Sender: TObject);
@@ -51,6 +52,8 @@ uses
 procedure TfrmConfig.FormCreate(Sender: TObject);
 var
   Registry: TRegistry;
+  locale: LCID;
+  FloatFormatSettings: TFormatSettings;
 begin
   Registry := TRegistry.Create;
   try
@@ -66,6 +69,11 @@ begin
       end else begin
         chkShowOtherImages.Checked := False;
       end;
+      if Registry.ValueExists('ShowRenderInfo') then begin
+        chkShowRndInfo.Checked := Registry.ReadBool('ShowRenderInfo');
+      end else begin
+        chkShowRndInfo.Checked := True;
+      end;
       if Registry.ValueExists('Quality') then begin
         rgQuality.itemindex := Registry.ReadInteger('Quality');
       end else begin
@@ -76,19 +84,30 @@ begin
       end else begin
         edtOversample.Text := '1';
       end;
+      locale := GetSystemDefaultLCID;
+      GetLocaleFormatSettings(locale, FloatFormatSettings);
       if Registry.ValueExists('Filter') then begin
-        edtFiltersize.Text := FloatToStr(Registry.ReadFloat('Filter'));
+        edtFiltersize.Text := FloatToStrF(Registry.ReadFloat('Filter'),
+                                          ffFixed,
+                                          6, 2,
+                                          FloatFormatSettings
+                                          );
       end else begin
         edtFiltersize.Text := '0.1';
       end;
       if Registry.ValueExists('Density') then begin
-        edtDensity.Text := FloatToStr(Registry.ReadFloat('Density'));
+        edtDensity.Text := FloatToStrF(Registry.ReadFloat('Density'),
+                                       ffFixed,
+                                       6, 2,
+                                       FloatFormatSettings
+                                       );
       end else begin
         edtDensity.Text := '100';
       end;
     end else begin
       chkSave.Checked := False;
       chkShowOtherImages.Checked := False;
+      chkShowRndInfo.Checked := True;
       rgQuality.itemindex := 1;
       edtOversample.Text := '1';
       edtFiltersize.Text := '0.1';
@@ -110,17 +129,22 @@ end;
 procedure TfrmConfig.btnOkClick(Sender: TObject);
 var
   Registry: TRegistry;
+  locale: LCID;
+  FloatFormatSettings: TFormatSettings;
 begin
   Registry := TRegistry.Create;
   try
+    locale := GetSystemDefaultLCID;
+    GetLocaleFormatSettings(locale, FloatFormatSettings);
     Registry.RootKey := HKEY_CURRENT_USER;
     if Registry.OpenKey('\Software\BobsFreubels\FlameSS', True) then begin
       Registry.WriteBool('SaveImage', chkSave.Checked);
       Registry.WriteBool('ShowOtherImages', chkShowOtherImages.Checked);
+      Registry.WriteBool('ShowRenderInfo', chkShowRndInfo.Checked);
       Registry.WriteInteger('Quality', rgQuality.itemindex);
       Registry.WriteInteger('Oversample', StrToInt(edtOversample.Text));
-      Registry.WriteFloat('Filter', StrToFloat(edtFiltersize.Text));
-      Registry.WriteFloat('Density', StrToFloat(edtDensity.Text));
+      Registry.WriteFloat('Filter', StrToFloat(edtFiltersize.Text, FloatFormatSettings));
+      Registry.WriteFloat('Density', StrToFloat(edtDensity.Text, FloatFormatSettings));
     end;
   finally
     Registry.Free;

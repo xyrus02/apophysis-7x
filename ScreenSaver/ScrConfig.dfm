@@ -1,6 +1,6 @@
 object frmConfig: TfrmConfig
-  Left = 422
-  Top = 262
+  Left = 676
+  Top = 276
   BorderStyle = bsToolWindow
   Caption = 'Configure'
   ClientHeight = 330
@@ -125,7 +125,7 @@ object frmConfig: TfrmConfig
     Left = 0
     Top = 0
     Width = 201
-    Height = 137
+    Height = 153
     Align = alTop
     BevelOuter = bvLowered
     TabOrder = 2
@@ -147,7 +147,7 @@ object frmConfig: TfrmConfig
     end
     object rgQuality: TRadioGroup
       Left = 8
-      Top = 48
+      Top = 64
       Width = 185
       Height = 81
       Caption = 'Quality'
@@ -158,6 +158,16 @@ object frmConfig: TfrmConfig
         'User defined')
       TabOrder = 2
       OnClick = rgQualityClick
+    end
+    object chkShowRndInfo: TCheckBox
+      Left = 8
+      Top = 40
+      Width = 169
+      Height = 17
+      Caption = 'Show on-screen rendering info'
+      Checked = True
+      State = cbChecked
+      TabOrder = 3
     end
   end
 end
