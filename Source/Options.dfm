@@ -4,7 +4,7 @@ object OptionsForm: TOptionsForm
   BorderIcons = [biSystemMenu, biMinimize, biMaximize, biHelp]
   BorderStyle = bsDialog
   Caption = 'Options'
-  ClientHeight = 296
+  ClientHeight = 308
   ClientWidth = 467
   Color = clBtnFace
   Font.Charset = ANSI_CHARSET
@@ -22,7 +22,7 @@ object OptionsForm: TOptionsForm
   TextHeight = 13
   object btnOK: TButton
     Left = 304
-    Top = 264
+    Top = 280
     Width = 75
     Height = 25
     Caption = 'OK'
@@ -32,7 +32,7 @@ object OptionsForm: TOptionsForm
   end
   object btnCancel: TButton
     Left = 384
-    Top = 264
+    Top = 280
     Width = 75
     Height = 25
     Caption = 'Cancel'
@@ -43,8 +43,8 @@ object OptionsForm: TOptionsForm
     Left = 8
     Top = 8
     Width = 451
-    Height = 249
-    ActivePage = GeneralPage
+    Height = 265
+    ActivePage = RandomPage
     TabOrder = 0
     TabStop = False
     object GeneralPage: TTabSheet
@@ -490,7 +490,7 @@ object OptionsForm: TOptionsForm
         Left = 8
         Top = 136
         Width = 193
-        Height = 72
+        Height = 97
         Caption = 'Forced symmetry'
         TabOrder = 3
         object Label7: TLabel
@@ -510,6 +510,15 @@ object OptionsForm: TOptionsForm
           Alignment = taRightJustify
           AutoSize = False
           Caption = 'Order:'
+        end
+        object Label24: TLabel
+          Left = 8
+          Top = 72
+          Width = 32
+          Height = 13
+          Alignment = taRightJustify
+          AutoSize = False
+          Caption = 'Limit:'
         end
         object cmbSymType: TComboBox
           Left = 48
@@ -548,6 +557,25 @@ object OptionsForm: TOptionsForm
           TabOrder = 2
           Thousands = False
         end
+        object txtSymNVars: TEdit
+          Left = 48
+          Top = 70
+          Width = 121
+          Height = 21
+          TabOrder = 3
+          Text = '12'
+        end
+        object udSymNVars: TUpDown
+          Left = 169
+          Top = 70
+          Width = 15
+          Height = 21
+          Associate = txtSymNVars
+          Min = 4
+          Position = 12
+          TabOrder = 4
+          Thousands = False
+        end
       end
     end
     object VariationsPage: TTabSheet
@@ -557,7 +585,7 @@ object OptionsForm: TOptionsForm
         Left = 8
         Top = 0
         Width = 341
-        Height = 217
+        Height = 233
         HelpContext = 1026
         Caption = 'Enabled'
         TabOrder = 2
@@ -565,7 +593,7 @@ object OptionsForm: TOptionsForm
           Left = 12
           Top = 16
           Width = 309
-          Height = 189
+          Height = 209
           ItemHeight = 13
           TabOrder = 0
           TabWidth = 100
@@ -573,7 +601,7 @@ object OptionsForm: TOptionsForm
       end
       object btnSetAll: TButton
         Left = 356
-        Top = 160
+        Top = 176
         Width = 75
         Height = 25
         HelpContext = 1027
@@ -583,7 +611,7 @@ object OptionsForm: TOptionsForm
       end
       object btnClearAll: TButton
         Left = 356
-        Top = 192
+        Top = 208
         Width = 75
         Height = 25
         HelpContext = 1028
@@ -1431,6 +1459,6 @@ object OptionsForm: TOptionsForm
   end
   object OpenDialog: TOpenDialog
     Left = 16
-    Top = 264
+    Top = 280
   end
 end

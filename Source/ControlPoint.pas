@@ -1650,7 +1650,8 @@ begin
 
 //  for (k = 1; (k < sym)&&(i < NXFORMS); k + + ) {
   k := 1;
-  while (k < sym) and (i < NXFORMS) do
+//  while (k < sym) and (i < NXFORMS) do
+  while (k < sym) and (i < SymmetryNVars) do
   begin
     cp.xform[i].density := 1.0;
     cp.xform[i].vars[0] := 1.0;

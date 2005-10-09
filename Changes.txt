@@ -1,10 +1,11 @@
-2.02j
+2.03a
 + Fixed save flame naming problem
 + Save png transparent images
 + multithread rendering
 + Parameterized variations
 + blob variation
 + pdj variation
++ Added definable limit of added variations count when generating symmetric flames
 
 2.02i
 + Fixed Randomize gradient in batch bug

@@ -178,6 +178,9 @@ type
     txtTryLength: TEdit;
     txtJPEGquality: TComboBox;
     rgTransparency: TRadioGroup;
+    Label24: TLabel;
+    txtSymNVars: TEdit;
+    udSymNVars: TUpDown;
     procedure btnCancelClick(Sender: TObject);
     procedure FormShow(Sender: TObject);
     procedure btnOKClick(Sender: TObject);
@@ -280,8 +283,13 @@ begin
   txtRandomPrefix.text := RandomPrefix;
   chkKeepbackground.Checked := KeepBackground;
   cmbSymType.ItemIndex := SymmetryType;
-  if (SymmetryType = 0) or (SymmetryType = 1) then txtSymOrder.enabled := false;
+  if (SymmetryType = 0) or (SymmetryType = 1) then
+  begin
+    txtSymOrder.enabled := false;
+    txtSymNVars.enabled := false;
+  end;
   udSymOrder.Position := SymmetryOrder;
+  udSymNVars.Position := SymmetryNVars;
 
   { Variations tab }
   UnpackVariations(VariationOptions);
@@ -395,6 +403,7 @@ begin
   RandomPrefix := txtRandomPrefix.text;
   SymmetryType := cmbSymType.ItemIndex;
   SymmetryOrder := udSymOrder.Position;
+  SymmetryNVars := udSymNVars.Position;
   KeepBackground := chkKeepbackground.Checked;
 
   {Gradient tab }
@@ -477,9 +486,14 @@ end;
 procedure TOptionsForm.cmbSymTypeChange(Sender: TObject);
 begin
   if (cmbSymType.ItemIndex = 0) or (cmbSymType.ItemIndex = 1) then
-    txtSymOrder.enabled := false
-  else
+  begin
+    txtSymOrder.enabled := false;
+    txtSymNVars.enabled := false;
+  end else
+  begin
     txtSymOrder.enabled := true;
+    txtSymNVars.enabled := true;
+  end;
 end;
 
 procedure TOptionsForm.btnSetAllClick(Sender: TObject);

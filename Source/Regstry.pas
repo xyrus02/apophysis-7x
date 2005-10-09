@@ -267,6 +267,14 @@ begin
       begin
         SymmetryOrder := 4;
       end;
+      if Registry.ValueExists('SymmetryNVars') then
+      begin
+        SymmetryNVars := Registry.ReadInteger('SymmetryNVars');
+      end
+      else
+      begin
+        SymmetryNVars := 12;
+      end;
       if Registry.ValueExists('VariationOptions') then
       begin
         VariationOptions := Registry.ReadInteger('VariationOptions');
@@ -535,6 +543,7 @@ begin
       RandomDate := '';
       SymmetryType := 0;
       SymmetryOrder := 4;
+      SymmetryNVars := 12;
       VariationOptions := 262143;
       UnpackVariations(VariationOptions);
       MinNodes := 2;
@@ -872,6 +881,7 @@ begin
       Registry.WriteString('SmoothPaletteFile', defSmoothPaletteFile);
       Registry.WriteInteger('SymmetryType', SymmetryType);
       Registry.WriteInteger('SymmetryOrder', SymmetryOrder);
+      Registry.WriteInteger('SymmetryNVars', SymmetryNVars);
       Registry.WriteInteger('VariationOptions', VariationOptions);
       Registry.WriteInteger('ReferenceMode', ReferenceMode);
       Registry.WriteInteger('MinNodes', MinNodes);
