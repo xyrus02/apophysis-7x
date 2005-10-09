@@ -10,7 +10,7 @@ function FlameToXML(const cp1: TControlPoint; sheep: boolean; compact: boolean =
 implementation
 
 uses
-  Classes, SysUtils, xForm;
+  Classes, SysUtils, xForm, xFormMan;
 
 function NumXForms(const cp: TControlPoint): integer;
 var
@@ -122,7 +122,7 @@ begin
         begin
           if vars[j] <> 0 then
           begin
-            varlist := varlist + varnames[j] + format('="%f" ', [vars[j]]);
+            varlist := varlist + varnames(j) + format('="%f" ', [vars[j]]);
           end;
         end;
         FileList.Add(Format('   <xform weight="%g" color="%g" symmetry="%g" ', [density, color, symmetry]) +
