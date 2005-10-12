@@ -43,8 +43,8 @@ object OptionsForm: TOptionsForm
     Left = 8
     Top = 8
     Width = 451
-    Height = 265
-    ActivePage = RandomPage
+    Height = 249
+    ActivePage = VariationsPage
     TabOrder = 0
     TabStop = False
     object GeneralPage: TTabSheet
@@ -57,7 +57,7 @@ object OptionsForm: TOptionsForm
         Height = 17
         HelpContext = 1005
         Caption = 'Confirm delete'
-        TabOrder = 1
+        TabOrder = 5
       end
       object JPEG: TGroupBox
         Left = 8
@@ -65,7 +65,7 @@ object OptionsForm: TOptionsForm
         Width = 121
         Height = 57
         Caption = 'JPEG Quality'
-        TabOrder = 0
+        TabOrder = 1
         object txtJPEGquality: TComboBox
           Left = 16
           Top = 24
@@ -88,7 +88,7 @@ object OptionsForm: TOptionsForm
         Width = 121
         Height = 57
         Caption = 'Batch size'
-        TabOrder = 2
+        TabOrder = 0
         object txtBatchSize: TEdit
           Left = 16
           Top = 24
@@ -117,7 +117,7 @@ object OptionsForm: TOptionsForm
         Width = 169
         Height = 17
         Caption = 'Resize on load'
-        TabOrder = 3
+        TabOrder = 6
       end
       object GroupBox16: TGroupBox
         Left = 8
@@ -125,7 +125,7 @@ object OptionsForm: TOptionsForm
         Width = 121
         Height = 59
         Caption = 'Nr processors'
-        TabOrder = 4
+        TabOrder = 2
         object cbNrTheads: TComboBox
           Left = 16
           Top = 24
@@ -148,7 +148,7 @@ object OptionsForm: TOptionsForm
         Width = 169
         Height = 17
         Caption = 'Show Transparency'
-        TabOrder = 5
+        TabOrder = 7
       end
       object rgReferenceMode: TRadioGroup
         Left = 280
@@ -161,7 +161,7 @@ object OptionsForm: TOptionsForm
           'Normal'
           'Proportional'
           'Wandering (old-style)')
-        TabOrder = 6
+        TabOrder = 4
       end
       object rgTransparency: TRadioGroup
         Left = 136
@@ -173,7 +173,7 @@ object OptionsForm: TOptionsForm
           'No transparency'
           'Flam3-style'
           'Flamesong-style')
-        TabOrder = 7
+        TabOrder = 3
       end
     end
     object DisplayPage: TTabSheet
@@ -411,7 +411,7 @@ object OptionsForm: TOptionsForm
         Width = 193
         Height = 43
         Caption = 'Flame title prefix'
-        TabOrder = 2
+        TabOrder = 1
         object txtRandomPrefix: TEdit
           Left = 8
           Top = 16
@@ -428,7 +428,7 @@ object OptionsForm: TOptionsForm
         Width = 193
         Height = 75
         Caption = 'Mutation transforms'
-        TabOrder = 1
+        TabOrder = 3
         object Label2: TLabel
           Left = 10
           Top = 19
@@ -492,7 +492,7 @@ object OptionsForm: TOptionsForm
         Width = 193
         Height = 97
         Caption = 'Forced symmetry'
-        TabOrder = 3
+        TabOrder = 2
         object Label7: TLabel
           Left = 8
           Top = 20
@@ -593,7 +593,8 @@ object OptionsForm: TOptionsForm
           Left = 12
           Top = 16
           Width = 309
-          Height = 209
+          Height = 189
+          Columns = 2
           ItemHeight = 13
           TabOrder = 0
           TabWidth = 100
@@ -644,7 +645,7 @@ object OptionsForm: TOptionsForm
         Width = 281
         Height = 189
         Caption = 'Randomize'
-        TabOrder = 1
+        TabOrder = 2
         object Label18: TLabel
           Left = 16
           Top = 24
@@ -871,7 +872,7 @@ object OptionsForm: TOptionsForm
         Width = 137
         Height = 87
         Caption = 'Smooth palette'
-        TabOrder = 2
+        TabOrder = 1
         object Label8: TLabel
           Left = 10
           Top = 18
@@ -916,7 +917,7 @@ object OptionsForm: TOptionsForm
         Height = 249
         MultiLine = True
         Style = tsButtons
-        TabOrder = 0
+        TabOrder = 4
       end
       object GroupBox11: TGroupBox
         Left = 8
@@ -962,7 +963,7 @@ object OptionsForm: TOptionsForm
         Width = 177
         Height = 99
         Caption = 'Parameter defaults'
-        TabOrder = 2
+        TabOrder = 0
         object Label20: TLabel
           Left = 10
           Top = 26
@@ -1015,7 +1016,7 @@ object OptionsForm: TOptionsForm
         Width = 245
         Height = 75
         Caption = 'Coloring algorithm'
-        TabOrder = 3
+        TabOrder = 2
         object Label11: TLabel
           Left = 10
           Top = 26
@@ -1053,7 +1054,7 @@ object OptionsForm: TOptionsForm
         Width = 245
         Height = 82
         Caption = 'Fractal formula'
-        TabOrder = 4
+        TabOrder = 3
         object Label13: TLabel
           Left = 10
           Top = 26
@@ -1323,7 +1324,7 @@ object OptionsForm: TOptionsForm
         Width = 425
         Height = 51
         Caption = 'Export renderer'
-        TabOrder = 2
+        TabOrder = 3
         object btnRenderer: TSpeedButton
           Left = 392
           Top = 16
@@ -1392,7 +1393,7 @@ object OptionsForm: TOptionsForm
         Width = 425
         Height = 51
         Caption = 'Function library'
-        TabOrder = 3
+        TabOrder = 2
         object SpeedButton2: TSpeedButton
           Left = 392
           Top = 16
