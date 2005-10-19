@@ -1810,9 +1810,9 @@ begin
     if (MainCp.width <> Image.Width) or (MainCp.height <> Image.height) then
     begin
       AdjustScale(MainCp, Image.width, Image.height);
-      if EditForm.Visible then EditForm.UpdateDisplay(true); // preview only
+      if EditForm.Visible then EditForm.UpdateDisplay(true); // preview only?
     end;
-    if AdjustForm.Visible then AdjustForm.UpdateDisplay;
+    if AdjustForm.Visible then AdjustForm.UpdateDisplay(true); // preview only!
     // following needed ?
 //    cp.Zoom := Zoom;
 //    cp.center[0] := center[0];
@@ -2223,8 +2223,7 @@ begin
     IntToStr(RandomIndex);
   Transforms := MainCp.TrianglesFromCP(MainTriangles);
 
-  if AdjustForm.visible then
-    AdjustForm.UpdateDisplay;
+  if AdjustForm.visible then AdjustForm.UpdateDisplay;
 
   StatusBar.Panels[2].text := maincp.name;
   ResetLocation;
@@ -2825,7 +2824,7 @@ begin
 //        Zoom := maincp.zoom;
         Center[0] := maincp.Center[0];
         Center[1] := maincp.Center[1];
-        MainCP.NormalizeWeights;
+//        MainCP.NormalizeWeights;
         mnuSaveUndo.Enabled := false;
         mnuUndo.Enabled := False;
         mnuPopUndo.Enabled := False;
@@ -2866,14 +2865,8 @@ end;
 
 procedure TMainForm.UpdateWindows;
 begin
-  if AdjustForm.visible then
-    AdjustForm.UpdateDisplay;
-
+  if AdjustForm.visible then AdjustForm.UpdateDisplay;
   if EditForm.visible then EditForm.UpdateDisplay;
-// hmm I think I still have some problems with EditForm updating
-// several times in a row with all these calls :-\
-
-//  if AdjustForm.visible then AdjustForm.UpdateDisplay;
   if MutateForm.visible then MutateForm.UpdateDisplay;
 end;
 
@@ -2937,15 +2930,13 @@ begin
     Center[0] := maincp.Center[0];
     Center[1] := maincp.Center[1];
 //    cp.CalcBoundbox;
-    MainCP.NormalizeWeights;
+//    MainCP.NormalizeWeights;
     Transforms := MainCp.TrianglesFromCP(MainTriangles);
     // Trim undo index from title
     maincp.name := Copy(Fstrings[0], 6, length(Fstrings[0]) - 7);
 
-    if SavedPal then
-      maincp.cmap := palette;
-    if AdjustForm.visible then
-      AdjustForm.UpdateDisplay;
+    if SavedPal then maincp.cmap := palette;
+    if AdjustForm.visible then AdjustForm.UpdateDisplay;
 
     RedrawTimer.Enabled := True;
     UpdateWindows;
@@ -3636,7 +3627,7 @@ begin
   if nxform < NXFORMS then
     for i := nxform to NXFORMS - 1 do
       cp1.xform[i].density := 0;
-  cp1.NormalizeWeights;
+//  cp1.NormalizeWeights;
   // Check for symmetry parameter
   if ParseCp.symmetry <> 0 then
   begin

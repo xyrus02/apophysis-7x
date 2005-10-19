@@ -677,6 +677,7 @@ object AdjustForm: TAdjustForm
         Height = 45
         Align = alTop
         BevelOuter = bvLowered
+        Color = clAppWorkSpace
         TabOrder = 0
         object GradientImage: TImage
           Left = 1

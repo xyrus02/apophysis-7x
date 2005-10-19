@@ -181,8 +181,8 @@ begin
 end;
 
 function dist(x1, y1, x2, y2: double): double;
-var
-  d2: double;
+//var
+//  d2: double;
 begin
 (*
   { From FDesign source

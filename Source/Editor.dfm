@@ -1,8 +1,8 @@
 object EditForm: TEditForm
-  Left = 350
-  Top = 163
+  Left = 279
+  Top = 240
   Width = 586
-  Height = 586
+  Height = 576
   Caption = 'Transform Editor'
   Color = clBtnFace
   Constraints.MinHeight = 400
@@ -54,7 +54,7 @@ object EditForm: TEditForm
   TextHeight = 13
   object StatusBar: TStatusBar
     Left = 0
-    Top = 544
+    Top = 533
     Width = 578
     Height = 15
     Panels = <
@@ -265,92 +265,19 @@ object EditForm: TEditForm
         ShowHint = True
       end
     end
-    object PreviewToolBar: TToolBar
-      Left = 443
-      Top = 1
-      Width = 134
-      Height = 22
-      Align = alRight
-      Caption = 'PreviewToolBar'
-      EdgeBorders = []
-      Flat = True
-      Images = MainForm.Buttons
-      TabOrder = 1
-      Visible = False
-      object tbFullView: TToolButton
-        Left = 0
-        Top = 0
-        Caption = 'tbFullView'
-        ImageIndex = 52
-        OnClick = tbFullViewClick
-      end
-      object ToolButton7: TToolButton
-        Left = 23
-        Top = 0
-        Width = 8
-        Caption = 'ToolButton7'
-        ImageIndex = 3
-        Style = tbsSeparator
-      end
-      object tbLowQ: TToolButton
-        Left = 31
-        Top = 0
-        Caption = 'tbLowQ'
-        Grouped = True
-        ImageIndex = 45
-        Style = tbsCheck
-        OnClick = mnuLowQualityClick
-      end
-      object tbMedQ: TToolButton
-        Left = 54
-        Top = 0
-        Caption = 'tbMedQ'
-        Down = True
-        Grouped = True
-        ImageIndex = 45
-        Style = tbsCheck
-        OnClick = mnuMediumQualityClick
-      end
-      object tbHiQ: TToolButton
-        Left = 77
-        Top = 0
-        Caption = 'tbHiQ'
-        Grouped = True
-        ImageIndex = 45
-        Style = tbsCheck
-        OnClick = mnuHighQualityClick
-      end
-      object ToolButton9: TToolButton
-        Left = 100
-        Top = 0
-        Width = 8
-        Caption = 'ToolButton9'
-        ImageIndex = 14
-        Style = tbsSeparator
-      end
-      object tbResetLoc: TToolButton
-        Left = 108
-        Top = 0
-        Hint = 'Reset location on/off'
-        Caption = 'tbResetLoc'
-        Down = True
-        ImageIndex = 12
-        OnClick = mnuResetLocClick
-      end
-    end
   end
   object EditPnl: TPanel
     Left = 0
     Top = 24
     Width = 578
-    Height = 520
+    Height = 509
     Align = alClient
     TabOrder = 1
     object Splitter1: TSplitter
       Left = 396
       Top = 1
       Width = 9
-      Height = 518
+      Height = 507
       Align = alRight
       AutoSnap = False
       Beveled = True
@@ -361,7 +288,7 @@ object EditForm: TEditForm
       Left = 1
       Top = 1
       Width = 395
-      Height = 518
+      Height = 507
       Align = alClient
       BevelOuter = bvNone
       Color = clAppWorkSpace
@@ -371,14 +298,14 @@ object EditForm: TEditForm
       Left = 405
       Top = 1
       Width = 172
-      Height = 518
+      Height = 507
       Align = alRight
       Alignment = taLeftJustify
       BevelOuter = bvNone
       TabOrder = 1
       object Splitter2: TSplitter
         Left = 0
-        Top = 128
+        Top = 130
         Width = 172
         Height = 8
         Cursor = crVSplit
@@ -392,7 +319,7 @@ object EditForm: TEditForm
         Left = 0
         Top = 0
         Width = 172
-        Height = 128
+        Height = 130
         Align = alTop
         BevelOuter = bvLowered
         Color = clAppWorkSpace
@@ -401,17 +328,16 @@ object EditForm: TEditForm
           Left = 1
           Top = 1
           Width = 170
-          Height = 126
+          Height = 130
           IncrementalDisplay = True
           PopupMenu = QualityPopup
-          OnDblClick = PreviewImageDblClick
         end
       end
       object ControlPanel: TPanel
         Left = 0
-        Top = 136
+        Top = 138
         Width = 172
-        Height = 382
+        Height = 369
         Align = alClient
         TabOrder = 0
         object lblTransform: TLabel
@@ -442,10 +368,10 @@ object EditForm: TEditForm
         end
         object PageControl: TPageControl
           Left = 1
-          Top = 27
+          Top = 24
           Width = 170
-          Height = 354
-          ActivePage = tabXForm
+          Height = 344
+          ActivePage = TriangleTab
           Align = alBottom
           Anchors = [akLeft, akTop, akRight, akBottom]
           MultiLine = True
@@ -457,7 +383,7 @@ object EditForm: TEditForm
               Left = 0
               Top = 0
               Width = 162
-              Height = 308
+              Height = 298
               HorzScrollBar.Visible = False
               VertScrollBar.Smooth = True
               VertScrollBar.Style = ssFlat
@@ -470,8 +396,8 @@ object EditForm: TEditForm
               object TrianglePanel: TPanel
                 Left = 0
                 Top = 0
-                Width = 158
-                Height = 305
+                Width = 162
+                Height = 277
                 BevelOuter = bvNone
                 TabOrder = 0
                 object Label9: TLabel
@@ -497,7 +423,7 @@ object EditForm: TEditForm
                 end
                 object btTrgRotateRight: TSpeedButton
                   Left = 106
-                  Top = 102
+                  Top = 78
                   Width = 23
                   Height = 24
                   Hint = 'Rotate triangle clockwise'
@@ -517,7 +443,7 @@ object EditForm: TEditForm
                 end
                 object btTrgRotateLeft: TSpeedButton
                   Left = 32
-                  Top = 102
+                  Top = 78
                   Width = 23
                   Height = 24
                   Hint = 'Rotate triangle counter clockwise'
@@ -555,7 +481,7 @@ object EditForm: TEditForm
                 end
                 object btTrgMoveUp: TSpeedButton
                   Left = 68
-                  Top = 129
+                  Top = 105
                   Width = 25
                   Height = 25
                   Hint = 'Move triangle up'
@@ -593,7 +519,7 @@ object EditForm: TEditForm
                 end
                 object btTrgMoveRight: TSpeedButton
                   Left = 106
-                  Top = 154
+                  Top = 130
                   Width = 25
                   Height = 25
                   Hint = 'Move triangle right'
@@ -631,7 +557,7 @@ object EditForm: TEditForm
                 end
                 object btTrgMoveLeft: TSpeedButton
                   Left = 30
-                  Top = 154
+                  Top = 130
                   Width = 25
                   Height = 25
                   Hint = 'Move triangle left'
@@ -669,7 +595,7 @@ object EditForm: TEditForm
                 end
                 object btTrgMoveDown: TSpeedButton
                   Left = 68
-                  Top = 179
+                  Top = 155
                   Width = 25
                   Height = 25
                   Hint = 'Move triangle down'
@@ -707,7 +633,7 @@ object EditForm: TEditForm
                 end
                 object btTrgScaleUp: TSpeedButton
                   Left = 106
-                  Top = 206
+                  Top = 182
                   Width = 23
                   Height = 24
                   Hint = 'Scale triangle up'
@@ -727,7 +653,7 @@ object EditForm: TEditForm
                 end
                 object btTrgScaleDown: TSpeedButton
                   Left = 32
-                  Top = 206
+                  Top = 182
                   Width = 23
                   Height = 24
                   Hint = 'Scale triangle down'
@@ -746,8 +672,8 @@ object EditForm: TEditForm
                   OnClick = btTrgScaleDownClick
                 end
                 object btTrgRotateRight90: TSpeedButton
-                  Left = 132
-                  Top = 102
+                  Left = 130
+                  Top = 78
                   Width = 23
                   Height = 24
                   Hint = 'Rotate triangle clockwise 90'#176
@@ -800,8 +726,8 @@ object EditForm: TEditForm
                   OnClick = btTrgRotateRight90Click
                 end
                 object btTrgRotateLeft90: TSpeedButton
-                  Left = 6
-                  Top = 102
+                  Left = 8
+                  Top = 78
                   Width = 23
                   Height = 24
                   Hint = 'Rotate triangle counter clockwise 90'#176
@@ -855,7 +781,7 @@ object EditForm: TEditForm
                 end
                 object btTrgMoveLU: TSpeedButton
                   Left = 42
-                  Top = 129
+                  Top = 105
                   Width = 25
                   Height = 25
                   Hint = 'Move triangle left-up'
@@ -893,7 +819,7 @@ object EditForm: TEditForm
                 end
                 object btTrgMoveLD: TSpeedButton
                   Left = 42
-                  Top = 179
+                  Top = 155
                   Width = 25
                   Height = 25
                   Hint = 'Move triangle left-down'
@@ -931,7 +857,7 @@ object EditForm: TEditForm
                 end
                 object btTrgMoveRU: TSpeedButton
                   Left = 94
-                  Top = 129
+                  Top = 105
                   Width = 25
                   Height = 25
                   Hint = 'Move triangle right-up'
@@ -969,7 +895,7 @@ object EditForm: TEditForm
                 end
                 object btTrgMoveRD: TSpeedButton
                   Left = 94
-                  Top = 179
+                  Top = 155
                   Width = 25
                   Height = 25
                   Hint = 'Move triangle right-down'
@@ -1008,7 +934,7 @@ object EditForm: TEditForm
                 object txtCy: TEdit
                   Left = 88
                   Top = 52
-                  Width = 66
+                  Width = 65
                   Height = 21
                   AutoSelect = False
                   TabOrder = 5
@@ -1071,19 +997,9 @@ object EditForm: TEditForm
                   OnExit = CornerEditExit
                   OnKeyPress = CornerEditKeyPress
                 end
-                object chkPreserve: TCheckBox
-                  Left = 32
-                  Top = 80
-                  Width = 105
-                  Height = 17
-                  Caption = 'Preserve weights'
-                  Checked = True
-                  State = cbChecked
-                  TabOrder = 6
-                end
                 object rgPivot: TRadioGroup
                   Left = 16
-                  Top = 240
+                  Top = 210
                   Width = 129
                   Height = 65
                   BiDiMode = bdLeftToRight
@@ -1096,21 +1012,21 @@ object EditForm: TEditForm
                     'B'
                     'C'
                     'Center'
-                    '(0;0)')
+                    '( 0; 0 )')
                   ParentBiDiMode = False
                   ParentCtl3D = False
-                  TabOrder = 7
+                  TabOrder = 6
                   OnClick = rgPivotClicked
                 end
                 object txtTrgMoveValue: TComboBox
                   Left = 56
-                  Top = 156
+                  Top = 132
                   Width = 49
                   Height = 21
                   AutoComplete = False
                   ItemHeight = 13
                   ItemIndex = 3
-                  TabOrder = 9
+                  TabOrder = 8
                   Text = '0.1'
                   OnExit = txtValidateValue
                   OnKeyPress = txtValKeyPress
@@ -1125,13 +1041,12 @@ object EditForm: TEditForm
                 end
                 object txtTrgRotateValue: TComboBox
                   Left = 56
-                  Top = 104
+                  Top = 80
                   Width = 49
                   Height = 21
                   AutoComplete = False
                   ItemHeight = 13
-                  ItemIndex = 1
-                  TabOrder = 8
+                  TabOrder = 7
                   Text = '15'
                   OnExit = txtValidateValue
                   OnKeyPress = txtValKeyPress
@@ -1140,23 +1055,24 @@ object EditForm: TEditForm
                     '15'
                     '30'
                     '45'
+                    '60'
                     '90'
+                    '120'
                     '180')
                 end
                 object txtTrgScaleValue: TComboBox
                   Left = 56
-                  Top = 208
+                  Top = 184
                   Width = 49
                   Height = 21
                   AutoComplete = False
                   ItemHeight = 13
                   ItemIndex = 1
-                  TabOrder = 10
-                  Text = '110'
+                  TabOrder = 9
+                  Text = '125'
                   OnExit = txtValidateValue
                   OnKeyPress = txtValKeyPress
                   Items.Strings = (
-                    '105'
                     '110'
                     '125'
                     '150'
@@ -1164,74 +1080,107 @@ object EditForm: TEditForm
                     '200')
                 end
               end
+              object chkPreserve: TCheckBox
+                Left = 30
+                Top = 280
+                Width = 105
+                Height = 17
+                Caption = 'Preserve weights'
+                Checked = True
+                State = cbChecked
+                TabOrder = 1
+              end
             end
           end
           object tabXForm: TTabSheet
             Caption = 'Transform'
-            object lbla: TLabel
-              Left = 4
-              Top = 8
-              Width = 10
-              Height = 13
-              Caption = 'a:'
-            end
-            object Label1: TLabel
-              Left = 82
-              Top = 8
-              Width = 10
-              Height = 13
-              Caption = 'b:'
-            end
-            object Label2: TLabel
-              Left = 4
-              Top = 32
-              Width = 9
-              Height = 13
-              Caption = 'c:'
-            end
-            object Label3: TLabel
-              Left = 82
-              Top = 32
-              Width = 10
-              Height = 13
-              Caption = 'd:'
-            end
-            object Label4: TLabel
-              Left = 4
-              Top = 56
-              Width = 10
-              Height = 13
-              Caption = 'e:'
-            end
-            object Label5: TLabel
-              Left = 82
-              Top = 56
-              Width = 8
-              Height = 13
-              Caption = 'f:'
-            end
             object Label6: TLabel
               Left = 36
-              Top = 84
+              Top = 100
               Width = 38
               Height = 13
               Caption = 'Weight:'
             end
             object Label29: TLabel
               Left = 36
-              Top = 108
+              Top = 124
               Width = 52
               Height = 13
               Caption = 'Symmetry:'
             end
+            object btnResetCoefs: TSpeedButton
+              Left = 8
+              Top = 148
+              Width = 145
+              Height = 22
+              Hint = 'Reset all vectors to default'
+              Caption = 'Reset Coefs'
+              ParentShowHint = False
+              ShowHint = False
+              OnClick = mnuResetClick
+            end
+            object btnXcoefs: TSpeedButton
+              Left = 8
+              Top = 4
+              Width = 25
+              Height = 21
+              Hint = 'Reset point A'
+              Caption = 'A'
+              ParentShowHint = False
+              ShowHint = False
+              OnClick = btnXcoefsClick
+            end
+            object btnYcoefs: TSpeedButton
+              Left = 8
+              Top = 28
+              Width = 25
+              Height = 21
+              Hint = 'Reset point C'
+              Caption = 'C'
+              ParentShowHint = False
+              ShowHint = False
+              OnClick = btnYcoefsClick
+            end
+            object btnOcoefs: TSpeedButton
+              Left = 8
+              Top = 52
+              Width = 25
+              Height = 21
+              Hint = 'Reset point B'
+              Caption = 'B'
+              ParentShowHint = False
+              ShowHint = False
+              OnClick = btnOcoefsClick
+            end
+            object btnCoefsRect: TSpeedButton
+              Left = 8
+              Top = 76
+              Width = 71
+              Height = 17
+              GroupIndex = 1
+              Down = True
+              Caption = 'Rectangular'
+              Flat = True
+              OnClick = btnCoefsModeClick
+            end
+            object btnCoefsPolar: TSpeedButton
+              Left = 82
+              Top = 76
+              Width = 71
+              Height = 17
+              GroupIndex = 1
+              Caption = 'Polar (deg)'
+              Flat = True
+              OnClick = btnCoefsModeClick
+            end
             object txtA: TEdit
-              Left = 20
+              Left = 36
               Top = 4
               Width = 57
               Height = 21
               TabOrder = 0
               Text = '0'
-              OnExit = CoefExit
+              OnExit = CoefValidate
               OnKeyPress = CoefKeyPress
             end
             object txtB: TEdit
@@ -1241,17 +1190,17 @@ object EditForm: TEditForm
               Height = 21
               TabOrder = 1
               Text = '0'
-              OnExit = CoefExit
+              OnExit = CoefValidate
               OnKeyPress = CoefKeyPress
             end
             object txtC: TEdit
-              Left = 20
+              Left = 36
               Top = 28
               Width = 57
               Height = 21
               TabOrder = 2
               Text = '0'
-              OnExit = CoefExit
+              OnExit = CoefValidate
               OnKeyPress = CoefKeyPress
             end
             object txtD: TEdit
@@ -1261,17 +1210,17 @@ object EditForm: TEditForm
               Height = 21
               TabOrder = 3
               Text = '0'
-              OnExit = CoefExit
+              OnExit = CoefValidate
               OnKeyPress = CoefKeyPress
             end
             object txtE: TEdit
-              Left = 20
+              Left = 36
               Top = 52
               Width = 57
               Height = 21
               TabOrder = 4
               Text = '0'
-              OnExit = CoefExit
+              OnExit = CoefValidate
               OnKeyPress = CoefKeyPress
             end
             object txtF: TEdit
@@ -1281,12 +1230,12 @@ object EditForm: TEditForm
               Height = 21
               TabOrder = 5
               Text = '0'
-              OnExit = CoefExit
+              OnExit = CoefValidate
               OnKeyPress = CoefKeyPress
             end
             object txtP: TEdit
               Left = 96
-              Top = 80
+              Top = 96
               Width = 57
               Height = 21
               TabOrder = 6
@@ -1296,7 +1245,7 @@ object EditForm: TEditForm
             end
             object txtSymmetry: TEdit
               Left = 96
-              Top = 104
+              Top = 120
               Width = 57
               Height = 21
               TabOrder = 7
@@ -1311,7 +1260,7 @@ object EditForm: TEditForm
               Left = 0
               Top = 0
               Width = 162
-              Height = 308
+              Height = 298
               Align = alClient
               ScrollBars = ssVertical
               TabOrder = 0
@@ -1337,7 +1286,7 @@ object EditForm: TEditForm
               Left = 0
               Top = 0
               Width = 162
-              Height = 308
+              Height = 298
               Align = alClient
               ScrollBars = ssVertical
               TabOrder = 0
@@ -1543,20 +1492,6 @@ object EditForm: TEditForm
       ImageIndex = 1
       OnClick = mnuAddClick
     end
-    object MenuItem2: TMenuItem
-      Caption = '-'
-    end
-    object mnuReset: TMenuItem
-      Caption = 'Reset Triangle'
-      Hint = 'Reset triangle to reference position'
-      OnClick = mnuResetClick
-    end
-    object mnuResetAll: TMenuItem
-      Caption = 'Reset All'
-      Hint = 'Reset all triangles to reference position'
-      ImageIndex = 0
-      OnClick = mnuResetAllClick
-    end
     object N4: TMenuItem
       Caption = '-'
     end
@@ -1640,7 +1575,7 @@ object EditForm: TEditForm
     Left = 353
     Top = 80
     Bitmap = {
-      494C01010E001300040010001000FFFFFFFFFF10FFFFFFFFFFFFFFFF424D3600
+      494C01010E001300040010001000FFFFFFFFFF00FFFFFFFFFFFFFFFF424D3600
       0000000000003600000028000000400000005000000001002000000000000050
       0000000000000000000000000000000000000000000000000000000000000000
       0000000000000000000000000000000000000000000000000000000000000000
@@ -1916,7 +1851,7 @@ object EditForm: TEditForm
       0000000000000000000000000000000000000000000000000000000000000000
       0000000000000000000000000000000000000000000000000000000000000000
       000000000000000000005C5C5C00000000000000000000000000000000000000
-      0000000000000000000000000000000000000000000000000000000000000000
+      00000000000000000000000000000000000000000000000000005C5C5C000000
       0000000000000000000000000000000000000000000000000000000000000000
       0000000000000000000000000000000000008000000000000000000000000000
       0000000000000000000000000000000000000000000000000000000000000000
@@ -1924,8 +1859,8 @@ object EditForm: TEditForm
       5C00000000000000000000000000000000000000000000000000000000005C5C
       5C00000000000000000000000000000000000000000000000000000000000000
       00000000000000000000000000005C5C5C000000000000000000000000000000
-      0000000000000000000000000000000000000000000000000000000000000000
-      00005C5C5C000000000000000000000000000000000000000000000000000000
+      0000000000000000000000000000000000000000000000000000000000005C5C
+      5C00000000005C5C5C0000000000000000000000000000000000000000000000
       0000000000000000000000000000000000008000000080000000000000000000
       0000000000000000000000000000800080000000000000000000000000000000
       0000000000000000000000000000000000000000000000000000000000000000
@@ -1933,7 +1868,7 @@ object EditForm: TEditForm
       0000000000000000000000000000000000000000000000000000000000000000
       0000600000006000000000000000000000005C5C5C0000000000000000000000
       0000000000000000000000000000000000000000000000000000000000000000
-      0000000000005C5C5C0000000000000000000000000000000000000000000000
+      00005C5C5C00000000005C5C5C00000000000000000000000000000000000000
       0000000000000000000000000000000000008000000080606000800000000000
       0000000000000000000000000000000000000000000000000000000000000000
       0000000000005C5C5C0000000000000000000000000000000000000000000000
@@ -1941,7 +1876,7 @@ object EditForm: TEditForm
       0000000000000000000000000000000000000000000000000000000000006000
       000000000000000000000000000000000000000000005C5C5C00000000000000
       0000000000000000000000000000000000000000000000000000000000000000
-      000000000000000000005C5C5C00000000000000000000000000000000000000
+      0000000000005C5C5C00000000005C5C5C000000000000000000000000000000
       0000000000000000000000000000000000008000000000000000806060008000
       0000000000000000000000000000800080000000000000000000000000000000
       00005C5C5C000000000000000000000000000000000000000000000000000000
@@ -1949,7 +1884,7 @@ object EditForm: TEditForm
       0000000000000000000000000000000000000000000000000000000000006000
       00000000000000000000000000000000000000000000000000005C5C5C000000
       0000000000000000000000000000000000000000000000000000000000000000
-      00000000000000000000000000005C5C5C000000000000000000000000000000
+      000000000000000000005C5C5C00000000005C5C5C0000000000000000000000
       0000000000000000000000000000000000008000000000000000000000008060
       6000800000000000000000000000000000000000000000000000000000005C5C
       5C00000000000000000000000000000000000000000000000000000000000000
@@ -1957,7 +1892,7 @@ object EditForm: TEditForm
       0000000000000000000000000000000000000000000000000000600000000000
       0000000000000000000000000000000000000000000000000000000000005C5C
       5C00000000000000000000000000000000000000000000000000000000000000
-      0000000000000000000000000000000000005C5C5C0000000000000000000000
+      00000000000000000000000000005C5C5C00000000005C5C5C00000000000000
       0000000000000000000000000000000000008000000000000000000000000000
       00008060600080000000000000008000800000000000000000005C5C5C000000
       0000000000000000000000000000000000000000000000000000000000000000
@@ -1965,7 +1900,7 @@ object EditForm: TEditForm
       0000000000000000000000000000000000000000000000000000600000000000
       0000000000000000000000000000000000000000000000000000000000000000
       0000000000000000000000000000000000000000000000000000000000000000
-      000000000000000000000000000000000000000000005C5C5C00000000000000
+      0000000000000000000000000000000000005C5C5C00000000005C5C5C000000
       0000000000000000000000000000000000008000000000000000000000000000
       000000000000806060008000000000000000000000005C5C5C00000000000000
       0000000000000000000000000000000000008000800000000000800080000000
@@ -1973,24 +1908,24 @@ object EditForm: TEditForm
       0000800080000000000080008000000000000000000000000000600000000000
       0000000000000000000000000000000000000000000000000000000000000000
       0000000000000000000000000000000000000000000000000000000000000000
-      00000000000000000000000000000000000000000000000000005C5C5C000000
-      0000000000000000000000000000000000008000000000000000000000000000
+      000000000000000000000000000000000000000000005C5C5C00000000005C5C
+      5C00000000000000000000000000000000008000000000000000000000000000
       00008060600080000000000000008000800000000000000000005C5C5C000000
       0000000000000000000000000000000000000000000000000000000000000000
       0000000000000000000000000000800000000000000000000000000000000000
       0000000000000000000000000000000000000000000000000000600000000000
       0000000000000000000000000000000000000000000000000000000000000000
       0000000000000000000000000000000000000000000000000000000000000000
-      0000000000000000000000000000000000000000000000000000000000005C5C
-      5C00000000000000000000000000000000008000000000000000000000008060
+      00000000000000000000000000000000000000000000000000005C5C5C000000
+      00005C5C5C000000000000000000000000008000000000000000000000008060
       6000800000000000000000000000000000000000000000000000000000005C5C
       5C00000000000000000000000000000000000000000000000000000000000000
       0000000000000000000080000000806060008000000000000000000000000000
       0000000000000000000000000000000000000000000000000000000000006000
       0000000000000000000000000000000000000000000000000000600000006000
       0000600000006000000000000000000000000000000000000000000000000000
-      0000000000000000000000000000000000000000000000000000000000000000
-      00005C5C5C000000000000000000000000008000000000000000806060008000
+      0000000000000000000000000000000000000000000000000000000000005C5C
+      5C00000000000000000000000000000000008000000000000000806060008000
       0000000000000000000000000000800080000000000000000000000000000000
       00005C5C5C000000000000000000000000000000000000000000000000000000
       0000000000008000000080606000000000008060600080000000000000000000
@@ -1998,7 +1933,7 @@ object EditForm: TEditForm
       0000000000000000000000000000000000000000000000000000000000000000
       0000600000006000000000000000000000000000000000000000000000000000
       0000000000000000000000000000000000000000000000000000000000000000
-      0000000000000000000000000000000000008000000080606000800000000000
+      00005C5C5C000000000000000000000000008000000080606000800000000000
       0000000000000000000000000000000000000000000000000000000000000000
       0000000000005C5C5C0000000000000000000000000000000000000000000000
       0000800000008060600000000000000000000000000080606000800000000000
@@ -2006,7 +1941,7 @@ object EditForm: TEditForm
       0000600000006000000000000000000000000000000000000000600000006000
       0000000000006000000000000000000000000000000000000000000000000000
       0000000000000000000000000000000000000000000000000000000000000000
-      0000000000000000000000000000000000008000000080000000000000000000
+      0000000000005C5C5C0000000000000000008000000080000000000000000000
       0000000000000000000000000000800080000000000000000000000000000000
       0000000000000000000000000000000000000000000000000000000000008000
       0000806060000000000000000000000000000000000000000000806060008000
@@ -2293,9 +2228,9 @@ object EditForm: TEditForm
       FF73F3E700000000FF73F3E700000000FB73000000000000F363F3E700000000
       E007F3E700000000E00FF1C700000000F37FF80F00000000FB7FFC1F00000000
       FF7FFFFF00000000FF7FFFFF00000000FFFFFFFFFFFFFFFFF0070001FEFF8003
-      F9F780017FFDCFE7FCF7C7F93EF9E7CFF277E3F91FF1F39FEF37F1F94EE5F93F
-      EF97F8F967CDFC7FDFC7FC79729DFEFFDFE7FE39793D5555DFF7FF19729DFEFF
-      DFFFFF8967CDFC7FEFC3FFC14EE5F93FEFF3FFE11FF1F39FF3CBFFF13EF9E7CF
+      F9F79FFD7FFDCFE7FCF7C8053EF9E7CFF277E4F51FF1F39FEF37F2754EE5F93F
+      EF97F93567CDFC7FDFC7FC95729DFEFFDFE7FE45793D5555DFF7FF25729DFEFF
+      DFFFFF9567CDFC7FEFC3FFCD4EE5F93FEFF3FFE51FF1F39FF3CBFFF13EF9E7CF
       FC3BFFF97FFDCFE7FFFFFFFDFEFF8003FFFFFFFFFFCFFFFFFFFFFFFFFF87FEFF
       FFFFFFFFF787FC7FFFFFFFFFF30FF83FFFF7EFFFF00FFEFFC1F7EF83F01FFEFF
       C3FBDFC3F003DEF7C7FBDFE3F0079EF3CBFBDFD3F00F0001DCF7EF3BF01F9EF3
@@ -2304,7 +2239,6 @@ object EditForm: TEditForm
       C003E001E001E001C003F1F9F1F9F1F9C003F8F90009D8D9C003FC7980098C09
       C003F239C609C619C003F319E309E219C003F389F189F009C003F3C1F8C1F8C1
       C0030021FC41F061C0070031FE01E231C00FF3F9FF09C719C01FF3FDFF8D8F8D
-      C03FF3FFFFCFDFDFFFFFF3FFFFEFFFFF00000000000000000000000000000000
-      000000000000}
+      C03FF3FFFFCFDFDFFFFFF3FFFFEFFFFF}
   end
 end

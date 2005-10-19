@@ -1930,6 +1930,7 @@ begin
     end;
   end;
 
+  // I don't like this... :-/
   for j := -1 to Result-1 do
     for i := 0 to 2 do
       triangles[j].y[i] := -triangles[j].y[i];
@@ -1993,14 +1994,14 @@ begin
   for i := 0 to t-1 do
   begin
     solve3(Triangles[-1].x[0], -Triangles[-1].y[0], Triangles[i].x[0],
-      Triangles[-1].x[1], -Triangles[-1].y[1], Triangles[i].x[1],
-      Triangles[-1].x[2], -Triangles[-1].y[2], Triangles[i].x[2],
-      xform[i].c[0][0], xform[i].c[1][0], xform[i].c[2][0]);
+           Triangles[-1].x[1], -Triangles[-1].y[1], Triangles[i].x[1],
+           Triangles[-1].x[2], -Triangles[-1].y[2], Triangles[i].x[2],
+           xform[i].c[0][0],    xform[i].c[1][0],   xform[i].c[2][0]);
 
     solve3(Triangles[-1].x[0], -Triangles[-1].y[0], -Triangles[i].y[0],
-      Triangles[-1].x[1], -Triangles[-1].y[1], -Triangles[i].y[1],
-      Triangles[-1].x[2], -Triangles[-1].y[2], -Triangles[i].y[2],
-      xform[i].c[0][1], xform[i].c[1][1], xform[i].c[2][1]);
+           Triangles[-1].x[1], -Triangles[-1].y[1], -Triangles[i].y[1],
+           Triangles[-1].x[2], -Triangles[-1].y[2], -Triangles[i].y[2],
+           xform[i].c[0][1],    xform[i].c[1][1],    xform[i].c[2][1]);
   end;
 end;
 

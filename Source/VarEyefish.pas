@@ -19,7 +19,7 @@ implementation
 uses
   math;
 
-// TVariationEyefish
+// TVariationEyefish, the correct "fish-eye" variation
 
 ///////////////////////////////////////////////////////////////////////////////
 procedure TVariationEyefish.CalcFunction;
@@ -61,6 +61,7 @@ asm
     fadd    qword ptr [ecx]
     fstp    qword ptr [ecx]
 
+    fwait
 {$ifend}
 end;
 

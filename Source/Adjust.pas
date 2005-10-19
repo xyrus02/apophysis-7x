@@ -257,44 +257,42 @@ type
 
     cp: TControlPoint;
 
-    // --Z-- // gradient stuff
+  private // --Z-- // gradient stuff
     Palette: TColorMap;
     BackupPal: TColorMap;
 
-    scrollMode: (modeRotate, modeHue, modeSaturation, modeBrightness, modeContrast,
-                modeBlur, modeFrequency);
+    scrollMode: (modeRotate,
+                 modeHue, modeSaturation, modeBrightness, modeContrast,
+                 modeBlur, modeFrequency);
     imgDrag, GradientChanged: boolean;
     dragX, oldX: integer;
-    offset: integer; // for display... :-\
+    offset: integer; // for display...? :-\
 
+    procedure Apply;
+    function Blur(const radius: integer; const pal: TColorMap): TColorMap;
+    function Frequency(const times: Integer; const pal: TColorMap): TColorMap;
+    procedure SaveMap(FileName: string);
 
-    // --Z-- // image size stuff
+    procedure UpdateGradient(Pal: TColorMap);
+
+  private // --Z-- // image size stuff
     ImageHeight, ImageWidth: integer;
     Preset: array[1..3] of record
       Left, Top, Width, Height: integer;
     end;
     ratio: double;
 
-    // gradient stuff again
-    procedure Apply;
-    function Blur(const radius: integer; const pal: TColorMap): TColorMap;
-    function Frequency(const times: Integer; const pal: TColorMap): TColorMap;
-    procedure SaveMap(FileName: string);
-
-    // and image size stuff again
     procedure ReadPreset(n: integer);
     procedure WritePreset(n: integer);
     function PresetToStr(n: integer): string;
 
-    procedure UpdateGradient(Pal: TColorMap);
-    // --
   public
     PreviewDensity: double;
 
 //    cmap: TColorMap;
 //    Sample_Density, Zoom: double;
 //    Center: array[0..1] of double;
-    procedure UpdateDisplay;
+    procedure UpdateDisplay(PreviewOnly: boolean = false);
     procedure UpdateFlame;
 
   end;
@@ -317,14 +315,15 @@ uses
 
 {$R *.DFM}
 
-procedure TAdjustForm.UpdateDisplay;
+procedure TAdjustForm.UpdateDisplay(PreviewOnly: boolean = false);
 var
   pw, ph: integer;
   r: double;
 begin
+  cp.copy(MainCp);
+
   pw := PrevPnl.Width - 2;
   ph := PrevPnl.Height - 2;
-  cp.copy(MainCp);
   if (cp.width / cp.height) > (PrevPnl.Width / PrevPnl.Height) then
   begin
     PreviewImage.Width := pw;
@@ -333,16 +332,19 @@ begin
     PreviewImage.Left := 1;
     PreviewImage.Top := (ph - PreviewImage.Height) div 2;
   end
-  else
-  begin
+  else begin
     PreviewImage.Height := ph;
     r := cp.height / PreviewImage.height;
     PreviewImage.Width := round(cp.Width / r);
     PreviewImage.Top := 1;
     PreviewImage.Left := (pw - PreviewImage.Width) div 2;
   end;
-  cp.cmap := MainCp.cmap;
   AdjustScale(cp, PreviewImage.Width, PreviewImage.Height);
+
+  cp.cmap := MainCp.cmap;
+
+  if not PreviewOnly then begin //***
+
 //  zoom := MainForm.zoom;
 //  cp.zoom := zoom;
   Resetting := True; // So the preview doesn't get drawn with these changes..
@@ -368,14 +370,14 @@ begin
   // gradient
   if cp.cmapindex >= 0 then
     cmbPalette.ItemIndex := cp.cmapindex;
-//  ScrollBar.Position := 0;
+  ScrollBar.Position := 0;
   Palette := cp.cmap;
   BackupPal := cp.cmap;
 
   Resetting := False;
-  DrawPreview;
 
-  //DrawPalette;
+  end; //***
+  DrawPreview;
 end;
 
 procedure TAdjustForm.UpdateFlame;
@@ -398,49 +400,45 @@ var
   Row: pRGBTripleArray;
   BitMap: TBitMap;
 begin
-  if not Resetting then begin
-    Render.Stop;
-//    AdjustScale(cp, PreviewImage.Width, PreviewImage.Height);
-    cp.sample_density := PreviewDensity;
-    cp.spatial_oversample := defOversample;
-    cp.spatial_filter_radius := defFilterRadius;
-//    cp.Zoom := Zoom;
-//    cp.center[0] := Center[0];
-//    cp.center[1] := Center[1];
-    Render.Compatibility := compatibility;
-    Render.SetCP(cp);
-    Render.Render;
-    BM.Assign(Render.GetImage);
-    PreviewImage.Picture.Graphic := bm;
+  if Resetting then exit;
 
-    if mnuInstantPreview.Checked then
-      PreviewImage.Refresh;
+  Render.Stop;
+//  AdjustScale(cp, PreviewImage.Width, PreviewImage.Height);
+  cp.sample_density := PreviewDensity;
+  cp.spatial_oversample := defOversample;
+  cp.spatial_filter_radius := defFilterRadius;
+//  cp.Zoom := Zoom;
+//  cp.center[0] := Center[0];
+//  cp.center[1] := Center[1];
+  Render.Compatibility := compatibility;
+  Render.SetCP(cp);
+  Render.Render;
+  BM.Assign(Render.GetImage);
+  PreviewImage.Picture.Graphic := bm;
+
+  if mnuInstantPreview.Checked then PreviewImage.Refresh;
 
 //--begin DrawPalette
-    BitMap := TBitMap.Create;
-    try
-      Bitmap.PixelFormat := pf24bit;
-      BitMap.Width := 256;
-      BitMap.Height := 1;
-
-      Row := Bitmap.Scanline[0];
-      for i := 0 to 255 do
+  BitMap := TBitMap.Create;
+  try
+    Bitmap.PixelFormat := pf24bit;
+    BitMap.Width := 256;
+    BitMap.Height := 1;
+    Row := Bitmap.Scanline[0];
+    for i := 0 to 255 do
+      with Row[i] do
       begin
-        with Row[i] do
-        begin
-          rgbtRed   := Palette[i][0];
-          rgbtGreen := Palette[i][1];
-          rgbtBlue  := Palette[i][2];
-        end;
+        rgbtRed   := Palette[i][0];
+        rgbtGreen := Palette[i][1];
+        rgbtBlue  := Palette[i][2];
       end;
 
-      GradientImage.Picture.Graphic := Bitmap;
-      GradientImage.Refresh;
-    finally
-      BitMap.Free;
-    end;
-//--end DrawPalette
+    GradientImage.Picture.Graphic := Bitmap;
+    GradientImage.Refresh;
+  finally
+    BitMap.Free;
   end;
+//--end DrawPalette
 end;
 
 procedure TAdjustForm.FormCreate(Sender: TObject);
@@ -494,23 +492,6 @@ begin
   Render.free;
 end;
 
-{
-procedure TAdjustForm.btnOKClick(Sender: TObject);
-begin
-  ModalResult := mrOK;
-end;
-
-procedure TAdjustForm.btnCancelClick(Sender: TObject);
-begin
-  ModalResult := mrCancel;
-end;
-
-procedure TAdjustForm.btnCanelClick(Sender: TObject);
-begin
-  ModalResult := mrCancel;
-end;
-}
-
 procedure TAdjustForm.FormShow(Sender: TObject);
 var
   Registry: TRegistry;
@@ -535,7 +516,6 @@ begin
 
     if Registry.OpenKey('Software\' + APP_NAME + '\ImageSizePresets', False) then
     begin
-      // --Zueuk-- // image size presets
       for i:=1 to 3 do begin
         strx:='Preset'+IntToStr(i)+'Left';
         stry:='Preset'+IntToStr(i)+'Top';
@@ -1044,8 +1024,7 @@ begin
   if EditForm.visible then EditForm.UpdateDisplay;
   if MutateForm.Visible then MutateForm.UpdateDisplay;
 
-  if mnuInstantPreview.Checked then
-    DrawPreview; //hmm
+  if mnuInstantPreview.Checked then DrawPreview;
 
   MainForm.RedrawTimer.enabled := true;
 end;
@@ -1086,10 +1065,10 @@ begin
   BackupPal := Pal;
 //  DrawPalette;
 
-  cp.copy(MainCp);
+  cp.cmap := pal;
+//  cp.copy(MainCp);
 
-  if mnuInstantPreview.Checked then
-    DrawPreview; //hmm
+  if mnuInstantPreview.Checked then DrawPreview;
 end;
 
 procedure HSVToRGB(H, S, V: real; var Rb, Gb, Bb: integer);
@@ -1333,100 +1312,82 @@ var
   intens, i, r, g, b: integer;
   h, s, v: real;
 begin
-  GradientChanged:=true; // hmm
-
   lblVal.Caption := IntToStr(ScrollBar.Position);
   lblVal.Refresh;
-{
-  wtf???? this is ridiculous!
 
-  =>>  if btnMenu.Caption = 'Hue' then <<= (and 6 more like this follows...)
-}
- case scrollMode of
-  modeHue:
-  begin
-    for i := 0 to 255 do
-    begin
-      RGBToHSV(BackupPal[i][0], BackupPal[i][1], BackupPal[i][2], h, s, v);
-      if s <> 0 then // --Z-- //(?)
+  if Resetting then exit;
+
+  GradientChanged:=true; // hmm
+
+  case scrollMode of
+    modeHue:
+      for i := 0 to 255 do
       begin
-        h := Round(360 + h + ScrollBar.Position) mod 360;
-        HSVToRGB(h, s, v, Palette[i][0], Palette[i][1], Palette[i][2]);
+        RGBToHSV(BackupPal[i][0], BackupPal[i][1], BackupPal[i][2], h, s, v);
+        if s <> 0 then // --Z-- //(?)
+        begin
+          h := Round(360 + h + ScrollBar.Position) mod 360;
+          HSVToRGB(h, s, v, Palette[i][0], Palette[i][1], Palette[i][2]);
+        end;
+      end;
+    modeSaturation:
+      for i := 0 to 255 do
+      begin
+        RGBToHSV(BackupPal[i][0], BackupPal[i][1], BackupPal[i][2], h, s, v);
+        if s <> 0 then // --Z-- //(?)
+        begin
+          s := s + ScrollBar.Position;
+          if s > 100 then s := 100;
+          if s < 0 then s := 0;
+          HSVToRGB(h, s, v, Palette[i][0], Palette[i][1], Palette[i][2]);
+        end;
+      end;
+    modeContrast:
+    begin
+      intens := scrollBar.Position;
+      if intens > 0 then intens := intens * 2;
+      for i := 0 to 255 do
+      begin
+        r := BackupPal[i][0];
+        g := BackupPal[i][1];
+        b := BackupPal[i][2];
+        r := round(r + intens / 100 * (r - 127));
+        g := round(g + intens / 100 * (g - 127));
+        b := round(b + intens / 100 * (b - 127));
+        if R > 255 then R := 255 else if R < 0 then R := 0;
+        if G > 255 then G := 255 else if G < 0 then G := 0;
+        if B > 255 then B := 255 else if B < 0 then B := 0;
+        Palette[i][0] := r;
+        Palette[i][1] := g;
+        Palette[i][2] := b;
       end;
     end;
+    modeBrightness:
+      for i := 0 to 255 do
+      begin
+        Palette[i][0] := BackupPal[i][0] + ScrollBar.Position;
+        if Palette[i][0] > 255 then Palette[i][0] := 255;
+        if Palette[i][0] < 0 then Palette[i][0] := 0;
+        Palette[i][1] := BackupPal[i][1] + ScrollBar.Position;
+        if Palette[i][1] > 255 then Palette[i][1] := 255;
+        if Palette[i][1] < 0 then Palette[i][1] := 0;
+        Palette[i][2] := BackupPal[i][2] + ScrollBar.Position;
+        if Palette[i][2] > 255 then Palette[i][2] := 255;
+        if Palette[i][2] < 0 then Palette[i][2] := 0;
+      end;
+    modeRotate:
+      for i := 0 to 255 do
+      begin
+        Palette[i][0] := BackupPal[(255 + i - ScrollBar.Position) mod 256][0];
+        Palette[i][1] := BackupPal[(255 + i - ScrollBar.Position) mod 256][1];
+        Palette[i][2] := BackupPal[(255 + i - ScrollBar.Position) mod 256][2];
+      end;
+    modeBlur:
+      Palette := Blur(ScrollBar.Position, BackupPal);
+    modeFrequency:
+      Palette := Frequency(ScrollBar.Position, BackupPal);
   end;
-  modeSaturation:
-  begin
-    for i := 0 to 255 do
-    begin
-      RGBToHSV(BackupPal[i][0], BackupPal[i][1], BackupPal[i][2], h, s, v);
-//      if s <> 0 then // --Z-- //(?)
-//      begin
-        s := s + ScrollBar.Position;
-        if s > 100 then s := 100;
-        if s < 0 then s := 0;
-        HSVToRGB(h, s, v, Palette[i][0], Palette[i][1], Palette[i][2]);
-//      end;
-    end;
-  end;
-  modeContrast:
-  begin
-    intens := scrollBar.Position;
-    if intens > 0 then intens := intens * 2;
-    for i := 0 to 255 do
-    begin
-      r := BackupPal[i][0];
-      g := BackupPal[i][1];
-      b := BackupPal[i][2];
-      r := round(r + intens / 100 * (r - 127));
-      g := round(g + intens / 100 * (g - 127));
-      b := round(b + intens / 100 * (b - 127));
-      if R > 255 then R := 255 else if R < 0 then R := 0;
-      if G > 255 then G := 255 else if G < 0 then G := 0;
-      if B > 255 then B := 255 else if B < 0 then B := 0;
-      Palette[i][0] := r;
-      Palette[i][1] := g;
-      Palette[i][2] := b;
-    end;
-  end;
-//  if btnMenu.Caption = 'Brightness' then
-modeBrightness:
-  begin
-    for i := 0 to 255 do
-    begin
-      Palette[i][0] := BackupPal[i][0] + ScrollBar.Position;
-      if Palette[i][0] > 255 then Palette[i][0] := 255;
-      if Palette[i][0] < 0 then Palette[i][0] := 0;
-      Palette[i][1] := BackupPal[i][1] + ScrollBar.Position;
-      if Palette[i][1] > 255 then Palette[i][1] := 255;
-      if Palette[i][1] < 0 then Palette[i][1] := 0;
-      Palette[i][2] := BackupPal[i][2] + ScrollBar.Position;
-      if Palette[i][2] > 255 then Palette[i][2] := 255;
-      if Palette[i][2] < 0 then Palette[i][2] := 0;
-    end;
-  end;
-modeRotate:
-  begin
-    for i := 0 to 255 do
-    begin
-      Palette[i][0] := BackupPal[(255 + i - ScrollBar.Position) mod 256][0];
-      Palette[i][1] := BackupPal[(255 + i - ScrollBar.Position) mod 256][1];
-      Palette[i][2] := BackupPal[(255 + i - ScrollBar.Position) mod 256][2];
-    end;
-  end;
-//  if scrollMode = modeBlur then
-//  if btnMenu.Caption = 'Blur' then
-modeBlur:
-  begin
-    Palette := Blur(ScrollBar.Position, BackupPal);
-  end;
-//  if scrollMode = modeFrequency then
-modeFrequency:
-  begin
-    Palette := Frequency(ScrollBar.Position, BackupPal);
-  end;
- end;
-//  DrawPalette;
+
   cp.cmap:=Palette;
   DrawPreview;
 end;

@@ -27,7 +27,7 @@ object MainForm: TMainForm
     Left = 160
     Top = 28
     Width = 4
-    Height = 522
+    Height = 520
   end
   object ToolBar: TToolBar
     Left = 0
@@ -284,7 +284,7 @@ object MainForm: TMainForm
     Left = 0
     Top = 28
     Width = 160
-    Height = 522
+    Height = 520
     Align = alLeft
     Columns = <
       item
@@ -303,7 +303,7 @@ object MainForm: TMainForm
     Left = 164
     Top = 28
     Width = 433
-    Height = 522
+    Height = 520
     Align = alClient
     BevelInner = bvLowered
     BevelOuter = bvNone
@@ -314,7 +314,7 @@ object MainForm: TMainForm
       Left = 1
       Top = 1
       Width = 431
-      Height = 520
+      Height = 518
       Align = alClient
       AutoSize = True
       PopupMenu = DisplayPopup
@@ -327,7 +327,7 @@ object MainForm: TMainForm
   end
   object StatusBar: TStatusBar
     Left = 0
-    Top = 550
+    Top = 548
     Width = 597
     Height = 19
     Panels = <
@@ -2626,7 +2626,7 @@ object MainForm: TMainForm
         Caption = 'Full Screen'
         Hint = 'Show the flame in fullscreen mode'
         ImageIndex = 52
-        ShortCut = 16454
+        ShortCut = 114
         OnClick = mnuFullScreenClick
       end
       object N4: TMenuItem
@@ -2636,34 +2636,29 @@ object MainForm: TMainForm
         Caption = '&Editor'
         Hint = 'Show the Transform Editor'
         ImageIndex = 19
-        ShortCut = 16453
+        ShortCut = 115
         OnClick = mnuEditorClick
       end
       object mnuAdjust: TMenuItem
         Caption = 'Adjust'
         Hint = 'Show the Adjust window'
         ImageIndex = 18
-        ShortCut = 16449
+        ShortCut = 116
         OnClick = mnuAdjustClick
       end
       object mnuGrad: TMenuItem
         Caption = 'Gradient'
         Hint = 'Show the Gradient window'
         ImageIndex = 11
-        ShortCut = 16455
+        ShortCut = 117
         OnClick = mnuGradClick
       end
       object mnuMutate: TMenuItem
         Caption = 'Mutation'
         Hint = 'Show the Mutation window'
         ImageIndex = 17
-        ShortCut = 16461
+        ShortCut = 118
         OnClick = mnuMutateClick
-      end
-      object mnuimage: TMenuItem
-        Caption = 'Image '
-        Visible = False
-        OnClick = mnuimageClick
       end
       object N5: TMenuItem
         Caption = '-'
@@ -2671,8 +2666,13 @@ object MainForm: TMainForm
       object mnuImageSize: TMenuItem
         Caption = 'Image Size'
         ImageIndex = 51
-        ShortCut = 16457
+        ShortCut = 119
         OnClick = mnuImageSizeClick
+      end
+      object mnuimage: TMenuItem
+        Caption = 'Image '
+        Visible = False
+        OnClick = mnuimageClick
       end
     end
     object F1: TMenuItem
@@ -2691,25 +2691,21 @@ object MainForm: TMainForm
       object mnuRandom: TMenuItem
         Caption = '&Randomize'
         Hint = 'Randomize flame parameters'
-        ShortCut = 120
         OnClick = mnuRandomClick
       end
       object mnuRWeights: TMenuItem
         Caption = 'Random &Weights'
         Hint = 'Randomize transform weights'
-        ShortCut = 116
         OnClick = mnuRWeightsClick
       end
       object mnuEqualize: TMenuItem
         Caption = '&Equalize Weights'
         Hint = 'Set all weights to the same value'
-        ShortCut = 117
         OnClick = mnuEqualizeClick
       end
       object mnuNormalWeights: TMenuItem
         Caption = 'Compute  Weights'
         Hint = 'Compute weights from triangle areas'
-        ShortCut = 118
         OnClick = mnuNormalWeightsClick
       end
       object N7: TMenuItem
@@ -2745,7 +2741,7 @@ object MainForm: TMainForm
         Checked = True
         GroupIndex = 2
         RadioItem = True
-        ShortCut = 121
+        ShortCut = 122
         OnClick = mnuVRandomClick
       end
       object N8: TMenuItem
@@ -2756,16 +2752,16 @@ object MainForm: TMainForm
     object mnuScript: TMenuItem
       Caption = 'Script'
       object mnuRun: TMenuItem
-        Caption = 'Run "Default Animation"'
+        Caption = 'Run script'
         Hint = 'Run the currently loaded script'
         ImageIndex = 43
-        ShortCut = 119
+        ShortCut = 120
         OnClick = mnuRunClick
       end
       object mnuStop: TMenuItem
-        Caption = 'Stop'
+        Caption = 'Stop script'
         ImageIndex = 36
-        ShortCut = 16468
+        ShortCut = 121
         OnClick = mnuStopClick
       end
       object N15: TMenuItem
