@@ -54,7 +54,7 @@ object EditForm: TEditForm
   TextHeight = 13
   object StatusBar: TStatusBar
     Left = 0
-    Top = 543
+    Top = 544
     Width = 578
     Height = 15
     Panels = <
@@ -343,14 +343,14 @@ object EditForm: TEditForm
     Left = 0
     Top = 24
     Width = 578
-    Height = 519
+    Height = 520
     Align = alClient
     TabOrder = 1
     object Splitter1: TSplitter
       Left = 396
       Top = 1
       Width = 9
-      Height = 517
+      Height = 518
       Align = alRight
       AutoSnap = False
       Beveled = True
@@ -361,7 +361,7 @@ object EditForm: TEditForm
       Left = 1
       Top = 1
       Width = 395
-      Height = 517
+      Height = 518
       Align = alClient
       BevelOuter = bvNone
       Color = clAppWorkSpace
@@ -371,7 +371,7 @@ object EditForm: TEditForm
       Left = 405
       Top = 1
       Width = 172
-      Height = 517
+      Height = 518
       Align = alRight
       Alignment = taLeftJustify
       BevelOuter = bvNone
@@ -411,7 +411,7 @@ object EditForm: TEditForm
         Left = 0
         Top = 136
         Width = 172
-        Height = 381
+        Height = 382
         Align = alClient
         TabOrder = 0
         object lblTransform: TLabel
@@ -442,10 +442,10 @@ object EditForm: TEditForm
         end
         object PageControl: TPageControl
           Left = 1
-          Top = 26
+          Top = 27
           Width = 170
           Height = 354
-          ActivePage = TriangleTab
+          ActivePage = tabXForm
           Align = alBottom
           Anchors = [akLeft, akTop, akRight, akBottom]
           MultiLine = True

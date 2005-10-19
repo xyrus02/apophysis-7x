@@ -2543,7 +2543,7 @@ begin
     end;
   end;
   NewVal := Round6(StrToFloat(TEdit(Sender).Text));
-  if NewVal < 0 then NewVal := 0;
+  if NewVal < -1 then NewVal := -1;
   if NewVal > 1 then NewVal := 1;
     { If it's not the same as the old value and it was valid }
   TEdit(Sender).Text := Format('%.6g', [NewVal]);
@@ -2577,7 +2577,7 @@ begin
       end;
     end;
     NewVal := Round6(StrToFloat(TEdit(Sender).Text));
-    if NewVal < 0 then NewVal := 0;
+    if NewVal < -1 then NewVal := -1;
     if NewVal > 1 then NewVal := 1;
     { If it's not the same as the old value and it was valid }
     TEdit(Sender).Text := Format('%.6g', [NewVal]);
