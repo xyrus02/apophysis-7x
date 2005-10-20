@@ -95,7 +95,7 @@ object EditForm: TEditForm
       object tbResetAll: TToolButton
         Left = 0
         Top = 0
-        Hint = 'Reset all triangles to reference position'
+        Hint = 'New blank flame'
         Caption = 'Reset All'
         ImageIndex = 0
         ParentShowHint = False
@@ -1125,7 +1125,7 @@ object EditForm: TEditForm
               Width = 25
               Height = 21
               Hint = 'Reset point A'
-              Caption = 'A'
+              Caption = 'X'
               ParentShowHint = False
               ShowHint = False
               OnClick = btnXcoefsClick
@@ -1136,7 +1136,7 @@ object EditForm: TEditForm
               Width = 25
               Height = 21
               Hint = 'Reset point C'
-              Caption = 'C'
+              Caption = 'Y'
               ParentShowHint = False
               ShowHint = False
               OnClick = btnYcoefsClick
@@ -1147,7 +1147,7 @@ object EditForm: TEditForm
               Width = 25
               Height = 21
               Hint = 'Reset point B'
-              Caption = 'B'
+              Caption = 'O'
               ParentShowHint = False
               ShowHint = False
               OnClick = btnOcoefsClick
@@ -1575,7 +1575,7 @@ object EditForm: TEditForm
     Left = 353
     Top = 80
     Bitmap = {
-      494C01010E001300040010001000FFFFFFFFFF00FFFFFFFFFFFFFFFF424D3600
+      494C01010E001300040010001000FFFFFFFFFF10FFFFFFFFFFFFFFFF424D3600
       0000000000003600000028000000400000005000000001002000000000000050
       0000000000000000000000000000000000000000000000000000000000000000
       0000000000000000000000000000000000000000000000000000000000000000
@@ -2239,6 +2239,7 @@ object EditForm: TEditForm
       C003E001E001E001C003F1F9F1F9F1F9C003F8F90009D8D9C003FC7980098C09
       C003F239C609C619C003F319E309E219C003F389F189F009C003F3C1F8C1F8C1
       C0030021FC41F061C0070031FE01E231C00FF3F9FF09C719C01FF3FDFF8D8F8D
-      C03FF3FFFFCFDFDFFFFFF3FFFFEFFFFF}
+      C03FF3FFFFCFDFDFFFFFF3FFFFEFFFFF00000000000000000000000000000000
+      000000000000}
   end
 end
