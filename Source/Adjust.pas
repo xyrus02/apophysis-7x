@@ -257,9 +257,9 @@ type
 
     cp: TControlPoint;
 
-  private // --Z-- // gradient stuff
-    Palette: TColorMap;
-    BackupPal: TColorMap;
+  private // gradient stuff
+    Palette, BackupPal: TColorMap;
+    tmpBackupPal: TColorMap;
 
     scrollMode: (modeRotate,
                  modeHue, modeSaturation, modeBrightness, modeContrast,
@@ -275,7 +275,7 @@ type
 
     procedure UpdateGradient(Pal: TColorMap);
 
-  private // --Z-- // image size stuff
+  private // image size stuff
     ImageHeight, ImageWidth: integer;
     Preset: array[1..3] of record
       Left, Top, Width, Height: integer;
@@ -303,8 +303,6 @@ var
 function GradientInClipboard: boolean;
 procedure RGBToHSV(R, G, B: byte; var H, S, V: real);
 procedure HSVToRGB(H, S, V: real; var Rb, Gb, Bb: integer);
-
-//function RandomGradient: TColorMap;
 
 implementation
 
@@ -428,9 +426,9 @@ begin
     for i := 0 to 255 do
       with Row[i] do
       begin
-        rgbtRed   := Palette[i][0];
-        rgbtGreen := Palette[i][1];
-        rgbtBlue  := Palette[i][2];
+        rgbtRed   := cp.cmap[i][0];
+        rgbtGreen := cp.cmap[i][1];
+        rgbtBlue  := cp.cmap[i][2];
       end;
 
     GradientImage.Picture.Graphic := Bitmap;
@@ -1223,40 +1221,6 @@ begin
   end;
 end;
 
-{
-procedure TAdjustForm.DrawPalette;
-var
-  i: integer;
-  Row: pRGBTripleArray;
-  BitMap: TBitMap;
-begin
-  BitMap := TBitMap.Create;
-  try
-    Bitmap.PixelFormat := pf24bit;
-    BitMap.Width := 256;
-    BitMap.Height := 1;
-
-//for j := 0 to Bitmap.Height - 1 do // a loop from 0 to 0, hmm? :-\
-    Row := Bitmap.Scanline[0];
-    for i := 0 to Bitmap.Width - 1 do
-    begin
-      with Row[i] do
-      begin
-        rgbtRed := Palette[i][0];
-        rgbtGreen := Palette[i][1];
-        rgbtBlue := Palette[i][2];
-      end;
-    end;
-//end;
-
-    GradientImage.Picture.Graphic := Bitmap;
-    GradientImage.Refresh;
-  finally
-    BitMap.Free;
-  end;
-end;
-}
-
 procedure TAdjustForm.cmbPaletteChange(Sender: TObject);
 var
   i: integer;
@@ -1378,9 +1342,9 @@ begin
     modeRotate:
       for i := 0 to 255 do
       begin
-        Palette[i][0] := BackupPal[(255 + i - ScrollBar.Position) mod 256][0];
-        Palette[i][1] := BackupPal[(255 + i - ScrollBar.Position) mod 256][1];
-        Palette[i][2] := BackupPal[(255 + i - ScrollBar.Position) mod 256][2];
+        Palette[i][0] := BackupPal[(256 + i - ScrollBar.Position) mod 256][0];
+        Palette[i][1] := BackupPal[(256 + i - ScrollBar.Position) mod 256][1];
+        Palette[i][2] := BackupPal[(256 + i - ScrollBar.Position) mod 256][2];
       end;
     modeBlur:
       Palette := Blur(ScrollBar.Position, BackupPal);
@@ -1664,7 +1628,7 @@ begin
   begin
     dragX:=x;
     oldX:=x; // hmmm
-    BackupPal:=Palette; // hmmmm....
+    tmpBackupPal := BackupPal;
     imgDrag:=true;
     GradientChanged:=false;
   end;
@@ -1678,21 +1642,40 @@ begin
   if imgDrag and (oldX<>x) then
   begin
     oldX:=x;
-    offset := ( ((x - dragX) shl 8) div GradientImage.Width ) mod 256;
+    offset := ( ((x - dragX) shl 8) div GradientImage.Width) mod 256;
     lblOffset.Caption:=IntToStr(offset);
     lblOffset.Refresh;
     GradientChanged := true;
 
     for i := 0 to 255 do
     begin
-      Palette[i][0] := BackupPal[(256 + i - offset) and $FF][0];
-      Palette[i][1] := BackupPal[(256 + i - offset) and $FF][1];
-      Palette[i][2] := BackupPal[(256 + i - offset) and $FF][2];
-    end;
-    cp.CmapIndex := cmbPalette.ItemIndex;
-    cp.cmap := Palette;
+      cp.cmap[i][0] := Palette[(256 + i - offset) and $FF][0];
+      cp.cmap[i][1] := Palette[(256 + i - offset) and $FF][1];
+      cp.cmap[i][2] := Palette[(256 + i - offset) and $FF][2];
 
-    //if scrollMode = modeRotate then lblVal.Caption := IntToStr(offset);
+      BackupPal[i][0] := tmpBackupPal[(256 + i - offset) and $FF][0];
+      BackupPal[i][1] := tmpBackupPal[(256 + i - offset) and $FF][1];
+      BackupPal[i][2] := tmpBackupPal[(256 + i - offset) and $FF][2];
+    end;
+    //? cp.CmapIndex := cmbPalette.ItemIndex;
+    //cp.cmap := Palette;
+
+(*
+    if scrollMode = modeRotate then
+    begin
+      Resetting := true;
+      if offset < -128 then ScrollBar.Position := offset+256
+      else if offset > 128 then ScrollBar.Position := offset-256
+      else ScrollBar.Position := offset;
+      Resetting := false;
+    end
+    else for i := 0 to 255 do
+    begin
+      BackupPal[i][0] := tmpBackupPal[(256 + i - offset) and $FF][0];
+      BackupPal[i][1] := tmpBackupPal[(256 + i - offset) and $FF][1];
+      BackupPal[i][2] := tmpBackupPal[(256 + i - offset) and $FF][2];
+    end;
+*)
 
     DrawPreview;
   end;
@@ -1705,6 +1688,8 @@ begin
   begin
     imgDrag := false;
     lblOffset.Caption:='';
+
+    Palette := cp.cmap;
 
     if GradientChanged then Apply;
   end;
