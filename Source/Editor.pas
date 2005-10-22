@@ -282,6 +282,8 @@ type
     procedure btnOcoefsClick(Sender: TObject);
     procedure btnCoefsModeClick(Sender: TObject);
     procedure tbVarPreviewClick(Sender: TObject);
+    procedure trkVarPreviewRangeChange(Sender: TObject);
+    procedure trkVarPreviewDensityChange(Sender: TObject);
 
   private
     TriangleView: TCustomDrawControl;
@@ -953,7 +955,7 @@ var
     end;
   end;
 var
-  i: integer;
+  i, tc: integer;
   d, d1: double;
   tx, ty: double;
 
@@ -1070,8 +1072,9 @@ begin
 
         cp.xform[SelectedTriangle].prepare;
         //for i := 0 to Transforms-1 do cp.xform[i].prepare;
-        i := trkVarPreviewRange.position * trkVarPreviewDensity.position;
-        d1 := trkVarPreviewDensity.position;
+        i := trkVarPreviewRange.position * trkVarPreviewDensity.position * 5;
+        d1 := trkVarPreviewDensity.position * 5;
+        tc := GetTriangleColor(SelectedTriangle);
         for ax := -i to i do
           for ay := -i to i do
           begin
@@ -1080,7 +1083,7 @@ begin
             //cp.xform[random(Transforms)].nextpoint(tx,ty,d);
             cp.xform[SelectedTriangle].NextPoint(tx, ty, d); // d used as dummy var
             a := toscreen(tx,-ty);
-            Pixels[a.x, a.Y] := GetTriangleColor(SelectedTriangle);//$ffffff;
+            Pixels[a.x, a.Y] := {Pixels[a.x, a.Y] xor} tc;//$ffffff;
           end;
       end;
 
@@ -3502,6 +3505,18 @@ end;
 
 procedure TEditForm.tbVarPreviewClick(Sender: TObject);
 begin
+  TriangleView.Invalidate;
+end;
+
+procedure TEditForm.trkVarPreviewRangeChange(Sender: TObject);
+begin
+  trkVarPreviewRange.Hint := Format('Range: %d', [trkVarPreviewRange.position]);
+  TriangleView.Invalidate;
+end;
+
+procedure TEditForm.trkVarPreviewDensityChange(Sender: TObject);
+begin
+  trkVarPreviewDensity.Hint := Format('Density: %d', [trkVarPreviewDensity.position]);
   TriangleView.Invalidate;
 end;
 

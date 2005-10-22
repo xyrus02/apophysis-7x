@@ -390,7 +390,7 @@ object EditForm: TEditForm
           Top = 24
           Width = 170
           Height = 344
-          ActivePage = TriangleTab
+          ActivePage = tabColors
           Align = alBottom
           Anchors = [akLeft, akTop, akRight, akBottom]
           MultiLine = True
@@ -1486,30 +1486,28 @@ object EditForm: TEditForm
                 Top = 184
                 Width = 129
                 Height = 25
-                Hint = 'Variation preview density'
                 Min = 1
                 ParentShowHint = False
-                Position = 10
+                Position = 2
                 ShowHint = True
                 TabOrder = 7
                 TabStop = False
                 ThumbLength = 15
-                OnChange = tbVarPreviewClick
+                OnChange = trkVarPreviewDensityChange
               end
               object trkVarPreviewRange: TTrackBar
                 Left = 8
                 Top = 152
                 Width = 129
                 Height = 25
-                Hint = 'Variation preview range'
                 Min = 1
                 ParentShowHint = False
-                Position = 1
+                Position = 2
                 ShowHint = True
                 TabOrder = 8
                 TabStop = False
                 ThumbLength = 15
-                OnChange = tbVarPreviewClick
+                OnChange = trkVarPreviewRangeChange
               end
             end
           end
@@ -1631,7 +1629,7 @@ object EditForm: TEditForm
     Left = 353
     Top = 80
     Bitmap = {
-      494C01010F001300040010001000FFFFFFFFFF00FFFFFFFFFFFFFFFF424D3600
+      494C01010F001300040010001000FFFFFFFFFF10FFFFFFFFFFFFFFFF424D3600
       0000000000003600000028000000400000005000000001002000000000000050
       0000000000000000000000000000000000000000000000000000000000000000
       0000000000000000000000000000000000000000000000000000000000000000
@@ -2295,6 +2293,7 @@ object EditForm: TEditForm
       C003E001E001E001C003F1F9F1F9F1F9C003F8F90009D8D9C003FC7980098C09
       C003F239C609C619C003F319E309E219C003F389F189F009C003F3C1F8C1F8C1
       C0030021FC41F061C0070031FE01E231C00FF3F9FF09C719C01FF3FDFF8D8F8D
-      C03FF3FFFFCFDFDFFFFFF3FFFFEFFFFF}
+      C03FF3FFFFCFDFDFFFFFF3FFFFEFFFFF00000000000000000000000000000000
+      000000000000}
   end
 end
