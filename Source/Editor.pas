@@ -152,6 +152,11 @@ type
     btnCoefsRect: TSpeedButton;
     btnCoefsPolar: TSpeedButton;
     chkPreserve: TCheckBox;
+    Label1: TLabel;
+    trkVarPreviewDensity: TTrackBar;
+    trkVarPreviewRange: TTrackBar;
+    ToolButton2: TToolButton;
+    tbVarPreview: TToolButton;
     procedure ValidateVariable;
     procedure vleVariablesValidate(Sender: TObject; ACol, ARow: Integer; const KeyName, KeyValue: string);
     procedure vleVariablesKeyPress(Sender: TObject; var Key: Char);
@@ -276,6 +281,7 @@ type
     procedure btnYcoefsClick(Sender: TObject);
     procedure btnOcoefsClick(Sender: TObject);
     procedure btnCoefsModeClick(Sender: TObject);
+    procedure tbVarPreviewClick(Sender: TObject);
 
   private
     TriangleView: TCustomDrawControl;
@@ -298,10 +304,12 @@ type
     varDragPos, varDragOld: integer;
     varMM: boolean; //hack?
 
+{
     spinnerMode: boolean;
     spinnerOld, spinnerPos: integer;
     spinnerValue: double;
     SpinnerAssoc: TEdit;
+}
 
     // --Z-- variables moved from outside
     GraphZoom: double;
@@ -1055,6 +1063,26 @@ begin
         TextOut(a.x+2, a.y+1, 'A');
       end;
 
+      if tbVarPreview.Down then
+      begin
+        assert(trkVarPreviewRange.position > 0);
+        assert(trkVarPreviewDensity.position > 0);
+
+        cp.xform[SelectedTriangle].prepare;
+        //for i := 0 to Transforms-1 do cp.xform[i].prepare;
+        i := trkVarPreviewRange.position * trkVarPreviewDensity.position;
+        d1 := trkVarPreviewDensity.position;
+        for ax := -i to i do
+          for ay := -i to i do
+          begin
+            tx := ax / d1;
+            ty := ay / d1;
+            //cp.xform[random(Transforms)].nextpoint(tx,ty,d);
+            cp.xform[SelectedTriangle].NextPoint(tx, ty, d); // d used as dummy var
+            a := toscreen(tx,-ty);
+            Pixels[a.x, a.Y] := GetTriangleColor(SelectedTriangle);//$ffffff;
+          end;
+      end;
 
       if (TriangleCaught or CornerCaught) then // if dragging, draw pivot axis
       begin
@@ -1834,6 +1862,14 @@ begin
         mnuResetLoc.checked := Registry.ReadBool('ResetLocation')
       else mnuResetLoc.checked := true;
       //tbResetLoc.Down := mnuResetLoc.checked;
+
+      if Registry.ValueExists('VariationPreview') then
+        tbVarPreview.Down := Registry.ReadBool('VariationPreview')
+      else tbVarPreview.Down := false;
+      if Registry.ValueExists('VariationPreviewRange') then
+        trkVarPreviewRange.Position := Registry.ReadInteger('VariationPreviewRange');
+      if Registry.ValueExists('VariationPreviewDensity') then
+        trkVarPreviewDensity.Position := Registry.ReadInteger('VariationPreviewDensity');
     end
     else begin
       UseTransformColors := False;
@@ -2133,6 +2169,9 @@ begin
       Registry.WriteInteger('HelpersColor', HelpersColor);
       Registry.WriteInteger('ReferenceTriangleColor', ReferenceTriangleColor);
       Registry.WriteBool('ResetLocation', mnuResetLoc.checked);
+      Registry.WriteBool('VariationPreview', tbVarPreview.Down);
+      Registry.WriteInteger('VariationPreviewRange', trkVarPreviewRange.Position);
+      Registry.WriteInteger('VariationPreviewDensity', trkVarPreviewDensity.Position);
       { Size and position }
       if EditForm.WindowState <> wsMaximized then begin
         Registry.WriteInteger('Top', EditForm.Top);
@@ -3459,6 +3498,11 @@ end;
 procedure TEditForm.btnCoefsModeClick(Sender: TObject);
 begin
   ShowSelectedInfo;
+end;
+
+procedure TEditForm.tbVarPreviewClick(Sender: TObject);
+begin
+  TriangleView.Invalidate;
 end;
 
 end.
