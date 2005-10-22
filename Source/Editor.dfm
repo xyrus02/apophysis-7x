@@ -390,7 +390,7 @@ object EditForm: TEditForm
           Top = 24
           Width = 170
           Height = 344
-          ActivePage = tabColors
+          ActivePage = TriangleTab
           Align = alBottom
           Anchors = [akLeft, akTop, akRight, akBottom]
           MultiLine = True
@@ -1486,8 +1486,10 @@ object EditForm: TEditForm
                 Top = 184
                 Width = 129
                 Height = 25
+                Max = 5
                 Min = 1
                 ParentShowHint = False
+                PageSize = 1
                 Position = 2
                 ShowHint = True
                 TabOrder = 7
