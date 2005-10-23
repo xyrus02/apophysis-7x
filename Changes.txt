@@ -1,5 +1,6 @@
 2.03a
 + Fixed save flame naming problem
++ Integration with 2.02z
 + Save png transparent images
 + multithread rendering
 + Parameterized variations
