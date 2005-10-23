@@ -1073,20 +1073,19 @@ begin
         assert(trkVarPreviewDensity.position > 0);
 
         cp.xform[SelectedTriangle].prepare;
-        //for i := 0 to Transforms-1 do cp.xform[i].prepare;
         n := trkVarPreviewRange.position * trkVarPreviewDensity.position * 5;
         d1 := trkVarPreviewDensity.position * 5;
         tc := GetTriangleColor(SelectedTriangle);
         for ax := -n to n do
           for ay := -n to n do
-          begin
+          try
             tx := ax / d1;
             ty := ay / d1;
-            //cp.xform[random(Transforms)].nextpoint(tx,ty,d);
             for i := 1 to trkVarPreviewDepth.position do
               cp.xform[SelectedTriangle].NextPoint(tx, ty, d); // d used as dummy var
             a := toscreen(tx,-ty);
-            Pixels[a.x, a.Y] := {Pixels[a.x, a.Y] xor} tc;//$ffffff;
+            Pixels[a.x, a.Y] := {Pixels[a.x, a.Y] xor} tc;
+          except
           end;
       end;
 
