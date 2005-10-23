@@ -107,27 +107,8 @@ begin
       format('vibrancy="%g" ', [cp1.vibrancy]) + hue + url + nick + '>');
    { Write transform parameters }
     t := NumXForms(cp1);
-    for i := 0 to t - 1 do
-    begin
-      with cp1.xform[i] do
-      begin
-        a := c[0][0];
-        b := c[1][0];
-        cc := c[0][1];
-        d := c[1][1];
-        e := c[2][0];
-        f := c[2][1];
-        varlist := '';
-        for j := 0 to NRVAR - 1 do
-        begin
-          if vars[j] <> 0 then
-          begin
-            varlist := varlist + varnames(j) + format('="%f" ', [vars[j]]);
-          end;
-        end;
-        FileList.Add(Format('   <xform weight="%g" color="%g" symmetry="%g" ', [density, color, symmetry]) +
-          varlist + Format('coefs="%g %g %g %g %g %g"/>', [a, cc, b, d, e, f]));
-      end;
+    for i := 0 to t - 1 do begin
+      FileList.Add(cp1.xform[i].ToXMLString);
     end;
    { Write palette data }
     if not sheep then begin
