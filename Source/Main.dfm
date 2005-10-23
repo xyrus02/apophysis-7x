@@ -2,7 +2,7 @@ object MainForm: TMainForm
   Left = 387
   Top = 166
   Width = 605
-  Height = 615
+  Height = 635
   Caption = 'Apophysis'
   Color = clBtnFace
   Font.Charset = ANSI_CHARSET
@@ -27,7 +27,7 @@ object MainForm: TMainForm
     Left = 160
     Top = 28
     Width = 4
-    Height = 520
+    Height = 534
   end
   object ToolBar: TToolBar
     Left = 0
@@ -284,7 +284,7 @@ object MainForm: TMainForm
     Left = 0
     Top = 28
     Width = 160
-    Height = 520
+    Height = 534
     Align = alLeft
     Columns = <
       item
@@ -303,7 +303,7 @@ object MainForm: TMainForm
     Left = 164
     Top = 28
     Width = 433
-    Height = 520
+    Height = 534
     Align = alClient
     BevelInner = bvLowered
     BevelOuter = bvNone
@@ -314,7 +314,7 @@ object MainForm: TMainForm
       Left = 1
       Top = 1
       Width = 431
-      Height = 518
+      Height = 532
       Align = alClient
       AutoSize = True
       PopupMenu = DisplayPopup
@@ -327,7 +327,7 @@ object MainForm: TMainForm
   end
   object StatusBar: TStatusBar
     Left = 0
-    Top = 548
+    Top = 562
     Width = 597
     Height = 19
     Panels = <
@@ -2600,13 +2600,15 @@ object MainForm: TMainForm
       end
       object mnuCopy: TMenuItem
         Caption = 'Copy'
-        Hint = 'Copy as UPR (Ctrl+C)|Copies a UPR to the clipboard'
+        Hint = 'Copy |Copies a flame to the clipboard'
         ImageIndex = 7
+        ShortCut = 16451
         OnClick = mnuCopyClick
       end
       object mnuPaste: TMenuItem
         Caption = 'Paste'
         ImageIndex = 8
+        ShortCut = 16470
         OnClick = mnuPasteClick
       end
       object N20: TMenuItem
