@@ -11,9 +11,21 @@ File_8=SourceModule,'C:\PROJ32\gl\src\FCatalog.pas',0,1,582,6,610,0,0
 File_9=SourceModule,'C:\PROJ32\gl\src\kierterm.pas',0,1,622,1,647,0,0
 
 [Modules]
-Module0=X:\Code\Delphi\Apophysis\2.02h\Project\delphi6\FlameSS.dpr
-Count=1
+Module0=X:\Code\Delphi\Apophysis\2.10\ScreenSaver\ScrConfig.pas
+Module1=X:\Code\Delphi\Apophysis\2.10\source\ImageMaker.pas
+Module2=X:\Code\Delphi\Apophysis\2.02h\Project\delphi6\FlameSS.dpr
+Count=3
 EditWindowCount=1
+
+[X:\Code\Delphi\Apophysis\2.10\ScreenSaver\ScrConfig.pas]
+ModuleType=SourceModule
+FormState=0
+FormOnTop=0
+
+[X:\Code\Delphi\Apophysis\2.10\source\ImageMaker.pas]
+ModuleType=SourceModule
+FormState=0
+FormOnTop=0
 
 [X:\Code\Delphi\Apophysis\2.02h\Project\delphi6\FlameSS.dpr]
 ModuleType=SourceModule
@@ -24,10 +36,16 @@ FormOnTop=0
 FormState=0
 FormOnTop=0
 
+[X:\Code\Delphi\Apophysis\2.10\Project\delphi6\FlameSS.dpr]
+FormState=0
+FormOnTop=0
+
 [EditWindow0]
-ViewCount=1
-CurrentView=0
+ViewCount=3
+CurrentView=2
 View0=0
+View1=1
+View2=2
 CodeExplorer=CodeExplorer@EditWindow0
 MessageView=MessageView@EditWindow0
 Create=1
@@ -43,15 +61,29 @@ ClientWidth=1008
 ClientHeight=846
 LeftPanelSize=0
 RightPanelSize=0
-BottomPanelSize=0
+BottomPanelSize=52
 BottomPanelClients=MessageView@EditWindow0
-BottomPanelData=00000400010000000B0000004D6573736167655669657700000000000000000000000000000000000100000000000000000B0000004D65737361676556696577FFFFFFFF
+BottomPanelData=000004000000000000000000000000000000000000000000000100000000000000000B0000004D65737361676556696577FFFFFFFF
 
 [View0]
 Module=X:\Code\Delphi\Apophysis\2.02h\Project\delphi6\FlameSS.dpr
 CursorX=46
 CursorY=16
 TopLine=1
+LeftCol=1
+
+[View1]
+Module=X:\Code\Delphi\Apophysis\2.10\source\ImageMaker.pas
+CursorX=19
+CursorY=57
+TopLine=29
+LeftCol=1
+
+[View2]
+Module=X:\Code\Delphi\Apophysis\2.10\ScreenSaver\ScrConfig.pas
+CursorX=62
+CursorY=93
+TopLine=46
 LeftCol=1
 
 [Watches]
@@ -241,7 +273,7 @@ Dockable=1
 
 [MessageView@EditWindow0]
 Create=1
-Visible=0
+Visible=1
 State=0
 Left=12
 Top=0
