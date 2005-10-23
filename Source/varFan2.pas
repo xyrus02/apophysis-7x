@@ -57,8 +57,8 @@ begin
   else
     a := Angle + dx2;
 
-  FPx^ := FPx^ + vvar * r * sin(Angle);
-  FPy^ := FPy^ + vvar * r * cos(Angle);
+  FPx^ := FPx^ + vvar * r * sin(a);
+  FPy^ := FPy^ + vvar * r * cos(a);
 end;
 
 ///////////////////////////////////////////////////////////////////////////////
