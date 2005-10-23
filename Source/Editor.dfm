@@ -54,7 +54,7 @@ object EditForm: TEditForm
   TextHeight = 13
   object StatusBar: TStatusBar
     Left = 0
-    Top = 533
+    Top = 527
     Width = 578
     Height = 15
     Panels = <
@@ -289,14 +289,14 @@ object EditForm: TEditForm
     Left = 0
     Top = 24
     Width = 578
-    Height = 509
+    Height = 503
     Align = alClient
     TabOrder = 1
     object Splitter1: TSplitter
       Left = 396
       Top = 1
       Width = 9
-      Height = 507
+      Height = 501
       Align = alRight
       AutoSnap = False
       Beveled = True
@@ -307,7 +307,7 @@ object EditForm: TEditForm
       Left = 1
       Top = 1
       Width = 395
-      Height = 507
+      Height = 501
       Align = alClient
       BevelOuter = bvNone
       Color = clAppWorkSpace
@@ -317,7 +317,7 @@ object EditForm: TEditForm
       Left = 405
       Top = 1
       Width = 172
-      Height = 507
+      Height = 501
       Align = alRight
       Alignment = taLeftJustify
       BevelOuter = bvNone
@@ -356,7 +356,7 @@ object EditForm: TEditForm
         Left = 0
         Top = 138
         Width = 172
-        Height = 369
+        Height = 363
         Align = alClient
         TabOrder = 0
         object lblTransform: TLabel
@@ -389,8 +389,8 @@ object EditForm: TEditForm
           Left = 1
           Top = 24
           Width = 170
-          Height = 344
-          ActivePage = TriangleTab
+          Height = 338
+          ActivePage = tabVariations
           Align = alBottom
           Anchors = [akLeft, akTop, akRight, akBottom]
           MultiLine = True
@@ -402,7 +402,7 @@ object EditForm: TEditForm
               Left = 0
               Top = 0
               Width = 162
-              Height = 298
+              Height = 292
               HorzScrollBar.Visible = False
               VertScrollBar.Smooth = True
               VertScrollBar.Style = ssFlat
@@ -1279,7 +1279,7 @@ object EditForm: TEditForm
               Left = 0
               Top = 0
               Width = 162
-              Height = 298
+              Height = 292
               Align = alClient
               ScrollBars = ssVertical
               TabOrder = 0
