@@ -1,8 +1,8 @@
 object EditForm: TEditForm
   Left = 279
-  Top = 240
+  Top = 234
   Width = 586
-  Height = 576
+  Height = 582
   Caption = 'Transform Editor'
   Color = clBtnFace
   Constraints.MinHeight = 400
@@ -54,7 +54,7 @@ object EditForm: TEditForm
   TextHeight = 13
   object StatusBar: TStatusBar
     Left = 0
-    Top = 527
+    Top = 539
     Width = 578
     Height = 15
     Panels = <
@@ -289,14 +289,14 @@ object EditForm: TEditForm
     Left = 0
     Top = 24
     Width = 578
-    Height = 503
+    Height = 515
     Align = alClient
     TabOrder = 1
     object Splitter1: TSplitter
       Left = 396
       Top = 1
       Width = 9
-      Height = 501
+      Height = 513
       Align = alRight
       AutoSnap = False
       Beveled = True
@@ -307,7 +307,7 @@ object EditForm: TEditForm
       Left = 1
       Top = 1
       Width = 395
-      Height = 501
+      Height = 513
       Align = alClient
       BevelOuter = bvNone
       Color = clAppWorkSpace
@@ -317,7 +317,7 @@ object EditForm: TEditForm
       Left = 405
       Top = 1
       Width = 172
-      Height = 501
+      Height = 513
       Align = alRight
       Alignment = taLeftJustify
       BevelOuter = bvNone
@@ -356,7 +356,7 @@ object EditForm: TEditForm
         Left = 0
         Top = 138
         Width = 172
-        Height = 363
+        Height = 375
         Align = alClient
         TabOrder = 0
         object lblTransform: TLabel
@@ -387,10 +387,10 @@ object EditForm: TEditForm
         end
         object PageControl: TPageControl
           Left = 1
-          Top = 24
+          Top = 30
           Width = 170
-          Height = 338
-          ActivePage = tabVariations
+          Height = 344
+          ActivePage = TriangleTab
           Align = alBottom
           Anchors = [akLeft, akTop, akRight, akBottom]
           MultiLine = True
@@ -402,7 +402,7 @@ object EditForm: TEditForm
               Left = 0
               Top = 0
               Width = 162
-              Height = 292
+              Height = 298
               HorzScrollBar.Visible = False
               VertScrollBar.Smooth = True
               VertScrollBar.Style = ssFlat
@@ -1279,7 +1279,7 @@ object EditForm: TEditForm
               Left = 0
               Top = 0
               Width = 162
-              Height = 292
+              Height = 298
               Align = alClient
               ScrollBars = ssVertical
               TabOrder = 0
@@ -1484,7 +1484,7 @@ object EditForm: TEditForm
               object trkVarPreviewDensity: TTrackBar
                 Left = 8
                 Top = 184
-                Width = 129
+                Width = 65
                 Height = 25
                 Max = 5
                 Min = 1
@@ -1504,12 +1504,29 @@ object EditForm: TEditForm
                 Height = 25
                 Min = 1
                 ParentShowHint = False
+                PageSize = 1
                 Position = 2
                 ShowHint = True
                 TabOrder = 8
                 TabStop = False
                 ThumbLength = 15
                 OnChange = trkVarPreviewRangeChange
+              end
+              object trkVarPreviewDepth: TTrackBar
+                Left = 72
+                Top = 184
+                Width = 65
+                Height = 25
+                Max = 5
+                Min = 1
+                ParentShowHint = False
+                PageSize = 1
+                Position = 1
+                ShowHint = True
+                TabOrder = 9
+                TabStop = False
+                ThumbLength = 15
+                OnChange = trkVarPreviewDepthChange
               end
             end
           end

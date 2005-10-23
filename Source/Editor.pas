@@ -157,6 +157,7 @@ type
     trkVarPreviewRange: TTrackBar;
     ToolButton2: TToolButton;
     tbVarPreview: TToolButton;
+    trkVarPreviewDepth: TTrackBar;
     procedure ValidateVariable;
     procedure vleVariablesValidate(Sender: TObject; ACol, ARow: Integer; const KeyName, KeyValue: string);
     procedure vleVariablesKeyPress(Sender: TObject; var Key: Char);
@@ -284,6 +285,7 @@ type
     procedure tbVarPreviewClick(Sender: TObject);
     procedure trkVarPreviewRangeChange(Sender: TObject);
     procedure trkVarPreviewDensityChange(Sender: TObject);
+    procedure trkVarPreviewDepthChange(Sender: TObject);
 
   private
     TriangleView: TCustomDrawControl;
@@ -955,7 +957,7 @@ var
     end;
   end;
 var
-  i, tc: integer;
+  i, n, tc: integer;
   d, d1: double;
   tx, ty: double;
 
@@ -1072,16 +1074,17 @@ begin
 
         cp.xform[SelectedTriangle].prepare;
         //for i := 0 to Transforms-1 do cp.xform[i].prepare;
-        i := trkVarPreviewRange.position * trkVarPreviewDensity.position * 5;
+        n := trkVarPreviewRange.position * trkVarPreviewDensity.position * 5;
         d1 := trkVarPreviewDensity.position * 5;
         tc := GetTriangleColor(SelectedTriangle);
-        for ax := -i to i do
-          for ay := -i to i do
+        for ax := -n to n do
+          for ay := -n to n do
           begin
             tx := ax / d1;
             ty := ay / d1;
             //cp.xform[random(Transforms)].nextpoint(tx,ty,d);
-            cp.xform[SelectedTriangle].NextPoint(tx, ty, d); // d used as dummy var
+            for i := 1 to trkVarPreviewDepth.position do
+              cp.xform[SelectedTriangle].NextPoint(tx, ty, d); // d used as dummy var
             a := toscreen(tx,-ty);
             Pixels[a.x, a.Y] := {Pixels[a.x, a.Y] xor} tc;//$ffffff;
           end;
@@ -1873,6 +1876,8 @@ begin
         trkVarPreviewRange.Position := Registry.ReadInteger('VariationPreviewRange');
       if Registry.ValueExists('VariationPreviewDensity') then
         trkVarPreviewDensity.Position := Registry.ReadInteger('VariationPreviewDensity');
+      if Registry.ValueExists('VariationPreviewDepth') then
+        trkVarPreviewDepth.Position := Registry.ReadInteger('VariationPreviewDepth');
     end
     else begin
       UseTransformColors := False;
@@ -2175,6 +2180,7 @@ begin
       Registry.WriteBool('VariationPreview', tbVarPreview.Down);
       Registry.WriteInteger('VariationPreviewRange', trkVarPreviewRange.Position);
       Registry.WriteInteger('VariationPreviewDensity', trkVarPreviewDensity.Position);
+      Registry.WriteInteger('VariationPreviewDepth', trkVarPreviewDepth.Position);
       { Size and position }
       if EditForm.WindowState <> wsMaximized then begin
         Registry.WriteInteger('Top', EditForm.Top);
@@ -3517,6 +3523,12 @@ end;
 procedure TEditForm.trkVarPreviewDensityChange(Sender: TObject);
 begin
   trkVarPreviewDensity.Hint := Format('Density: %d', [trkVarPreviewDensity.position]);
+  TriangleView.Invalidate;
+end;
+
+procedure TEditForm.trkVarPreviewDepthChange(Sender: TObject);
+begin
+  trkVarPreviewDepth.Hint := Format('Depth: %d', [trkVarPreviewDepth.position]);
   TriangleView.Invalidate;
 end;
 
