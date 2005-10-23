@@ -366,8 +366,12 @@ begin
   Progress(1);
 end;
 
+// global variable for reuse in follong slices
+var
+  MaxA: int64;
+
 ///////////////////////////////////////////////////////////////////////////////
-// michael baranov transparancy code forrm flamesong used
+// michael baranov transparancy code from flamesong
 procedure TImageMaker.CreateImage_MB(YOffset: integer);
 var
   gamma: double;
@@ -390,7 +394,6 @@ var
   gutter_width: integer;
   k1, k2: double;
   area: double;
-  MaxA: int64;
   ACount: double;
   RCount: double;
   GCount: double;
@@ -404,7 +407,7 @@ begin
   if fcp.gamma = 0 then
     gamma := fcp.gamma
   else
-    gamma := 1 / fcp.gamma;
+    gamma := 1 / (2* fcp.gamma);
   vib := round(fcp.vibrancy * 256.0);
   notvib := 256 - vib;
 
@@ -427,15 +430,19 @@ begin
     lsa[i] := (k1 * log10(1 + fcp.White_level * i * k2)) / (fcp.White_level * i);
   end;
 
-  MaxA := 0;
-  bucketpos := 0;
-  for i := 0 to fcp.Height - 1 do begin
-    for j := 0 to fcp.Width - 1 do begin
-      MaxA := Max(MaxA, FBuckets[bucketpos].Count);
-      Inc(bucketpos, FOversample);
+  // only do this for the first slice
+  // TODO: should be nicer always using a image wide value 
+  if YOffset = 0 then begin
+    MaxA := 0;
+    bucketpos := 0;
+    for i := 0 to fcp.Height - 1 do begin
+      for j := 0 to fcp.Width - 1 do begin
+        MaxA := Max(MaxA, FBuckets[bucketpos].Count);
+        Inc(bucketpos, FOversample);
+      end;
+      Inc(bucketpos, gutter_width);
+      Inc(bucketpos, (FOversample - 1) * FBucketWidth);
     end;
-    Inc(bucketpos, gutter_width);
-    Inc(bucketpos, (FOversample - 1) * FBucketWidth);
   end;
 
   offsetLow := 0;
