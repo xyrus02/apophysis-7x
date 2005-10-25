@@ -912,7 +912,7 @@ procedure TMainForm.UpdateUndo;
 begin
   SaveFlame(MainCp, Format('%.4d-', [UndoIndex]) + MainCp.name, AppPath + 'apophysis.undo');
   Inc(UndoIndex);
-  inc(UndoMax);
+  UndoMax := UndoIndex; //Inc(UndoMax);
   mnuSaveUndo.Enabled := true;
   mnuUndo.Enabled := True;
   mnuPopUndo.Enabled := True;
@@ -1294,8 +1294,8 @@ begin
       if EntryExists(title, filename) then DeleteEntry(title, fileName);
       Append(IFile);
     end
-    else
-      ReWrite(IFile);
+    else ReWrite(IFile);
+
     sl := TStringList.Create;
     try
       cp1.SaveToStringList(sl);
@@ -1305,8 +1305,8 @@ begin
       for i := 0 to 255 do
       begin
         WriteLn(IFile, IntToStr(cp1.cmap[i][0]) + ' ' +
-          IntToStr(cp1.cmap[i][1]) + ' ' +
-          IntToStr(cp1.cmap[i][2]))
+                       IntToStr(cp1.cmap[i][1]) + ' ' +
+                       IntToStr(cp1.cmap[i][2]))
       end;
       WriteLn(IFile, ' }');
     finally
@@ -3250,7 +3250,7 @@ begin
   StopThread;
   Inc(UndoIndex);
 
-  assert(UndoIndex < UndoMax, 'Undo list index out of range!');
+  assert(UndoIndex <= UndoMax, 'Undo list index out of range!');
 
   LoadUndoFlame(UndoIndex, AppPath + 'apophysis.undo');
   mnuUndo.Enabled := True;
