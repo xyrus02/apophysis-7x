@@ -1,3 +1,10 @@
+2.03b
++ Fixed swapped rings and fan variations
++ Fixed Contrast button label
++ Fixed "Undo list index out of range" bug
++ Added new variation: bubble
++ Some minor fixes
+
 2.03a
 + Fixed save flame naming problem
 + Integration with 2.02z
