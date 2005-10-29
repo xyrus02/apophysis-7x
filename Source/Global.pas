@@ -113,6 +113,7 @@ var
   { For random gradients }
   MinNodes, MaxNodes, MinHue, MaxHue, MinSat, MaxSat, MinLum, MaxLum: integer;
   ReferenceMode: integer;//FixedReference: boolean;
+  MainForm_RotationMode: integer;
   BatchSize: Integer;
   Compatibility: integer; //0 = original, 1 = Drave's
   Favorites: TStringList;

@@ -116,9 +116,6 @@ type
     udMinMutate: TUpDown;
     udMaxMutate: TUpDown;
     udSymOrder: TUpDown;
-    GroupBox1: TGroupBox;
-    txtBatchSize: TEdit;
-    udBatchSize: TUpDown;
     GroupBox9: TGroupBox;
     Label20: TLabel;
     Label21: TLabel;
@@ -181,6 +178,11 @@ type
     Label24: TLabel;
     txtSymNVars: TEdit;
     udSymNVars: TUpDown;
+    rgRotationMode: TRadioGroup;
+    txtBatchSize: TEdit;
+    udBatchSize: TUpDown;
+    Label38: TLabel;
+    Label39: TLabel;
     procedure btnCancelClick(Sender: TObject);
     procedure FormShow(Sender: TObject);
     procedure btnOKClick(Sender: TObject);
@@ -231,7 +233,7 @@ var
   Registry: TRegistry;
   i: integer;
 begin
-  { Read posution from registry }
+  { Read position from registry }
   Registry := TRegistry.Create;
   try
     Registry.RootKey := HKEY_CURRENT_USER;
@@ -254,7 +256,8 @@ begin
   txtTryLength.text := IntToStr(Trylength);
   chkConfirmDel.Checked := ConfirmDelete;
   txtJPEGQuality.text := IntToStr(JPEGQuality);
-  rgReferenceMode.IteMindex := ReferenceMode;
+  rgReferenceMode.ItemIndex := ReferenceMode;
+  rgRotationMode.ItemIndex := MainForm_RotationMode;
   udBatchSize.Position := BatchSize;
   chkResize.checked := ResizeOnLoad;
   rgTransparency.ItemIndex :=  PNGTransparency;
@@ -369,6 +372,7 @@ begin
   NrTreads := StrToIntDef(cbNrTheads.text, 0);
   ConfirmDelete := chkConfirmDel.Checked;
   ReferenceMode := rgReferenceMode.ItemIndex;
+  MainForm_RotationMode := rgRotationMode.ItemIndex;
   ResizeOnLoad := chkResize.checked;
   { Display tab }
   defSampleDensity := StrToFloat(txtSampleDensity.Text);

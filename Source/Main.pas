@@ -77,9 +77,6 @@ type
     mnuListRename: TMenuItem;
     DisplayPopup: TPopupMenu;
     mnuPopCopyUPR: TMenuItem;
-    mnuHiddenGraph: TMenuItem;
-    mnuAutoZoom: TMenuItem;
-    mnuDelete: TMenuItem;
     RedrawTimer: TTimer;
     mnuVar: TMenuItem;
     mnuVRandom: TMenuItem;
@@ -124,7 +121,6 @@ type
     mnuResetLocation: TMenuItem;
     N4: TMenuItem;
     N14: TMenuItem;
-    mnuRefresh: TMenuItem;
     mnuSaveUndo: TMenuItem;
     N2: TMenuItem;
     ToolButton1: TToolButton;
@@ -154,7 +150,6 @@ type
     N9: TMenuItem;
     N10: TMenuItem;
     mnuManageFavorites: TMenuItem;
-    mnuShowFull: TMenuItem;
     mnuImageSize: TMenuItem;
     N13: TMenuItem;
     ApplicationEvents: TApplicationEvents;
@@ -207,7 +202,6 @@ type
     procedure BackPanelResize(Sender: TObject);
     procedure mnuNextClick(Sender: TObject);
     procedure mnuPreviousClick(Sender: TObject);
-    procedure mnuAutoZoomClick(Sender: TObject);
     procedure RedrawTimerTimer(Sender: TObject);
     procedure FormShow(Sender: TObject);
     procedure MainFileClick(Sender: TObject);
@@ -2326,12 +2320,6 @@ begin
   end;
 end;
 
-
-procedure TMainForm.mnuAutoZoomClick(Sender: TObject);
-begin
-  EditForm.AutoZoom; // redraw included
-end;
-
 function GradTitle(str: string): string;
 var
   p: integer;
@@ -4274,7 +4262,8 @@ begin
 
         StopThread;
         UpdateUndo;
-        MainCp.Rotate(-FRotateAngle); // "-" by Zueuk
+        if MainForm_RotationMode = 0 then MainCp.Rotate(FRotateAngle)
+        else MainCp.Rotate(-FRotateAngle);
 
         RedrawTimer.Enabled := True;
         UpdateWindows;

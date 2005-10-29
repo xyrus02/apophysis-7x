@@ -52,23 +52,23 @@ object OptionsForm: TOptionsForm
       Caption = 'General'
       object chkConfirmDel: TCheckBox
         Left = 144
-        Top = 139
+        Top = 135
         Width = 97
         Height = 17
         HelpContext = 1005
         Caption = 'Confirm delete'
-        TabOrder = 5
+        TabOrder = 4
       end
       object JPEG: TGroupBox
         Left = 8
-        Top = 72
+        Top = 132
         Width = 121
-        Height = 57
+        Height = 53
         Caption = 'JPEG Quality'
-        TabOrder = 1
+        TabOrder = 0
         object txtJPEGquality: TComboBox
           Left = 16
-          Top = 24
+          Top = 20
           Width = 89
           Height = 21
           ItemHeight = 13
@@ -82,50 +82,21 @@ object OptionsForm: TOptionsForm
             '120')
         end
       end
-      object GroupBox1: TGroupBox
-        Left = 8
-        Top = 4
-        Width = 121
-        Height = 57
-        Caption = 'Batch size'
-        TabOrder = 0
-        object txtBatchSize: TEdit
-          Left = 16
-          Top = 24
-          Width = 73
-          Height = 21
-          HelpContext = 1004
-          TabOrder = 0
-          Text = '100'
-        end
-        object udBatchSize: TUpDown
-          Left = 89
-          Top = 24
-          Width = 13
-          Height = 21
-          Associate = txtBatchSize
-          Min = 1
-          Max = 300
-          Position = 100
-          TabOrder = 1
-          Thousands = False
-        end
-      end
       object chkResize: TCheckBox
         Left = 144
-        Top = 157
+        Top = 153
         Width = 169
         Height = 17
         Caption = 'Resize on load'
-        TabOrder = 6
+        TabOrder = 5
       end
       object GroupBox16: TGroupBox
         Left = 8
-        Top = 134
+        Top = 4
         Width = 121
-        Height = 59
-        Caption = 'Nr processors'
-        TabOrder = 2
+        Height = 69
+        Caption = 'Multithreading'
+        TabOrder = 1
         object cbNrTheads: TComboBox
           Left = 16
           Top = 24
@@ -144,11 +115,11 @@ object OptionsForm: TOptionsForm
       end
       object chkShowTransparency: TCheckBox
         Left = 144
-        Top = 175
+        Top = 171
         Width = 169
         Height = 17
         Caption = 'Show Transparency'
-        TabOrder = 7
+        TabOrder = 6
       end
       object rgReferenceMode: TRadioGroup
         Left = 280
@@ -161,7 +132,7 @@ object OptionsForm: TOptionsForm
           'Normal'
           'Proportional'
           'Wandering (old-style)')
-        TabOrder = 4
+        TabOrder = 3
       end
       object rgTransparency: TRadioGroup
         Left = 136
@@ -173,7 +144,18 @@ object OptionsForm: TOptionsForm
           'No transparency'
           'Flam3-style'
           'Flamesong-style')
-        TabOrder = 3
+        TabOrder = 2
+      end
+      object rgRotationMode: TRadioGroup
+        Left = 8
+        Top = 76
+        Width = 121
+        Height = 53
+        Caption = 'Rotation Mode'
+        Items.Strings = (
+          'Rotate image'
+          'Rotate frame')
+        TabOrder = 7
       end
     end
     object DisplayPage: TTabSheet
@@ -398,7 +380,7 @@ object OptionsForm: TOptionsForm
       end
       object chkKeepBackground: TCheckBox
         Left = 208
-        Top = 90
+        Top = 170
         Width = 161
         Height = 17
         HelpContext = 1023
@@ -406,20 +388,55 @@ object OptionsForm: TOptionsForm
         TabOrder = 4
       end
       object gpFlameTitlePrefix: TGroupBox
-        Left = 8
-        Top = 86
+        Left = 208
+        Top = 88
         Width = 193
-        Height = 43
-        Caption = 'Flame title prefix'
+        Height = 97
+        Caption = 'Random batch'
         TabOrder = 1
-        object txtRandomPrefix: TEdit
+        object Label38: TLabel
           Left = 8
-          Top = 16
-          Width = 169
+          Top = 20
+          Width = 48
+          Height = 13
+          Caption = 'Batch size'
+        end
+        object Label39: TLabel
+          Left = 8
+          Top = 52
+          Width = 51
+          Height = 13
+          Caption = 'Title prefix'
+        end
+        object txtRandomPrefix: TEdit
+          Left = 72
+          Top = 50
+          Width = 110
           Height = 21
           HelpContext = 1021
           TabOrder = 0
           Text = 'Apophysis'
+        end
+        object txtBatchSize: TEdit
+          Left = 112
+          Top = 16
+          Width = 57
+          Height = 21
+          HelpContext = 1004
+          TabOrder = 1
+          Text = '100'
+        end
+        object udBatchSize: TUpDown
+          Left = 169
+          Top = 16
+          Width = 13
+          Height = 21
+          Associate = txtBatchSize
+          Min = 1
+          Max = 300
+          Position = 100
+          TabOrder = 2
+          Thousands = False
         end
       end
       object gpMutationTransforms: TGroupBox
@@ -488,7 +505,7 @@ object OptionsForm: TOptionsForm
       end
       object gpForcedSymmetry: TGroupBox
         Left = 8
-        Top = 136
+        Top = 88
         Width = 193
         Height = 97
         Caption = 'Forced symmetry'
