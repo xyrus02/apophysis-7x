@@ -1418,6 +1418,7 @@ end;
 
 procedure TAdjustForm.mnuContrastClick(Sender: TObject);
 begin
+  btnMenu.Caption := 'Contrast';
   scrollMode := modeContrast;
   BackupPal := Palette;
 
