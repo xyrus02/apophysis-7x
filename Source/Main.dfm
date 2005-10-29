@@ -27,7 +27,7 @@ object MainForm: TMainForm
     Left = 160
     Top = 28
     Width = 4
-    Height = 534
+    Height = 540
   end
   object ToolBar: TToolBar
     Left = 0
@@ -284,7 +284,7 @@ object MainForm: TMainForm
     Left = 0
     Top = 28
     Width = 160
-    Height = 534
+    Height = 540
     Align = alLeft
     Columns = <
       item
@@ -303,7 +303,7 @@ object MainForm: TMainForm
     Left = 164
     Top = 28
     Width = 433
-    Height = 534
+    Height = 540
     Align = alClient
     BevelInner = bvLowered
     BevelOuter = bvNone
@@ -314,7 +314,7 @@ object MainForm: TMainForm
       Left = 1
       Top = 1
       Width = 431
-      Height = 532
+      Height = 538
       Align = alClient
       AutoSize = True
       PopupMenu = DisplayPopup
@@ -327,7 +327,7 @@ object MainForm: TMainForm
   end
   object StatusBar: TStatusBar
     Left = 0
-    Top = 562
+    Top = 568
     Width = 597
     Height = 19
     Panels = <
@@ -2845,30 +2845,6 @@ object MainForm: TMainForm
         Hint = 'Show copyright and version information'
         ImageIndex = 47
         OnClick = mnuAboutClick
-      end
-    end
-    object mnuHiddenGraph: TMenuItem
-      Caption = 'Graph'
-      Visible = False
-      object mnuAutoZoom: TMenuItem
-        Caption = 'Auto Zoom'
-        ShortCut = 16449
-        OnClick = mnuAutoZoomClick
-      end
-      object mnuDelete: TMenuItem
-        Caption = 'Delete'
-        ShortCut = 8238
-      end
-      object mnuRefresh: TMenuItem
-        Caption = 'Refresh'
-        ShortCut = 16454
-        OnClick = mnuRefreshClick
-      end
-      object mnuShowFull: TMenuItem
-        Caption = 'Show Full'
-        Enabled = False
-        ShortCut = 49222
-        OnClick = mnuShowFullClick
       end
     end
   end

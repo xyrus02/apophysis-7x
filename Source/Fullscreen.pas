@@ -140,7 +140,7 @@ end;
 
 procedure TFullscreenForm.FormShow(Sender: TObject);
 begin
-  MainForm.mnuShowFull.enabled := true;
+  MainForm.mnuFullScreen.enabled := true;
   HideTaskbar;
   if calculate then
     DrawFlame;
