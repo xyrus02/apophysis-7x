@@ -311,20 +311,22 @@ procedure TXForm.FoldedHandkerchief;
 var
   r: double;
 begin
-  r := vars[6] * sqrt(sqr(FTx) + sqr(FTy));
-  FPx := FPx + sin(FAngle + r) * r;
-  FPy := FPy + cos(FAngle - r) * r;
+  r := sqrt(sqr(FTx) + sqr(FTy));
+  FPx := FPx + vars[6] * sin(FAngle + r) * r;
+  FPy := FPy + vars[6] * cos(FAngle - r) * r;
 end;
 
 //--7--////////////////////////////////////////////////////////////////////////
 procedure TXForm.Heart;
 var
   r: double;
+  sinr, cosr: double;
 begin
-  r := vars[7] * sqrt(sqr(FTx) + sqr(FTy));
-
-  FPx := FPx + sin(FAngle * r) * r;
-  FPy := FPy - cos(FAngle * r) * r;
+  r := sqrt(sqr(FTx) + sqr(FTy));
+  Sincos(r * FAngle, sinr, cosr);
+  r := r * vars[7];
+  FPx := FPx + r * sinr;
+  FPy := FPy - r * cosr;
 end;
 
 //--8--////////////////////////////////////////////////////////////////////////
