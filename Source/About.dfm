@@ -1866,7 +1866,7 @@ object AboutForm: TAboutForm
   object Label1: TLabel
     Left = 120
     Top = 8
-    Width = 131
+    Width = 137
     Height = 36
     Caption = 'Apophysis'
     Font.Charset = ANSI_CHARSET
@@ -1877,22 +1877,22 @@ object AboutForm: TAboutForm
     ParentFont = False
   end
   object Label2: TLabel
-    Left = 120
-    Top = 48
+    Left = 260
+    Top = 24
     Width = 65
     Height = 13
     Caption = 'Version 2.03b'
   end
   object Label3: TLabel
     Left = 120
-    Top = 172
+    Top = 164
     Width = 166
     Height = 13
     Caption = 'This application was created using:'
   end
   object Label4: TLabel
     Left = 120
-    Top = 84
+    Top = 72
     Width = 123
     Height = 13
     Cursor = crHandPoint
@@ -1908,21 +1908,21 @@ object AboutForm: TAboutForm
   end
   object Label10: TLabel
     Left = 120
-    Top = 244
+    Top = 236
     Width = 178
     Height = 13
     Caption = 'flame - cosmic recursive fractal flames'
   end
   object Label11: TLabel
     Left = 120
-    Top = 260
+    Top = 252
     Width = 178
     Height = 13
     Caption = 'Copyright '#169' 1992-2005  Scott Draves'
   end
   object lblFlamecom: TLabel
     Left = 120
-    Top = 276
+    Top = 268
     Width = 79
     Height = 13
     Cursor = crHandPoint
@@ -1946,8 +1946,8 @@ object AboutForm: TAboutForm
   end
   object Bevel1: TBevel
     Left = 120
-    Top = 232
-    Width = 193
+    Top = 224
+    Width = 209
     Height = 10
     Shape = bsBottomLine
   end
@@ -1968,14 +1968,14 @@ object AboutForm: TAboutForm
   end
   object Label6: TLabel
     Left = 120
-    Top = 104
+    Top = 92
     Width = 86
     Height = 13
     Caption = 'Copyright '#169' 2005 '
   end
   object Label7: TLabel
     Left = 140
-    Top = 120
+    Top = 108
     Width = 115
     Height = 13
     Cursor = crHandPoint
@@ -1991,7 +1991,7 @@ object AboutForm: TAboutForm
   end
   object Label8: TLabel
     Left = 140
-    Top = 136
+    Top = 124
     Width = 96
     Height = 13
     Cursor = crHandPoint
@@ -2007,25 +2007,25 @@ object AboutForm: TAboutForm
   end
   object Label9: TLabel
     Left = 140
-    Top = 152
+    Top = 140
     Width = 70
     Height = 13
     Caption = 'Ronald Hordijk'
   end
   object Label12: TLabel
     Left = 120
-    Top = 68
+    Top = 56
     Width = 190
     Height = 13
     Caption = 'Copyright '#169' 2001-2004 Mark Townsend'
   end
   object Label13: TLabel
     Left = 120
-    Top = 188
+    Top = 180
     Width = 69
     Height = 13
     Cursor = crHandPoint
-    Hint = 'http://www.apophysis.org'
+    Hint = 'http://www.tmssoftware.com/'
     Caption = 'Scripter Studio'
     Font.Charset = DEFAULT_CHARSET
     Font.Color = clBlue
@@ -2033,15 +2033,15 @@ object AboutForm: TAboutForm
     Font.Name = 'MS Sans Serif'
     Font.Style = [fsUnderline]
     ParentFont = False
-    OnClick = Label13Click
+    OnClick = DevelopersClick
   end
   object Label14: TLabel
     Left = 120
-    Top = 204
+    Top = 196
     Width = 55
     Height = 13
     Cursor = crHandPoint
-    Hint = 'http://www.apophysis.org'
+    Hint = 'http://www.destructor.de/'
     Caption = 'XML Parser'
     Font.Charset = DEFAULT_CHARSET
     Font.Color = clBlue
@@ -2049,15 +2049,15 @@ object AboutForm: TAboutForm
     Font.Name = 'MS Sans Serif'
     Font.Style = [fsUnderline]
     ParentFont = False
-    OnClick = Label14Click
+    OnClick = DevelopersClick
   end
   object Label15: TLabel
     Left = 120
-    Top = 220
+    Top = 212
     Width = 175
     Height = 13
     Cursor = crHandPoint
-    Hint = 'http://www.apophysis.org'
+    Hint = 'http://pngdelphi.sourceforge.net/'
     Caption = 'Portable Network Graphics for Delphi'
     Font.Charset = DEFAULT_CHARSET
     Font.Color = clBlue
@@ -2065,20 +2065,20 @@ object AboutForm: TAboutForm
     Font.Name = 'MS Sans Serif'
     Font.Style = [fsUnderline]
     ParentFont = False
-    OnClick = Label15Click
+    OnClick = DevelopersClick
   end
   object Bevel2: TBevel
     Left = 116
-    Top = 57
-    Width = 193
+    Top = 41
+    Width = 213
     Height = 10
     Shape = bsBottomLine
   end
   object Bevel3: TBevel
     Left = 120
-    Top = 158
-    Width = 193
-    Height = 10
+    Top = 150
+    Width = 209
+    Height = 11
     Shape = bsBottomLine
   end
   object btnOK: TButton
