@@ -3,8 +3,8 @@ object AboutForm: TAboutForm
   Top = 320
   BorderStyle = bsDialog
   Caption = 'About Apophysis'
-  ClientHeight = 279
-  ClientWidth = 345
+  ClientHeight = 323
+  ClientWidth = 338
   Color = clBtnFace
   Font.Charset = DEFAULT_CHARSET
   Font.Color = clWindowText
@@ -17,8 +17,8 @@ object AboutForm: TAboutForm
   PixelsPerInch = 96
   TextHeight = 13
   object Image1: TImage
-    Left = 8
-    Top = 16
+    Left = 12
+    Top = 32
     Width = 81
     Height = 249
     Picture.Data = {
@@ -1881,18 +1881,18 @@ object AboutForm: TAboutForm
     Top = 48
     Width = 65
     Height = 13
-    Caption = 'Version 2.03a'
+    Caption = 'Version 2.03b'
   end
   object Label3: TLabel
     Left = 120
-    Top = 72
-    Width = 190
+    Top = 172
+    Width = 166
     Height = 13
-    Caption = 'Copyright '#169' 2001-2004 Mark Townsend'
+    Caption = 'This application was created using:'
   end
   object Label4: TLabel
     Left = 120
-    Top = 88
+    Top = 84
     Width = 123
     Height = 13
     Cursor = crHandPoint
@@ -1908,21 +1908,21 @@ object AboutForm: TAboutForm
   end
   object Label10: TLabel
     Left = 120
-    Top = 196
+    Top = 244
     Width = 178
     Height = 13
     Caption = 'flame - cosmic recursive fractal flames'
   end
   object Label11: TLabel
     Left = 120
-    Top = 212
+    Top = 260
     Width = 178
     Height = 13
     Caption = 'Copyright '#169' 1992-2005  Scott Draves'
   end
   object lblFlamecom: TLabel
     Left = 120
-    Top = 228
+    Top = 276
     Width = 79
     Height = 13
     Cursor = crHandPoint
@@ -1938,7 +1938,7 @@ object AboutForm: TAboutForm
   end
   object Label5: TLabel
     Left = 120
-    Top = 260
+    Top = 296
     Width = 108
     Height = 13
     Caption = 'This flame designed by'
@@ -1946,14 +1946,14 @@ object AboutForm: TAboutForm
   end
   object Bevel1: TBevel
     Left = 120
-    Top = 184
+    Top = 232
     Width = 193
     Height = 10
     Shape = bsBottomLine
   end
   object lblCredit: TLabel
     Left = 234
-    Top = 260
+    Top = 296
     Width = 23
     Height = 13
     Caption = 'Wub'
@@ -1968,14 +1968,14 @@ object AboutForm: TAboutForm
   end
   object Label6: TLabel
     Left = 120
-    Top = 112
+    Top = 104
     Width = 86
     Height = 13
     Caption = 'Copyright '#169' 2005 '
   end
   object Label7: TLabel
     Left = 140
-    Top = 128
+    Top = 120
     Width = 115
     Height = 13
     Cursor = crHandPoint
@@ -1991,7 +1991,7 @@ object AboutForm: TAboutForm
   end
   object Label8: TLabel
     Left = 140
-    Top = 144
+    Top = 136
     Width = 96
     Height = 13
     Cursor = crHandPoint
@@ -2007,14 +2007,83 @@ object AboutForm: TAboutForm
   end
   object Label9: TLabel
     Left = 140
-    Top = 160
+    Top = 152
     Width = 70
     Height = 13
     Caption = 'Ronald Hordijk'
   end
+  object Label12: TLabel
+    Left = 120
+    Top = 68
+    Width = 190
+    Height = 13
+    Caption = 'Copyright '#169' 2001-2004 Mark Townsend'
+  end
+  object Label13: TLabel
+    Left = 120
+    Top = 188
+    Width = 69
+    Height = 13
+    Cursor = crHandPoint
+    Hint = 'http://www.apophysis.org'
+    Caption = 'Scripter Studio'
+    Font.Charset = DEFAULT_CHARSET
+    Font.Color = clBlue
+    Font.Height = -11
+    Font.Name = 'MS Sans Serif'
+    Font.Style = [fsUnderline]
+    ParentFont = False
+    OnClick = Label13Click
+  end
+  object Label14: TLabel
+    Left = 120
+    Top = 204
+    Width = 55
+    Height = 13
+    Cursor = crHandPoint
+    Hint = 'http://www.apophysis.org'
+    Caption = 'XML Parser'
+    Font.Charset = DEFAULT_CHARSET
+    Font.Color = clBlue
+    Font.Height = -11
+    Font.Name = 'MS Sans Serif'
+    Font.Style = [fsUnderline]
+    ParentFont = False
+    OnClick = Label14Click
+  end
+  object Label15: TLabel
+    Left = 120
+    Top = 220
+    Width = 175
+    Height = 13
+    Cursor = crHandPoint
+    Hint = 'http://www.apophysis.org'
+    Caption = 'Portable Network Graphics for Delphi'
+    Font.Charset = DEFAULT_CHARSET
+    Font.Color = clBlue
+    Font.Height = -11
+    Font.Name = 'MS Sans Serif'
+    Font.Style = [fsUnderline]
+    ParentFont = False
+    OnClick = Label15Click
+  end
+  object Bevel2: TBevel
+    Left = 116
+    Top = 57
+    Width = 193
+    Height = 10
+    Shape = bsBottomLine
+  end
+  object Bevel3: TBevel
+    Left = 120
+    Top = 158
+    Width = 193
+    Height = 10
+    Shape = bsBottomLine
+  end
   object btnOK: TButton
     Left = 256
-    Top = 240
+    Top = 292
     Width = 75
     Height = 25
     Caption = 'OK'

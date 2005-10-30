@@ -27,7 +27,7 @@ object MainForm: TMainForm
     Left = 160
     Top = 28
     Width = 4
-    Height = 540
+    Height = 554
   end
   object ToolBar: TToolBar
     Left = 0
@@ -284,7 +284,7 @@ object MainForm: TMainForm
     Left = 0
     Top = 28
     Width = 160
-    Height = 540
+    Height = 554
     Align = alLeft
     Columns = <
       item
@@ -303,7 +303,7 @@ object MainForm: TMainForm
     Left = 164
     Top = 28
     Width = 433
-    Height = 540
+    Height = 554
     Align = alClient
     BevelInner = bvLowered
     BevelOuter = bvNone
@@ -327,7 +327,7 @@ object MainForm: TMainForm
   end
   object StatusBar: TStatusBar
     Left = 0
-    Top = 568
+    Top = 582
     Width = 597
     Height = 19
     Panels = <

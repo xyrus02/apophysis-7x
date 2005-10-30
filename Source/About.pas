@@ -41,6 +41,15 @@ type
     Label7: TLabel;
     Label8: TLabel;
     Label9: TLabel;
+    Label12: TLabel;
+    Label13: TLabel;
+    Label14: TLabel;
+    Label15: TLabel;
+    Bevel2: TBevel;
+    Bevel3: TBevel;
+    procedure Label15Click(Sender: TObject);
+    procedure Label14Click(Sender: TObject);
+    procedure Label13Click(Sender: TObject);
     procedure btnOKClick(Sender: TObject);
     procedure Label4Click(Sender: TObject);
     procedure lblFlamecomClick(Sender: TObject);
@@ -97,6 +106,24 @@ end;
 procedure TAboutForm.DevelopersClick(Sender: TObject);
 begin
   ShellExecute(ValidParentForm(Self).Handle, 'open', PChar(TLabel(Sender).Hint),
+    nil, nil, SW_SHOWNORMAL);
+end;
+
+procedure TAboutForm.Label13Click(Sender: TObject);
+begin
+  ShellExecute(ValidParentForm(Self).Handle, 'open', PChar('http://www.tmssoftware.com/'),
+    nil, nil, SW_SHOWNORMAL);
+end;
+
+procedure TAboutForm.Label14Click(Sender: TObject);
+begin
+  ShellExecute(ValidParentForm(Self).Handle, 'open', PChar('http://www.destructor.de/'),
+    nil, nil, SW_SHOWNORMAL);
+end;
+
+procedure TAboutForm.Label15Click(Sender: TObject);
+begin
+  ShellExecute(ValidParentForm(Self).Handle, 'open', PChar('http://pngdelphi.sourceforge.net/'),
     nil, nil, SW_SHOWNORMAL);
 end;
 
