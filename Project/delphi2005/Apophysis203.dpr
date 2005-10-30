@@ -63,18 +63,18 @@ uses
   BaseVariation in '..\..\Source\BaseVariation.pas',
   BucketFillerThread in '..\..\Source\BucketFillerThread.pas',
   varblob in '..\..\Source\varblob.pas',
-//  varhenon in '..\..\Source\varhenon.pas',
   varpdj in '..\..\Source\varpdj.pas',
   varFan2 in '..\..\Source\varFan2.pas',
   varRings2 in '..\..\Source\varRings2.pas',
-  VarEyefish in '..\..\Source\VarEyefish.pas';
+  VarEyefish in '..\..\Source\VarEyefish.pas',
+  VarBubble in '..\..\Source\VarBubble.pas';
 
 //  ImageColoring in '..\..\Source\ImageColoring.pas' {frmImageColoring};
 
 {$R *.RES}
 
 begin
-  if now > EncodeDate(2006,04,26) then begin
+  if now > EncodeDate(2006,04,30) then begin
     ShowMessage('This version has expired. Please go to http://sourceforge.net/project/apophysis and download the latest version.');
     Halt
   end;
