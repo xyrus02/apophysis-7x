@@ -38,6 +38,8 @@ type
 //    CalculateLength: boolean;
     CalculateSinCos: boolean;
 
+    PostTransformEnabled: boolean;
+
     FRegVariations: array of TBaseVariation;
 
     procedure Linear;              // var[0]
@@ -78,12 +80,13 @@ type
   public
     vars: array of double; // normalized interp coefs between variations
     c: array[0..2, 0..1] of double;      // the coefs to the affine part of the function
-//    p: array[0..2, 0..1] of double;      // the coefs to the affine part of the function
+    p: array[0..2, 0..1] of double;      // post-transform coefs!
     density: double;                     // prob is this function is chosen. 0 - 1
     color: double;                       // color coord for this function. 0 - 1
     color2: double;                      // Second color coord for this function. 0 - 1
     symmetry: double;
     c00, c01, c10, c11, c20, c21: double;
+    p00, p01, p10, p11, p20, p21: double;
 
 //    nx,ny,x,y: double;
 //    script: TatPascalScripter;
@@ -145,6 +148,13 @@ begin
   c[1, 1] := 1;
   c[2, 0] := 0;
   c[2, 1] := 0;
+
+  p[0, 0] := 1;
+  p[0, 1] := 0;
+  p[1, 0] := 0;
+  p[1, 1] := 1;
+  p[2, 0] := 0;
+  p[2, 1] := 0;
   Symmetry := 0;
 
   AddRegVariations;
@@ -167,6 +177,17 @@ begin
   c11 := c[1][1];
   c20 := c[2][0];
   c21 := c[2][1];
+
+  if (p[0,0]<>1) or (p[0,1]<>0) or(p[1,0]<>0) or (p[1,1]<>1) or (p[2,0]<>0) or (p[2,1]<>0) then
+  begin
+    p00 := p[0][0];
+    p01 := p[0][1];
+    p10 := p[1][0];
+    p11 := p[1][1];
+    p20 := p[2][0];
+    p21 := p[2][1];
+    PostTransformEnabled := true;
+  end;
 
   FNrFunctions := 0;
 
@@ -319,11 +340,10 @@ end;
 //--7--////////////////////////////////////////////////////////////////////////
 procedure TXForm.Heart;
 var
-  r: double;
-  sinr, cosr: double;
+  r, sinr, cosr: double;
 begin
   r := sqrt(sqr(FTx) + sqr(FTy));
-  Sincos(r * FAngle, sinr, cosr);
+  Sincos(r*FAngle, sinr, cosr);
   r := r * vars[7];
   FPx := FPx + r * sinr;
   FPy := FPy - r * cosr;
@@ -560,7 +580,7 @@ begin
 //  FPy := FPy + vars[21] * r * sinr;
   r := sqrt(sqr(ftx) + sqr(fty));
   r := vars[21] * (
-         2 * r + dx * (System.Int(r/(2 * dx) + 0.5) * 2 - r)
+         2 * r - dx * (System.Int((r/dx + 1)/2) * 2 + r)
        );
 
   FPx := FPx + r * FCosA;
@@ -710,9 +730,14 @@ begin
   for i := 0 to FNrFunctions - 1 do
     FCalcFunctionList[i];
 
-  px := FPx;
-  py := FPy;
-
+  if PostTransformEnabled then begin
+    px := p00 * FPx + p10 * FPy + p20;
+    py := p01 * FPx + p11 * FPy + p21;
+  end
+  else begin
+    px := FPx;
+    py := FPy;
+  end;
 //  px := p[0,0] * FPx + p[1,0] * FPy + p[2,0];
 //  py := p[0,1] * FPx + p[1,1] * FPy + p[2,1];
 end;
@@ -756,8 +781,14 @@ begin
   for i:= 0 to FNrFunctions-1 do
     FFunctionList[i];
 
-  CPpoint.x := FPx;
-  CPpoint.y := FPy;
+  if PostTransformEnabled then begin
+    CPpoint.x := p00 * FPx + p10 * FPy + p20;
+    CPpoint.y := p01 * FPx + p11 * FPy + p21;
+  end
+  else begin
+    CPpoint.x := FPx;
+    CPpoint.y := FPy;
+  end;
 //  CPpoint.x := p[0,0] * FPx + p[1,0] * FPy + p[2,0];
 //  CPpoint.y := p[0,1] * FPx + p[1,1] * FPy + p[2,1];
 end;
@@ -876,8 +907,16 @@ begin
   for i:= 0 to FNrFunctions-1 do
     FFunctionList[i];
 
-  px := FPx;
-  py := FPy;
+//  px := FPx;
+//  py := FPy;
+  if PostTransformEnabled then begin
+    px := p00 * FPx + p10 * FPy + p20;
+    py := p01 * FPx + p11 * FPy + p21;
+  end
+  else begin
+    px := FPx;
+    py := FPy;
+  end;
 //  px := p[0,0] * FPx + p[1,0] * FPy + p[2,0];
 //  py := p[0,1] * FPx + p[1,1] * FPy + p[2,1];
 end;
@@ -914,8 +953,16 @@ begin
   for i:= 0 to FNrFunctions-1 do
     FFunctionList[i];
 
-  px := FPx;
-  py := FPy;
+//  px := FPx;
+//  py := FPy;
+  if PostTransformEnabled then begin
+    px := p00 * FPx + p10 * FPy + p20;
+    py := p01 * FPx + p11 * FPy + p21;
+  end
+  else begin
+    px := FPx;
+    py := FPy;
+  end;
 //  px := p[0,0] * FPx + p[1,0] * FPy + p[2,0];
 //  py := p[0,1] * FPx + p[1,1] * FPy + p[2,1];
 end;
@@ -1132,6 +1179,7 @@ begin
     vars[i] := XForm.vars[i];
 
   c := Xform.c;
+  p := Xform.p;
   density := XForm.density;
   color := XForm.color;
   color2 := XForm.color2;
@@ -1160,7 +1208,8 @@ begin
       Result := Result + varnames(i) + format('="%g" ', [vars[i]]);
   end;
   Result := Result + Format('coefs="%g %g %g %g %g %g" ', [c[0,0], c[0,1], c[1,0], c[1,1], c[2,0], c[2,1]]);
-//  Result := Result + Format('post="%g %g %g %g %g %g" ', [p[0,0], p[0,1], p[1,0], p[1,1], p[2,0], p[2,1]]);
+  if (p[0,0]<>1) or (p[0,1]<>0) or(p[1,0]<>0) or (p[1,1]<>1) or (p[2,0]<>0) or (p[2,1]<>0) then
+    Result := Result + Format('post="%g %g %g %g %g %g" ', [p[0,0], p[0,1], p[1,0], p[1,1], p[2,0], p[2,1]]);
 
   for i := 0 to High(FRegVariations)  do begin
     if vars[i+NRLOCVAR] <> 0 then
