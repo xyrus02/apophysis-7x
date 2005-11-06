@@ -323,6 +323,12 @@ object RenderForm: TRenderForm
       Width = 126
       Height = 13
       Caption = 'Available physical memory:'
+      Font.Charset = DEFAULT_CHARSET
+      Font.Color = clWindowText
+      Font.Height = -11
+      Font.Name = 'MS Sans Serif'
+      Font.Style = []
+      ParentFont = False
     end
     object Label9: TLabel
       Left = 8
@@ -465,6 +471,6 @@ object RenderForm: TRenderForm
   end
   object SaveDialog: TSaveDialog
     Left = 368
-    Top = 256
+    Top = 328
   end
 end

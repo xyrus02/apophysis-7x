@@ -171,7 +171,7 @@ object EditForm: TEditForm
       object tbSelect: TToolButton
         Left = 166
         Top = 0
-        Hint = 'Select triangle'
+        Hint = 'Select mode'
         Caption = 'Select'
         Down = True
         ImageIndex = 6

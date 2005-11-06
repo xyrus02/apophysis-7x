@@ -22,7 +22,8 @@ interface
 uses
   Windows, Messages, SysUtils, Classes, Graphics, Controls, Forms, Dialogs,
   StdCtrls, ControlPoint, RenderThread, ComCtrls, Math, Buttons, Registry, cmap,
-  ExtCtrls;
+  ExtCtrls,
+  Render; // 'use'd only for SizeOf()
 
 const
   WM_THREAD_COMPLETE = WM_APP + 5437;
@@ -157,20 +158,17 @@ begin
   GlobalMemoryInfo.dwLength := SizeOf(GlobalMemoryInfo);
   GlobalMemoryStatus(GlobalMemoryInfo);
   PhysicalMemory := GlobalMemoryInfo.dwAvailPhys div 1048576;
-  ApproxMemory := 32 * Oversample * Oversample;
-  ApproxMemory := ApproxMemory * ImageHeight * ImageWidth;
-  ApproxMemory := ApproxMemory div 1048576;
-//  ApproxMemory := (32 * Oversample * Oversample * ImageHeight * ImageWidth) div 1048576; // or 1000000?
-  lblPhysical.Caption := 'Physical memory available: ' + Format('%d', [PhysicalMemory]) + ' MB';
-  lblApproxMem.Caption := 'Approximate memory required: ' + Format('%d', [ApproxMemory]) + ' MB';
-  if ApproxMemory > PhysicalMemory then
-    ; // show warning icon.
+  ApproxMemory := ImageHeight * ImageWidth * Oversample * Oversample *
+                  SizeOf(TBucket) div 1048576;
+  lblPhysical.Caption := 'Physical memory available: ' + Format('%d', [PhysicalMemory]) + ' Mb';
+  lblApproxMem.Caption := 'Approximate memory required: ' + Format('%d', [ApproxMemory]) + ' Mb';
+  if ApproxMemory > PhysicalMemory then lblPhysical.Font.Color := clRed
+  else lblPhysical.Font.Color := clWindowText;
 end;
 
 procedure TRenderForm.HandleThreadCompletion(var Message: TMessage);
 begin
-  if not chkLimitMem.Checked and
-     cbPostProcess.checked then
+  if not chkLimitMem.Checked and cbPostProcess.checked then
     DoPostProcess;
 
   Renderer.SaveImage(RenderForm.FileName);

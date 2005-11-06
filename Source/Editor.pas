@@ -22,8 +22,9 @@ interface
 
 uses
   Windows, Messages, SysUtils, Classes, Graphics, Controls, Forms, Dialogs,
-  ExtCtrls, StdCtrls, ComCtrls, Math, Menus, ToolWin, Registry, MyTypes,
-  ControlPoint, Render, cmap, Grids, ValEdit, Buttons, ImgList, CustomDrawControl;
+  ExtCtrls, StdCtrls, ComCtrls, Math, Menus, ToolWin, Registry,
+  ControlPoint, Render, cmap, Grids, ValEdit, Buttons, ImgList, CustomDrawControl,
+  Types;
 
 const
 //  PixelCountMax = 32768;
@@ -342,13 +343,15 @@ type
 
     function GetPivot: TSPoint; overload;
     function GetPivot(n: integer): TSPoint; overload;
-    function GetTriangleColor(n: integer): TColor;
+//moved to public:    function GetTriangleColor(n: integer): TColor;
 
     // --Z-- functions moved from outside (?)
     procedure ShowSelectedInfo;
     procedure Scale(var fx, fy: double; x, y: integer);
 //    procedure ReadjustWeights(var cp: TControlPoint);
 
+    procedure TriangleViewPaint(Sender: TObject);
+    procedure AutoZoom;
   public
     cp: TControlPoint;
     Render: TRenderer;
@@ -357,8 +360,8 @@ type
 
     procedure UpdatePreview;
     procedure UpdateDisplay(PreviewOnly: boolean = false); //(?)
-    procedure AutoZoom;
-    procedure TriangleViewPaint(Sender: TObject);
+
+    function GetTriangleColor(n: integer): TColor;
   end;
 
 const
@@ -551,12 +554,11 @@ begin
   end;
 end;
 
-
 function ColorValToColor(c: TColorMap; index: double): TColor;
 var
   i: integer;
 begin
-  i := Trunc(Index * 255);
+  i := Trunc(Index * 255); //!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!! >>TODO: check<<
   result := c[i][2] shl 16 + c[i][1] shl 8 + c[i][0];
 end;
 
@@ -589,7 +591,7 @@ end;
 procedure TEditForm.UpdateDisplay(PreviewOnly: boolean = false);
 var
   i: integer;
-  pw, ph: integer;
+//  pw, ph: integer;
   r: double;
 begin
   // currently EditForm does not really know if we select another
@@ -1081,10 +1083,10 @@ begin
           try
             tx := ax / d1;
             ty := ay / d1;
-            for i := 1 to trkVarPreviewDepth.position do
-              cp.xform[SelectedTriangle].NextPoint(tx, ty, d); // d used as dummy var
-            a := toscreen(tx,-ty);
-            Pixels[a.x, a.Y] := {Pixels[a.x, a.Y] xor} tc;
+            for i := trkVarPreviewDepth.position downto 1 do
+              cp.xform[SelectedTriangle].PreviewPoint(tx, ty);
+            a := toscreen(tx, -ty);
+            Pixels[a.x, a.y] := tc;
           except
           end;
       end;
@@ -1096,10 +1098,8 @@ begin
        if HelpersEnabled then
        begin
         pen.Color := HelpersColor;
-        //pen.Color := 0;
-        //brush.Color := $808080;
         pen.Mode := pmMerge;
-        pen.Style := psSolid;//psDot;
+        pen.Style := psSolid;
         a := ToScreen(Pivot.x, Pivot.y);
         MoveTo(a.x, 0);
         LineTo(a.x, Height);
@@ -1119,23 +1119,20 @@ begin
             d := Hypot(dx, dy);
             for i := 1 to 2 do
             begin
-              d1 := Hypot(tx, ty);
               d1 := dist(Pivot.x, Pivot.y, MainTriangles[SelectedTriangle].x[i], MainTriangles[SelectedTriangle].y[i]);
-              if d1 > d then begin
+              if d1 > d then
+              begin
+                dx := dx/d*d1;
+                dy := dy/d*d1;
                 d := d1;
               end;
-            end;
-            d1 := Hypot(dx, dy);
-            if (d1 <> d) and (d1 <> 0) then
-            begin
-              dx := dx/d1 * d;
-              dy := dy/d1 * d;
             end;
           end;
 
           //i := min( min(Width, Height), integer(round(dmax * sc)));
           i := integer(round(d * sc));
-          if i > 4 then begin
+          if i > 4 then
+          begin
             pen.Color := HelpersColor;
             brush.Style := bsClear;
             Ellipse(a.x - i, a.y - i, a.x + i, a.y + i);
@@ -1150,20 +1147,6 @@ begin
 
           // rotated axis
           LineDxDy;
-          {
-          if (dx <> 0) and (dy <> 0) then
-          begin
-            k := dy / dx;
-            if abs(k) < 1 then begin
-              MoveTo(0,     round(iy - sc*(Pivot.y - ( ix/sc-GCenterX+Pivot.x)*k - GCenterY)));
-              LineTo(Width, round(iy - sc*(Pivot.y - (-ix/sc-GCenterX+Pivot.x)*k - GCenterY)));
-            end
-            else begin
-              MoveTo(round(ix + sc*(Pivot.x - (-iy/sc-GCenterY+Pivot.y)/k - GCenterX)), 0);
-              LineTo(round(ix + sc*(Pivot.x - ( iy/sc-GCenterY+Pivot.y)/k - GCenterX)), Height);
-            end;
-          end;
-          }
         end
         else if (editMode = modeScale) then // draw lines
         begin
@@ -3424,14 +3407,9 @@ begin
 end;
 
 procedure TEditForm.mnuResetClick(Sender: TObject);
-var
-  i: integer;
 begin
   MainForm.UpdateUndo;
   MainTriangles[SelectedTriangle] := MainTriangles[-1];
-//  cp.xform[SelectedTriangle].vars[0] := 1;
-//  for i := 1 to NRVAR - 1 do
-//    cp.xform[SelectedTriangle].vars[i] := 0;
   UpdateFlame(True);
 end;
 
@@ -3446,9 +3424,11 @@ begin
   SelectedTriangle := 1;
   MainTriangles[0] := MainTriangles[-1];
   cp.xform[0].density := 0.5;
+  cp.xform[0].color := 0;
   cp.xform[0].vars[0] := 1;
   MainTriangles[1] := MainTriangles[-1];
   cp.xform[1].density := 0.5;
+  cp.xform[0].color := 1;
   cp.xform[1].vars[0] := 1;
   for i := 1 to NRVAR - 1 do
   begin

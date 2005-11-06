@@ -27,7 +27,7 @@ procedure TVariationEyefish.CalcFunction;
 var
   r: double;
 begin
-  r := 2 * vvar / (sqrt(FTx^ * FTx^ + FTy^ * FTy^) + 1);
+  r := 2 * vvar / (sqrt(sqr(FTx^) + sqr(FTy^)) + 1);
   FPx^ := FPx^ + r * FTx^;
   FPy^ := FPy^ + r * FTy^;
 {$else}

@@ -325,7 +325,7 @@ implementation
 }
 
 uses Main, Editor, Adjust, Global, Mutate, Registry, Preview,
-  ScriptRender, ap_math, ap_classes, ap_sysutils, MyTypes,
+  ScriptRender, ap_math, ap_classes, ap_sysutils,
   SavePreset, ap_windows, ap_FileCtrl, bmdll32;
 
 {$R *.DFM}

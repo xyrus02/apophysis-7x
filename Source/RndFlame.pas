@@ -28,7 +28,7 @@ function RandomFlame(SourceCP: TControlPoint= nil; algorithm: integer = 0): TCon
 implementation
 
 uses
-  SysUtils, Global, cmap, MyTypes, GradientHlpr, XFormMan;
+  SysUtils, Global, cmap, GradientHlpr, XFormMan;
 
 ///////////////////////////////////////////////////////////////////////////////
 procedure RandomGradient(SourceCP, DestCP: TControlPoint);

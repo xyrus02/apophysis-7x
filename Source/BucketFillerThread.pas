@@ -4,7 +4,7 @@ interface
 
 uses
   Classes, Windows,
-  Controlpoint,Render;
+  ControlPoint, Render;
 
 type
   TBucketFillerThread = class(TThread)

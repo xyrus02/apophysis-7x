@@ -25,7 +25,7 @@ interface
 uses
   Windows, Forms, Dialogs, Menus, Controls, ComCtrls,
   ToolWin, StdCtrls, Classes, Messages, ExtCtrls, ImgList, controlpoint,
-  Jpeg, SyncObjs, SysUtils, ClipBrd, Graphics, Math, Global, MyTypes,
+  Jpeg, SyncObjs, SysUtils, ClipBrd, Graphics, Math, Global,
   Registry, RenderThread, Cmap, ExtDlgs, AppEvnts, ShellAPI,
   LibXmlParser, LibXmlComps, Xform, XFormMan;
 

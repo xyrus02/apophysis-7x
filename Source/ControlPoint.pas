@@ -26,9 +26,10 @@ uses
 const
   EPS = 1E-10;
 
-  NXFORMS = 100; // --Z-- I don't like limitations! 8-[]
+  NXFORMS = 100;
 
   SUB_BATCH_SIZE = 10000;
+  PROP_TABLE_SIZE = 1024;
   PREFILTER_WHITE = (1 shl 26);
   FILTER_CUTOFF = 1.8;
   BRIGHT_ADJUST = 2.3;
@@ -116,7 +117,7 @@ type
     pulse: array[0..1, 0..1] of double; // [i][0]=magnitute [i][1]=frequency */
     wiggle: array[0..1, 0..1] of double; // frequency is /minute, assuming 30 frames/s */
 
-    PropTable: array of Integer;
+    PropTable: array of ^TXForm;//Integer;
     FAngle: Double;
     FTwoColorDimensions: Boolean;
   private
@@ -263,7 +264,7 @@ var
   j: integer;
   TotValue: double;
 begin
-  SetLength(PropTable, 1024);
+  SetLength(PropTable, PROP_TABLE_SIZE);
 
   totValue := 0;
   for i := 0 to NXFORMS - 1 do begin
@@ -278,8 +279,8 @@ begin
       inc(j);
       propsum := propsum + xform[j].density;
     until (propsum > LoopValue) or (j = NXFORMS - 1);
-    PropTable[i] := j;
-    LoopValue := LoopValue + TotValue / 1024;
+    PropTable[i] := @xform[j];
+    LoopValue := LoopValue + TotValue / PROP_TABLE_SIZE;
   end;
 end;
 
@@ -300,7 +301,8 @@ begin
   PreparePropTable;
 
   for i := -FUSE to NrPoints - 1 do begin
-    with xform[PropTable[Random(1024)]] do begin
+    //with xform[PropTable[Random(1024)]] do begin
+    with PropTable[Random(PROP_TABLE_SIZE)]^ do begin
 
       // first compute the color coord
       s := symmetry;
@@ -530,10 +532,10 @@ begin
 
   try
     for i := 0 to FUSE do
-      xform[PropTable[Random(1024)]].NextPointXY(px,py);
+      PropTable[Random(PROP_TABLE_SIZE)].NextPointXY(px,py);
 
     for i := 0 to NrPoints - 1 do begin
-      xform[PropTable[Random(1024)]].NextPointXY(px,py);
+      PropTable[Random(PROP_TABLE_SIZE)].NextPointXY(px,py);
       CurrentPoint := @Points[i];
       CurrentPoint.X := px;
       CurrentPoint.Y := py;
@@ -563,10 +565,10 @@ begin
 
   try
     for i := 0 to FUSE do
-      xform[PropTable[Random(1024)]].NextPoint(px,py,pc);
+      PropTable[Random(PROP_TABLE_SIZE)].NextPoint(px,py,pc);
 
     for i := 0 to NrPoints - 1 do begin
-      xform[PropTable[Random(1024)]].NextPoint(px,py,pc);
+      PropTable[Random(PROP_TABLE_SIZE)].NextPoint(px,py,pc);
       CurrentPoint := @Points[i];
       CurrentPoint.X := px;
       CurrentPoint.Y := py;
@@ -609,7 +611,7 @@ begin
       pc := 0;
     try
 
-      xform[PropTable[Random(1024)]].NextPoint(px,py,pt);
+      PropTable[Random(PROP_TABLE_SIZE)].NextPoint(px,py,pt);
     except
       on EMathError do begin
         exit;
@@ -644,10 +646,10 @@ begin
 
   try
     for i := 0 to FUSE do
-      xform[PropTable[Random(1024)]].NextPoint2C(px, py, pc1, pc2);
+      PropTable[Random(PROP_TABLE_SIZE)].NextPoint2C(px, py, pc1, pc2);
 
     for i := 0 to NrPoints - 1 do begin
-      xform[PropTable[Random(1024)]].NextPoint2C(px, py, pc1, pc2);
+      PropTable[Random(PROP_TABLE_SIZE)].NextPoint2C(px, py, pc1, pc2);
       CurrentPoint := @Points[i];
       CurrentPoint.X := px;
       CurrentPoint.Y := py;
@@ -684,10 +686,10 @@ begin
 
   try
     for i := 0 to FUSE do
-      xform[PropTable[Random(1024)]].NextPointXY(px,py);
+      PropTable[Random(PROP_TABLE_SIZE)].NextPointXY(px,py);
 
     for i := 0 to NrPoints - 1 do begin
-      xform[PropTable[Random(1024)]].NextPointXY(px,py);
+      PropTable[Random(PROP_TABLE_SIZE)].NextPointXY(px,py);
       CurrentPoint := @Points[i];
       CurrentPoint.X := px;
       CurrentPoint.Y := py;

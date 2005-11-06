@@ -21,7 +21,7 @@ interface
 
 uses
   SysUtils, Classes, SyncObjs, Controls, Graphics, Math,
-  cmap, MyTypes, controlpoint, Xform;
+  cmap, ControlPoint, Xform;
 
 type
   EFormatInvalid = class(Exception);

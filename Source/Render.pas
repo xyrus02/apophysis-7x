@@ -29,18 +29,18 @@ type
 
 type
   TColorMapColor = Record
-    Red  : Int64;
-    Green: Int64;
-    Blue : Int64;
+    Red,
+    Green,
+    Blue: integer; //Int64;
 //    Count: Int64;
   end;
   PColorMapColor = ^TColorMapColor;
   TColorMapArray = array[0..255] of TColorMapColor;
 
   TBucket = Record
-    Red  : Int64;
-    Green: Int64;
-    Blue : Int64;
+    Red,
+    Green,
+    Blue,
     Count: Int64;
   end;
   PBucket = ^TBucket;
