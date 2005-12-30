@@ -1,8 +1,8 @@
 object EditForm: TEditForm
-  Left = 279
-  Top = 234
+  Left = 302
+  Top = 226
   Width = 586
-  Height = 582
+  Height = 573
   Caption = 'Transform Editor'
   Color = clBtnFace
   Constraints.MinHeight = 400
@@ -54,7 +54,7 @@ object EditForm: TEditForm
   TextHeight = 13
   object StatusBar: TStatusBar
     Left = 0
-    Top = 539
+    Top = 530
     Width = 578
     Height = 15
     Panels = <
@@ -244,28 +244,8 @@ object EditForm: TEditForm
         ShowHint = True
         OnClick = mnuFlipVerticalClick
       end
-      object tbFlipAllHorz: TToolButton
-        Left = 324
-        Top = 0
-        Hint = 'Flip all triangles horizontal'
-        Caption = 'Flip All Horizontal'
-        ImageIndex = 12
-        MenuItem = mnuHorizintalFlipAll
-        ParentShowHint = False
-        ShowHint = True
-      end
-      object tbFlipAllVert: TToolButton
-        Left = 349
-        Top = 0
-        Hint = 'Flip all triangles vertical'
-        Caption = 'Flip All Vertical '
-        ImageIndex = 13
-        MenuItem = mnuVerticalFlipAll
-        ParentShowHint = False
-        ShowHint = True
-      end
       object ToolButton2: TToolButton
-        Left = 374
+        Left = 324
         Top = 0
         Width = 8
         Caption = 'ToolButton2'
@@ -273,7 +253,7 @@ object EditForm: TEditForm
         Style = tbsSeparator
       end
       object tbVarPreview: TToolButton
-        Left = 382
+        Left = 332
         Top = 0
         Hint = 'Show/hide variation preview'
         Caption = 'Variation Preview'
@@ -289,14 +269,14 @@ object EditForm: TEditForm
     Left = 0
     Top = 24
     Width = 578
-    Height = 515
+    Height = 506
     Align = alClient
     TabOrder = 1
     object Splitter1: TSplitter
       Left = 396
       Top = 1
       Width = 9
-      Height = 513
+      Height = 504
       Align = alRight
       AutoSnap = False
       Beveled = True
@@ -307,7 +287,7 @@ object EditForm: TEditForm
       Left = 1
       Top = 1
       Width = 395
-      Height = 513
+      Height = 504
       Align = alClient
       BevelOuter = bvNone
       Color = clAppWorkSpace
@@ -317,7 +297,7 @@ object EditForm: TEditForm
       Left = 405
       Top = 1
       Width = 172
-      Height = 513
+      Height = 504
       Align = alRight
       Alignment = taLeftJustify
       BevelOuter = bvNone
@@ -356,7 +336,7 @@ object EditForm: TEditForm
         Left = 0
         Top = 138
         Width = 172
-        Height = 375
+        Height = 366
         Align = alClient
         TabOrder = 0
         object lblTransform: TLabel
@@ -389,7 +369,7 @@ object EditForm: TEditForm
           Left = 1
           Top = 30
           Width = 170
-          Height = 344
+          Height = 335
           ActivePage = TriangleTab
           Align = alBottom
           Anchors = [akLeft, akTop, akRight, akBottom]
@@ -402,7 +382,7 @@ object EditForm: TEditForm
               Left = 0
               Top = 0
               Width = 162
-              Height = 298
+              Height = 289
               HorzScrollBar.Visible = False
               VertScrollBar.Smooth = True
               VertScrollBar.Style = ssFlat
@@ -416,29 +396,29 @@ object EditForm: TEditForm
                 Left = 0
                 Top = 0
                 Width = 162
-                Height = 277
+                Height = 281
                 BevelOuter = bvNone
                 TabOrder = 0
-                object Label9: TLabel
+                object LabelB: TLabel
                   Left = 4
                   Top = 32
-                  Width = 10
+                  Width = 12
                   Height = 13
-                  Caption = 'B:'
+                  Caption = 'O:'
                 end
-                object Label7: TLabel
+                object LabelA: TLabel
                   Left = 4
                   Top = 8
-                  Width = 11
+                  Width = 10
                   Height = 13
-                  Caption = 'A:'
+                  Caption = 'X:'
                 end
-                object Label11: TLabel
+                object LabelC: TLabel
                   Left = 4
                   Top = 56
-                  Width = 11
+                  Width = 10
                   Height = 13
-                  Caption = 'C:'
+                  Caption = 'Y:'
                 end
                 object btTrgRotateRight: TSpeedButton
                   Left = 106
@@ -1016,27 +996,6 @@ object EditForm: TEditForm
                   OnExit = CornerEditExit
                   OnKeyPress = CornerEditKeyPress
                 end
-                object rgPivot: TRadioGroup
-                  Left = 16
-                  Top = 210
-                  Width = 129
-                  Height = 65
-                  BiDiMode = bdLeftToRight
-                  Caption = 'Triangle Pivot'
-                  Columns = 2
-                  Ctl3D = True
-                  ItemIndex = 1
-                  Items.Strings = (
-                    'A'
-                    'B'
-                    'C'
-                    'Center'
-                    '( 0; 0 )')
-                  ParentBiDiMode = False
-                  ParentCtl3D = False
-                  TabOrder = 6
-                  OnClick = rgPivotClicked
-                end
                 object txtTrgMoveValue: TComboBox
                   Left = 56
                   Top = 132
@@ -1045,7 +1004,7 @@ object EditForm: TEditForm
                   AutoComplete = False
                   ItemHeight = 13
                   ItemIndex = 3
-                  TabOrder = 8
+                  TabOrder = 7
                   Text = '0.1'
                   OnExit = txtValidateValue
                   OnKeyPress = txtValKeyPress
@@ -1065,7 +1024,7 @@ object EditForm: TEditForm
                   Height = 21
                   AutoComplete = False
                   ItemHeight = 13
-                  TabOrder = 7
+                  TabOrder = 6
                   Text = '15'
                   OnExit = txtValidateValue
                   OnKeyPress = txtValKeyPress
@@ -1087,7 +1046,7 @@ object EditForm: TEditForm
                   AutoComplete = False
                   ItemHeight = 13
                   ItemIndex = 1
-                  TabOrder = 9
+                  TabOrder = 8
                   Text = '125'
                   OnExit = txtValidateValue
                   OnKeyPress = txtValKeyPress
@@ -1099,43 +1058,98 @@ object EditForm: TEditForm
                     '200')
                 end
               end
-              object chkPreserve: TCheckBox
-                Left = 30
-                Top = 280
-                Width = 105
-                Height = 17
-                Caption = 'Preserve weights'
-                Checked = True
-                State = cbChecked
+              object GroupBox3: TGroupBox
+                Left = 8
+                Top = 208
+                Width = 146
+                Height = 65
+                Caption = 'Pivot Point'
                 TabOrder = 1
+                object btnResetPivot: TSpeedButton
+                  Left = 6
+                  Top = 40
+                  Width = 17
+                  Height = 17
+                  Hint = 'Reset pivot point to (0, 0)'
+                  Caption = 'R'
+                  ParentShowHint = False
+                  ShowHint = True
+                  OnClick = btnResetPivotClick
+                end
+                object btnPickPivot: TSpeedButton
+                  Left = 122
+                  Top = 40
+                  Width = 17
+                  Height = 17
+                  Hint = 'Pick pivot point using mouse'
+                  Caption = 'P'
+                  ParentShowHint = False
+                  ShowHint = True
+                  OnClick = btnPickPivotClick
+                end
+                object btnPivotMode: TSpeedButton
+                  Left = 24
+                  Top = 40
+                  Width = 97
+                  Height = 17
+                  Hint = 'Toggle pivot point mode'
+                  Caption = 'Local Pivot'
+                  ParentShowHint = False
+                  ShowHint = True
+                  OnClick = btnPivotModeClick
+                end
+                object editPivotY: TEdit
+                  Left = 74
+                  Top = 16
+                  Width = 65
+                  Height = 21
+                  Hint = 'Pivot point coordinates in chosen coordinate system'
+                  AutoSelect = False
+                  ParentShowHint = False
+                  ShowHint = True
+                  TabOrder = 1
+                  Text = '0'
+                  OnExit = PivotValidate
+                  OnKeyPress = PivotKeyPress
+                end
+                object editPivotX: TEdit
+                  Left = 6
+                  Top = 16
+                  Width = 65
+                  Height = 21
+                  Hint = 'Pivot point coordinates in chosen coordinate system'
+                  AutoSelect = False
+                  ParentShowHint = False
+                  ShowHint = True
+                  TabOrder = 0
+                  Text = '0'
+                  OnExit = PivotValidate
+                  OnKeyPress = PivotKeyPress
+                end
               end
             end
           end
           object tabXForm: TTabSheet
             Caption = 'Transform'
             object Label6: TLabel
-              Left = 36
-              Top = 100
+              Left = 10
+              Top = 126
               Width = 38
               Height = 13
+              Hint = '"weight" is the probability of this transform to be applied'
               Caption = 'Weight:'
-            end
-            object Label29: TLabel
-              Left = 36
-              Top = 124
-              Width = 52
-              Height = 13
-              Caption = 'Symmetry:'
+              ParentShowHint = False
+              ShowHint = True
             end
             object btnResetCoefs: TSpeedButton
               Left = 8
-              Top = 148
+              Top = 76
               Width = 145
               Height = 22
-              Hint = 'Reset all vectors to default'
-              Caption = 'Reset Coefs'
+              Hint = 'Reset all vectors to default position'
+              Caption = 'Reset transform'
               ParentShowHint = False
-              ShowHint = False
+              ShowHint = True
               OnClick = mnuResetClick
             end
             object btnXcoefs: TSpeedButton
@@ -1143,10 +1157,10 @@ object EditForm: TEditForm
               Top = 4
               Width = 25
               Height = 21
-              Hint = 'Reset point A'
+              Hint = 'Reset vector X'
               Caption = 'X'
               ParentShowHint = False
-              ShowHint = False
+              ShowHint = True
               OnClick = btnXcoefsClick
             end
             object btnYcoefs: TSpeedButton
@@ -1154,10 +1168,10 @@ object EditForm: TEditForm
               Top = 28
               Width = 25
               Height = 21
-              Hint = 'Reset point C'
+              Hint = 'Reset vector Y'
               Caption = 'Y'
               ParentShowHint = False
-              ShowHint = False
+              ShowHint = True
               OnClick = btnYcoefsClick
             end
             object btnOcoefs: TSpeedButton
@@ -1165,32 +1179,98 @@ object EditForm: TEditForm
               Top = 52
               Width = 25
               Height = 21
-              Hint = 'Reset point B'
+              Hint = 'Reset vector O'
               Caption = 'O'
               ParentShowHint = False
-              ShowHint = False
+              ShowHint = True
               OnClick = btnOcoefsClick
             end
             object btnCoefsRect: TSpeedButton
               Left = 8
-              Top = 76
+              Top = 101
               Width = 71
               Height = 17
+              Hint = 'Show vectors in rectangular (cartesian) coordinates'
               GroupIndex = 1
               Down = True
               Caption = 'Rectangular'
-              Flat = True
+              ParentShowHint = False
+              ShowHint = True
               OnClick = btnCoefsModeClick
             end
             object btnCoefsPolar: TSpeedButton
               Left = 82
-              Top = 76
+              Top = 101
               Width = 71
               Height = 17
+              Hint = 'Show vectors in polar coordinates'
               GroupIndex = 1
               Caption = 'Polar (deg)'
-              Flat = True
+              ParentShowHint = False
+              ShowHint = True
               OnClick = btnCoefsModeClick
+            end
+            object btnXpost: TSpeedButton
+              Left = 8
+              Top = 188
+              Width = 25
+              Height = 21
+              Hint = 'Reset vector X'
+              Caption = 'X'
+              ParentShowHint = False
+              ShowHint = True
+              OnClick = btnXpostClick
+            end
+            object btnYpost: TSpeedButton
+              Left = 8
+              Top = 212
+              Width = 25
+              Height = 21
+              Hint = 'Reset vector Y'
+              Caption = 'Y'
+              ParentShowHint = False
+              ShowHint = True
+              OnClick = btnYpostClick
+            end
+            object btnOpost: TSpeedButton
+              Left = 8
+              Top = 236
+              Width = 25
+              Height = 21
+              Hint = 'Reset vector O'
+              Caption = 'O'
+              ParentShowHint = False
+              ShowHint = True
+              OnClick = btnOpostClick
+            end
+            object btnResetPostXForm: TSpeedButton
+              Left = 8
+              Top = 164
+              Width = 145
+              Height = 22
+              Hint = 'Reset post-transform vectors to defaults'
+              Caption = 'Reset post-transform'
+              ParentShowHint = False
+              ShowHint = True
+              OnClick = btnResetPostXFormClick
+            end
+            object btnSwapXforms: TSpeedButton
+              Left = 8
+              Top = 260
+              Width = 145
+              Height = 22
+              Hint = 'Swap Xform with PostXform'
+              Caption = '[ Xform <-> PostXform ]'
+              Flat = True
+              Font.Charset = ANSI_CHARSET
+              Font.Color = clWindowText
+              Font.Height = -11
+              Font.Name = 'Tahoma'
+              Font.Style = []
+              ParentFont = False
+              ParentShowHint = False
+              ShowHint = True
+              OnClick = btnSwapXformsClick
             end
             object txtA: TEdit
               Left = 36
@@ -1254,7 +1334,7 @@ object EditForm: TEditForm
             end
             object txtP: TEdit
               Left = 96
-              Top = 96
+              Top = 122
               Width = 57
               Height = 21
               TabOrder = 6
@@ -1262,15 +1342,81 @@ object EditForm: TEditForm
               OnExit = txtPExit
               OnKeyPress = txtPKeyPress
             end
-            object txtSymmetry: TEdit
-              Left = 96
-              Top = 120
+            object chkPreserve: TCheckBox
+              Left = 8
+              Top = 145
+              Width = 145
+              Height = 17
+              Hint = 
+                'Keep this checked if you don'#39't want all weights to be recalculat' +
+                'ed to screw up all your flame :-)'
+              Alignment = taLeftJustify
+              Caption = 'Preserve weights'
+              Checked = True
+              ParentShowHint = False
+              ShowHint = True
+              State = cbChecked
+              TabOrder = 7
+            end
+            object txtPost00: TEdit
+              Left = 36
+              Top = 188
               Width = 57
               Height = 21
-              TabOrder = 7
+              TabOrder = 8
               Text = '0'
-              OnExit = txtSymmetryExit
-              OnKeyPress = txtSymmetryKeyPress
+              OnExit = PostCoefValidate
+              OnKeyPress = PostCoefKeypress
+            end
+            object txtPost01: TEdit
+              Left = 96
+              Top = 188
+              Width = 57
+              Height = 21
+              TabOrder = 9
+              Text = '0'
+              OnExit = PostCoefValidate
+              OnKeyPress = PostCoefKeypress
+            end
+            object txtPost10: TEdit
+              Left = 36
+              Top = 212
+              Width = 57
+              Height = 21
+              TabOrder = 10
+              Text = '0'
+              OnExit = PostCoefValidate
+              OnKeyPress = PostCoefKeypress
+            end
+            object txtPost11: TEdit
+              Left = 96
+              Top = 212
+              Width = 57
+              Height = 21
+              TabOrder = 11
+              Text = '0'
+              OnExit = PostCoefValidate
+              OnKeyPress = PostCoefKeypress
+            end
+            object txtPost20: TEdit
+              Left = 36
+              Top = 236
+              Width = 57
+              Height = 21
+              TabOrder = 12
+              Text = '0'
+              OnExit = PostCoefValidate
+              OnKeyPress = PostCoefKeypress
+            end
+            object txtPost21: TEdit
+              Left = 96
+              Top = 236
+              Width = 57
+              Height = 21
+              TabOrder = 13
+              Text = '0'
+              OnExit = PostCoefValidate
+              OnKeyPress = PostCoefKeypress
             end
           end
           object tabVariations: TTabSheet
@@ -1279,7 +1425,7 @@ object EditForm: TEditForm
               Left = 0
               Top = 0
               Width = 162
-              Height = 298
+              Height = 289
               Align = alClient
               ScrollBars = ssVertical
               TabOrder = 0
@@ -1305,7 +1451,7 @@ object EditForm: TEditForm
               Left = 0
               Top = 0
               Width = 162
-              Height = 298
+              Height = 289
               Align = alClient
               ScrollBars = ssVertical
               TabOrder = 0
@@ -1331,9 +1477,16 @@ object EditForm: TEditForm
               Left = 8
               Top = 2
               Width = 145
-              Height = 71
+              Height = 100
               Caption = 'Transform color'
               TabOrder = 0
+              object Label29: TLabel
+                Left = 10
+                Top = 72
+                Width = 52
+                Height = 13
+                Caption = 'Symmetry:'
+              end
               object scrlXFormColor: TScrollBar
                 Left = 8
                 Top = 46
@@ -1363,59 +1516,35 @@ object EditForm: TEditForm
                 OnExit = txtXFormColorExit
                 OnKeyPress = txtXFormColorKeyPress
               end
+              object txtSymmetry: TComboBox
+                Left = 80
+                Top = 70
+                Width = 57
+                Height = 21
+                ItemHeight = 13
+                ItemIndex = 0
+                TabOrder = 3
+                Text = '0'
+                OnExit = txtSymmetryExit
+                OnKeyPress = txtSymmetryKeyPress
+                Items.Strings = (
+                  '0'
+                  '1')
+              end
             end
             object GroupBox2: TGroupBox
               Left = 8
-              Top = 77
+              Top = 108
               Width = 145
-              Height = 212
+              Height = 137
               Caption = 'Graph'
               TabOrder = 1
-              object Label20: TLabel
-                Left = 8
-                Top = 56
-                Width = 56
-                Height = 13
-                Caption = 'Background'
-              end
-              object Label21: TLabel
-                Left = 8
-                Top = 96
-                Width = 50
-                Height = 13
-                Caption = 'Reference'
-              end
-              object Label8: TLabel
-                Left = 75
-                Top = 56
-                Width = 50
-                Height = 13
-                Caption = 'Grid colors'
-              end
-              object Label10: TLabel
-                Left = 75
-                Top = 96
-                Width = 36
-                Height = 13
-                Caption = 'Helpers'
-              end
               object Label1: TLabel
                 Left = 8
-                Top = 136
+                Top = 56
                 Width = 83
                 Height = 13
                 Caption = 'Variation preview'
-              end
-              object pnlBackColor: TPanel
-                Left = 8
-                Top = 72
-                Width = 62
-                Height = 17
-                Cursor = crHandPoint
-                BevelOuter = bvLowered
-                Color = clBlack
-                TabOrder = 0
-                OnClick = pnlBackColorClick
               end
               object chkUseXFormColor: TCheckBox
                 Left = 8
@@ -1423,7 +1552,7 @@ object EditForm: TEditForm
                 Width = 129
                 Height = 17
                 Caption = 'Use transform color'
-                TabOrder = 1
+                TabOrder = 0
                 OnClick = chkUseXFormColorClick
               end
               object chkHelpers: TCheckBox
@@ -1434,56 +1563,12 @@ object EditForm: TEditForm
                 Caption = 'Helper lines'
                 Checked = True
                 State = cbChecked
-                TabOrder = 2
+                TabOrder = 1
                 OnClick = chkHelpersClick
-              end
-              object pnlReference: TPanel
-                Left = 8
-                Top = 112
-                Width = 62
-                Height = 17
-                Cursor = crHandPoint
-                BevelOuter = bvLowered
-                Color = clGray
-                TabOrder = 3
-                OnClick = pnlReferenceClick
-              end
-              object pnlGridColor1: TPanel
-                Left = 75
-                Top = 72
-                Width = 29
-                Height = 17
-                Cursor = crHandPoint
-                BevelOuter = bvLowered
-                Color = clBlack
-                TabOrder = 4
-                OnClick = pnlGridColor1Click
-              end
-              object pnlGridColor2: TPanel
-                Left = 108
-                Top = 72
-                Width = 29
-                Height = 17
-                Cursor = crHandPoint
-                BevelOuter = bvLowered
-                Color = clBlack
-                TabOrder = 5
-                OnClick = pnlGridColor2Click
-              end
-              object pnlHelpersColor: TPanel
-                Left = 75
-                Top = 112
-                Width = 62
-                Height = 17
-                Cursor = crHandPoint
-                BevelOuter = bvLowered
-                Color = clGray
-                TabOrder = 6
-                OnClick = pnlHelpersColorClick
               end
               object trkVarPreviewDensity: TTrackBar
                 Left = 8
-                Top = 184
+                Top = 104
                 Width = 65
                 Height = 25
                 Max = 5
@@ -1492,14 +1577,14 @@ object EditForm: TEditForm
                 PageSize = 1
                 Position = 2
                 ShowHint = True
-                TabOrder = 7
+                TabOrder = 2
                 TabStop = False
                 ThumbLength = 15
                 OnChange = trkVarPreviewDensityChange
               end
               object trkVarPreviewRange: TTrackBar
                 Left = 8
-                Top = 152
+                Top = 72
                 Width = 129
                 Height = 25
                 Min = 1
@@ -1507,14 +1592,14 @@ object EditForm: TEditForm
                 PageSize = 1
                 Position = 2
                 ShowHint = True
-                TabOrder = 8
+                TabOrder = 3
                 TabStop = False
                 ThumbLength = 15
                 OnChange = trkVarPreviewRangeChange
               end
               object trkVarPreviewDepth: TTrackBar
                 Left = 72
-                Top = 184
+                Top = 104
                 Width = 65
                 Height = 25
                 Max = 5
@@ -1523,7 +1608,7 @@ object EditForm: TEditForm
                 PageSize = 1
                 Position = 1
                 ShowHint = True
-                TabOrder = 9
+                TabOrder = 4
                 TabStop = False
                 ThumbLength = 15
                 OnChange = trkVarPreviewDepthChange

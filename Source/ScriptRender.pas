@@ -21,12 +21,7 @@ interface
 
 uses
   Windows, Messages, SysUtils, Classes, Graphics, Controls, Forms, Dialogs,
-  ComCtrls, StdCtrls, Render, cmap, ControlPoint;
-
-const
-  WM_THREAD_COMPLETE = WM_APP + 5437;
-  WM_THREAD_TERMINATE = WM_APP + 5438;
-
+  ComCtrls, StdCtrls, RenderThread, cmap, ControlPoint;
 
 type
   TScriptRenderForm = class(TForm)
@@ -36,11 +31,16 @@ type
     procedure FormCreate(Sender: TObject);
     procedure btnCancelClick(Sender: TObject);
   private
-    PixelsPerUnit: double;
+//    PixelsPerUnit: double;
     StartTime: TDateTime;
     Remainder: TDateTime;
+
+    procedure HandleThreadCompletion(var Message: TMessage);
+      message WM_THREAD_COMPLETE;
+    procedure HandleThreadTermination(var Message: TMessage);
+      message WM_THREAD_TERMINATE;
   public
-    Renderer: TRenderer;
+    Renderer: TRenderThread;
     ColorMap: TColorMap;
     cp: TControlPoint;
     Filename: string;
@@ -64,34 +64,44 @@ uses Global, Math, FormRender, ScriptForm;
 procedure TScriptRenderForm.SetRenderBounds;
 begin
   cp.copy(ScriptEditor.cp);
-  cp.Width := ScriptEditor.Renderer.Width;
-  cp.Height := ScriptEditor.Renderer.Height;
-  cp.CalcBoundBox;
+  //cp.Width := ScriptEditor.Renderer.Width;
+  //cp.Height := ScriptEditor.Renderer.Height;
+  cp.AdjustScale(ScriptEditor.Renderer.Width, ScriptEditor.Renderer.Height);
+  // --?-- cp.CalcBoundBox;
   cp.center[0] := ScriptEditor.cp.center[0];
   cp.center[1] := ScriptEditor.cp.center[1];
   cp.zoom := ScriptEditor.cp.zoom;
-  PixelsPerUnit := cp.Pixels_per_unit;
+  //PixelsPerUnit := cp.Pixels_per_unit;
 end;
 
 procedure TScriptRenderForm.Render;
 begin
+  assert(not Assigned(Renderer));
+  Renderer := TRenderThread.Create;
+
   Cancelled := False;
   ScriptEditor.Scripter.Paused := True;
   StartTime := Now;
   Remainder := 1;
   cp.copy(ScriptEditor.cp);
   Filename := ScriptEditor.Renderer.Filename;
-  cp.Width := ScriptEditor.Renderer.Width;
-  cp.Height := ScriptEditor.Renderer.Height;
-  cp.pixels_per_unit := PixelsPerUnit;
+  //cp.Width := ScriptEditor.Renderer.Width;
+  //cp.Height := ScriptEditor.Renderer.Height;
+  //cp.pixels_per_unit := PixelsPerUnit;
+  cp.AdjustScale(ScriptEditor.Renderer.Width, ScriptEditor.Renderer.Height);
+
   Renderer.OnProgress := OnProgress;
-  Renderer.Compatibility := Compatibility;  
+  Renderer.Compatibility := Compatibility;
   Renderer.SetCP(cp);
-  if (ScriptEditor.Renderer.MaxMemory > 0) then
-    Renderer.RenderMaxMem(ScriptEditor.Renderer.MaxMemory)
-  else Renderer.Render;
-  Renderer.SaveImage(FileName);
-  ScriptEditor.Scripter.Paused := False;
+  if (ScriptEditor.Renderer.MaxMemory > 0) then Renderer.MaxMem := ScriptEditor.Renderer.MaxMemory;
+  Renderer.TargetHandle := Handle;
+  renderPath := ExtractFilePath(ScriptEditor.Renderer.Filename);
+  Renderer.Priority := tpLower;
+  Renderer.NrThreads := NrTreads;
+  Renderer.Resume;
+
+//  Renderer.SaveImage(FileName);
+//  ScriptEditor.Scripter.Paused := False;
 end;
 
 procedure TScriptRenderForm.OnProgress(prog: double);
@@ -101,20 +111,19 @@ begin
   prog := (Renderer.Slice + Prog) / Renderer.NrSlices;
   ProgressBar.Position := round(100 * prog);
   Elapsed := Now - StartTime;
-  if prog > 0 then
-    Remainder := Min(Remainder, Elapsed * (power(1 / prog, 1.2) - 1));
+//  if prog > 0 then Remainder := Elapsed * (1/prog - 1);
   Application.ProcessMessages;
 end;
 
 procedure TScriptRenderForm.FormDestroy(Sender: TObject);
 begin
   cp.free;
-  Renderer.free;
+  assert(not Assigned(Renderer)); //if Assigned(Renderer) then Renderer.free;
 end;
 
 procedure TScriptRenderForm.FormCreate(Sender: TObject);
 begin
-  Renderer := TRenderer.Create;
+  //Renderer := TRenderThread.Create;
   cp := TControlPoint.Create;
 end;
 
@@ -122,8 +131,33 @@ procedure TScriptRenderForm.btnCancelClick(Sender: TObject);
 begin
   ScriptEditor.Scripter.Halt;
   Cancelled := True;
-  Renderer.Stop;
+//  Renderer.Stop;
+  if Assigned(Renderer) then begin
+    Renderer.Terminate;
+    Renderer.WaitFor;
+    Renderer.Free;
+    Renderer := nil;
+  end;
   LastError := 'Render cancelled';
+end;
+
+procedure TScriptRenderForm.HandleThreadCompletion(var Message: TMessage);
+begin
+  Renderer.SaveImage(FileName);
+
+  Renderer.Free;
+  Renderer := nil;
+
+  ScriptEditor.Scripter.Paused := False;
+end;
+
+procedure TScriptRenderForm.HandleThreadTermination(var Message: TMessage);
+begin
+  if Assigned(Renderer) then
+  begin
+    Renderer.Free;
+    Renderer := nil;
+  end;
 end;
 
 end.

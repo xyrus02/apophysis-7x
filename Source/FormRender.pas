@@ -89,8 +89,8 @@ type
     procedure cmbPresetChange(Sender: TObject);
     procedure chkMaintainClick(Sender: TObject);
   private
-    StartTime: TDateTime;
-    Remainder: TDateTime;
+    StartTime, oldElapsed, edt: TDateTime;
+    oldProg: double;
 
     procedure DoPostProcess;
 
@@ -171,7 +171,7 @@ begin
   if not chkLimitMem.Checked and cbPostProcess.checked then
     DoPostProcess;
 
-  Renderer.SaveImage(RenderForm.FileName);
+  Renderer.SaveImage(FileName);
 
   Renderer.Free;
   Renderer := nil;
@@ -192,33 +192,50 @@ end;
 
 procedure TRenderForm.OnProgress(prog: double);
 var
-  Elapsed: TDateTime;
-  e, r: string;
+  Elapsed, Remaining, dt: TDateTime;
 begin
+  Elapsed := Now - StartTime;
+  dt := Elapsed - oldElapsed;
+  if (prog = 1.0) then begin
+    StatusBar.Panels[0].text := Format('Elapsed %2.2d:%2.2d:%2.2d.%2.2d',
+      [Trunc(Elapsed * 24),
+       Trunc(Elapsed * 24 * 60) mod 60,
+       Trunc(Elapsed * 24 * 60 * 60) mod 60,
+       Trunc(Elapsed * 24 * 60 * 60 * 100) mod 100]);
+    StatusBar.Panels[1].text := 'Remaining 00:00:00.00';
+    exit;
+  end;
+
+  if (dt < 1/24/60/60/10) then exit;
+  oldElapsed := Elapsed;
 
   prog := (Renderer.Slice + Prog) / Renderer.NrSlices;
-
   if ShowProgress then ProgressBar.Position := round(100 * prog);
 
-  Elapsed := Now - StartTime;
-  e := Format('Elapsed %2.2d:%2.2d:%2.2d.%2.2d',
+  StatusBar.Panels[0].text := Format('Elapsed %2.2d:%2.2d:%2.2d.%2.2d',
     [Trunc(Elapsed * 24),
-    Trunc((Elapsed * 24 - Trunc(Elapsed * 24)) * 60),
-      Trunc((Elapsed * 24 * 60 - Trunc(Elapsed * 24 * 60)) * 60),
-      Trunc((Elapsed * 24 * 60 * 60 - Trunc(Elapsed * 24 * 60 * 60)) * 100)]);
+     Trunc(Elapsed * 24 * 60) mod 60,
+     Trunc(Elapsed * 24 * 60 * 60) mod 60,
+     Trunc(Elapsed * 24 * 60 * 60 * 100) mod 100]);
 
-  if prog > 0 then
-    Remainder := Min(Remainder, Elapsed * (power(1 / prog, 1.2) - 1));
+  edt := edt + dt;
+  if (edt > 1/24/60/60/2) and (prog > 0) then
+  begin
+//  Remainder := Min(Remainder, Elapsed * (power(1 / prog, 1.2) - 1)); // --Z-- this power() is weird
+//  Remaining := Elapsed/prog - Elapsed; // --Z-- should've been like this maybe? ;) too easy anyway...
 
-  r := Format('Remaining %2.2d:%2.2d:%2.2d.%2.2d',
-    [Trunc(Remainder * 24),
-    Trunc((Remainder * 24 - Trunc(Remainder * 24)) * 60),
-      Trunc((Remainder * 24 * 60 - Trunc(Remainder * 24 * 60)) * 60),
-      Trunc((Remainder * 24 * 60 * 60 - Trunc(Remainder * 24 * 60 * 60)) * 100)]);
+    Remaining := (1 - prog) * edt / (prog - oldProg);
+    edt := 0;
+    oldProg := prog;
 
-    StatusBar.Panels[0].text := e;
-    StatusBar.Panels[1].text := r;
-    StatusBar.Panels[2].text := 'Slice ' + IntToStr(Renderer.Slice + 1) + ' of ' + IntToStr(Renderer.nrSlices);
+    StatusBar.Panels[1].text := Format('Remaining %2.2d:%2.2d:%2.2d.%2.2d',
+      [Trunc(Remaining * 24),
+       Trunc(Remaining * 24 * 60) mod 60,
+       Trunc(Remaining * 24 * 60 * 60) mod 60,
+       Trunc(Remaining * 24 * 60 * 60 * 100) mod 100]);
+  end;
+
+  StatusBar.Panels[2].text := 'Slice ' + IntToStr(Renderer.Slice + 1) + ' of ' + IntToStr(Renderer.nrSlices);
 end;
 
 procedure TRenderForm.FormCreate(Sender: TObject);
@@ -232,9 +249,14 @@ end;
 
 procedure TRenderForm.FormDestroy(Sender: TObject);
 begin
-  if assigned(Renderer) then Renderer.Terminate;
-  if assigned(Renderer) then Renderer.WaitFor;
-  if assigned(Renderer) then Renderer.Free;
+//  if assigned(Renderer) then Renderer.Terminate;
+//  if assigned(Renderer) then Renderer.WaitFor;
+//  if assigned(Renderer) then Renderer.Free;
+  if assigned(Renderer) then begin
+    Renderer.Terminate;
+    Renderer.WaitFor;
+    Renderer.Free;
+  end;
   cp.free;
 end;
 
@@ -312,26 +334,31 @@ begin
   btnPause.enabled := true;
   btnCancel.Caption := 'Stop';
   StartTime := Now;
-  Remainder := 365;
+//  Remaining := 365;
   if Assigned(Renderer) then Renderer.Terminate;
   if Assigned(Renderer) then Renderer.WaitFor;
   if not Assigned(Renderer) then
   begin
-      // disable screensaver
+    // disable screensaver
     SystemParametersInfo(SPI_SETSCREENSAVEACTIVE, 0, nil, 0);
 
     cp.sample_density := Sample_density;
     cp.spatial_oversample := Oversample;
     cp.spatial_filter_radius := Filter_Radius;
-    AdjustScale(cp, ImageWidth, ImageHeight);
+    cp.AdjustScale(ImageWidth, ImageHeight);
     renderPath := ExtractFilePath(Filename);
     if chkSave.checked then
       MainForm.SaveXMLFlame(cp, ExtractFileName(FileName), renderPath + 'renders.flame');
+
+    oldProg:=0;
+    oldElapsed:=0;
+    edt:=0;
+
     Renderer := TRenderThread.Create;
     if chkLimitMem.checked then
       Renderer.MaxMem := StrToInt(cbMaxMemory.text);
     Renderer.OnProgress := OnProgress;
-    Renderer.TargetHandle := RenderForm.Handle;
+    Renderer.TargetHandle := self.Handle;
     Renderer.Compatibility := compatibility;
     Renderer.SetCP(cp);
     Renderer.Priority := tpLower;
@@ -354,9 +381,9 @@ begin
     if Registry.OpenKey('Software\' + APP_NAME + '\Forms\Render', False) then
     begin
       if Registry.ValueExists('Left') then
-        RenderForm.Left := Registry.ReadInteger('Left');
+        self.Left := Registry.ReadInteger('Left');
       if Registry.ValueExists('Top') then
-        RenderForm.Top := Registry.ReadInteger('Top');
+        self.Top := Registry.ReadInteger('Top');
     end;
     Registry.CloseKey;
   finally
@@ -409,15 +436,26 @@ begin
 end;
 
 procedure TRenderForm.txtOversampleChange(Sender: TObject);
+var
+  o: integer;
 begin
-  if StrToInt(txtOversample.Text) > udOversample.Max then
-    txtOversample.Text := IntToStr(udOversample.Max);
-  if StrToInt(txtOversample.Text) < udOversample.Min then
-    txtOversample.Text := IntToStr(udOversample.Min);
   try
-    Oversample := StrToInt(txtOversample.Text);
+    o := StrToInt(txtOversample.Text);
   except
+    txtOversample.Text := IntToStr(Oversample);
+    exit;
   end;
+  if o > udOversample.Max then
+  begin
+    o := udOversample.Max;
+    txtOversample.Text := IntToStr(o);
+  end
+  else if o < udOversample.Min then
+  begin
+    o := udOversample.Min;
+    txtOversample.Text := IntToStr(o);
+  end;
+  Oversample := o;
   ShowMemoryStatus;
 end;
 
@@ -435,9 +473,11 @@ end;
 procedure TRenderForm.btnCancelClick(Sender: TObject);
 begin
   if Assigned(Renderer) then
-    Renderer.Terminate
-  else
-    close;
+  begin
+    Renderer.Terminate;
+    Renderer.WaitFor; // --?--
+  end
+  else close;
 end;
 
 procedure TRenderForm.txtDensityChange(Sender: TObject);
@@ -476,8 +516,8 @@ begin
     Registry.RootKey := HKEY_CURRENT_USER;
     if Registry.OpenKey('\Software\' + APP_NAME + '\Forms\Render', True) then
     begin
-      Registry.WriteInteger('Top', RenderForm.Top);
-      Registry.WriteInteger('Left', RenderForm.Left);
+      Registry.WriteInteger('Top', Top);
+      Registry.WriteInteger('Left', Left);
     end;
   finally
     Registry.Free;
@@ -504,7 +544,10 @@ begin
       CanClose := False
     else
     begin
-      if Assigned(Renderer) then Renderer.Terminate;
+      if Assigned(Renderer) then begin
+        Renderer.Terminate;
+        Renderer.WaitFor;
+      end;
     end;
 end;
 
@@ -677,7 +720,7 @@ procedure TRenderForm.DoPostProcess;
 begin
   frmPostProcess.SetRenderer(Renderer.GetRenderer);
   frmPostProcess.SetControlPoint(CP);
-  frmPostProcess.SetImageName(RenderForm.FileName);
+  frmPostProcess.SetImageName(FileName);
   frmPostProcess.Show;
 end;
 

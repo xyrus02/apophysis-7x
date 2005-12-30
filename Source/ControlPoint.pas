@@ -156,11 +156,12 @@ type
     // CP-specific functions moved from unit Main 
     function NumXForms: integer;
     function TrianglesFromCP(var Triangles: TTriangles): integer;
+    procedure GetFromTriangles(const Triangles: TTriangles; const t: integer);
     procedure EqualizeWeights;
     procedure NormalizeWeights;
     procedure RandomizeWeights;
     procedure ComputeWeights(Triangles: TTriangles; t: integer);
-    procedure GetFromTriangles(const Triangles: TTriangles; const t: integer);
+    procedure AdjustScale(w, h: integer);
 
     constructor Create;
     destructor Destroy; override;
@@ -272,7 +273,7 @@ begin
   end;
 
   LoopValue := 0;
-  for i := 0 to 1023 do begin
+  for i := 0 to PROP_TABLE_SIZE-1 do begin
     propsum := 0;
     j := -1;
     repeat
@@ -726,6 +727,7 @@ var
   CurrentXForm: integer;
   i: integer;
   OldDecimalSperator: Char;
+  v: double;
 begin
   ParseValues := TStringList.Create;
   ParseValues.CommaText := AString;
@@ -871,7 +873,20 @@ begin
       xform[CurrentXForm].c[2, 0] := StrToFloat(ParseValues[ParsePos]);
       Inc(ParsePos);
       xform[CurrentXForm].c[2, 1] := StrToFloat(ParseValues[ParsePos]);
-    end else if AnsiCompareText(CurrentToken, 'var') = 0 then begin
+    end else if AnsiCompareText(CurrentToken, 'post') = 0 then begin
+      Inc(ParsePos);
+      xform[CurrentXForm].p[0, 0] := StrToFloat(ParseValues[ParsePos]);
+      Inc(ParsePos);
+      xform[CurrentXForm].p[0, 1] := StrToFloat(ParseValues[ParsePos]);
+      Inc(ParsePos);
+      xform[CurrentXForm].p[1, 0] := StrToFloat(ParseValues[ParsePos]);
+      Inc(ParsePos);
+      xform[CurrentXForm].p[1, 1] := StrToFloat(ParseValues[ParsePos]);
+      Inc(ParsePos);
+      xform[CurrentXForm].p[2, 0] := StrToFloat(ParseValues[ParsePos]);
+      Inc(ParsePos);
+      xform[CurrentXForm].p[2, 1] := StrToFloat(ParseValues[ParsePos]);
+    end else if AnsiCompareText(CurrentToken, 'vars') = 0 then begin
       for i := 0 to NRVAR - 1 do begin
         xform[CurrentXForm].vars[i] := 0;
       end;
@@ -885,6 +900,24 @@ begin
 
         Inc(ParsePos);
         xform[CurrentXForm].vars[i] := StrToFloat(ParseValues[ParsePos]);
+        Inc(i);
+      end;
+    end else if AnsiCompareText(CurrentToken, 'variables') = 0 then begin
+      v := 0;
+      for i:= 0 to GetNrVariableNames-1 do begin
+        xform[CurrentXForm].SetVariable(GetVariableNameAt(i), v);
+      end;
+
+      i := 0;
+      while true do begin
+        if (ParsePos + 1) >= ParseValues.Count then
+          break;
+        if ParseValues[ParsePos + 1][1] in ['a'..'z', 'A'..'Z'] then
+          break;
+
+        Inc(ParsePos);
+        v := StrToFloat(ParseValues[ParsePos]);
+        xform[CurrentXForm].SetVariable(GetVariableNameAt(i), v);
         Inc(i);
       end;
 
@@ -1251,13 +1284,14 @@ begin
 end;
 
 
-class function TControlPoint.interpolate(cp1, cp2: TControlPoint; Time: double): TControlPoint;
+class function TControlPoint.Interpolate(cp1, cp2: TControlPoint; Time: double): TControlPoint;
 var
   c0, c1: double;
   i, j: integer;
   r, s, t: array[0..2] of double;
 //  totvar: double;
   {z,rhtime: double;}
+  v1, v2: double;
 begin
   if (cp2.time - cp1.time) > 1E-6 then begin
     c0 := (cp2.time - time) / (cp2.time - cp1.time);
@@ -1319,8 +1353,17 @@ begin
   for i := 0 to NXFORMS - 1 do begin
     Result.xform[i].density := c0 * cp1.xform[i].density + c1 * cp2.xform[i].density;
     Result.xform[i].color := c0 * cp1.xform[i].color + c1 * cp2.xform[i].color;
-    for j := 0 to NRVAR - 1 do begin
+//    for j := 0 to NRVAR - 1 do
+//      Result.xform[i].vars[j] := c0 * cp1.xform[i].vars[j] + c1 * cp2.xform[i].vars[j];
+    for j := 0 to NrVar-1 do
+    begin
       Result.xform[i].vars[j] := c0 * cp1.xform[i].vars[j] + c1 * cp2.xform[i].vars[j];
+    end;
+    for j:= 0 to GetNrVariableNames-1 do begin
+      cp1.xform[i].GetVariable(GetVariableNameAt(j), v1);
+      cp2.xform[i].GetVariable(GetVariableNameAt(j), v2);
+      v1 := c0 * v1 + c1 * v2;
+      Result.xform[i].SetVariable(GetVariableNameAt(j), v1);
     end;
 
 (*
@@ -1371,6 +1414,7 @@ var
   c0, c1: double;
   i, j: integer;
   r, s, t: array[0..2] of double;
+  v1, v2: double;
 //  totvar: double;
   {z,rhtime: double;}
 begin
@@ -1434,8 +1478,15 @@ begin
     Result.xform[i].density := c0 * cp1.xform[i].density + c1 * cp2.xform[i].density;
     Result.xform[i].color := c0 * cp1.xform[i].color + c1 * cp2.xform[i].color;
     Result.xform[i].symmetry := c0 * cp1.xform[i].symmetry + c1 * cp2.xform[i].symmetry;
-    for j := 0 to NRVAR - 1 do begin
+//    for j := 0 to NrVar - 1 do
+//      Result.xform[i].vars[j] := c0 * cp1.xform[i].vars[j] + c1 * cp2.xform[i].vars[j];
+    for j := 0 to NrVar-1 do
       Result.xform[i].vars[j] := c0 * cp1.xform[i].vars[j] + c1 * cp2.xform[i].vars[j];
+    for j:= 0 to GetNrVariableNames-1 do begin
+      cp1.xform[i].GetVariable(GetVariableNameAt(j), v1);
+      cp2.xform[i].GetVariable(GetVariableNameAt(j), v2);
+      v1 := c0 * v1 + c1 * v2;
+      Result.xform[i].SetVariable(GetVariableNameAt(j), v1);
     end;
 (*
     totvar := 0;
@@ -1472,9 +1523,10 @@ end;
 
 procedure TControlPoint.SaveToStringlist(sl: TStringlist);
 var
-  i, j: Integer;
+  i, j, k: Integer;
   s: string;
   OldDecimalSperator: Char;
+  v: double;
 begin
   OldDecimalSperator := DecimalSeparator;
   DecimalSeparator := '.';
@@ -1495,22 +1547,27 @@ begin
   sl.add(format('brightness %f gamma %f vibrancy %f hue_rotation %f cmap_inter %d',
     [brightness * BRIGHT_ADJUST, gamma, vibrancy, hue_rotation, cmap_inter]));
 
-  for i := 0 to NXFORMS - 1 do begin
-    if xform[i].density = 0 then
-      Continue;
+  for i := 0 to NXFORMS - 1 do
+    with xform[i] do begin
+      if density = 0 then continue;
 
-    sl.add(format('xform %d density %g color %g symmetry %g', [i, xform[i].density, xform[i].color, xform[i].symmetry]));
-    s := 'var';
-    for j := 0 to NRVAR - 1 do begin
-      s := format('%s %g', [s, xform[i].vars[j]]);
+      sl.add(format('xform %d density %g color %g symmetry %g', [i, density, color, symmetry]));
+      s := 'vars';
+      for j := 0 to NRVAR - 1 do begin
+        s := format('%s %g', [s, vars[j]]);
+      end;
+      sl.add(s);
+      s := 'variables';
+      for j:= 0 to GetNrVariableNames-1 do begin
+        GetVariable(GetVariableNameAt(j), v);
+        s := format('%s %g', [s, v]);
+      end;
+      sl.add(s);
+      sl.Add(format('coefs %.6f %.6f %.6f %.6f %.6f %.6f',
+        [c[0][0], c[0][1], c[1][0], c[1][1], c[2][0], c[2][1]]));
+      sl.Add(format('post %.6f %.6f %.6f %.6f %.6f %.6f',
+        [p[0][0], p[0][1], p[1][0], p[1][1], p[2][0], p[2][1]]));
     end;
-    sl.add(s);
-//    sl.Add(format('coefs %f %f %f %f %f %f',
-    sl.Add(format('coefs %.6f %.6f %.6f %.6f %.6f %.6f',
-      [xform[i].c[0][0], xform[i].c[0][1],
-      xform[i].c[1][0], xform[i].c[1][1],
-        xform[i].c[2][0], xform[i].c[2][1]]));
-  end;
 
   DecimalSeparator := OldDecimalSperator;
 end;
@@ -1697,7 +1754,7 @@ begin
     if xform[i].density = 0 then
       break;
 
-    for v := 23 to NrVar - 1 do
+    for v := NRLOCVAR to NrVar - 1 do
       result := Result or (xform[i].vars[v] > 0);
 
     if result then
@@ -2005,6 +2062,16 @@ begin
            Triangles[-1].x[2], -Triangles[-1].y[2], -Triangles[i].y[2],
            xform[i].c[0][1],    xform[i].c[1][1],    xform[i].c[2][1]);
   end;
+end;
+
+procedure TControlPoint.AdjustScale(w, h: integer);
+begin
+//  if width >= height then
+  pixels_per_unit := pixels_per_unit * w/width;
+//  else
+//    pixels_per_unit := pixels_per_unit * h/height;
+  width := w;
+  height := h;
 end;
 
 end.

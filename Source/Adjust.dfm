@@ -4,7 +4,7 @@ object AdjustForm: TAdjustForm
   BorderIcons = [biSystemMenu, biMinimize]
   BorderStyle = bsSingle
   Caption = 'Adjust'
-  ClientHeight = 264
+  ClientHeight = 263
   ClientWidth = 390
   Color = clBtnFace
   Font.Charset = DEFAULT_CHARSET
@@ -172,7 +172,7 @@ object AdjustForm: TAdjustForm
     Left = 0
     Top = 133
     Width = 390
-    Height = 131
+    Height = 130
     ActivePage = TabSheet1
     Align = alBottom
     TabOrder = 1
@@ -331,13 +331,12 @@ object AdjustForm: TAdjustForm
       Caption = 'Rendering'
       ImageIndex = 1
       object lblContrast: TLabel
-        Left = 8
+        Left = 4
         Top = 80
-        Width = 93
+        Width = 69
         Height = 13
-        Alignment = taRightJustify
         AutoSize = False
-        Caption = 'Background color:'
+        Caption = 'Background'
       end
       object btnGamma: TSpeedButton
         Left = 4
@@ -374,6 +373,13 @@ object AdjustForm: TAdjustForm
         ParentShowHint = False
         ShowHint = True
         OnClick = btnVibrancyClick
+      end
+      object Label1: TLabel
+        Left = 236
+        Top = 80
+        Width = 62
+        Height = 13
+        Caption = 'Master Scale'
       end
       object scrollGamma: TScrollBar
         Left = 72
@@ -446,9 +452,9 @@ object AdjustForm: TAdjustForm
         OnKeyPress = txtVibrancyKeyPress
       end
       object ColorPanel: TPanel
-        Left = 112
+        Left = 72
         Top = 78
-        Width = 113
+        Width = 65
         Height = 21
         Cursor = crHandPoint
         BevelOuter = bvLowered
@@ -456,30 +462,23 @@ object AdjustForm: TAdjustForm
         TabOrder = 6
         OnClick = ColorPanelClick
       end
-      object cbColor: TComboBox
-        Left = 232
-        Top = 78
-        Width = 59
-        Height = 21
-        Enabled = False
-        ItemHeight = 13
-        ItemIndex = 0
-        TabOrder = 7
-        Text = '000000'
-        Visible = False
-        Items.Strings = (
-          '000000'
-          'FFFFFF')
-      end
       object chkTransparent: TCheckBox
-        Left = 296
+        Left = 144
         Top = 80
         Width = 81
         Height = 17
         Caption = 'Transparent'
         Enabled = False
-        TabOrder = 8
+        TabOrder = 7
         Visible = False
+      end
+      object editPPU: TEdit
+        Left = 304
+        Top = 76
+        Width = 75
+        Height = 21
+        TabOrder = 8
+        OnKeyPress = editPPUKeyPress
       end
     end
     object TabSheet3: TTabSheet
@@ -674,7 +673,7 @@ object AdjustForm: TAdjustForm
         Left = 0
         Top = 0
         Width = 382
-        Height = 45
+        Height = 49
         Align = alTop
         BevelOuter = bvLowered
         Color = clAppWorkSpace
@@ -683,7 +682,7 @@ object AdjustForm: TAdjustForm
           Left = 1
           Top = 1
           Width = 380
-          Height = 43
+          Height = 47
           Cursor = crHandPoint
           Align = alClient
           PopupMenu = GradientPopup

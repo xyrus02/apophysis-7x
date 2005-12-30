@@ -62,7 +62,7 @@ uses Main, Math, Global;
 
 procedure TFullscreenForm.DrawFlame;
 begin
-  AdjustScale(cp, Image.Width, Image.Height);
+  cp.AdjustScale(Image.Width, Image.Height);
 //  cp.Zoom := MainForm.Zoom;
 //  cp.center[0] := MainForm.center[0];
 //  cp.center[1] := MainForm.center[1];

@@ -1,10 +1,12 @@
 object MainForm: TMainForm
-  Left = 387
-  Top = 166
-  Width = 605
-  Height = 635
+  Left = 400
+  Top = 157
+  Width = 731
+  Height = 530
   Caption = 'Apophysis'
   Color = clBtnFace
+  Constraints.MinHeight = 240
+  Constraints.MinWidth = 320
   Font.Charset = ANSI_CHARSET
   Font.Color = clWindowText
   Font.Height = -11
@@ -27,12 +29,12 @@ object MainForm: TMainForm
     Left = 160
     Top = 28
     Width = 4
-    Height = 540
+    Height = 435
   end
   object ToolBar: TToolBar
     Left = 0
     Top = 0
-    Width = 597
+    Width = 723
     Height = 28
     BorderWidth = 1
     Flat = True
@@ -43,7 +45,7 @@ object MainForm: TMainForm
     object btnOpen: TToolButton
       Left = 0
       Top = 0
-      Hint = 'Open (Ctrl+O)|Opens parameter files for browsing'
+      Hint = 'Open (Ctrl+O)|Open a parameter file for browsing'
       Caption = 'btnOpen'
       ImageIndex = 1
       OnClick = mnuOpenClick
@@ -131,7 +133,7 @@ object MainForm: TMainForm
     object btnFullScreen: TToolButton
       Left = 194
       Top = 0
-      Hint = 'Fullscreen View (F3)|Shows full-screen view of the flame'
+      Hint = 'Fullscreen View (F3)|Show full-screen view of the flame'
       Caption = 'btnFullScreen'
       ImageIndex = 52
       OnClick = mnuFullScreenClick
@@ -147,7 +149,7 @@ object MainForm: TMainForm
     object btnEditor: TToolButton
       Left = 225
       Top = 0
-      Hint = 'Editor (F4)|Shows the Transform Editor'
+      Hint = 'Editor (F4)|Show Transform Editor'
       Caption = 'btnEditor'
       ImageIndex = 19
       OnClick = mnuEditorClick
@@ -155,7 +157,7 @@ object MainForm: TMainForm
     object btnAdjust: TToolButton
       Left = 248
       Top = 0
-      Hint = 'Adjust (F5)|Shows the Adjust window'
+      Hint = 'Adjust (F5)|Adjust render-settings'
       Caption = 'btnAdjust'
       ImageIndex = 18
       OnClick = mnuAdjustClick
@@ -179,7 +181,7 @@ object MainForm: TMainForm
     object btnSize: TToolButton
       Left = 317
       Top = 0
-      Hint = 'Image Size (F2)|Shows the Image Size window'
+      Hint = 'Image Size|Adjust image size'
       Caption = 'ma'
       ImageIndex = 51
       OnClick = mnuImageSizeClick
@@ -192,27 +194,29 @@ object MainForm: TMainForm
       ImageIndex = 14
       Style = tbsSeparator
     end
-    object btnRun: TToolButton
+    object btnDefine: TToolButton
       Left = 348
       Top = 0
-      Hint = 'Run Script|Runs the Default Animation script'
+      Hint = 'Edit Script (F8)|Open the Script Editor'
+      Caption = 'btnDefine'
+      ImageIndex = 42
+      OnClick = mnuEditScriptClick
+    end
+    object btnRun: TToolButton
+      Left = 371
+      Top = 0
+      Hint = 'Run Script|Run Script'
+      Caption = 'Run'
       ImageIndex = 43
       OnClick = btnRunClick
     end
     object btnStop: TToolButton
-      Left = 371
-      Top = 0
-      Caption = 'btnStop'
-      ImageIndex = 36
-      OnClick = mnuStopClick
-    end
-    object btnDefine: TToolButton
       Left = 394
       Top = 0
-      Hint = 'Edit Script (F8)|Opens the Script Editor'
-      Caption = 'btnDefine'
-      ImageIndex = 42
-      OnClick = mnuEditScriptClick
+      Hint = 'Stop Script|Stop Script'
+      Caption = 'Stop'
+      ImageIndex = 36
+      OnClick = mnuStopClick
     end
     object ToolButton5: TToolButton
       Left = 417
@@ -284,7 +288,7 @@ object MainForm: TMainForm
     Left = 0
     Top = 28
     Width = 160
-    Height = 540
+    Height = 435
     Align = alLeft
     Columns = <
       item
@@ -302,8 +306,8 @@ object MainForm: TMainForm
   object BackPanel: TPanel
     Left = 164
     Top = 28
-    Width = 433
-    Height = 540
+    Width = 559
+    Height = 435
     Align = alClient
     BevelInner = bvLowered
     BevelOuter = bvNone
@@ -313,8 +317,8 @@ object MainForm: TMainForm
     object Image: TImage
       Left = 1
       Top = 1
-      Width = 431
-      Height = 538
+      Width = 557
+      Height = 433
       Align = alClient
       AutoSize = True
       PopupMenu = DisplayPopup
@@ -327,8 +331,8 @@ object MainForm: TMainForm
   end
   object StatusBar: TStatusBar
     Left = 0
-    Top = 568
-    Width = 597
+    Top = 463
+    Width = 723
     Height = 19
     Panels = <
       item
@@ -2668,7 +2672,6 @@ object MainForm: TMainForm
       object mnuImageSize: TMenuItem
         Caption = 'Image Size'
         ImageIndex = 51
-        ShortCut = 119
         OnClick = mnuImageSizeClick
       end
       object mnuimage: TMenuItem

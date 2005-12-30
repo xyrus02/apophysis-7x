@@ -56,7 +56,7 @@ begin
 end;
 
 ///////////////////////////////////////////////////////////////////////////////
-procedure TBaseVariation.prepare;
+procedure TBaseVariation.Prepare;
 begin
 end;
 

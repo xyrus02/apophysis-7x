@@ -138,7 +138,7 @@ end;
 procedure TMutateForm.UpdateDisplay;
 begin
   cps[0].copy(MainCp);
-  AdjustScale(cps[0], Image0.Width, Image0.Height);
+  cps[0].AdjustScale(Image0.Width, Image0.Height);
   cps[0].cmap := MainCp.cmap;
   cmap := MainCp.cmap;
   name := Maincp.name;
@@ -600,7 +600,7 @@ begin
     cps[0].width := MainCp.width;
     cps[0].height := MainCp.height;
     cps[0].pixels_per_unit := MainCp.pixels_per_unit;
-    AdjustScale(cps[0], Image0.width, Image0.Height);
+    cps[0].AdjustScale(Image0.width, Image0.Height);
     cps[0].zoom := MainCp.zoom;
     cps[0].center[0] := MainCp.center[0];
     cps[0].center[1] := MainCp.center[1];

@@ -3,7 +3,7 @@ object ScriptEditor: TScriptEditor
   Top = 383
   Width = 539
   Height = 390
-  Caption = 'Default Animation'
+  Caption = 'Script Editor'
   Color = clBtnFace
   Font.Charset = DEFAULT_CHARSET
   Font.Color = clWindowText
@@ -20,7 +20,7 @@ object ScriptEditor: TScriptEditor
   TextHeight = 13
   object Splitter1: TSplitter
     Left = 0
-    Top = 244
+    Top = 250
     Width = 531
     Height = 4
     Cursor = crVSplit
@@ -30,7 +30,7 @@ object ScriptEditor: TScriptEditor
     Left = 508
     Top = 0
     Width = 23
-    Height = 244
+    Height = 250
     Align = alRight
     AutoSize = True
     Caption = 'ToolBar'
@@ -96,7 +96,7 @@ object ScriptEditor: TScriptEditor
   end
   object StatusBar: TStatusBar
     Left = 0
-    Top = 337
+    Top = 343
     Width = 531
     Height = 19
     Anchors = [akLeft, akRight]
@@ -106,7 +106,7 @@ object ScriptEditor: TScriptEditor
     Left = 0
     Top = 0
     Width = 508
-    Height = 244
+    Height = 250
     Align = alClient
     BevelInner = bvLowered
     BevelOuter = bvLowered
@@ -116,7 +116,7 @@ object ScriptEditor: TScriptEditor
       Left = 2
       Top = 2
       Width = 504
-      Height = 240
+      Height = 246
       Cursor = crIBeam
       PopupMenu = PopupMenu
       ActiveLineSettings.ShowActiveLine = False
@@ -190,14 +190,14 @@ object ScriptEditor: TScriptEditor
       UrlStyle.BkColor = clWhite
       UrlStyle.Style = [fsUnderline]
       UseStyler = True
-      Version = '1.6.0.8'
+      Version = '1.6.0.17'
       WordWrap = wwNone
       OnChange = EditorChange
     end
   end
   object Console: TMemo
     Left = 0
-    Top = 248
+    Top = 254
     Width = 531
     Height = 89
     Align = alBottom
@@ -389,6 +389,13 @@ object ScriptEditor: TScriptEditor
     EventSupport = False
     OnCompileError = ScripterCompileError
     ShortBooleanEval = False
+    LibOptions.SearchPath.Strings = (
+      '$(CURDIR)'
+      '$(APPDIR)')
+    LibOptions.SourceFileExt = '.psc'
+    LibOptions.CompiledFileExt = '.pcu'
+    LibOptions.UseScriptFiles = False
+    CallExecHookEvent = False
     Left = 360
     Top = 32
   end

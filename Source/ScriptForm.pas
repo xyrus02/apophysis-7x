@@ -1475,7 +1475,7 @@ begin
   if nxform < NXFORMS then
     for i := nxform to NXFORMS - 1 do
       cp1.xform[i].density := 0;
-  cp1.NormalizeWeights;
+  // --?-- cp1.NormalizeWeights;
   // Check for symmetry parameter
   if cp1.symmetry <> 0 then
   begin
@@ -1517,7 +1517,7 @@ begin
     for i := 0 to NXFORMS - 1 do
       if ScriptEditor.cp.xform[i].density = 0 then break;
     NumTransforms := i;
-    ScriptEditor.cp.NormalizeWeights;
+    // --?-- ScriptEditor.cp.NormalizeWeights;
 //    FlameName := FileList[index];
   finally
     IFSStrings.Free;
@@ -1589,7 +1589,7 @@ begin
     for i := 0 to NXFORMS - 1 do
       if ScriptEditor.cp.xform[i].density = 0 then break;
     NumTransforms := i;
-    ScriptEditor.cp.NormalizeWeights;
+    // --?-- ScriptEditor.cp.NormalizeWeights;
     if SavedPal then ScriptEditor.cp.cmap := Palette;
     ScriptEditor.cp.name := FileList[index];
   finally
@@ -1749,9 +1749,9 @@ begin
   if NumTransforms > 1 then
   begin
     AMachine.Paused := True;
-    ScriptEditor.cp.NormalizeWeights;
+    // --?-- ScriptEditor.cp.NormalizeWeights;
     PreviewForm.cp.Copy(ScriptEditor.cp);
-    AdjustScale(PreviewForm.cp, PreviewForm.Image.Width, PreviewForm.Image.Height);
+    PreviewForm.cp.AdjustScale(PreviewForm.Image.Width, PreviewForm.Image.Height);
     PreviewForm.Show;
     PreviewForm.DrawFlame;
     AMachine.Paused := False;
@@ -1764,7 +1764,7 @@ procedure TOperationLibrary.RenderProc(AMachine: TatVirtualMachine);
 begin
   if NumTransforms > 1 then
   begin
-    ScriptEditor.cp.NormalizeWeights;
+    // --?-- ScriptEditor.cp.NormalizeWeights;
     ScriptRenderForm.cp.Copy(ScriptEditor.cp);
     ScriptRenderForm.Caption := 'Rendering ' + ScriptEditor.Renderer.Filename; ;
     ScriptRenderForm.Show;
@@ -2913,7 +2913,7 @@ begin
   else
     if (LastError = '') and UpdateIt then
     begin
-      cp.NormalizeWeights;
+      // --?-- cp.NormalizeWeights;
       MainForm.UpdateUndo;
       MainCp.Copy(cp);
       UpdateFlame;
@@ -2945,11 +2945,11 @@ procedure TScriptEditor.UpdateFlame;
 begin
   MainForm.StopThread;
   MainForm.UpdateUndo;
-  cp.NormalizeWeights;
+  // --?-- cp.NormalizeWeights;
   MainCp.Copy(cp);
 //  MainCp.name := FlameName;
   Transforms := MainCp.TrianglesFromCP(MainTriangles);
-  AdjustScale(MainCp, MainForm.Image.Width, MainForm.Image.Height);
+  MainCp.AdjustScale(MainForm.Image.Width, MainForm.Image.Height);
   if ResetLocation then MainCp.CalcBoundBox else
   begin;
     MainCp.Zoom := cp.zoom;

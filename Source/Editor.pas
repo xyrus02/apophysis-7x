@@ -66,7 +66,6 @@ type
     TriangleTab: TTabSheet;
     tabXForm: TTabSheet;
     Label6: TLabel;
-    Label29: TLabel;
     txtA: TEdit;
     txtB: TEdit;
     txtC: TEdit;
@@ -74,7 +73,6 @@ type
     txtE: TEdit;
     txtF: TEdit;
     txtP: TEdit;
-    txtSymmetry: TEdit;
     tabVariations: TTabSheet;
     VEVars: TValueListEditor;
     tabColors: TTabSheet;
@@ -83,12 +81,8 @@ type
     pnlXFormColor: TPanel;
     txtXFormColor: TEdit;
     GroupBox2: TGroupBox;
-    Label20: TLabel;
-    Label21: TLabel;
-    pnlBackColor: TPanel;
     chkUseXFormColor: TCheckBox;
     chkHelpers: TCheckBox;
-    pnlReference: TPanel;
     TriangleScrollBox: TScrollBox;
     TrianglePanel: TPanel;
     txtCy: TEdit;
@@ -97,9 +91,9 @@ type
     txtBx: TEdit;
     txtAy: TEdit;
     txtAx: TEdit;
-    Label9: TLabel;
-    Label7: TLabel;
-    Label11: TLabel;
+    LabelB: TLabel;
+    LabelA: TLabel;
+    LabelC: TLabel;
     btTrgRotateRight: TSpeedButton;
     btTrgRotateLeft: TSpeedButton;
     btTrgMoveUp: TSpeedButton;
@@ -108,7 +102,6 @@ type
     btTrgMoveDown: TSpeedButton;
     btTrgScaleUp: TSpeedButton;
     btTrgScaleDown: TSpeedButton;
-    rgPivot: TRadioGroup;
     btTrgRotateRight90: TSpeedButton;
     btTrgRotateLeft90: TSpeedButton;
     txtTrgMoveValue: TComboBox;
@@ -130,35 +123,47 @@ type
     tbScale: TToolButton;
     tbFlipHorz: TToolButton;
     tbFlipVert: TToolButton;
-    tbFlipAllHorz: TToolButton;
-    tbFlipAllVert: TToolButton;
     tbSelect: TToolButton;
     btTrgMoveLU: TSpeedButton;
     btTrgMoveLD: TSpeedButton;
     btTrgMoveRU: TSpeedButton;
     btTrgMoveRD: TSpeedButton;
     EditorTB: TImageList;
-    Label8: TLabel;
-    pnlGridColor1: TPanel;
-    pnlGridColor2: TPanel;
     TabSheet4: TTabSheet;
     vleVariables: TValueListEditor;
     tbResetAll: TToolButton;
-    Label10: TLabel;
-    pnlHelpersColor: TPanel;
     btnResetCoefs: TSpeedButton;
     btnXcoefs: TSpeedButton;
     btnYcoefs: TSpeedButton;
     btnOcoefs: TSpeedButton;
     btnCoefsRect: TSpeedButton;
     btnCoefsPolar: TSpeedButton;
-    chkPreserve: TCheckBox;
     Label1: TLabel;
     trkVarPreviewDensity: TTrackBar;
     trkVarPreviewRange: TTrackBar;
     ToolButton2: TToolButton;
     tbVarPreview: TToolButton;
     trkVarPreviewDepth: TTrackBar;
+    Label29: TLabel;
+    chkPreserve: TCheckBox;
+    btnXpost: TSpeedButton;
+    btnYpost: TSpeedButton;
+    btnOpost: TSpeedButton;
+    txtPost00: TEdit;
+    txtPost01: TEdit;
+    txtPost10: TEdit;
+    txtPost11: TEdit;
+    txtPost20: TEdit;
+    txtPost21: TEdit;
+    btnResetPostXForm: TSpeedButton;
+    btnSwapXforms: TSpeedButton;
+    txtSymmetry: TComboBox;
+    GroupBox3: TGroupBox;
+    editPivotY: TEdit;
+    editPivotX: TEdit;
+    btnResetPivot: TSpeedButton;
+    btnPickPivot: TSpeedButton;
+    btnPivotMode: TSpeedButton;
     procedure ValidateVariable;
     procedure vleVariablesValidate(Sender: TObject; ACol, ARow: Integer; const KeyName, KeyValue: string);
     procedure vleVariablesKeyPress(Sender: TObject; var Key: Char);
@@ -181,6 +186,7 @@ type
       Shift: TShiftState);
     procedure TriangleViewExit(Sender: TObject);
     procedure TriangleViewMouseLeave(Sender: TObject);
+    procedure TriangleViewInvalidate(Sender: TObject);
 
     procedure FormShow(Sender: TObject);
     procedure mnuDeleteClick(Sender: TObject);
@@ -214,8 +220,6 @@ type
     procedure scrlXFormColorChange(Sender: TObject);
     procedure chkUseXFormColorClick(Sender: TObject);
     procedure chkHelpersClick(Sender: TObject);
-    procedure pnlBackColorClick(Sender: TObject);
-    procedure pnlReferenceClick(Sender: TObject);
     procedure txtXFormColorExit(Sender: TObject);
     procedure txtXFormColorKeyPress(Sender: TObject; var Key: Char);
     procedure txtSymmetryExit(Sender: TObject);
@@ -239,10 +243,7 @@ type
     procedure splitterMoved(Sender: TObject);
     procedure tbSelectClick(Sender: TObject);
     procedure EditKeyPress(Sender: TObject; var Key: Char);
-    procedure rgPivotClicked(Sender: TObject);
     procedure tbEditModeClick(Sender: TObject);
-    procedure pnlGridColor1Click(Sender: TObject);
-    procedure pnlGridColor2Click(Sender: TObject);
 
     procedure ValidateVariation;
 //    procedure ValidateValue(Sender: TObject);
@@ -257,28 +258,18 @@ type
     procedure VEVarsMouseUp(Sender: TObject; Button: TMouseButton;
       Shift: TShiftState; X, Y: Integer);
     procedure VEVarsDblClick(Sender: TObject);
-//    procedure VEVarsDrawCell(Sender: TObject; ACol, ARow: Integer;
-//      Rect: TRect; State: TGridDrawState);
 
     procedure cbTransformsDrawItem(Control: TWinControl; Index: Integer;
       Rect: TRect; State: TOwnerDrawState);
 
     procedure tbFullViewClick(Sender: TObject);
-{
-    procedure ColorImageMouseDown(Sender: TObject; Button: TMouseButton;
-      Shift: TShiftState; X, Y: Integer);
-    procedure ColorImageMouseMove(Sender: TObject; Shift: TShiftState; X,
-      Y: Integer);
-    procedure ColorImageMouseUp(Sender: TObject; Button: TMouseButton;
-      Shift: TShiftState; X, Y: Integer);
-}
+
     procedure EditKeyDown(Sender: TObject; var Key: Word;
       Shift: TShiftState);
     procedure txtValidateValue(Sender: TObject);
     procedure txtValKeyPress(Sender: TObject; var Key: Char);
     procedure mnuResetClick(Sender: TObject);
     procedure mnuResetAllClick(Sender: TObject);
-    procedure pnlHelpersColorClick(Sender: TObject);
     procedure btnXcoefsClick(Sender: TObject);
     procedure btnYcoefsClick(Sender: TObject);
     procedure btnOcoefsClick(Sender: TObject);
@@ -287,6 +278,18 @@ type
     procedure trkVarPreviewRangeChange(Sender: TObject);
     procedure trkVarPreviewDensityChange(Sender: TObject);
     procedure trkVarPreviewDepthChange(Sender: TObject);
+    procedure btnXpostClick(Sender: TObject);
+    procedure btnYpostClick(Sender: TObject);
+    procedure btnOpostClick(Sender: TObject);
+    procedure PostCoefValidate(Sender: TObject);
+    procedure PostCoefKeypress(Sender: TObject; var Key: Char);
+    procedure btnResetPostXFormClick(Sender: TObject);
+    procedure btnSwapXformsClick(Sender: TObject);
+    procedure btnPivotModeClick(Sender: TObject);
+    procedure PivotValidate(Sender: TObject);
+    procedure PivotKeyPress(Sender: TObject; var Key: Char);
+    procedure btnResetPivotClick(Sender: TObject);
+    procedure btnPickPivotClick(Sender: TObject);
 
   private
     TriangleView: TCustomDrawControl;
@@ -296,7 +299,7 @@ type
 
     // --Z--
     viewDragMode, viewDragged: boolean;
-    editMode, oldMode: (modeNone, modeMove, modeRotate, modeScale);
+    editMode, oldMode: (modeNone, modeMove, modeRotate, modeScale, modePick);
     modeKey: word;
     key_handled: boolean;
 
@@ -326,17 +329,19 @@ type
     HasChanged: boolean;
 
     oldx, oldy, olddist: double;
-    Pivot: TSPoint;
+    Pivot, LocalPivot, WorldPivot: TSPoint;
+    PivotMode: (pivotLocal, pivotWorld); 
     VarsCache: array[0..64] of double; // hack: to prevent slow valuelist redraw
 
     colorDrag, colorChanged: boolean;
     colorDragX, colorOldX: integer;
 
+(*
     { Options }
     UseFlameBackground, UseTransformColors: boolean;
     BackGroundColor, ReferenceTrianglecolor: integer;
     GridColor1, GridColor2, HelpersColor: integer;
-
+*)
     procedure UpdateFlameX;
     procedure UpdateFlame(DrawMain: boolean);
     procedure DeleteTriangle(t: integer);
@@ -584,7 +589,7 @@ begin
     PreviewImage.Top := 1;
     PreviewImage.Left := (pw - PreviewImage.Width) div 2;
   end;
-  AdjustScale(cp, PreviewImage.Width, PreviewImage.Height);
+  cp.AdjustScale(PreviewImage.Width, PreviewImage.Height);
   DrawPreview;
 end;
 
@@ -710,7 +715,6 @@ begin
 
   with cp.xform[SelectedTriangle] do
   begin
-    // OMG. and now these coefs are stored with inverse sign? :-\
    if btnCoefsRect.Down then begin
     txtA.text := Format('%.6g', [ c[0][0]]);
     txtB.text := Format('%.6g', [-c[0][1]]);
@@ -718,6 +722,12 @@ begin
     txtD.text := Format('%.6g', [ c[1][1]]);
     txtE.text := Format('%.6g', [ c[2][0]]);
     txtF.text := Format('%.6g', [-c[2][1]]);
+    txtPost00.text := Format('%.6g', [ p[0][0]]);
+    txtPost01.text := Format('%.6g', [-p[0][1]]);
+    txtPost10.text := Format('%.6g', [-p[1][0]]);
+    txtPost11.text := Format('%.6g', [ p[1][1]]);
+    txtPost20.text := Format('%.6g', [ p[2][0]]);
+    txtPost21.text := Format('%.6g', [-p[2][1]]);
    end
    else begin
     txtA.text := Format('%.6g', [Hypot(c[0][0], c[0][1])]);
@@ -726,6 +736,12 @@ begin
     txtD.text := Format('%.6g', [arctan2(c[1][1], -c[1][0])*180/PI]);
     txtE.text := Format('%.6g', [Hypot(c[2][0], c[2][1])]);
     txtF.text := Format('%.6g', [arctan2(-c[2][1], c[2][0])*180/PI]);
+    txtPost00.text := Format('%.6g', [Hypot(p[0][0], p[0][1])]);
+    txtPost01.text := Format('%.6g', [arctan2(-p[0][1], p[0][0])*180/PI]);
+    txtPost10.text := Format('%.6g', [Hypot(p[1][0], p[1][1])]);
+    txtPost11.text := Format('%.6g', [arctan2(p[1][1], -p[1][0])*180/PI]);
+    txtPost20.text := Format('%.6g', [Hypot(p[2][0], p[2][1])]);
+    txtPost21.text := Format('%.6g', [arctan2(-p[2][1], p[2][0])*180/PI]);
    end;
 
     txtP.text := Format('%.6g', [density]);
@@ -751,6 +767,15 @@ begin
       if vleVariables.Values[GetVariableNameAt(i)] <> strval then
         vleVariables.Values[GetVariableNameAt(i)] := strval;
     end;
+  end;
+
+  if PivotMode = pivotLocal then begin
+    editPivotX.Text := Format('%.6g', [LocalPivot.x]);
+    editPivotY.Text := Format('%.6g', [LocalPivot.y]);
+  end
+  else begin
+    editPivotX.Text := Format('%.6g', [WorldPivot.x]);
+    editPivotY.Text := Format('%.6g', [WorldPivot.y]);
   end;
 
   PageControl.Refresh;
@@ -818,7 +843,7 @@ begin
   end;
 
   cp.GetFromTriangles(MainTriangles, Transforms);
-//  if not chkPreserve.checked then ComputeWeights(cp, MainTriangles, transforms);
+  if not chkPreserve.checked then cp.ComputeWeights(MainTriangles, transforms);
   DrawPreview;
   ShowSelectedInfo;
   TriangleView.Refresh;;
@@ -871,11 +896,7 @@ begin
       begin
       { copy higher transforms down }
         MainTriangles[i] := MainTriangles[i + 1];
-        cp.xform[i].density := cp.xform[i + 1].density;
-        cp.xform[i].color := cp.xform[i + 1].color;
-        cp.xform[i].symmetry := cp.xform[i + 1].symmetry;
-        for j := 0 to NRVAR - 1 do
-          cp.xform[i].vars[j] := cp.xform[i + 1].vars[j];
+        cp.xform[i].Assign(cp.xform[i + 1]);
       end;
       Transforms := Transforms - 1;
       cp.xform[transforms].density := 0;
@@ -968,6 +989,8 @@ var
 
   gridX1, gridX2, gridY1, gridY2, gi, gstep: double;
   gp: TRoundToRange;
+
+  tps: TPenStyle;
 label DrawCorner;
 begin
   assert(SelectedTriangle >= 0);
@@ -985,7 +1008,7 @@ begin
   try
     with Bitmap.Canvas do
     begin
-      brush.Color := pnlBackColor.Color;
+      brush.Color := EditorBkgColor; //pnlBackColor.Color;
       FillRect(Rect(0, 0, Width, Height));
 
       Pen.Style := psSolid;
@@ -1032,30 +1055,60 @@ begin
 
       {Reference Triangle}
       Pen.Style := psDot;
-      Pen.color := pnlReference.Color;
+      Pen.color := ReferenceTriangleColor; //pnlReference.Color;
       brush.Color := gridColor1 shr 1 and $7f7f7f;
       a := ToScreen(MainTriangles[-1].x[0], MainTriangles[-1].y[0]);
       b := ToScreen(MainTriangles[-1].x[1], MainTriangles[-1].y[1]);
       c := ToScreen(MainTriangles[-1].x[2], MainTriangles[-1].y[2]);
       Polyline([a, b, c, a]);
 
-      brush.Color := pnlBackColor.Color;
+      brush.Color := EditorBkgColor; //pnlBackColor.Color;
       Font.color := Pen.color;
-      TextOut(c.x-9, c.y-12, 'C');
-      TextOut(b.x-8, b.y+1, 'B');
-      TextOut(a.x+2, a.y+1, 'A');
+      TextOut(c.x-9, c.y-12, 'Y');
+      TextOut(b.x-8, b.y+1, 'O');
+      TextOut(a.x+2, a.y+1, 'X');
 
       Pen.Style := psSolid;
 
       {Transforms}
       for i := 0 to Transforms - 1 do
       begin
+        if i <> SelectedTriangle then Pen.Style := psDot;
+
+with cp.xform[i] do
+if (p[0,0]<>1) or (p[0,1]<>0) or(p[1,0]<>0) or (p[1,1]<>1) or (p[2,0]<>0) or (p[2,1]<>0) then
+begin
+  Pen.Color := GetTriangleColor(i) shr 1 and $7f7f7f;
+  //Pen.Mode := pmMerge;
+  a:=toscreen(p[0,0] - p[1,0] + p[2,0], -p[0,1] + p[1,1] - p[2,1]);
+  moveto(a.x, a.y);
+  b:=toscreen(p[0,0] + p[1,0] + p[2,0], -p[0,1] - p[1,1] - p[2,1]);
+  lineto(b.x, b.y);
+  b:=toscreen(-p[0,0] + p[1,0] + p[2,0], p[0,1] - p[1,1] - p[2,1]);
+  lineto(b.x, b.y);
+  b:=toscreen(-p[0,0] - p[1,0] + p[2,0], p[0,1] + p[1,1] - p[2,1]);
+  lineto(b.x, b.y);
+  lineto(a.x, a.y);
+
+
+  tps := Pen.Style;
+  Pen.Style := psDot;
+  a:=toscreen(p[1,0] + p[2,0], -p[1,1] - p[2,1]);
+  moveto(a.x, a.y);
+  a:=toscreen(-p[1,0] + p[2,0], p[1,1] - p[2,1]);
+  lineto(a.x, a.y);
+
+  a:=toscreen(p[0,0] + p[2,0], -p[0,1] - p[2,1]);
+  lineto(a.x, a.y);
+  a:=toscreen(-p[0,0] + p[2,0], p[0,1] - p[2,1]);
+  lineto(a.x, a.y);
+  Pen.Style := tps;
+end;
+
+        Pen.Color := GetTriangleColor(i);
         a := ToScreen(MainTriangles[i].x[0], MainTriangles[i].y[0]);
         b := ToScreen(MainTriangles[i].x[1], MainTriangles[i].y[1]);
         c := ToScreen(MainTriangles[i].x[2], MainTriangles[i].y[2]);
-
-        Pen.Color := GetTriangleColor(i);
-        if i <> SelectedTriangle then Pen.Style := psDot;
         Polyline([a, b, c, a]);
 
         Pen.Style := psSolid;
@@ -1064,9 +1117,9 @@ begin
         Ellipse(c.x - 4, c.y - 4, c.x + 4, c.y + 4);
 
         Font.color := Pen.color;
-        TextOut(c.x+2, c.y+1, 'C');
-        TextOut(b.x+2, b.y+1, 'B');
-        TextOut(a.x+2, a.y+1, 'A');
+        TextOut(c.x+2, c.y+1, 'Y');
+        TextOut(b.x+2, b.y+1, 'O');
+        TextOut(a.x+2, a.y+1, 'X');
       end;
 
       if tbVarPreview.Down then
@@ -1084,7 +1137,7 @@ begin
             tx := ax / d1;
             ty := ay / d1;
             for i := trkVarPreviewDepth.position downto 1 do
-              cp.xform[SelectedTriangle].PreviewPoint(tx, ty);
+              cp.xform[SelectedTriangle].NextPointXY(tx, ty);
             a := toscreen(tx, -ty);
             Pixels[a.x, a.y] := tc;
           except
@@ -1234,14 +1287,14 @@ begin
       end
       else if (mouseOverTriangle>=0) and (mouseOverCorner >= 0) then // highlight corner under cursor
       begin
-        brush.Color:=clSilver;
-{
+//        brush.Color:=clSilver;
+
         case mouseOverCorner of
           0: brush.Color:=clRed;
           2: brush.Color:=clGreen;
-          else brush.Color:=clYellow;
+          else brush.Color:=clSilver;
         end;
-}
+
         a := ToScreen(MainTriangles[mouseOverTriangle].x[mouseOverCorner], MainTriangles[mouseOverTriangle].y[mouseOverCorner]);
         Ellipse(a.x - 4, a.y - 4, a.x + 4, a.y + 4);
 
@@ -1326,7 +1379,7 @@ begin
   TriangleView.OnKeyDown    := TriangleViewKeyDown;
   TriangleView.OnKeyUp      := TriangleViewKeyUp;
 
-  TriangleView.OnEnter      := rgPivotClicked;   // hack: it's only Invalidate() in there :)
+  TriangleView.OnEnter      := TriangleViewInvalidate;
   TriangleView.OnExit       := TriangleViewExit;
   TriangleView.OnMouseLeave := TriangleViewmouseLeave;
 //
@@ -1422,10 +1475,13 @@ begin
 
 // -- from MouseDown -- for highlighting:
 // TODO: optimize...
-    if (j = 1) and ((rgPivot.ItemIndex = 1) or (rgPivot.ItemIndex = 4)) then
+    if (j = 1) then //and ((rgPivot.ItemIndex = 1) or (rgPivot.ItemIndex = 4)) then
     begin
-      Pivot.x := 0;
-      Pivot.y := 0;
+      if PivotMode = pivotLocal then begin
+        Pivot.x := 0;
+        Pivot.y := 0;
+      end
+      else Pivot := GetPivot;
 
       LocalAxisLocked := true;
     end
@@ -1435,7 +1491,7 @@ begin
     end;
     oldx := MainTriangles[mouseOverTriangle].x[j] - Pivot.X;
     oldy := MainTriangles[mouseOverTriangle].y[j] - Pivot.Y;
-    olddist := Hypot(oldx, oldy); //sqrt(oldx*oldx + oldy*oldy);
+    olddist := Hypot(oldx, oldy);
 // --
 
           goto FoundCorner;
@@ -1495,10 +1551,10 @@ Skip1:
         if LocalAxisLocked then with MainTriangles[SelectedTriangle] do
         begin
           assert(SelectedCorner = 1);
-          x[0] := OldTriangle.x[0] + vx - OldTriangle.x[1];
-          y[0] := OldTriangle.y[0] + vy - OldTriangle.y[1];
-          x[2] := OldTriangle.x[2] + vx - OldTriangle.x[1];
-          y[2] := OldTriangle.y[2] + vy - OldTriangle.y[1];
+          x[0] := OldTriangle.x[0] + Pivot.X+vx - OldTriangle.x[1];
+          y[0] := OldTriangle.y[0] + Pivot.Y+vy - OldTriangle.y[1];
+          x[2] := OldTriangle.x[2] + Pivot.X+vx - OldTriangle.x[1];
+          y[2] := OldTriangle.y[2] + Pivot.Y+vy - OldTriangle.y[1];
         end;
         MainTriangles[SelectedTriangle].x[SelectedCorner] := Pivot.X+vx;
         MainTriangles[SelectedTriangle].y[SelectedCorner] := Pivot.Y+vy;
@@ -1535,10 +1591,10 @@ Skip1:
         if LocalAxisLocked then with MainTriangles[SelectedTriangle] do
         begin
           assert(SelectedCorner = 1);
-          x[0] := OldTriangle.x[0] + vx - OldTriangle.x[1];
-          y[0] := OldTriangle.y[0] + vy - OldTriangle.y[1];
-          x[2] := OldTriangle.x[2] + vx - OldTriangle.x[1];
-          y[2] := OldTriangle.y[2] + vy - OldTriangle.y[1];
+          x[0] := OldTriangle.x[0] + Pivot.X+vx - OldTriangle.x[1];
+          y[0] := OldTriangle.y[0] + Pivot.Y+vy - OldTriangle.y[1];
+          x[2] := OldTriangle.x[2] + Pivot.X+vx - OldTriangle.x[1];
+          y[2] := OldTriangle.y[2] + Pivot.Y+vy - OldTriangle.y[1];
         end;
         MainTriangles[SelectedTriangle].x[SelectedCorner] := Pivot.X + vx;
         MainTriangles[SelectedTriangle].y[SelectedCorner] := Pivot.Y + vy;
@@ -1678,6 +1734,28 @@ begin
 
   Scale(fx, fy, x, y);
 
+  if editMode = modePick then
+  begin
+    if PivotMode = pivotLocal then
+    with MainTriangles[SelectedTriangle] do begin
+      LocalPivot.x :=
+        ((fx - x[1]) - (x[2]-x[1])/(y[2]-y[1])*(fy - y[1]))/
+        ((x[0]-x[1]) - (x[2]-x[1])/(y[2]-y[1])*(y[0]-y[1]));
+      LocalPivot.y :=
+        ((fy - y[1]) - (y[0]-y[1])*LocalPivot.x)/(y[2]-y[1]);
+    end
+    else begin
+      WorldPivot.x := fx;
+      WorldPivot.y := fy;
+    end;
+    editMode := oldMode;
+    oldMode := modeNone;
+    btnPickPivot.Down := false;
+    ShowSelectedInfo;
+    TriangleView.Invalidate;
+    exit;
+  end;
+
   if Button = mbLeft then
   begin
     Shift := Shift - [ssLeft];
@@ -1703,10 +1781,13 @@ begin
 
           SelectedCorner := j;
 //          Pivot := GetPivot;
-          if (j = 1) and ((rgPivot.ItemIndex = 1) or (rgPivot.ItemIndex = 4)) then
+          if (j = 1) then //and ((rgPivot.ItemIndex = 1) or (rgPivot.ItemIndex = 4)) then
           begin
-            Pivot.x := 0;
-            Pivot.y := 0;
+            if PivotMode = pivotLocal then begin
+              Pivot.x := 0;
+              Pivot.y := 0;
+            end
+            else Pivot := GetPivot;
 
             LocalAxisLocked := true;
           end
@@ -1750,7 +1831,7 @@ begin
     TriangleView.Invalidate;
     exit;
   end
-  else if (Button = mbRight) and 
+  else if (Button = mbRight) and
       not (TriangleCaught or CornerCaught) then // graph panning
   begin
     SetCaptureControl(TriangleView);
@@ -1818,6 +1899,7 @@ begin
       begin
         UseTransformColors := False;
       end;
+(*
       if Registry.ValueExists('UseFlameBackground') then
       begin
         UseFlameBackground := Registry.ReadBool('UseFlameBackground');
@@ -1846,6 +1928,7 @@ begin
         ReferenceTriangleColor := Registry.ReadInteger('ReferenceTriangleColor')
       else
         ReferenceTriangleColor := $7f7f7f;
+*)
       if Registry.ValueExists('ResetLocation') then
         mnuResetLoc.checked := Registry.ReadBool('ResetLocation')
       else mnuResetLoc.checked := true;
@@ -1864,11 +1947,11 @@ begin
     else begin
       UseTransformColors := False;
       UseFlameBackground := False;
-      BackgroundColor := $000000;
-      GridColor1 := $444444;
-      GridColor2 := $333333;
-      HelpersColor := $808080;
-      ReferenceTriangleColor := integer(clGray);
+//      BackgroundColor := $000000;
+//      GridColor1 := $444444;
+//      GridColor2 := $333333;
+//      HelpersColor := $808080;
+//      ReferenceTriangleColor := integer(clGray);
       mnuResetLoc.checked := true;
       //tbResetLoc.Down := true;
     end;
@@ -1878,12 +1961,13 @@ begin
   end;
   chkUseXFormColor.checked := UseTransformColors;
 //  chkFlameBack.checked := UseFlameBackground;
-  pnlBackColor.Color := TColor(BackgroundColor);
+{
   GrphPnl.Color := TColor(BackgroundColor);
+  pnlBackColor.Color := TColor(EditorBkgColor);
   pnlGridColor1.Color := GridColor1;
   pnlGridColor2.Color := GridColor2;
   pnlReference.color := TColor(ReferenceTriangleColor);
-
+}
   UpdateDisplay;
 end;
 
@@ -1920,9 +2004,7 @@ begin
   begin
     MainForm.UpdateUndo;
     MainTriangles[Transforms] := MainTriangles[SelectedTriangle];
-    cp.xform[Transforms].density := cp.xform[SelectedTriangle].density;
-    for i := 0 to NRVAR - 1 do
-      cp.xform[Transforms].vars[i] := cp.xform[SelectedTriangle].vars[i];
+    cp.xform[Transforms].Assign(cp.xform[SelectedTriangle]);
     SelectedTriangle := Transforms;
     Inc(Transforms);
     cbTransforms.clear;
@@ -1966,8 +2048,8 @@ begin
     Val := Format('%.6f', [MainTriangles[SelectedTriangle].x[2]])
   else if Sender = txtCy then
     Val := Format('%.6f', [MainTriangles[SelectedTriangle].y[2]])
-  else if Sender = txtP then ;
-  val := Format('%.6f', [cp.xform[SelectedTriangle].density]);
+  else if Sender = txtP then
+    val := Format('%.6f', [cp.xform[SelectedTriangle].density]);
   OldText := Val;
   { Test that it's a valid floating point number }
   try
@@ -2026,8 +2108,8 @@ begin
       Val := Format('%.6f', [MainTriangles[SelectedTriangle].x[2]])
     else if Sender = txtCy then
       Val := Format('%.6f', [MainTriangles[SelectedTriangle].y[2]])
-    else if Sender = txtP then ;
-    val := Format('%.6f', [cp.xform[SelectedTriangle].density]);
+    else if Sender = txtP then
+      val := Format('%.6f', [cp.xform[SelectedTriangle].density]);
     OldText := Val;
     { Stop the beep }
     Key := #0;
@@ -2151,13 +2233,15 @@ begin
     if Registry.OpenKey('\Software\' + APP_NAME + '\Forms\Editor', True) then
     begin
       { Options }
+//      Registry.WriteBool('UseFlameBackground', UseFlameBackground);
+{
       Registry.WriteBool('UseTransformColors', UseTransformColors);
-      Registry.WriteBool('UseFlameBackground', UseFlameBackground);
       Registry.WriteInteger('BackgroundColor', BackgroundColor);
       Registry.WriteInteger('GridColor1', GridColor1);
       Registry.WriteInteger('GridColor2', GridColor2);
       Registry.WriteInteger('HelpersColor', HelpersColor);
       Registry.WriteInteger('ReferenceTriangleColor', ReferenceTriangleColor);
+}
       Registry.WriteBool('ResetLocation', mnuResetLoc.checked);
       Registry.WriteBool('VariationPreview', tbVarPreview.Down);
       Registry.WriteInteger('VariationPreviewRange', trkVarPreviewRange.Position);
@@ -2231,7 +2315,7 @@ begin
     cp.width := MainCp.width;
     cp.height := MainCp.height;
     cp.pixels_per_unit := MainCp.pixels_per_unit;
-    AdjustScale(cp, PreviewImage.width, PreviewImage.Height);
+    cp.AdjustScale(PreviewImage.width, PreviewImage.Height);
     cp.zoom := MainCp.zoom;
     cp.center[0] := MainCp.center[0];
     cp.center[1] := MainCp.center[1];
@@ -2248,6 +2332,7 @@ begin
   begin
     MainTriangles[i] := FlipTriangleVertical(MainTriangles[i]);
   end;
+  //cp.TrianglesFromCP(MainTriangles);
   AutoZoom;
   UpdateFlame(True);
 end;
@@ -2261,6 +2346,7 @@ begin
   begin
     MainTriangles[i] := FlipTriangleHorizontal(MainTriangles[i]);
   end;
+  //cp.TrianglesFromCP(MainTriangles);
   AutoZoom;
   UpdateFlame(True);
 end;
@@ -2368,18 +2454,12 @@ begin
  begin
   if btnCoefsRect.Down = true then
   begin
-    if Sender = txtA then
-      cp.xform[SelectedTriangle].c[0][0] := NewVal
-    else if Sender = txtB then
-      cp.xform[SelectedTriangle].c[0][1] := -NewVal
-    else if Sender = txtC then
-      cp.xform[SelectedTriangle].c[1][0] := -NewVal
-    else if Sender = txtD then
-      cp.xform[SelectedTriangle].c[1][1] := NewVal
-    else if Sender = txtE then
-      cp.xform[SelectedTriangle].c[2][0] := NewVal
-    else if Sender = txtF then
-      cp.xform[SelectedTriangle].c[2][1] := -NewVal;
+    if Sender = txtA then c[0][0] := NewVal
+    else if Sender = txtB then c[0][1] := -NewVal
+    else if Sender = txtC then c[1][0] := -NewVal
+    else if Sender = txtD then c[1][1] := NewVal
+    else if Sender = txtE then c[2][0] := NewVal
+    else if Sender = txtF then c[2][1] := -NewVal;
   end
   else begin
     if (Sender = txtA) or (Sender = txtB) then begin
@@ -2453,9 +2533,10 @@ begin
   TriangleView.Invalidate;
 end;
 
+(*
 procedure TEditForm.pnlBackColorClick(Sender: TObject);
 begin
-  AdjustForm.ColorDialog.Color := pnlBackColor.Color;
+  AdjustForm.ColorDialog.Color := EditorBkgColor; //pnlBackColor.Color;
   if AdjustForm.ColorDialog.Execute then
   begin
     pnlBackColor.Color := AdjustForm.ColorDialog.Color;
@@ -2508,6 +2589,7 @@ begin
     TriangleView.Invalidate;
   end;
 end;
+*)
 
 procedure TEditForm.txtXFormColorExit(Sender: TObject);
 var
@@ -2825,7 +2907,7 @@ begin
     VEVars.Values[VarNames(varDragIndex)] := '0';
   end
   else begin
-    v := 0; // <<<----- hey!!! why there is 'var' in SETvariable???
+    v := 0; // hmm
     cp.xform[SelectedTriangle].SetVariable(vleVariables.Keys[varDragIndex+1], v);
     vleVariables.Values[vleVariables.Keys[varDragIndex+1]] := '0';
   end;
@@ -2842,23 +2924,14 @@ end;
 
 function TEditForm.GetPivot(n: integer): TSPoint;
 begin
-  case (rgPivot.ItemIndex) of
-    0: begin
-        Result.x:=MainTriangles[n].x[0];
-        Result.y:=MainTriangles[n].y[0];
-       end;
-    1: begin
-        Result.x:=MainTriangles[n].x[1];
-        Result.y:=MainTriangles[n].y[1];
-       end;
-    2: begin
-        Result.x:=MainTriangles[n].x[2];
-        Result.y:=MainTriangles[n].y[2];
-       end;
-    3: Result:=Centroid(MainTriangles[n]);
-    else
-      Result.x:=0;
-      Result.y:=0;
+  if PivotMode = pivotLocal then
+    with MainTriangles[n] do begin
+      Result.x := x[1] + (x[0] - x[1])*LocalPivot.x + (x[2] - x[1])*LocalPivot.y;
+      Result.y := y[1] + (y[0] - y[1])*LocalPivot.x + (y[2] - y[1])*LocalPivot.y;
+    end
+  else begin
+      Result.x := WorldPivot.x;
+      Result.y := WorldPivot.y;
   end;
 end;
 
@@ -3172,9 +3245,10 @@ begin
         TriangleView.Invalidate;
         ShowSelectedInfo;
       end;
-{   // these keys are not so good, must think about it...
 
-    VK_SPACE: EditForm.tbSelectClick(Sender);
+    VK_SPACE: btnPivotModeClick(Sender);
+
+{   // these keys are not so good, must think about it...
 
     Ord('Q'): EditForm.tbEditModeClick(tbMove);
     Ord('W'): EditForm.tbEditModeClick(tbRotate);
@@ -3184,12 +3258,6 @@ begin
     Ord('S'): PageControl.TabIndex := 1;
     Ord('D'): PageControl.TabIndex := 2;
     Ord('F'): PageControl.TabIndex := 3;
-
-    Ord('Z'): EditForm.rgPivot.ItemIndex:=0;
-    Ord('X'): EditForm.rgPivot.ItemIndex:=1;
-    Ord('C'): EditForm.rgPivot.ItemIndex:=2;
-    Ord('V'): EditForm.rgPivot.ItemIndex:=3;
-    Ord('B'): EditForm.rgPivot.ItemIndex:=4;
 }
   else
     key_handled := false;
@@ -3239,7 +3307,7 @@ begin
   Handled := true;
 end;
 
-procedure TEditForm.rgPivotClicked(Sender: TObject);
+procedure TEditForm.TriangleViewInvalidate(Sender: TObject);
 begin
   TriangleView.Invalidate;
 end;
@@ -3274,65 +3342,6 @@ procedure TEditForm.tbFullViewClick(Sender: TObject);
 begin
   MainForm.mnuFullScreenClick(Sender);
 end;
-
-(*
-// --Z-- // transform color scroller - TODO
-
-procedure TEditForm.ColorImageMouseDown(Sender: TObject;
-  Button: TMouseButton; Shift: TShiftState; X, Y: Integer);
-begin
-  if Button = mbLeft then
-  begin
-    SetCaptureControl(ColorImage);
-    colorDragX:=0;
-    colorOldX:=x;
-    colorDrag:=true;
-    colorChanged:=false;
-  end;
-end;
-
-procedure TEditForm.ColorImageMouseMove(Sender: TObject;
-  Shift: TShiftState; X, Y: Integer);
-var
-  i, offset: integer;
-begin
-  if colorDrag and (OldX<>x) then
-  begin
-{    oldX:=x;
-    offset := ( ((x - colorDragX) shl 8) div ColorImage.Width ) mod 256;
-    colorChanged := true;
-
-    for i := 0 to 255 do
-    begin
-      Palette[i][0] := BackupPal[(255 + i - offset) and $FF][0];
-      Palette[i][1] := BackupPal[(255 + i - offset) and $FF][1];
-      Palette[i][2] := BackupPal[(255 + i - offset) and $FF][2];
-    end;
-
-    cp.CmapIndex := cmbPalette.ItemIndex;
-    cp.cmap := Palette;
-
-    colorImage.Refresh;
-}  end;
-end;
-
-procedure TEditForm.ColorImageMouseUp(Sender: TObject;
-  Button: TMouseButton; Shift: TShiftState; X, Y: Integer);
-begin
-  if (Button = mbLeft) and colorDrag then
-  begin
-    colorDrag := false;
-
-    if colorChanged then begin
-    // MainForm.UpdateUndo;
-    // cp.xxx := xxx;
-    // MainCP.copy(cp);
-    // UpdateXXXX;
-    SetCaptureControl(nil);
-    end;
-  end;
-end;
-*)
 
 //-- Variable List -------------------------------------------------------------
 
@@ -3423,13 +3432,31 @@ begin
   Transforms := 2;
   SelectedTriangle := 1;
   MainTriangles[0] := MainTriangles[-1];
-  cp.xform[0].density := 0.5;
-  cp.xform[0].color := 0;
-  cp.xform[0].vars[0] := 1;
+  with cp.xform[0] do begin
+    density := 0.5;
+    color := 0;
+    symmetry := 0;
+    vars[0] := 1;
+    p[0, 0] := 1;
+    p[0, 1] := 0;
+    p[1, 0] := 0;
+    p[1, 1] := 1;
+    p[2, 0] := 0;
+    p[2, 1] := 0;
+  end;
   MainTriangles[1] := MainTriangles[-1];
-  cp.xform[1].density := 0.5;
-  cp.xform[0].color := 1;
-  cp.xform[1].vars[0] := 1;
+  with cp.xform[1] do begin
+    density := 0.5;
+    color := 1;
+    symmetry := 0;
+    vars[0] := 1;
+    p[0, 0] := 1;
+    p[0, 1] := 0;
+    p[1, 0] := 0;
+    p[1, 1] := 1;
+    p[2, 0] := 0;
+    p[2, 1] := 0;
+  end;
   for i := 1 to NRVAR - 1 do
   begin
     cp.xform[0].vars[i] := 0;
@@ -3509,6 +3536,239 @@ procedure TEditForm.trkVarPreviewDepthChange(Sender: TObject);
 begin
   trkVarPreviewDepth.Hint := Format('Depth: %d', [trkVarPreviewDepth.position]);
   TriangleView.Invalidate;
+end;
+
+procedure TEditForm.btnXpostClick(Sender: TObject);
+begin
+  with cp.xform[SelectedTriangle] do
+  begin
+    if (p[0][0] = 1) and (p[0][1] = 0) then exit;
+
+    MainForm.UpdateUndo;
+    p[0][0] := 1;
+    p[0][1] := 0;
+  end;
+  UpdateFlame(True);
+end;
+
+procedure TEditForm.btnYpostClick(Sender: TObject);
+begin
+  if (cp.xform[SelectedTriangle].p[1][0] = 0) and
+     (cp.xform[SelectedTriangle].p[1][1] = 1) then exit;
+
+  MainForm.UpdateUndo;
+  cp.xform[SelectedTriangle].p[1][0] := 0;
+  cp.xform[SelectedTriangle].p[1][1] := 1;
+  UpdateFlame(True);
+end;
+
+procedure TEditForm.btnOpostClick(Sender: TObject);
+begin
+  if (cp.xform[SelectedTriangle].p[2][0] = 0) and
+     (cp.xform[SelectedTriangle].p[2][1] = 0) then exit;
+
+  MainForm.UpdateUndo;
+  cp.xform[SelectedTriangle].p[2][0] := 0;
+  cp.xform[SelectedTriangle].p[2][1] := 0;
+  UpdateFlame(True);
+end;
+
+// --Z-- copying functions is dumb... I am so lazy :-(
+
+procedure TEditForm.PostCoefKeypress(Sender: TObject; var Key: Char);
+begin
+  if key <> #13 then exit;
+  key := #0;
+  PostCoefValidate(Sender);
+end;
+
+procedure TEditForm.PostCoefValidate(Sender: TObject);
+var
+  NewVal: double;
+  x, y, r, a: double; // dumb... must optimize
+begin
+  try
+    NewVal := Round6(StrToFloat(TEdit(Sender).Text));
+  except on Exception do
+    begin
+      ShowSelectedInfo;
+      exit;
+    end;
+  end;
+
+  MainForm.UpdateUndo; // TODO - prevent unnecessary UpdateUndo...
+ with cp.xform[SelectedTriangle] do
+ begin
+  if btnCoefsRect.Down = true then
+  begin
+    if Sender = txtPost00 then p[0][0] := NewVal
+    else if Sender = txtPost01 then p[0][1] := -NewVal
+    else if Sender = txtPost10 then p[1][0] := -NewVal
+    else if Sender = txtPost11 then p[1][1] := NewVal
+    else if Sender = txtPost20 then p[2][0] := NewVal
+    else if Sender = txtPost21 then p[2][1] := -NewVal;
+  end
+  else begin
+    if (Sender = txtPost00) or (Sender = txtPost01) then begin
+      x := p[0][0];
+      y := -p[0][1];
+    end else
+    if (Sender = txtPost10) or (Sender = txtPost11) then begin
+      x := -p[1][0];
+      y := p[1][1];
+    end else
+    begin
+      x := p[2][0];
+      y := -p[2][1];
+    end;
+    r := Hypot(x, y);
+    a := arctan2(y, x);
+
+    if (Sender = txtPost00) or (Sender = txtPost10) or (Sender = txtPost20) then
+      r := NewVal
+    else
+      a := NewVal*PI/180;
+
+    x := r * cos(a);
+    y := r * sin(a);
+    if (Sender = txtPost00) or (Sender = txtPost01) then begin
+      p[0][0] := x;
+      p[0][1] := -y;
+    end else
+    if (Sender = txtPost10) or (Sender = txtPost11) then begin
+      p[1][0] := -x;
+      p[1][1] := y;
+    end else
+    begin
+      p[2][0] := x;
+      p[2][1] := -y;
+    end;
+  end;
+ end;
+  ShowSelectedInfo;
+  UpdateFlame(true);
+end;
+
+procedure TEditForm.btnResetPostXFormClick(Sender: TObject);
+begin
+ with cp.xform[SelectedTriangle] do
+ begin
+  if (p[0,0]<>1) or (p[0,1]<>0) or(p[1,0]<>0) or (p[1,1]<>1) or (p[2,0]<>0) or (p[2,1]<>0) then
+  begin
+    MainForm.UpdateUndo;
+    p[0, 0] := 1;
+    p[0, 1] := 0;
+    p[1, 0] := 0;
+    p[1, 1] := 1;
+    p[2, 0] := 0;
+    p[2, 1] := 0;
+    ShowSelectedInfo;
+    UpdateFlame(True);
+  end;
+ end;
+end;
+
+procedure TEditForm.btnPivotModeClick(Sender: TObject);
+begin
+  if PivotMode <> pivotLocal then
+  with MainTriangles[SelectedTriangle] do begin
+    PivotMode := pivotLocal;
+    btnPivotMode.Caption := 'Local Pivot';
+  end
+  else
+  with MainTriangles[SelectedTriangle] do begin
+    PivotMode := pivotWorld;
+    btnPivotMode.Caption := 'World Pivot';
+  end;
+
+  TriangleView.Invalidate;
+  ShowSelectedInfo;
+end;
+
+procedure TEditForm.PivotValidate(Sender: TObject);
+var
+  v: double;
+begin
+  try
+    v := Round6(StrToFloat(TEdit(Sender).Text));
+  except on Exception do
+    begin
+      ShowSelectedInfo;
+      exit;
+    end;
+  end;
+
+  if Sender = editPivotX then
+    if v <> Round6(GetPivot.x) then begin
+      if PivotMode = pivotLocal then LocalPivot.x := v
+      else WorldPivot.x := v;
+    end
+    else exit
+  else
+    if v <> Round6(GetPivot.y) then begin
+      if PivotMode = pivotLocal then LocalPivot.y := v
+      else WorldPivot.y := v;
+    end
+    else exit;
+
+  TriangleView.Invalidate;
+  ShowSelectedInfo;
+end;
+
+procedure TEditForm.PivotKeyPress(Sender: TObject; var Key: Char);
+begin
+  if key <> #13 then exit;
+  key := #0;
+  PivotValidate(Sender);
+end;
+
+procedure TEditForm.btnResetPivotClick(Sender: TObject);
+begin
+  if PivotMode = pivotLocal then
+  begin
+    LocalPivot.x := 0;
+    LocalPivot.y := 0;
+  end
+  else begin
+    WorldPivot.x := 0;
+    WorldPivot.y := 0;
+  end;
+  TriangleView.Invalidate;
+  ShowSelectedInfo;
+end;
+
+procedure TEditForm.btnPickPivotClick(Sender: TObject);
+begin
+  if editMode = modePick then begin
+    editMode := oldMode;
+    oldMode := modeNone;
+    exit;
+  end;
+  if oldMode <> modeNone then exit;
+  oldMode := editMode;
+  editMode := modePick;
+  TriangleView.Cursor := crCross; //...
+  btnPickPivot.Down := true;
+end;
+
+// this function is temporary...................................................
+procedure TEditForm.btnSwapXformsClick(Sender: TObject);
+var
+  i, j: integer;
+  t: double;
+begin
+  MainForm.UpdateUndo;
+  for i := 0 to 2 do
+    for j := 0 to 1 do
+      with cp.xform[SelectedTriangle] do
+      begin
+        t:=c[i,j];
+        c[i,j]:=p[i,j];
+        p[i,j]:=t;
+      end;
+  cp.TrianglesFromCP(MainTriangles);
+  ShowSelectedInfo;
+  UpdateFlame(true);
 end;
 
 end.

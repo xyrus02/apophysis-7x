@@ -51,19 +51,19 @@ object OptionsForm: TOptionsForm
       HelpContext = 1
       Caption = 'General'
       object chkConfirmDel: TCheckBox
-        Left = 144
-        Top = 135
-        Width = 97
+        Left = 8
+        Top = 175
+        Width = 121
         Height = 17
         HelpContext = 1005
         Caption = 'Confirm delete'
-        TabOrder = 4
+        TabOrder = 2
       end
       object JPEG: TGroupBox
         Left = 8
-        Top = 132
+        Top = 116
         Width = 121
-        Height = 53
+        Height = 55
         Caption = 'JPEG Quality'
         TabOrder = 0
         object txtJPEGquality: TComboBox
@@ -83,23 +83,23 @@ object OptionsForm: TOptionsForm
         end
       end
       object chkResize: TCheckBox
-        Left = 144
-        Top = 153
-        Width = 169
+        Left = 8
+        Top = 193
+        Width = 121
         Height = 17
         Caption = 'Resize on load'
-        TabOrder = 5
+        TabOrder = 3
       end
       object GroupBox16: TGroupBox
         Left = 8
         Top = 4
         Width = 121
-        Height = 69
+        Height = 55
         Caption = 'Multithreading'
         TabOrder = 1
         object cbNrTheads: TComboBox
           Left = 16
-          Top = 24
+          Top = 20
           Width = 89
           Height = 21
           ItemHeight = 13
@@ -113,18 +113,21 @@ object OptionsForm: TOptionsForm
             '8')
         end
       end
-      object chkShowTransparency: TCheckBox
-        Left = 144
-        Top = 171
-        Width = 169
-        Height = 17
-        Caption = 'Show Transparency'
-        TabOrder = 6
+      object rgRotationMode: TRadioGroup
+        Left = 8
+        Top = 60
+        Width = 121
+        Height = 55
+        Caption = 'Rotation Mode'
+        Items.Strings = (
+          'Rotate image'
+          'Rotate frame')
+        TabOrder = 4
       end
       object rgReferenceMode: TRadioGroup
-        Left = 280
+        Left = 288
         Top = 4
-        Width = 153
+        Width = 145
         Height = 69
         Caption = 'Reference Triangle'
         ItemIndex = 0
@@ -132,30 +135,116 @@ object OptionsForm: TOptionsForm
           'Normal'
           'Proportional'
           'Wandering (old-style)')
-        TabOrder = 3
+        TabOrder = 5
       end
-      object rgTransparency: TRadioGroup
+      object GroupBox1: TGroupBox
         Left = 136
         Top = 4
-        Width = 137
-        Height = 69
-        Caption = 'PNG Transparency'
-        Items.Strings = (
-          'No transparency'
-          'Flam3-style'
-          'Flamesong-style')
-        TabOrder = 2
-      end
-      object rgRotationMode: TRadioGroup
-        Left = 8
-        Top = 76
-        Width = 121
-        Height = 53
-        Caption = 'Rotation Mode'
-        Items.Strings = (
-          'Rotate image'
-          'Rotate frame')
-        TabOrder = 7
+        Width = 145
+        Height = 138
+        Caption = 'Editor Graph'
+        TabOrder = 6
+        object Label40: TLabel
+          Left = 8
+          Top = 56
+          Width = 56
+          Height = 13
+          Caption = 'Background'
+        end
+        object Label41: TLabel
+          Left = 8
+          Top = 96
+          Width = 50
+          Height = 13
+          Caption = 'Reference'
+        end
+        object Label42: TLabel
+          Left = 75
+          Top = 56
+          Width = 50
+          Height = 13
+          Caption = 'Grid colors'
+        end
+        object Label43: TLabel
+          Left = 75
+          Top = 96
+          Width = 36
+          Height = 13
+          Caption = 'Helpers'
+        end
+        object pnlBackColor: TPanel
+          Left = 8
+          Top = 72
+          Width = 62
+          Height = 17
+          Cursor = crHandPoint
+          BevelOuter = bvLowered
+          Color = clBlack
+          TabOrder = 0
+          OnClick = pnlBackColorClick
+        end
+        object chkUseXFormColor: TCheckBox
+          Left = 8
+          Top = 16
+          Width = 129
+          Height = 17
+          Caption = 'Use transform color'
+          TabOrder = 1
+        end
+        object chkHelpers: TCheckBox
+          Left = 8
+          Top = 36
+          Width = 129
+          Height = 17
+          Caption = 'Helper lines'
+          Checked = True
+          State = cbChecked
+          TabOrder = 2
+        end
+        object pnlReference: TPanel
+          Left = 8
+          Top = 112
+          Width = 62
+          Height = 17
+          Cursor = crHandPoint
+          BevelOuter = bvLowered
+          Color = clGray
+          TabOrder = 3
+          OnClick = pnlReferenceClick
+        end
+        object pnlGridColor1: TPanel
+          Left = 75
+          Top = 72
+          Width = 29
+          Height = 17
+          Cursor = crHandPoint
+          BevelOuter = bvLowered
+          Color = clBlack
+          TabOrder = 4
+          OnClick = pnlGridColor1Click
+        end
+        object pnlGridColor2: TPanel
+          Left = 108
+          Top = 72
+          Width = 29
+          Height = 17
+          Cursor = crHandPoint
+          BevelOuter = bvLowered
+          Color = clBlack
+          TabOrder = 5
+          OnClick = pnlGridColor2Click
+        end
+        object pnlHelpersColor: TPanel
+          Left = 75
+          Top = 112
+          Width = 62
+          Height = 17
+          Cursor = crHandPoint
+          BevelOuter = bvLowered
+          Color = clGray
+          TabOrder = 6
+          OnClick = pnlHelpersColorClick
+        end
       end
     end
     object DisplayPage: TTabSheet
@@ -311,6 +400,27 @@ object OptionsForm: TOptionsForm
           TabOrder = 5
         end
       end
+      object chkShowTransparency: TCheckBox
+        Left = 192
+        Top = 179
+        Width = 129
+        Height = 17
+        Caption = 'Show Transparency'
+        TabOrder = 2
+      end
+      object rgTransparency: TRadioGroup
+        Left = 184
+        Top = 104
+        Width = 193
+        Height = 69
+        Caption = 'PNG Transparency'
+        ItemIndex = 0
+        Items.Strings = (
+          'No transparency'
+          'Flam3-style'
+          'Flamesong-style')
+        TabOrder = 3
+      end
     end
     object RandomPage: TTabSheet
       Caption = 'Random'
@@ -424,7 +534,7 @@ object OptionsForm: TOptionsForm
           Height = 21
           HelpContext = 1004
           TabOrder = 1
-          Text = '100'
+          Text = '10'
         end
         object udBatchSize: TUpDown
           Left = 169
@@ -434,7 +544,7 @@ object OptionsForm: TOptionsForm
           Associate = txtBatchSize
           Min = 1
           Max = 300
-          Position = 100
+          Position = 10
           TabOrder = 2
           Thousands = False
         end
@@ -609,8 +719,8 @@ object OptionsForm: TOptionsForm
         object clbVarEnabled: TCheckListBox
           Left = 12
           Top = 16
-          Width = 309
-          Height = 201
+          Width = 317
+          Height = 206
           Columns = 2
           ItemHeight = 13
           TabOrder = 0
@@ -1196,7 +1306,7 @@ object OptionsForm: TOptionsForm
         end
       end
     end
-    object Paths: TTabSheet
+    object PathsPage: TTabSheet
       Caption = 'Paths'
       ImageIndex = 7
       object GroupBox10: TGroupBox

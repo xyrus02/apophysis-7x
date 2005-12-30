@@ -1866,7 +1866,7 @@ object AboutForm: TAboutForm
   object Label1: TLabel
     Left = 120
     Top = 8
-    Width = 137
+    Width = 131
     Height = 36
     Caption = 'Apophysis'
     Font.Charset = ANSI_CHARSET
@@ -1877,11 +1877,11 @@ object AboutForm: TAboutForm
     ParentFont = False
   end
   object Label2: TLabel
-    Left = 260
+    Left = 268
     Top = 24
-    Width = 65
+    Width = 58
     Height = 13
-    Caption = 'Version 2.03b'
+    Caption = 'version 2.03'
   end
   object Label3: TLabel
     Left = 120

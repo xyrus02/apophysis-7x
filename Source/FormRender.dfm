@@ -4,7 +4,7 @@ object RenderForm: TRenderForm
   BorderIcons = [biSystemMenu, biMinimize]
   BorderStyle = bsSingle
   Caption = 'RenderForm'
-  ClientHeight = 424
+  ClientHeight = 416
   ClientWidth = 424
   Color = clBtnFace
   Font.Charset = DEFAULT_CHARSET
@@ -51,7 +51,7 @@ object RenderForm: TRenderForm
   TextHeight = 13
   object ProgressBar: TProgressBar
     Left = 0
-    Top = 392
+    Top = 384
     Width = 424
     Height = 13
     Align = alBottom
@@ -59,7 +59,7 @@ object RenderForm: TRenderForm
   end
   object btnRender: TButton
     Left = 256
-    Top = 364
+    Top = 356
     Width = 75
     Height = 23
     Caption = 'Render'
@@ -69,7 +69,7 @@ object RenderForm: TRenderForm
   end
   object btnCancel: TButton
     Left = 344
-    Top = 362
+    Top = 354
     Width = 75
     Height = 25
     Caption = 'Close'
@@ -140,7 +140,6 @@ object RenderForm: TRenderForm
       Width = 281
       Height = 21
       TabOrder = 0
-      Text = 'txtFilename'
       OnChange = txtFilenameChange
     end
   end
@@ -368,7 +367,7 @@ object RenderForm: TRenderForm
   end
   object btnPause: TButton
     Left = 168
-    Top = 362
+    Top = 354
     Width = 75
     Height = 25
     Caption = 'Pause'
@@ -377,7 +376,7 @@ object RenderForm: TRenderForm
   end
   object chkSave: TCheckBox
     Left = 8
-    Top = 330
+    Top = 322
     Width = 113
     Height = 17
     Caption = 'Save parameters'
@@ -439,7 +438,7 @@ object RenderForm: TRenderForm
   end
   object StatusBar: TStatusBar
     Left = 0
-    Top = 405
+    Top = 397
     Width = 424
     Height = 19
     Panels = <
@@ -455,7 +454,7 @@ object RenderForm: TRenderForm
   end
   object chkShutdown: TCheckBox
     Left = 8
-    Top = 368
+    Top = 360
     Width = 137
     Height = 17
     Caption = 'Shutdown on complete'
@@ -463,14 +462,14 @@ object RenderForm: TRenderForm
   end
   object cbPostProcess: TCheckBox
     Left = 8
-    Top = 348
+    Top = 340
     Width = 97
     Height = 17
     Caption = 'Post render'
     TabOrder = 9
   end
   object SaveDialog: TSaveDialog
-    Left = 368
-    Top = 328
+    Left = 376
+    Top = 320
   end
 end

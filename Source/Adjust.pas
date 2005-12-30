@@ -61,7 +61,6 @@ type
     txtVibrancy: TEdit;
     ColorPanel: TPanel;
     TabSheet3: TTabSheet;
-    cbColor: TComboBox;
     scrollAngle: TScrollBar;
     txtAngle: TEdit;
     btnZoom: TSpeedButton;
@@ -131,6 +130,8 @@ type
     Bevel2: TBevel;
     N8: TMenuItem;
     mnuInstantPreview: TMenuItem;
+    Label1: TLabel;
+    editPPU: TEdit;
     procedure FormCreate(Sender: TObject);
     procedure FormClose(Sender: TObject; var Action: TCloseAction);
     procedure FormDestroy(Sender: TObject);
@@ -248,6 +249,7 @@ type
     procedure btnColorPresetClick(Sender: TObject);
     procedure btnApplySizeClick(Sender: TObject);
     procedure mnuInstantPreviewClick(Sender: TObject);
+    procedure editPPUKeyPress(Sender: TObject; var Key: Char);
 
   private
     Resetting: boolean;
@@ -337,7 +339,7 @@ begin
     PreviewImage.Top := 1;
     PreviewImage.Left := (pw - PreviewImage.Width) div 2;
   end;
-  AdjustScale(cp, PreviewImage.Width, PreviewImage.Height);
+  cp.AdjustScale(PreviewImage.Width, PreviewImage.Height);
 
   cp.cmap := MainCp.cmap;
 
@@ -361,7 +363,7 @@ begin
   end;
 
   ColorPanel.color := cp.background[2] shl 16 + cp.background[1] shl 8 + cp.background[0];
-  cbColor.text := IntToHex(integer(ColorPanel.Color), 6);
+  //cbColor.text := IntToHex(integer(ColorPanel.Color), 6);
 
   GetMainWindowSize;
 
@@ -373,7 +375,7 @@ begin
   BackupPal := cp.cmap;
 
   Resetting := False;
-
+editPPU.Text := FloatToStr(cp.pixels_per_unit);
   end; //***
   DrawPreview;
 end;
@@ -532,7 +534,14 @@ begin
         Preset[i].Width := 512;
         Preset[i].Height := 384;
       end;
-    end;
+    end
+    else
+      for i:=1 to 3 do begin
+        Preset[i].Left := MainForm.Left;
+        Preset[i].Top := MainForm.Top;
+        Preset[i].Width := 512;
+        Preset[i].Height := 384;
+      end;
     Registry.CloseKey;
   finally
     Registry.Free;
@@ -898,7 +907,7 @@ begin
   if ColorDialog.Execute then
   begin
     ColorPanel.Color := ColorDialog.Color;
-    cbColor.text := IntToHex(integer(ColorDialog.Color), 6);   
+    //cbColor.text := IntToHex(integer(ColorDialog.Color), 6);   
     col := ColorToRGB(ColorDialog.Color);
     cp.background[0] := col and 255;
     cp.background[1] := col shr 8 and 255;
@@ -1862,7 +1871,7 @@ end;
 
 procedure TAdjustForm.btnColorPresetClick(Sender: TObject);
 begin
-  cmbPalette.ItemIndex := random(701);
+  cmbPalette.ItemIndex := Random(NRCMAPS);
   cmbPaletteChange(Sender);
 end;
 
@@ -1874,6 +1883,24 @@ end;
 procedure TAdjustForm.mnuInstantPreviewClick(Sender: TObject);
 begin
   mnuInstantPreview.Checked := not mnuInstantPreview.Checked;
+end;
+
+procedure TAdjustForm.editPPUKeyPress(Sender: TObject; var Key: Char);
+var
+  t: double;
+begin
+  if key=#13 then
+  begin
+    key := #0;
+    try
+      t:=strtofloat(editPPU.Text);
+    except
+      exit;
+    end;
+    MainForm.UpdateUndo;
+    cp.pixels_per_unit:=t;
+    UpdateFlame;
+  end;
 end;
 
 end.

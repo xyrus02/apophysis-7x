@@ -80,6 +80,10 @@ var
   Variation: TVariation; // Current variation
   NumTries, TryLength: integer; // Settings for smooth palette
   SmoothPaletteFile: string;
+{ Editor }
+  UseFlameBackground, UseTransformColors: boolean;
+  EditorBkgColor, ReferenceTriangleColor: integer;
+  GridColor1, GridColor2, HelpersColor: integer;
 { Display }
   defSampleDensity, defPreviewDensity: Double;
   defGamma, defBrightness, defVibrancy, defFilterRadius: Double;

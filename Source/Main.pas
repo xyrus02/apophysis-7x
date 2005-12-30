@@ -38,7 +38,7 @@ const
   RS_XO = 2;
   RS_VO = 3;
 
-  AppVersionString = 'Apophysis 2.03b';
+  AppVersionString = 'Apophysis 2.03c pre-release 5';
 
 type
   TMouseMoveState = (msUsual, msZoomWindow, msZoomOutWindow, msZoomWindowMove, msZoomOutWindowMove, msDrag, msDragMove, msRotate, msRotateMove);
@@ -352,7 +352,7 @@ function NumXForms(const cp: TControlPoint): integer;
 procedure MultMatrix(var s: TMatrix; const m: TMatrix);
 procedure ListFlames(FileName: string; sel: integer);
 procedure ListIFS(FileName: string; sel: integer);
-procedure AdjustScale(var cp1: TControlPoint; width, height: integer);
+//procedure AdjustScale(var cp1: TControlPoint; width, height: integer);
 procedure NormalizeVariations(var cp1: TControlPoint);
 function GetWinVersion: TWin32Version;
 
@@ -416,16 +416,6 @@ begin
     isend := Pos('</flame>', flamestr);
     if (isstart > 0) and (isend > 0) and (isstart < isend) then Result := true;
   end
-end;
-
-procedure AdjustScale(var cp1: TControlPoint; width, height: integer);
-begin
-//  if width >= height then
-  cp1.pixels_per_unit := cp1.pixels_per_unit / (cp1.width / width);
-//  else
-//    cp1.pixels_per_unit := cp1.pixels_per_unit / (cp1.height / height);
-  cp1.width := width;
-  cp1.height := height;
 end;
 
 procedure MultMatrix(var s: TMatrix; const m: TMatrix);
@@ -1803,7 +1793,7 @@ begin
   begin
     if (MainCp.width <> Image.Width) or (MainCp.height <> Image.height) then
     begin
-      AdjustScale(MainCp, Image.width, Image.height);
+      MainCp.AdjustScale(Image.width, Image.height);
       if EditForm.Visible then EditForm.UpdateDisplay(true); // preview only?
     end;
     if AdjustForm.Visible then AdjustForm.UpdateDisplay(true); // preview only!
@@ -3728,7 +3718,8 @@ begin
       cp1.spatial_oversample := ExportOversample;
       cp1.spatial_filter_radius := ExportFilter;
       cp1.nbatches := ExportBatches;
-      if (cp1.width <> ExportWidth) or (cp1.Height <> ExportHeight) then AdjustScale(cp1, ExportWidth, ExportHeight);
+      if (cp1.width <> ExportWidth) or (cp1.Height <> ExportHeight) then
+        cp1.AdjustScale(ExportWidth, ExportHeight);
       FileList.Text := FlameToXML(cp1, false);
       FileList.SaveToFile(ChangeFileExt(ExportDialog.Filename, '.flame'));
       FileList.Clear;
@@ -3992,6 +3983,7 @@ begin
   try
     if TagName = 'xform' then
     begin
+      Parsecp.xform[nxform].Clear;
       v := Attributes.Value('weight');
       if v <> '' then ParseCp.xform[nxform].density := StrToFloat(v);
       v := Attributes.Value('color');
@@ -4009,6 +4001,20 @@ begin
         c[1][1] := StrToFloat(Tokens[3]);
         c[2][0] := StrToFloat(Tokens[4]);
         c[2][1] := StrToFloat(Tokens[5]);
+      end;
+      v := Attributes.Value('post');
+      if v <> '' then begin
+        GetTokens(v, tokens);
+        if Tokens.Count < 6 then ShowMessage('Not enough post-cooeficients...crash?');
+        with Parsecp.xform[nxform] do
+        begin
+          p[0][0] := StrToFloat(Tokens[0]);
+          p[0][1] := StrToFloat(Tokens[1]);
+          p[1][0] := StrToFloat(Tokens[2]);
+          p[1][1] := StrToFloat(Tokens[3]);
+          p[2][0] := StrToFloat(Tokens[4]);
+          p[2][1] := StrToFloat(Tokens[5]);
+        end;
       end;
 
       for i := 0 to NRVAR - 1 do
@@ -4450,4 +4456,5 @@ end;
 {$ENDIF}
 
 ///////////////////////////////////////////////////////////////////////////////
+
 end.

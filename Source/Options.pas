@@ -146,7 +146,7 @@ type
     Label17: TLabel;
     txtServer: TEdit;
     chkResize: TCheckBox;
-    Paths: TTabSheet;
+    PathsPage: TTabSheet;
     GroupBox10: TGroupBox;
     btnDefGradient: TSpeedButton;
     Label25: TLabel;
@@ -166,15 +166,12 @@ type
     clbVarEnabled: TCheckListBox;
     GroupBox16: TGroupBox;
     cbNrTheads: TComboBox;
-    chkShowTransparency: TCheckBox;
-    rgReferenceMode: TRadioGroup;
     GroupBox13: TGroupBox;
     Label8: TLabel;
     Label10: TLabel;
     txtNumtries: TEdit;
     txtTryLength: TEdit;
     txtJPEGquality: TComboBox;
-    rgTransparency: TRadioGroup;
     Label24: TLabel;
     txtSymNVars: TEdit;
     udSymNVars: TUpDown;
@@ -183,6 +180,21 @@ type
     udBatchSize: TUpDown;
     Label38: TLabel;
     Label39: TLabel;
+    chkShowTransparency: TCheckBox;
+    rgTransparency: TRadioGroup;
+    rgReferenceMode: TRadioGroup;
+    GroupBox1: TGroupBox;
+    Label40: TLabel;
+    Label41: TLabel;
+    Label42: TLabel;
+    Label43: TLabel;
+    pnlBackColor: TPanel;
+    chkUseXFormColor: TCheckBox;
+    chkHelpers: TCheckBox;
+    pnlReference: TPanel;
+    pnlGridColor1: TPanel;
+    pnlGridColor2: TPanel;
+    pnlHelpersColor: TPanel;
     procedure btnCancelClick(Sender: TObject);
     procedure FormShow(Sender: TObject);
     procedure btnOKClick(Sender: TObject);
@@ -207,6 +219,11 @@ type
     procedure btnRendererClick(Sender: TObject);
     procedure SpeedButton2Click(Sender: TObject);
     procedure FormCreate(Sender: TObject);
+    procedure pnlBackColorClick(Sender: TObject);
+    procedure pnlReferenceClick(Sender: TObject);
+    procedure pnlGridColor1Click(Sender: TObject);
+    procedure pnlGridColor2Click(Sender: TObject);
+    procedure pnlHelpersColorClick(Sender: TObject);
   private
     { Private declarations }
   public
@@ -221,7 +238,7 @@ implementation
 {$R *.DFM}
 
 uses
-  Main, Global, Editor, ControlPoint, XFormMan;
+  Main, Global, Editor, ControlPoint, XFormMan, Adjust;
 
 procedure TOptionsForm.btnCancelClick(Sender: TObject);
 begin
@@ -277,6 +294,11 @@ begin
   txtLowQuality.Text := FloatToStr(prevLowQuality);
   txtMediumQuality.Text := FloatToStr(prevMediumQuality);
   txtHighQuality.Text := FloatToStr(prevHighQuality);
+
+  pnlBackColor.Color := TColor(EditorBkgColor);
+  pnlGridColor1.Color := GridColor1;
+  pnlGridColor2.Color := GridColor2;
+  pnlReference.color := TColor(ReferenceTriangleColor);
 
   { Random tab }
   udMinXforms.Position := randMinTransforms;
@@ -617,6 +639,62 @@ var
 begin
   for i:= 0 to NRVAR - 1 do begin
     clbVarEnabled.AddItem(varnames(i),nil);
+  end;
+end;
+
+procedure TOptionsForm.pnlBackColorClick(Sender: TObject);
+begin
+  AdjustForm.ColorDialog.Color := pnlBackColor.Color;
+  if AdjustForm.ColorDialog.Execute then
+  begin
+    pnlBackColor.Color := AdjustForm.ColorDialog.Color;
+    EditorBkgColor := Integer(pnlBackColor.color);
+//    GrphPnl.Color := BackgroundColor;
+//    TriangleView.Invalidate;
+  end;
+end;
+
+procedure TOptionsForm.pnlReferenceClick(Sender: TObject);
+begin
+  AdjustForm.ColorDialog.Color := pnlReference.Color;
+  if AdjustForm.ColorDialog.Execute then
+  begin
+    pnlReference.Color := AdjustForm.ColorDialog.Color;
+    ReferenceTriangleColor := Integer(pnlReference.color);
+//    TriangleView.Invalidate;
+  end;
+end;
+
+procedure TOptionsForm.pnlGridColor1Click(Sender: TObject);
+begin
+  AdjustForm.ColorDialog.Color := pnlGridColor1.Color;
+  if AdjustForm.ColorDialog.Execute then
+  begin
+    pnlGridColor1.Color := AdjustForm.ColorDialog.Color;
+    GridColor1 := Integer(pnlGridColor1.color);
+//    TriangleView.Invalidate;
+  end;
+end;
+
+procedure TOptionsForm.pnlGridColor2Click(Sender: TObject);
+begin
+  AdjustForm.ColorDialog.Color := pnlGridColor2.Color;
+  if AdjustForm.ColorDialog.Execute then
+  begin
+    pnlGridColor2.Color := AdjustForm.ColorDialog.Color;
+    GridColor2 := Integer(pnlGridColor2.color);
+//    TriangleView.Invalidate;
+  end;
+end;
+
+procedure TOptionsForm.pnlHelpersColorClick(Sender: TObject);
+begin
+  AdjustForm.ColorDialog.Color := pnlHelpersColor.Color;
+  if AdjustForm.ColorDialog.Execute then
+  begin
+    pnlHelpersColor.Color := AdjustForm.ColorDialog.Color;
+    HelpersColor := Integer(pnlHelpersColor.color);
+//    TriangleView.Invalidate;
   end;
 end;
 
