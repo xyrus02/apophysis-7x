@@ -473,7 +473,7 @@ begin
       end
       else
       begin
-        HQIPath := DefaultPath + 'hqi.exe';
+        HQIPath := DefaultPath + 'flam3.exe';
       end;
       if Registry.ValueExists('Server') then
       begin
@@ -572,7 +572,7 @@ begin
       SheepNick := '';
       SheepURL := '';
       SheepPW := '';
-      HQIPath := DefaultPath + 'hqi.exe';
+      HQIPath := DefaultPath + 'flam3.exe';
       SheepServer := 'http://v2d5.sheepserver.net/';
       ResizeOnLoad := False;
       ShowProgress := true;
@@ -582,6 +582,56 @@ begin
       UseNrThreads := 1;
     end;
     Registry.CloseKey;
+
+    { Editor } // --Z-- moved from EditForm
+    if Registry.OpenKey('Software\' + APP_NAME + '\Forms\Editor', False) then
+    begin
+      if Registry.ValueExists('UseTransformColors') then
+      begin
+        UseTransformColors := Registry.ReadBool('UseTransformColors');
+      end
+      else
+      begin
+        UseTransformColors := False;
+      end;
+      if Registry.ValueExists('UseFlameBackground') then
+      begin
+        UseFlameBackground := Registry.ReadBool('UseFlameBackground');
+      end
+      else
+      begin
+        UseFlameBackground := False;
+      end;
+      if Registry.ValueExists('BackgroundColor') then
+        EditorBkgColor := Registry.ReadInteger('BackgroundColor')
+      else
+        EditorBkgColor := integer(clBlack);
+      if Registry.ValueExists('GridColor1') then
+        GridColor1 := Registry.ReadInteger('GridColor1')
+      else
+        GridColor1 := $444444;
+      if Registry.ValueExists('GridColor2') then
+        GridColor2 := Registry.ReadInteger('GridColor2')
+      else
+        GridColor2 := $333333;
+      if Registry.ValueExists('HelpersColor') then
+        HelpersColor := Registry.ReadInteger('HelpersColor')
+      else
+        HelpersColor := $808080;
+      if Registry.ValueExists('ReferenceTriangleColor') then
+        ReferenceTriangleColor := Registry.ReadInteger('ReferenceTriangleColor')
+      else
+        ReferenceTriangleColor := $7f7f7f;
+    end
+    else begin
+      EditorBkgColor := $000000;
+      GridColor1 := $444444;
+      GridColor2 := $333333;
+      HelpersColor := $808080;
+      ReferenceTriangleColor := integer(clGray);
+    end;
+    Registry.CloseKey;
+
     { Render }
     if Registry.OpenKey('Software\' + APP_NAME + '\Render', False) then
     begin
@@ -639,7 +689,7 @@ begin
       end
       else
       begin
-        JPEGQuality := 80;
+        JPEGQuality := 100;
       end;
       if Registry.ValueExists('FileFormat') then
       begin
@@ -653,7 +703,7 @@ begin
     else
     begin
       renderFileFormat := 2;
-      JPEGQuality := 80;
+      JPEGQuality := 100;
       renderPath := DefaultPath;
       renderDensity := 200;
       renderOversample := 2;
@@ -662,7 +712,8 @@ begin
       renderHeight := 768;
     end;
     Registry.CloseKey;
-       {UPR}
+
+    {UPR}
     if Registry.OpenKey('Software\' + APP_NAME + '\UPR', False) then
     begin
       if Registry.ValueExists('FlameColoringFile') then
@@ -742,6 +793,7 @@ begin
       UPRAdjustDensity := True; ;
     end;
     Registry.CloseKey;
+    
     if Registry.OpenKey('Software\' + APP_NAME + '\Display', False) then
     begin
       if Registry.ValueExists('SampleDensity') then
@@ -921,6 +973,16 @@ begin
       Registry.WriteInteger('PNGTransparency', PNGTransparency);
       Registry.WriteInteger('NrTreads', NrTreads);
       Registry.WriteInteger('UseNrThreads', UseNrThreads);
+    end;
+    { Editor }
+    if Registry.OpenKey('\Software\' + APP_NAME + '\Forms\Editor', True) then
+    begin
+      Registry.WriteBool('UseTransformColors', UseTransformColors);
+      Registry.WriteInteger('BackgroundColor', EditorBkgColor);
+      Registry.WriteInteger('GridColor1', GridColor1);
+      Registry.WriteInteger('GridColor2', GridColor2);
+      Registry.WriteInteger('HelpersColor', HelpersColor);
+      Registry.WriteInteger('ReferenceTriangleColor', ReferenceTriangleColor);
     end;
     { Display }
     if Registry.OpenKey('\Software\' + APP_NAME + '\Display', True) then
