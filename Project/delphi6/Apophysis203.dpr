@@ -15,11 +15,11 @@
      along with this program; if not, write to the Free Software
      Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
 }
-program Apophysis202;
+program Apophysis203;
 
-{%File 'HtmlHlp.inc'}
-{%ToDo 'Apophysis202.todo'}
+{%ToDo 'Apophysis203.todo'}
 {%File 'readme.txt'}
+{%ToDo 'Apophysis203.todo'}
 
 uses
   Forms,
@@ -30,17 +30,14 @@ uses
   Global in '..\..\Source\Global.pas',
   Options in '..\..\Source\Options.pas' {OptionsForm},
   Regstry in '..\..\Source\Regstry.pas',
-  MyTypes in '..\..\Source\MyTypes.pas',
   Fullscreen in '..\..\Source\Fullscreen.pas' {FullscreenForm},
   Render in '..\..\Source\Render.pas',
-  Render32 in '..\..\Source\Render32.pas',
   Render64 in '..\..\Source\Render64.pas',
   RenderThread in '..\..\Source\RenderThread.pas',
   FormRender in '..\..\Source\FormRender.pas' {RenderForm},
   Mutate in '..\..\Source\Mutate.pas' {MutateForm},
   Adjust in '..\..\Source\Adjust.pas' {AdjustForm},
   Browser in '..\..\Source\Browser.pas' {GradientBrowser},
-  Gradient in '..\..\Source\Gradient.pas' {GradientForm},
   Save in '..\..\Source\Save.pas' {SaveForm},
   About in '..\..\Source\About.pas' {AboutForm},
   Cmap in '..\..\Source\cmap.pas',
@@ -51,10 +48,8 @@ uses
   Preview in '..\..\Source\Preview.pas' {PreviewForm},
   ScriptRender in '..\..\Source\ScriptRender.pas' {ScriptRenderForm},
   FormFavorites in '..\..\Source\FormFavorites.pas' {FavoritesForm},
-  Size in '..\..\Source\Size.pas' {SizeTool},
   FormExport in '..\..\Source\FormExport.pas' {ExportDialog},
   MsMultiPartFormData in '..\..\Source\MsMultiPartFormData.pas',
-  Sheep in '..\..\Source\Sheep.pas' {SheepDialog},
   XForm in '..\..\Source\XForm.pas',
   cmapdata in '..\..\Source\cmapdata.pas',
   RenderMM in '..\..\Source\RenderMM.pas',
@@ -62,12 +57,24 @@ uses
   formPostProcess in '..\..\Source\formPostProcess.pas' {frmPostProcess},
   RndFlame in '..\..\Source\RndFlame.pas',
   bmdll32 in '..\..\Source\bmdll32.PAS',
-  ImageColoring in '..\..\Source\ImageColoring.pas' {frmImageColoring};
+  ImageColoring in '..\..\Source\ImageColoring.pas' {frmImageColoring},
+  XFormMan in '..\..\Source\XFormMan.pas',
+  BaseVariation in '..\..\Source\BaseVariation.pas',
+  ImageMaker in '..\..\Source\ImageMaker.pas',
+  Render64MT in '..\..\Source\Render64MT.pas',
+  BucketFillerThread in '..\..\Source\BucketFillerThread.pas',
+  RenderMM_MT in '..\..\Source\RenderMM_MT.pas',
+  CustomDrawControl in '..\..\Source\CustomDrawControl.pas',
+  varblob in '..\..\Source\varblob.pas',
+  varFan2 in '..\..\Source\varFan2.pas',
+  varpdj in '..\..\Source\varpdj.pas',
+  varRings2 in '..\..\Source\varRings2.pas',
+  varPerspective in '..\..\Source\varPerspective.pas';
 
 {$R *.RES}
 
 begin
-  if now > EncodeDate(2005, 10, 23) then begin
+  if now > EncodeDate(2006, 4, 30) then begin
     ShowMessage('This version has expired. Please go to http://sourceforge.net/project/apophysis and download the latest version.');
     Halt
   end;
@@ -83,7 +90,6 @@ begin
   Application.CreateForm(TMutateForm, MutateForm);
   Application.CreateForm(TAdjustForm, AdjustForm);
   Application.CreateForm(TGradientBrowser, GradientBrowser);
-  Application.CreateForm(TGradientForm, GradientForm);
   Application.CreateForm(TSaveForm, SaveForm);
   Application.CreateForm(TAboutForm, AboutForm);
   Application.CreateForm(TSavePresetForm, SavePresetForm);
@@ -91,9 +97,7 @@ begin
   Application.CreateForm(TPreviewForm, PreviewForm);
   Application.CreateForm(TScriptRenderForm, ScriptRenderForm);
   Application.CreateForm(TFavoritesForm, FavoritesForm);
-  Application.CreateForm(TSizeTool, SizeTool);
   Application.CreateForm(TExportDialog, ExportDialog);
-  Application.CreateForm(TSheepDialog, SheepDialog);
   Application.CreateForm(TfrmPostProcess, frmPostProcess);
   Application.CreateForm(TfrmImageColoring, frmImageColoring);
   Application.UpdateFormatSettings := False;

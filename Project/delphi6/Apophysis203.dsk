@@ -1,0 +1,551 @@
+[Closed Files]
+File_0=SourceModule,'C:\Program Files\Borland\Delphi7\Projects\Apophysis\Source\RenderMM_MT.pas',0,1,1,1,1,0,0
+File_1=SourceModule,'C:\Program Files\Borland\Delphi7\Projects\Apophysis\Source\RenderThread.pas',0,1,113,35,129,0,0
+File_2=SourceModule,'c:\program files\borland\delphi7\source\rtl\common\classes.pas',0,1,5081,28,5102,0,0
+File_3=SourceModule,'C:\Program Files\Borland\Delphi7\Projects\Apophysis\Source\Render64.pas',0,1,310,1,298,0,0
+File_4=SourceModule,'C:\Program Files\Borland\Delphi7\Projects\Apophysis\Source\Render.pas',0,1,164,1,1,0,0
+File_5=SourceModule,'C:\Program Files\Borland\Delphi7\Projects\Apophysis\Source\Render64MT.pas',0,1,13,1,1,0,0
+File_6=SourceModule,'c:\program files\borland\delphi7\source\rtl\Win\Windows.pas',0,1,28693,1,28714,0,0
+
+[Modules]
+Module0=C:\Program Files\Borland\Delphi7\Projects\Apophysis\Source\ScriptRender.pas
+Module1=c:\program files\borland\delphi7\source\rtl\Sys\system.pas
+Module2=C:\Program Files\Borland\Delphi7\Projects\Apophysis\Source\ControlPoint.pas
+Module3=C:\Program Files\Borland\Delphi7\Projects\Apophysis\Source\ScriptForm.pas
+Module4=C:\Program Files\Borland\Delphi7\Projects\Apophysis\Source\XForm.pas
+Module5=C:\Program Files\Borland\Delphi7\Projects\Apophysis\Source\Main.pas
+Module6=C:\Program Files\Borland\Delphi7\Projects\Apophysis\Source\Adjust.pas
+Module7=C:\Program Files\Borland\Delphi7\Projects\Apophysis\Source\FormRender.pas
+Module8=C:\Program Files\Borland\Delphi7\Projects\Apophysis\Source\Fullscreen.pas
+Module9=C:\Program Files\Borland\Delphi7\Projects\Apophysis\Source\Editor.pas
+Module10=C:\Program Files\Borland\Delphi7\Projects\Apophysis\Source\Mutate.pas
+Module11=C:\Program Files\Borland\Delphi7\Projects\Apophysis\Source\XFormMan.pas
+Module12=C:\Program Files\Borland\Delphi7\Projects\Apophysis\Source\BucketFillerThread.pas
+Module13=C:\Program Files\Borland\Delphi7\Projects\Apophysis\Project\delphi6\Apophysis203.dpr
+Count=14
+EditWindowCount=1
+
+[C:\Program Files\Borland\Delphi7\Projects\Apophysis\Source\ScriptRender.pas]
+ModuleType=SourceModule
+FormState=1
+FormOnTop=0
+
+[c:\program files\borland\delphi7\source\rtl\Sys\system.pas]
+ModuleType=SourceModule
+FormState=0
+FormOnTop=0
+
+[C:\Program Files\Borland\Delphi7\Projects\Apophysis\Source\ControlPoint.pas]
+ModuleType=SourceModule
+FormState=0
+FormOnTop=0
+
+[C:\Program Files\Borland\Delphi7\Projects\Apophysis\Source\ScriptForm.pas]
+ModuleType=SourceModule
+FormState=0
+FormOnTop=0
+
+[C:\Program Files\Borland\Delphi7\Projects\Apophysis\Source\XForm.pas]
+ModuleType=SourceModule
+FormState=0
+FormOnTop=0
+
+[C:\Program Files\Borland\Delphi7\Projects\Apophysis\Source\Main.pas]
+ModuleType=SourceModule
+FormState=1
+FormOnTop=0
+
+[C:\Program Files\Borland\Delphi7\Projects\Apophysis\Source\Adjust.pas]
+ModuleType=SourceModule
+FormState=1
+FormOnTop=1
+
+[C:\Program Files\Borland\Delphi7\Projects\Apophysis\Source\FormRender.pas]
+ModuleType=SourceModule
+FormState=1
+FormOnTop=0
+
+[C:\Program Files\Borland\Delphi7\Projects\Apophysis\Source\Fullscreen.pas]
+ModuleType=SourceModule
+FormState=0
+FormOnTop=0
+
+[C:\Program Files\Borland\Delphi7\Projects\Apophysis\Source\Editor.pas]
+ModuleType=SourceModule
+FormState=1
+FormOnTop=0
+
+[C:\Program Files\Borland\Delphi7\Projects\Apophysis\Source\Mutate.pas]
+ModuleType=SourceModule
+FormState=0
+FormOnTop=0
+
+[C:\Program Files\Borland\Delphi7\Projects\Apophysis\Source\XFormMan.pas]
+ModuleType=SourceModule
+FormState=0
+FormOnTop=0
+
+[C:\Program Files\Borland\Delphi7\Projects\Apophysis\Source\BucketFillerThread.pas]
+ModuleType=SourceModule
+FormState=0
+FormOnTop=0
+
+[C:\Program Files\Borland\Delphi7\Projects\Apophysis\Project\delphi6\Apophysis203.dpr]
+ModuleType=SourceModule
+FormState=0
+FormOnTop=0
+
+[C:\Program Files\Borland\Delphi7\Projects\ProjectGroup1.bpg]
+FormState=0
+FormOnTop=0
+
+[C:\Program Files\Borland\Delphi7\Projects\Apophysis\Project\delphi6\Apophysis203.todo]
+FormState=0
+FormOnTop=0
+
+[EditWindow0]
+ViewCount=14
+CurrentView=10
+View0=0
+View1=1
+View2=2
+View3=3
+View4=4
+View5=5
+View6=6
+View7=7
+View8=8
+View9=9
+View10=10
+View11=11
+View12=12
+View13=13
+CodeExplorer=CodeExplorer@EditWindow0
+MessageView=MessageView@EditWindow0
+Create=1
+Visible=1
+State=0
+Left=269
+Top=105
+Width=1013
+Height=920
+MaxLeft=-1
+MaxTop=-1
+ClientWidth=1005
+ClientHeight=892
+LeftPanelSize=0
+RightPanelSize=0
+BottomPanelSize=85
+BottomPanelClients=MessageView@EditWindow0
+BottomPanelData=0000040000000000ED03000000000000025500000000000000010000000000000000000000000100000000EB030000000000000100000000ED030000000000000100000000ED030000000000000100000000ED0300000B0000004D65737361676556696577FFFFFFFF
+
+[View0]
+Module=C:\Program Files\Borland\Delphi7\Projects\Apophysis\Project\delphi6\Apophysis203.dpr
+CursorX=1
+CursorY=68
+TopLine=47
+LeftCol=1
+
+[View1]
+Module=C:\Program Files\Borland\Delphi7\Projects\Apophysis\Source\Editor.pas
+CursorX=8
+CursorY=2318
+TopLine=2297
+LeftCol=1
+
+[View2]
+Module=C:\Program Files\Borland\Delphi7\Projects\Apophysis\Source\Fullscreen.pas
+CursorX=18
+CursorY=65
+TopLine=44
+LeftCol=1
+
+[View3]
+Module=C:\Program Files\Borland\Delphi7\Projects\Apophysis\Source\Adjust.pas
+CursorX=18
+CursorY=342
+TopLine=321
+LeftCol=1
+
+[View4]
+Module=C:\Program Files\Borland\Delphi7\Projects\Apophysis\Source\XForm.pas
+CursorX=1
+CursorY=929
+TopLine=908
+LeftCol=1
+
+[View5]
+Module=C:\Program Files\Borland\Delphi7\Projects\Apophysis\Source\XFormMan.pas
+CursorX=16
+CursorY=9
+TopLine=34
+LeftCol=1
+
+[View6]
+Module=C:\Program Files\Borland\Delphi7\Projects\Apophysis\Source\FormRender.pas
+CursorX=20
+CursorY=348
+TopLine=332
+LeftCol=1
+
+[View7]
+Module=C:\Program Files\Borland\Delphi7\Projects\Apophysis\Source\ScriptForm.pas
+CursorX=22
+CursorY=2952
+TopLine=2931
+LeftCol=1
+
+[View8]
+Module=C:\Program Files\Borland\Delphi7\Projects\Apophysis\Source\Main.pas
+CursorX=1
+CursorY=3898
+TopLine=3877
+LeftCol=1
+
+[View9]
+Module=C:\Program Files\Borland\Delphi7\Projects\Apophysis\Source\Mutate.pas
+CursorX=12
+CursorY=603
+TopLine=582
+LeftCol=1
+
+[View10]
+Module=C:\Program Files\Borland\Delphi7\Projects\Apophysis\Source\ScriptRender.pas
+CursorX=48
+CursorY=76
+TopLine=70
+LeftCol=1
+
+[View11]
+Module=c:\program files\borland\delphi7\source\rtl\Sys\system.pas
+CursorX=1
+CursorY=3750
+TopLine=3714
+LeftCol=1
+
+[View12]
+Module=C:\Program Files\Borland\Delphi7\Projects\Apophysis\Source\ControlPoint.pas
+CursorX=48
+CursorY=2070
+TopLine=2045
+LeftCol=1
+
+[View13]
+Module=C:\Program Files\Borland\Delphi7\Projects\Apophysis\Source\BucketFillerThread.pas
+CursorX=8
+CursorY=163
+TopLine=121
+LeftCol=1
+
+[Watches]
+Count=9
+Watch0='width',256,0,18,1,0,'Watches'
+Watch1='height',256,0,18,1,0,'Watches'
+Watch2='self',256,0,18,1,0,'Watches'
+Watch3='SelectedCorner',256,0,18,1,0,'Watches'
+Watch4='vx',256,0,18,1,0,'Watches'
+Watch5='dt',256,0,18,1,0,'Watches'
+Watch6='oldelapsed',256,0,18,1,0,'Watches'
+Watch7='remaining',256,0,18,1,0,'Watches'
+Watch8='prog',256,0,18,1,0,'Watches'
+
+[WatchWindow]
+WatchColumnWidth=100
+WatchShowColumnHeaders=1
+Create=1
+Visible=1
+State=0
+Left=0
+Top=0
+Width=578
+Height=266
+MaxLeft=-1
+MaxTop=-1
+ClientWidth=578
+ClientHeight=266
+TBDockHeight=149
+LRDockWidth=815
+Dockable=1
+
+[Breakpoints]
+Count=2
+Breakpoint0='X:\Code\Delphi\Apophysis\2.02\ScriptForm.pas',1244,'',0,1,'',1,0,0,'',1,'','',''
+Breakpoint1='C:\Program Files\Borland\Delphi7\Source\Vcl\Forms.pas',6812,'',0,1,'',1,0,0,'',1,'','',''
+
+[AddressBreakpoints]
+Count=0
+
+[Main Window]
+Create=1
+Visible=1
+State=0
+Left=0
+Top=0
+Width=1280
+Height=106
+MaxLeft=-1
+MaxTop=-1
+ClientWidth=1272
+ClientHeight=78
+
+[ProjectManager]
+Create=1
+Visible=1
+State=0
+Left=0
+Top=0
+Width=233
+Height=887
+MaxLeft=-1
+MaxTop=-1
+ClientWidth=233
+ClientHeight=887
+TBDockHeight=305
+LRDockWidth=438
+Dockable=1
+
+[CPUWindow]
+Create=1
+Visible=0
+State=0
+Left=16
+Top=560
+Width=772
+Height=451
+MaxLeft=-1
+MaxTop=-1
+ClientWidth=764
+ClientHeight=423
+DumpPane=79
+DisassemblyPane=233
+RegisterPane=231
+FlagPane=64
+
+[AlignmentPalette]
+Create=1
+Visible=0
+State=0
+Left=200
+Top=114
+Width=156
+Height=83
+MaxLeft=-1
+MaxTop=-1
+ClientWidth=150
+ClientHeight=60
+
+[PropertyInspector]
+Create=1
+Visible=1
+State=0
+Left=0
+Top=0
+Width=233
+Height=887
+MaxLeft=-1
+MaxTop=-1
+ClientWidth=233
+ClientHeight=887
+TBDockHeight=323
+LRDockWidth=190
+Dockable=1
+SplitPos=71
+ArrangeBy=Name
+SelectedItem=Left
+ExpandedItems=Anchors,Constraints
+HiddenCategories=
+
+[CallStackWindow]
+Create=1
+Visible=1
+State=0
+Left=0
+Top=0
+Width=233
+Height=887
+MaxLeft=-1
+MaxTop=-1
+ClientWidth=233
+ClientHeight=887
+TBDockHeight=161
+LRDockWidth=294
+Dockable=1
+
+[ObjectTree]
+Create=1
+Visible=0
+State=0
+Left=0
+Top=112
+Width=190
+Height=350
+MaxLeft=-1
+MaxTop=-1
+ClientWidth=182
+ClientHeight=325
+TBDockHeight=350
+LRDockWidth=190
+Dockable=1
+
+[DebugLogView]
+Create=1
+Visible=0
+State=0
+Left=0
+Top=0
+Width=1048
+Height=165
+MaxLeft=-1
+MaxTop=-1
+ClientWidth=1040
+ClientHeight=140
+TBDockHeight=291
+LRDockWidth=417
+Dockable=1
+
+[LocalVarsWindow]
+Create=1
+Visible=1
+State=0
+Left=0
+Top=0
+Width=578
+Height=266
+MaxLeft=-1
+MaxTop=-1
+ClientWidth=578
+ClientHeight=266
+TBDockHeight=110
+LRDockWidth=815
+Dockable=1
+
+[ToDo List]
+Create=1
+Visible=0
+State=0
+Left=342
+Top=308
+Width=468
+Height=250
+MaxLeft=-1
+MaxTop=-1
+ClientWidth=460
+ClientHeight=225
+TBDockHeight=250
+LRDockWidth=470
+Dockable=1
+Column0Width=200
+Column1Width=30
+Column2Width=100
+Column3Width=70
+Column4Width=70
+SortOrder=4
+ShowHints=1
+ShowChecked=1
+
+[FPUWindow]
+Create=1
+Visible=0
+State=0
+Left=794
+Top=164
+Width=457
+Height=257
+MaxLeft=-1
+MaxTop=-1
+ClientWidth=449
+ClientHeight=229
+RegisterPane=121
+FlagPane=59
+
+[MessageHintFrm]
+Create=1
+Visible=0
+State=0
+Left=482
+Top=424
+Width=381
+Height=195
+MaxLeft=-1
+MaxTop=-1
+ClientWidth=373
+ClientHeight=170
+TBDockHeight=195
+LRDockWidth=383
+Dockable=1
+
+[CodeExplorer@EditWindow0]
+Create=1
+Visible=1
+State=0
+Left=0
+Top=0
+Width=233
+Height=887
+MaxLeft=-1
+MaxTop=-1
+ClientWidth=233
+ClientHeight=887
+TBDockHeight=305
+LRDockWidth=140
+Dockable=1
+
+[MessageView@EditWindow0]
+Create=1
+Visible=1
+State=0
+Left=12
+Top=0
+Width=993
+Height=85
+MaxLeft=-1
+MaxTop=-1
+ClientWidth=993
+ClientHeight=85
+TBDockHeight=85
+LRDockWidth=443
+Dockable=1
+
+[DockHosts]
+DockHostCount=2
+
+[DockSite0]
+DockSiteType=1
+Create=1
+Visible=1
+State=0
+Left=125
+Top=469
+Width=594
+Height=320
+MaxLeft=-1
+MaxTop=-1
+ClientWidth=586
+ClientHeight=295
+TBDockHeight=320
+LRDockWidth=594
+Dockable=1
+TabPosition=0
+ActiveTab=Watch List
+TabDockClients=LocalVarsWindow,WatchWindow
+
+[DockSite1]
+DockSiteType=1
+Create=1
+Visible=1
+State=0
+Left=1
+Top=105
+Width=268
+Height=920
+MaxLeft=-1
+MaxTop=-1
+ClientWidth=260
+ClientHeight=895
+TBDockHeight=451
+LRDockWidth=177
+Dockable=1
+TabPosition=2
+ActiveTab=Project Manager
+TabDockClients=ProjectManager,CallStackWindow,CodeExplorer@EditWindow0,PropertyInspector
+
