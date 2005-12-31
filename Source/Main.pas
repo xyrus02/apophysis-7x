@@ -31,14 +31,12 @@ uses
 
 const
   PixelCountMax = 32768;
-  WM_THREAD_COMPLETE = WM_APP + 5437; { Just a magic number }
-  WM_PROGRESS_UPDATE = WM_APP + 5438; { Just a magic number }
   RS_A1 = 0;
   RS_DR = 1;
   RS_XO = 2;
   RS_VO = 3;
 
-  AppVersionString = 'Apophysis 2.03c pre-release 5';
+  AppVersionString = 'Apophysis 2.03c';
 
 type
   TMouseMoveState = (msUsual, msZoomWindow, msZoomOutWindow, msZoomWindowMove, msZoomOutWindowMove, msDrag, msDragMove, msRotate, msRotateMove);

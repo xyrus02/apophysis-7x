@@ -25,10 +25,6 @@ uses
   ExtCtrls,
   Render; // 'use'd only for SizeOf()
 
-//const
-//  WM_THREAD_COMPLETE = WM_APP + 5437;
-//  WM_THREAD_TERMINATE = WM_APP + 5438;
-
 type
   TRenderForm = class(TForm)
     ProgressBar: TProgressBar;
