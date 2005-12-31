@@ -290,10 +290,9 @@ object RenderForm: TRenderForm
       Height = 21
       AutoComplete = False
       ItemHeight = 13
-      ItemIndex = 0
       TabOrder = 3
-      Text = '200'
       OnChange = txtDensityChange
+      OnCloseUp = txtDensityChange
       Items.Strings = (
         '200'
         '500'
