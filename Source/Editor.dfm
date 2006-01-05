@@ -1,7 +1,7 @@
 object EditForm: TEditForm
-  Left = 302
-  Top = 226
-  Width = 586
+  Left = 303
+  Top = 227
+  Width = 584
   Height = 573
   Caption = 'Transform Editor'
   Color = clBtnFace
@@ -55,7 +55,7 @@ object EditForm: TEditForm
   object StatusBar: TStatusBar
     Left = 0
     Top = 530
-    Width = 578
+    Width = 576
     Height = 15
     Panels = <
       item
@@ -71,7 +71,7 @@ object EditForm: TEditForm
   object topPnl: TPanel
     Left = 0
     Top = 0
-    Width = 578
+    Width = 576
     Height = 24
     Align = alTop
     BevelOuter = bvSpace
@@ -268,12 +268,12 @@ object EditForm: TEditForm
   object EditPnl: TPanel
     Left = 0
     Top = 24
-    Width = 578
+    Width = 576
     Height = 506
     Align = alClient
     TabOrder = 1
     object Splitter1: TSplitter
-      Left = 396
+      Left = 394
       Top = 1
       Width = 9
       Height = 504
@@ -286,7 +286,7 @@ object EditForm: TEditForm
     object GrphPnl: TPanel
       Left = 1
       Top = 1
-      Width = 395
+      Width = 393
       Height = 504
       Align = alClient
       BevelOuter = bvNone
@@ -294,7 +294,7 @@ object EditForm: TEditForm
       TabOrder = 0
     end
     object RightPanel: TPanel
-      Left = 405
+      Left = 403
       Top = 1
       Width = 172
       Height = 504
@@ -367,9 +367,9 @@ object EditForm: TEditForm
         end
         object PageControl: TPageControl
           Left = 1
-          Top = 30
+          Top = 32
           Width = 170
-          Height = 335
+          Height = 333
           ActivePage = TriangleTab
           Align = alBottom
           Anchors = [akLeft, akTop, akRight, akBottom]
@@ -382,7 +382,7 @@ object EditForm: TEditForm
               Left = 0
               Top = 0
               Width = 162
-              Height = 289
+              Height = 287
               HorzScrollBar.Visible = False
               VertScrollBar.Smooth = True
               VertScrollBar.Style = ssFlat
@@ -401,7 +401,7 @@ object EditForm: TEditForm
                 TabOrder = 0
                 object LabelB: TLabel
                   Left = 4
-                  Top = 32
+                  Top = 56
                   Width = 12
                   Height = 13
                   Caption = 'O:'
@@ -415,7 +415,7 @@ object EditForm: TEditForm
                 end
                 object LabelC: TLabel
                   Left = 4
-                  Top = 56
+                  Top = 32
                   Width = 10
                   Height = 13
                   Caption = 'Y:'
@@ -932,7 +932,7 @@ object EditForm: TEditForm
                 end
                 object txtCy: TEdit
                   Left = 88
-                  Top = 52
+                  Top = 28
                   Width = 65
                   Height = 21
                   AutoSelect = False
@@ -943,7 +943,7 @@ object EditForm: TEditForm
                 end
                 object txtCx: TEdit
                   Left = 20
-                  Top = 52
+                  Top = 28
                   Width = 65
                   Height = 21
                   AutoSelect = False
@@ -954,7 +954,7 @@ object EditForm: TEditForm
                 end
                 object txtBy: TEdit
                   Left = 88
-                  Top = 28
+                  Top = 52
                   Width = 65
                   Height = 21
                   AutoSelect = False
@@ -965,7 +965,7 @@ object EditForm: TEditForm
                 end
                 object txtBx: TEdit
                   Left = 20
-                  Top = 28
+                  Top = 52
                   Width = 65
                   Height = 21
                   AutoSelect = False
@@ -1008,6 +1008,7 @@ object EditForm: TEditForm
                   Text = '0.1'
                   OnExit = txtValidateValue
                   OnKeyPress = txtValKeyPress
+                  OnSelect = txtValidateValue
                   Items.Strings = (
                     '1'
                     '0.5'
@@ -1028,6 +1029,7 @@ object EditForm: TEditForm
                   Text = '15'
                   OnExit = txtValidateValue
                   OnKeyPress = txtValKeyPress
+                  OnSelect = txtValidateValue
                   Items.Strings = (
                     '5'
                     '15'
@@ -1050,6 +1052,7 @@ object EditForm: TEditForm
                   Text = '125'
                   OnExit = txtValidateValue
                   OnKeyPress = txtValKeyPress
+                  OnSelect = txtValidateValue
                   Items.Strings = (
                     '110'
                     '125'
@@ -1525,8 +1528,9 @@ object EditForm: TEditForm
                 ItemIndex = 0
                 TabOrder = 3
                 Text = '0'
-                OnExit = txtSymmetryExit
+                OnExit = txtSymmetrySet
                 OnKeyPress = txtSymmetryKeyPress
+                OnSelect = txtSymmetrySet
                 Items.Strings = (
                   '0'
                   '1')

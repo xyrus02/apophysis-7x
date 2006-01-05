@@ -250,6 +250,7 @@ type
     procedure btnApplySizeClick(Sender: TObject);
     procedure mnuInstantPreviewClick(Sender: TObject);
     procedure editPPUKeyPress(Sender: TObject; var Key: Char);
+    procedure editPPUValidate(Sender: TObject);
 
   private
     Resetting: boolean;
@@ -375,7 +376,7 @@ begin
   BackupPal := cp.cmap;
 
   Resetting := False;
-editPPU.Text := FloatToStr(cp.pixels_per_unit);
+editPPU.Text := Format('%.6g', [cp.pixels_per_unit]);
   end; //***
   DrawPreview;
 end;
@@ -1886,21 +1887,26 @@ begin
 end;
 
 procedure TAdjustForm.editPPUKeyPress(Sender: TObject; var Key: Char);
-var
-  t: double;
 begin
   if key=#13 then
   begin
     key := #0;
-    try
-      t:=strtofloat(editPPU.Text);
-    except
-      exit;
-    end;
-    MainForm.UpdateUndo;
-    cp.pixels_per_unit:=t;
-    UpdateFlame;
+    editPPUValidate(Sender);
   end;
+end;
+
+procedure TAdjustForm.editPPUValidate(Sender: TObject);
+var
+  v: double;
+begin
+  try
+    v := strtofloat(editPPU.Text);
+  except
+    exit;
+  end;
+  MainForm.UpdateUndo;
+  cp.pixels_per_unit := v;
+  UpdateFlame;
 end;
 
 end.

@@ -1,11 +1,11 @@
 object AdjustForm: TAdjustForm
-  Left = 363
-  Top = 245
+  Left = 364
+  Top = 246
   BorderIcons = [biSystemMenu, biMinimize]
   BorderStyle = bsSingle
   Caption = 'Adjust'
-  ClientHeight = 263
-  ClientWidth = 390
+  ClientHeight = 261
+  ClientWidth = 388
   Color = clBtnFace
   Font.Charset = DEFAULT_CHARSET
   Font.Color = clWindowText
@@ -170,10 +170,10 @@ object AdjustForm: TAdjustForm
   end
   object PageControl: TPageControl
     Left = 0
-    Top = 133
-    Width = 390
+    Top = 131
+    Width = 388
     Height = 130
-    ActivePage = TabSheet1
+    ActivePage = TabSheet2
     Align = alBottom
     TabOrder = 1
     object TabSheet1: TTabSheet
@@ -478,6 +478,7 @@ object AdjustForm: TAdjustForm
         Width = 75
         Height = 21
         TabOrder = 8
+        OnExit = editPPUValidate
         OnKeyPress = editPPUKeyPress
       end
     end
@@ -672,7 +673,7 @@ object AdjustForm: TAdjustForm
       object GradientPnl: TPanel
         Left = 0
         Top = 0
-        Width = 382
+        Width = 380
         Height = 49
         Align = alTop
         BevelOuter = bvLowered

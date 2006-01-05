@@ -1,7 +1,7 @@
 object MainForm: TMainForm
-  Left = 400
-  Top = 157
-  Width = 731
+  Left = 401
+  Top = 158
+  Width = 729
   Height = 530
   Caption = 'Apophysis'
   Color = clBtnFace
@@ -34,7 +34,7 @@ object MainForm: TMainForm
   object ToolBar: TToolBar
     Left = 0
     Top = 0
-    Width = 723
+    Width = 721
     Height = 28
     BorderWidth = 1
     Flat = True
@@ -116,9 +116,7 @@ object MainForm: TMainForm
       Hint = 'Rendering quality|Rendering quality of the main window'
       AutoComplete = False
       ItemHeight = 13
-      ItemIndex = 0
       TabOrder = 0
-      Text = '5'
       OnExit = tbQualityBoxSet
       OnKeyPress = tbQualityBoxKeyPress
       OnSelect = tbQualityBoxSet
@@ -306,7 +304,7 @@ object MainForm: TMainForm
   object BackPanel: TPanel
     Left = 164
     Top = 28
-    Width = 559
+    Width = 557
     Height = 435
     Align = alClient
     BevelInner = bvLowered
@@ -317,7 +315,7 @@ object MainForm: TMainForm
     object Image: TImage
       Left = 1
       Top = 1
-      Width = 557
+      Width = 555
       Height = 433
       Align = alClient
       AutoSize = True
@@ -332,7 +330,7 @@ object MainForm: TMainForm
   object StatusBar: TStatusBar
     Left = 0
     Top = 463
-    Width = 723
+    Width = 721
     Height = 19
     Panels = <
       item
@@ -2485,7 +2483,6 @@ object MainForm: TMainForm
     Top = 56
     object MainFile: TMenuItem
       Caption = '&File'
-      Hint = 'Contains commands for working with files'
       OnClick = MainFileClick
       object mnuOpen: TMenuItem
         Caption = '&Open...'
@@ -2575,7 +2572,6 @@ object MainForm: TMainForm
     end
     object MainEdit: TMenuItem
       Caption = '&Edit'
-      Hint = 'Contains edit commands'
       object mnuUndo: TMenuItem
         Caption = '&Undo'
         Enabled = False
@@ -2682,7 +2678,6 @@ object MainForm: TMainForm
     end
     object F1: TMenuItem
       Caption = 'Flame'
-      Hint = 'Contains commands for manipulating the flame'
       object mnuResetLocation: TMenuItem
         Caption = 'Reset Location'
         Hint = 'Recalculate flame location'
@@ -2740,7 +2735,6 @@ object MainForm: TMainForm
     end
     object mnuVar: TMenuItem
       Caption = 'Variation'
-      Hint = 'Set the flame variation to use'
       object mnuVRandom: TMenuItem
         Caption = 'Random'
         Checked = True
@@ -2797,7 +2791,6 @@ object MainForm: TMainForm
     end
     object mnuView: TMenuItem
       Caption = 'Options'
-      Hint = 'Contains commands for customizing Apophysis'
       object mnuToolbar: TMenuItem
         Caption = 'Toolbar'
         Checked = True

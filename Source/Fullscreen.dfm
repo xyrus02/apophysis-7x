@@ -1,10 +1,10 @@
 object FullscreenForm: TFullscreenForm
-  Left = 438
-  Top = 324
+  Left = 439
+  Top = 325
   BorderStyle = bsNone
   Caption = 'FullscreenForm'
-  ClientHeight = 133
-  ClientWidth = 188
+  ClientHeight = 131
+  ClientWidth = 186
   Color = clBlack
   Font.Charset = DEFAULT_CHARSET
   Font.Color = clWindowText
@@ -22,8 +22,8 @@ object FullscreenForm: TFullscreenForm
   object Image: TImage
     Left = 0
     Top = 0
-    Width = 188
-    Height = 133
+    Width = 186
+    Height = 131
     Align = alClient
     OnDblClick = ImageDblClick
   end

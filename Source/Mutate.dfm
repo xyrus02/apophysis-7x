@@ -1,11 +1,11 @@
 object MutateForm: TMutateForm
-  Left = 857
-  Top = 311
+  Left = 858
+  Top = 312
   BorderIcons = [biSystemMenu, biMinimize]
   BorderStyle = bsSingle
   Caption = 'Mutation'
-  ClientHeight = 383
-  ClientWidth = 372
+  ClientHeight = 381
+  ClientWidth = 370
   Color = clBtnFace
   Font.Charset = DEFAULT_CHARSET
   Font.Color = clWindowText
@@ -285,6 +285,7 @@ object MutateForm: TMutateForm
       Width = 145
       Height = 21
       Style = csDropDownList
+      DropDownCount = 16
       ItemHeight = 13
       TabOrder = 1
       OnChange = cmbTrendChange

@@ -2713,6 +2713,9 @@ begin
   Scripter.AddConstant('V_COSINE', 20);
   Scripter.AddConstant('V_RINGS', 21);
   Scripter.AddConstant('V_FAN', 22);
+  Scripter.AddConstant('V_EYEFISH', 23);
+  Scripter.AddConstant('V_BUBBLE', 24);
+  Scripter.AddConstant('V_CYLINDER', 25);
   Scripter.AddConstant('V_RANDOM', -1);
   { Variables }
   Scripter.AddVariable('SelectedTransform', EditForm.SelectedTriangle);
@@ -2979,6 +2982,7 @@ begin
   dest.c[2, 0] := source.c[2, 0];
   dest.c[2, 1] := source.c[2, 1];
   dest.color := source.color;
+// hmm, why no symmetry here? // dest.symmetry := source.symmetry;
   dest.density := source.density;
   for i := 0 to NRVAR - 1 do
     dest.vars[i] := source.vars[i];

@@ -28,7 +28,7 @@ uses
 
 const
 //  PixelCountMax = 32768;
-  WM_PTHREAD_COMPLETE = WM_APP + 5438;
+//  WM_PTHREAD_COMPLETE = WM_APP + 5438;
 
   crEditArrow = 20;
   crEditMove = 21;
@@ -222,7 +222,7 @@ type
     procedure chkHelpersClick(Sender: TObject);
     procedure txtXFormColorExit(Sender: TObject);
     procedure txtXFormColorKeyPress(Sender: TObject; var Key: Char);
-    procedure txtSymmetryExit(Sender: TObject);
+    procedure txtSymmetrySet(Sender: TObject);
     procedure txtSymmetryKeyPress(Sender: TObject; var Key: Char);
 
     procedure btTrgRotateLeftClick(Sender: TObject);
@@ -305,6 +305,7 @@ type
 
     MousePos: TPoint; // in screen coordinates
     mouseOverTriangle, mouseOverCorner: integer;
+    mouseOverPos: TSPoint;
 
     varDragMode: boolean;
     varDragIndex :integer;
@@ -1326,7 +1327,15 @@ end;
       Pen.Style := psSolid;
       pen.Color := clWhite;
       brush.Color := clSilver;
-      Ellipse(a.x - 2, a.y - 2, a.x + 2, a.y + 2);
+      if pivotMode = pivotLocal then i := 2
+      else i := 3;
+      Ellipse(a.x - i, a.y - i, a.x + i, a.y + i);
+
+      if editMode = modePick then begin // hmm...
+        a := ToScreen(mouseOverPos.x, mouseOverPos.y);
+        brush.Style := bsClear;
+        Ellipse(a.x - i, a.y - i, a.x + i, a.y + i);
+      end;
 
       if TWinControl(Sender).Focused then
       begin
@@ -1371,7 +1380,7 @@ begin
 
   TriangleView.OnPaint := TriangleViewPaint;
 
-  TriangleView.OnDblClick   := mnuAutoZoomClick;//TriangleViewDblClick;
+  TriangleView.OnDblClick   := mnuAutoZoomClick;
   TriangleView.OnMouseDown  := TriangleViewMouseDown;
   TriangleView.OnMouseMove  := TriangleViewMouseMove;
   TriangleView.OnMouseUp    := TriangleViewMouseUp;
@@ -1494,10 +1503,19 @@ begin
     olddist := Hypot(oldx, oldy);
 // --
 
+// -- for Pick Pivot
+    if editMode = modePick then
+    begin
+      mouseOverPos.x := MainTriangles[mouseOverTriangle].x[mouseOverCorner];
+      mouseOverPos.y := MainTriangles[mouseOverTriangle].y[mouseOverCorner];
+    end;
+// ---
           goto FoundCorner;
         end;
       end;
     mouseOverCorner:=-1;
+    mouseOverPos.x := fx;
+    mouseOverPos.y := fy;
 
     i := InsideTriangle(fx, fy);
     if i >= 0 then mouseOverTriangle:=i
@@ -1719,6 +1737,7 @@ Skip2:
     else StatusBar.Panels[2].Text := '';
     TriangleView.Refresh;
   end
+  else if editMode = modePick then TriangleView.Refresh; // hmm...
 end;
 
 procedure TEditForm.TriangleViewMouseDown(Sender: TObject; Button: TMouseButton;
@@ -1736,6 +1755,11 @@ begin
 
   if editMode = modePick then
   begin
+    if (mouseOverCorner >= 0) then // snap to point
+    begin
+      fx := MainTriangles[mouseOverTriangle].x[mouseOverCorner];
+      fy := MainTriangles[mouseOverTriangle].y[mouseOverCorner];
+    end;
     if PivotMode = pivotLocal then
     with MainTriangles[SelectedTriangle] do begin
       LocalPivot.x :=
@@ -2637,7 +2661,7 @@ begin
   end;
 end;
 
-procedure TEditForm.txtSymmetryExit(Sender: TObject);
+procedure TEditForm.txtSymmetrySet(Sender: TObject);
 var
   Allow: boolean;
   NewVal, OldVal: double;
@@ -3183,6 +3207,10 @@ begin
     VK_END: btTrgScaleDownClick(Sender);
     VK_INSERT: mnuDupClick(Sender);
     VK_DELETE: mnuDeleteClick(Sender);
+
+    // can be changed in the future...
+    Ord('R'): btnResetPivotClick(Sender);
+    Ord('P'): btnPickPivotClick(Sender);
   end;
 end;
 
@@ -3724,6 +3752,14 @@ end;
 
 procedure TEditForm.btnResetPivotClick(Sender: TObject);
 begin
+  if editMode = modePick then begin
+    editMode := oldMode;
+    oldMode := modeNone;
+    // hack: to generate MouseMove event
+    GetCursorPos(MousePos);
+    SetCursorPos(MousePos.x, MousePos.y);
+    //
+  end;
   if PivotMode = pivotLocal then
   begin
     LocalPivot.x := 0;
@@ -3742,12 +3778,16 @@ begin
   if editMode = modePick then begin
     editMode := oldMode;
     oldMode := modeNone;
+    // hack: to generate MouseMove event
+    GetCursorPos(MousePos);
+    SetCursorPos(MousePos.x, MousePos.y);
+    //
     exit;
   end;
   if oldMode <> modeNone then exit;
   oldMode := editMode;
   editMode := modePick;
-  TriangleView.Cursor := crCross; //...
+  //TriangleView.Cursor := crCross; //...
   btnPickPivot.Down := true;
 end;
 

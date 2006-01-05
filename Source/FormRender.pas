@@ -704,6 +704,7 @@ begin
   end;
   ImageWidth := StrToInt(cbWidth.Text);
   ImageHeight := StrToInt(cbHeight.Text);
+  Sample_Density := StrToFloat(txtDensity.Text);
   ShowMemoryStatus;
 end;
 

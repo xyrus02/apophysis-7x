@@ -1,11 +1,11 @@
 object RenderForm: TRenderForm
-  Left = 286
-  Top = 251
+  Left = 287
+  Top = 252
   BorderIcons = [biSystemMenu, biMinimize]
   BorderStyle = bsSingle
   Caption = 'RenderForm'
-  ClientHeight = 416
-  ClientWidth = 424
+  ClientHeight = 414
+  ClientWidth = 422
   Color = clBtnFace
   Font.Charset = DEFAULT_CHARSET
   Font.Color = clWindowText
@@ -51,8 +51,8 @@ object RenderForm: TRenderForm
   TextHeight = 13
   object ProgressBar: TProgressBar
     Left = 0
-    Top = 384
-    Width = 424
+    Top = 382
+    Width = 422
     Height = 13
     Align = alBottom
     TabOrder = 0
@@ -437,8 +437,8 @@ object RenderForm: TRenderForm
   end
   object StatusBar: TStatusBar
     Left = 0
-    Top = 397
-    Width = 424
+    Top = 395
+    Width = 422
     Height = 19
     Panels = <
       item

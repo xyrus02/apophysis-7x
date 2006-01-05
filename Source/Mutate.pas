@@ -121,9 +121,9 @@ begin
   MainCp.Copy(cps[0]);
   Transforms := MainCp.TrianglesFromCP(MainTriangles);
   MainCp.cmap := cmap;
-  MainCp.name := name;
-  MainCp.nick := nick;
-  mainCp.url := url;
+  MainCp.name := name; // this is kinda funny,
+  MainCp.nick := nick; // like author's nick can change during mutation?
+  mainCp.url := url;   // hee-heheee :-)
   if mnuResetLocation.checked then
   begin
     MainForm.Mainzoom := cps[0].zoom;
