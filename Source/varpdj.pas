@@ -1,4 +1,4 @@
-unit varpdj;
+unit varPDJ;
 
 interface
 
@@ -30,7 +30,7 @@ implementation
 uses
   Math;
 
-{ TVariationTest }
+{ TVariationPDJ }
 
 ///////////////////////////////////////////////////////////////////////////////
 procedure TVariationPDJ.CalcFunction;

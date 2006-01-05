@@ -6,8 +6,8 @@ uses
   BaseVariation, XFormMan;
 
 const
-  var_a_name='perspective_angle';
-  var_f_name='perspective_dist';
+  var_a_name = 'perspective_angle';
+  var_f_name = 'perspective_dist';
 
 type
   TVariationPerspective = class(TBaseVariation)
@@ -39,12 +39,6 @@ uses
 // TVariationPerspective
 
 ///////////////////////////////////////////////////////////////////////////////
-constructor TVariationPerspective.Create;
-begin
-  angle := random;
-  focus := 2*random + 1;
-end;
-
 procedure TVariationPerspective.Prepare;
 begin
   vsin := sin(angle*pi/2);
@@ -84,6 +78,12 @@ asm
 end;
 
 ///////////////////////////////////////////////////////////////////////////////
+constructor TVariationPerspective.Create;
+begin
+  angle := random;
+  focus := 2*random + 1;
+end;
+
 class function TVariationPerspective.GetInstance: TBaseVariation;
 begin
   Result := TVariationPerspective.Create;

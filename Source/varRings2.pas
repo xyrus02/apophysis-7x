@@ -8,7 +8,7 @@ uses
 type
   TVariationRings2 = class(TBaseVariation)
   private
-    FVal: double;
+    FVal, dx: double;
   public
     constructor Create;
 
@@ -21,7 +21,7 @@ type
     function SetVariable(const Name: string; var value: double): boolean; override;
     function GetVariable(const Name: string; var value: double): boolean; override;
 
-
+    procedure Prepare; override;
     procedure CalcFunction; override;
   end;
 
@@ -30,30 +30,37 @@ implementation
 uses
   Math;
 
-const
-  EPS = 1E-10;
-
-
 { TVariationTest }
 
 ///////////////////////////////////////////////////////////////////////////////
+procedure TVariationRings2.Prepare;
+const
+  EPS = 1E-10;
+begin
+  dx := sqr(FVal) + EPS;
+end;
+
 procedure TVariationRings2.CalcFunction;
 var
-  dx,r: double;
+  r: double;
   Length: double;
   Angle: double;
 begin
-  Length := sqrt(FTx^ * FTx^ + FTy^ * FTy^);
+  Length := sqrt(sqr(FTx^) + sqr(FTy^));
+{ // all this range-checking crap only slows us down...
   if (FTx^ < -EPS) or (FTx^ > EPS) or (FTy^ < -EPS) or (FTy^ > EPS) then
-     Angle := arctan2(FTx^, FTy^)
+    Angle := arctan2(FTx^, FTy^)
   else
     Angle := 0.0;
+} // ...and besides, we don't need arctan() if we have Length!
 
-  dx := sqr(FVal) + EPS;
-  r := Length + dx - System.Int((Length + dx)/(2 * dx)) * 2 * dx - dx + Length * (1-dx);
+//  dx := sqr(FVal) + EPS; - we can precalc it!!!
+//  r := Length + dx - System.Int((Length + dx)/(2 * dx)) * 2 * dx - dx + Length * (1-dx);
+//              ^^^^......he he, lots of useless calculation.......^^^^
+  r := vvar * (2 - dx * (System.Int((Length/dx + 1)/2) * 2 / Length + 1));
 
-  FPx^ := FPx^ + vvar * r * sin(Angle);
-  FPy^ := FPy^ + vvar * r * cos(Angle);
+  FPx^ := FPx^ + r * FTx^;
+  FPy^ := FPy^ + r * FTy^;
 end;
 
 ///////////////////////////////////////////////////////////////////////////////

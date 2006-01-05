@@ -1,4 +1,4 @@
-unit varblob;
+unit varBlob;
 
 interface
 
@@ -8,9 +8,8 @@ uses
 type
   TVariationBlob = class(TBaseVariation)
   private
-    FWaves: double;
-    FLow:   double;
-    FHigh:  double;
+    FLow, FHigh, FWaves: double;
+    VLow, VHeight: double;
   public
     constructor Create;
 
@@ -23,6 +22,7 @@ type
     function SetVariable(const Name: string; var value: double): boolean; override;
     function GetVariable(const Name: string; var value: double): boolean; override;
 
+    procedure Prepare; override;
     procedure CalcFunction; override;
   end;
 
@@ -31,26 +31,45 @@ implementation
 uses
   Math;
 
-{ TVariationTest }
+{ TVariationBlob }
 
 ///////////////////////////////////////////////////////////////////////////////
+procedure TVariationBlob.Prepare;
+begin
+  VHeight := vvar * (FHigh - FLow) / 2;
+  VLow := vvar * FLow + VHeight;
+end;
+
 procedure TVariationBlob.CalcFunction;
-const
-  EPS = 1E-10;
 var
   r : double;
-  Angle: double;
 begin
+{
   r := sqrt(FTx^ * FTx^ + FTy^ * FTy^);
+
   if (FTx^ < -EPS) or (FTx^ > EPS) or (FTy^ < -EPS) or (FTy^ > EPS) then
      Angle := arctan2(FTx^, FTy^)
   else
     Angle := 0.0;
 
   r := r * (FLow + (FHigh - FLow) * (0.5 + 0.5 * sin(FWaves * Angle)));
-
   FPx^ := FPx^ + vvar * r * sin(Angle);
   FPy^ := FPy^ + vvar * r * cos(Angle);
+}
+// --Z-- LOL!!! just look at this:
+//  sin(a) = x / r, (well, normal people use y/r, but since we swapped x and y...)
+//  then:
+//  r * sin(a) = r * x / r = x !!!
+//  so, WE DON'T NEED TO CALCULATE "r" AT ALL!!!!!
+//  (and no need to calculate sin and cos, ofcourse :)
+
+//  r := (FLow + (FHigh - FLow) * (0.5 + 0.5 * sin(FWaves * Angle)));
+//  now let's precalc ^^^^^ all this :)
+  r := VLow + VHeight * sin(FWaves * arctan2(FTx^, FTy^));
+
+  FPx^ := FPx^ + r * FTx^;
+  FPy^ := FPy^ + r * FTy^;
+// mwahaha, 20% speed increase - and I didn't even use any ASM :-)
 end;
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -88,8 +107,6 @@ begin
     FHigh := Value;
     Result := True;
   end else if Name = 'blob_waves' then begin
-    //???????????? what for?:
-    // Value is a var variable the checked/changed value is returned for showing 
     Value := Round(Value);
     FWaves := Value;
     Result := True;

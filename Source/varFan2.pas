@@ -8,7 +8,8 @@ uses
 type
   TVariationFan2 = class(TBaseVariation)
   private
-    FX,FY: double;
+    FX, FY: double;
+    dy, dx, dx2: double;
   public
     constructor Create;
 
@@ -21,7 +22,7 @@ type
     function SetVariable(const Name: string; var value: double): boolean; override;
     function GetVariable(const Name: string; var value: double): boolean; override;
 
-
+    procedure Prepare; override;
     procedure CalcFunction; override;
   end;
 
@@ -33,14 +34,22 @@ uses
 { TVariationTest }
 
 ///////////////////////////////////////////////////////////////////////////////
-procedure TVariationFan2.CalcFunction;
+procedure TVariationFan2.Prepare;
 const
   EPS = 1E-10;
+begin
+  dy := FY;
+  dx := pi * (sqr(FX) + EPS);
+  dx2 := dx/2;
+end;
+
+procedure TVariationFan2.CalcFunction;
 var
-  r,t,a : double;
-  dx, dy, dx2: double;
+  r, a : double;
+  sinr, cosr: double;
   Angle: double;
 begin
+{
   r := sqrt(FTx^ * FTx^ + FTy^ * FTy^);
   if (FTx^ < -EPS) or (FTx^ > EPS) or (FTy^ < -EPS) or (FTy^ > EPS) then
      Angle := arctan2(FTx^, FTy^)
@@ -59,13 +68,32 @@ begin
 
   FPx^ := FPx^ + vvar * r * sin(a);
   FPy^ := FPy^ + vvar * r * cos(a);
+}
+  Angle := arctan2(FTx^, FTy^);
+  if System.Frac((Angle + dy)/dx) > 0.5 then
+    a := Angle - dx2
+  else
+    a := Angle + dx2;
+  asm // SinCos(a, sinr, cosr);
+    FLD     qword ptr [a]
+    FSINCOS
+    FSTP    qword ptr [sinr]
+    FSTP    qword ptr [cosr]
+    FWAIT
+  end;
+  r := vvar * sqrt(sqr(FTx^) + sqr(FTy^));
+  FPx^ := FPx^ + r * cosr;
+  FPy^ := FPy^ + r * sinr;
 end;
 
 ///////////////////////////////////////////////////////////////////////////////
 constructor TVariationFan2.Create;
 begin
-  FX := 2 * Random - 1;
-  FY := 2 * Random - 1;
+  // randomization removed to please mutator users ;-)
+//  FX := 2 * Random - 1;
+//  FY := 2 * Random - 1;
+  FX := 1;
+  FY := 1;
 end;
 
 ///////////////////////////////////////////////////////////////////////////////
