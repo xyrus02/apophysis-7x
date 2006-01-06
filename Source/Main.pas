@@ -2115,7 +2115,7 @@ function TMainForm.UPRString(cp1: TControlPoint; Entry: string): string;
 { Returns a string containing an Ultra Fractal parameter set for copying
   or saving to file }
 var
-  IterDensity, m, j: integer;
+  IterDensity, m, i, j: integer;
   scale, a, b, c, d, e, f, p: double;
   GradStrings, Strings: TStringList;
   rept, cby, smap, sol: string;
@@ -4054,7 +4054,7 @@ begin
     if TagName = 'color' then
     begin
       // diable generating pallete
-      if Parsecp.cmapindex = -2 then
+      //if Parsecp.cmapindex = -2 then
         Parsecp.cmapindex := -1;
 
       i := StrToInt(Attributes.value('index'));
@@ -4067,6 +4067,7 @@ begin
     if TagName = 'colors' then
     begin
       ParseCompactcolors(Parsecp, StrToInt(Attributes.value('count')), Attributes.value('data'));
+      Parsecp.cmapindex := -1;
     end;
     if TagName = 'symmetry' then
     begin

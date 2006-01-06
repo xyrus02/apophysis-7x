@@ -1009,7 +1009,7 @@ begin
   try
     with Bitmap.Canvas do
     begin
-      brush.Color := EditorBkgColor; //pnlBackColor.Color;
+      brush.Color := EditorBkgColor; 
       FillRect(Rect(0, 0, Width, Height));
 
       Pen.Style := psSolid;
@@ -1056,14 +1056,14 @@ begin
 
       {Reference Triangle}
       Pen.Style := psDot;
-      Pen.color := ReferenceTriangleColor; //pnlReference.Color;
+      Pen.color := ReferenceTriangleColor;
       brush.Color := gridColor1 shr 1 and $7f7f7f;
       a := ToScreen(MainTriangles[-1].x[0], MainTriangles[-1].y[0]);
       b := ToScreen(MainTriangles[-1].x[1], MainTriangles[-1].y[1]);
       c := ToScreen(MainTriangles[-1].x[2], MainTriangles[-1].y[2]);
       Polyline([a, b, c, a]);
 
-      brush.Color := EditorBkgColor; //pnlBackColor.Color;
+      brush.Color := EditorBkgColor;
       Font.color := Pen.color;
       TextOut(c.x-9, c.y-12, 'Y');
       TextOut(b.x-8, b.y+1, 'O');
@@ -1251,7 +1251,7 @@ end;
         Pen.Mode:=pmMerge;
         brush.Color:=Pen.Color shr 1 and $7f7f7f;
 
-        if SelectMode or (mouseOverTriangle = SelectedTriangle) then
+        if (SelectMode and (editMode <> modePick)) or (mouseOverTriangle = SelectedTriangle) then
           Polygon([a, b, c])
         else
           PolyLine([a, b, c, a]);
@@ -1288,11 +1288,9 @@ end;
       end
       else if (mouseOverTriangle>=0) and (mouseOverCorner >= 0) then // highlight corner under cursor
       begin
-//        brush.Color:=clSilver;
-
         case mouseOverCorner of
           0: brush.Color:=clRed;
-          2: brush.Color:=clGreen;
+          2: brush.Color:=clBlue;
           else brush.Color:=clSilver;
         end;
 
@@ -1532,6 +1530,8 @@ FoundCorner:
         TriangleView.Cursor := crEditRotate;
       modeScale:
         TriangleView.Cursor := crEditScale;
+      modePick:
+        TriangleView.Cursor := crEditArrow;
     end
   else
     TriangleView.Cursor := crEditArrow; //crDefault;
@@ -3778,6 +3778,7 @@ begin
   if editMode = modePick then begin
     editMode := oldMode;
     oldMode := modeNone;
+    TriangleView.Invalidate;
     // hack: to generate MouseMove event
     GetCursorPos(MousePos);
     SetCursorPos(MousePos.x, MousePos.y);
@@ -3787,7 +3788,7 @@ begin
   if oldMode <> modeNone then exit;
   oldMode := editMode;
   editMode := modePick;
-  //TriangleView.Cursor := crCross; //...
+  TriangleView.Invalidate;
   btnPickPivot.Down := true;
 end;
 

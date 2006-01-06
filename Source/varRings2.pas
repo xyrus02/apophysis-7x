@@ -30,7 +30,7 @@ implementation
 uses
   Math;
 
-{ TVariationTest }
+{ TVariationRings2 }
 
 ///////////////////////////////////////////////////////////////////////////////
 procedure TVariationRings2.Prepare;
@@ -56,7 +56,7 @@ begin
 
 //  dx := sqr(FVal) + EPS; - we can precalc it!!!
 //  r := Length + dx - System.Int((Length + dx)/(2 * dx)) * 2 * dx - dx + Length * (1-dx);
-//              ^^^^......he he, lots of useless calculation.......^^^^
+//              ^^^^......he he, lots of useless calculations......^^^^
   r := vvar * (2 - dx * (System.Int((Length/dx + 1)/2) * 2 / Length + 1));
 
   FPx^ := FPx^ + r * FTx^;

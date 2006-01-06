@@ -1748,8 +1748,8 @@ function TControlPoint.HasNewVariants: boolean;
 var
   i,v: integer;
 begin
-  Result := false;
-
+  Result := false; // flam3 will be updated anyway :-)
+{
   for i:= 0 to NXFORMS - 1 do begin
     if xform[i].density = 0 then
       break;
@@ -1760,6 +1760,7 @@ begin
     if result then
       break;
   end;
+}
 end;
 
 ///////////////////////////////////////////////////////////////////////////////

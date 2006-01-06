@@ -31,7 +31,7 @@ implementation
 uses
   Math;
 
-{ TVariationTest }
+{ TVariationFan2 }
 
 ///////////////////////////////////////////////////////////////////////////////
 procedure TVariationFan2.Prepare;
@@ -89,11 +89,8 @@ end;
 ///////////////////////////////////////////////////////////////////////////////
 constructor TVariationFan2.Create;
 begin
-  // randomization removed to please mutator users ;-)
-//  FX := 2 * Random - 1;
-//  FY := 2 * Random - 1;
-  FX := 1;
-  FY := 1;
+  FX := 2 * Random - 1;
+  FY := 2 * Random - 1;
 end;
 
 ///////////////////////////////////////////////////////////////////////////////
