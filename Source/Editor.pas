@@ -2532,7 +2532,10 @@ end;
 procedure TEditForm.scrlXFormColorScroll(Sender: TObject;
   ScrollCode: TScrollCode; var ScrollPos: Integer);
 begin
-  if ScrollCode = scEndScroll then UpdateFlame(True);
+  if ScrollCode = scEndScroll then begin
+    MainForm.UpdateUndo;
+    UpdateFlame(True);
+  end;
 end;
 
 procedure TEditForm.scrlXFormColorChange(Sender: TObject);

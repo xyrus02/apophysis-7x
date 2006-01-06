@@ -5,6 +5,8 @@ object frmPostProcess: TfrmPostProcess
   Height = 534
   Caption = 'Post Render'
   Color = clBtnFace
+  Constraints.MinHeight = 200
+  Constraints.MinWidth = 600
   Font.Charset = DEFAULT_CHARSET
   Font.Color = clWindowText
   Font.Height = -11
@@ -36,7 +38,7 @@ object frmPostProcess: TfrmPostProcess
     end
     object Label2: TLabel
       Left = 12
-      Top = 32
+      Top = 34
       Width = 24
       Height = 13
       Caption = 'Filter'
@@ -50,7 +52,7 @@ object frmPostProcess: TfrmPostProcess
     end
     object Label4: TLabel
       Left = 332
-      Top = 32
+      Top = 34
       Width = 45
       Height = 13
       Caption = 'Vibrancy:'
@@ -64,7 +66,7 @@ object frmPostProcess: TfrmPostProcess
     end
     object Label6: TLabel
       Left = 172
-      Top = 32
+      Top = 34
       Width = 50
       Height = 13
       Caption = 'Brightness'
@@ -84,6 +86,7 @@ object frmPostProcess: TfrmPostProcess
       Top = 8
       Width = 57
       Height = 21
+      Cursor = crHandPoint
       BevelOuter = bvLowered
       TabOrder = 0
       OnClick = pnlBackColorClick
@@ -109,7 +112,7 @@ object frmPostProcess: TfrmPostProcess
     end
     object txtFilterRadius: TEdit
       Left = 104
-      Top = 28
+      Top = 30
       Width = 57
       Height = 21
       TabOrder = 2
@@ -123,10 +126,10 @@ object frmPostProcess: TfrmPostProcess
     end
     object txtVib: TEdit
       Left = 424
-      Top = 28
+      Top = 30
       Width = 57
       Height = 21
-      TabOrder = 4
+      TabOrder = 6
     end
     object txtContrast: TEdit
       Left = 424
@@ -137,10 +140,10 @@ object frmPostProcess: TfrmPostProcess
     end
     object txtBrightness: TEdit
       Left = 264
-      Top = 28
+      Top = 30
       Width = 57
       Height = 21
-      TabOrder = 6
+      TabOrder = 4
     end
   end
   object ScrollBox1: TScrollBox

@@ -1969,9 +1969,9 @@ object AboutForm: TAboutForm
   object Label6: TLabel
     Left = 120
     Top = 92
-    Width = 86
+    Width = 110
     Height = 13
-    Caption = 'Copyright '#169' 2005 '
+    Caption = 'Copyright '#169' 2005-2006'
   end
   object Label7: TLabel
     Left = 140
