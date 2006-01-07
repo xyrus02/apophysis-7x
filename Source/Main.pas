@@ -3942,7 +3942,7 @@ begin
   end;
 end;
 
-procedure ParseCompactcolors(cp: TControlPoint; count: integer; data: string);
+procedure ParseCompactcolors(cp: TControlPoint; count: integer; in_data: string);
   function HexChar(c: Char): Byte;
   begin
     case c of
@@ -3955,13 +3955,21 @@ procedure ParseCompactcolors(cp: TControlPoint; count: integer; data: string);
   end;
 var
   i: integer;
+  c: char;
+  data: string;
 begin
   // diable generating pallete
   if Parsecp.cmapindex = -2 then
     Parsecp.cmapindex := -1;
 
-  Assert(Count = 256,'only 256 color Colormaps are supported at the moment');
-  Assert((Count * 8) = Length(data),'Data size MisMatch');
+  Assert(Count = 256, 'only 256 color Colormaps are supported at the moment');
+  data := '';
+  for i := 0 to Length(in_data) do
+  begin
+    c := in_data[i];
+    if c in ['0'..'9']+['A'..'F']+['a'..'f'] then data := data + c;
+  end;
+  Assert((Count * 8) = Length(data), 'Color-data size mismatch');
   for i := 0 to Count -1 do begin
     Parsecp.cmap[i][0] := 16 * HexChar(Data[i*8 + 3]) + HexChar(Data[i*8 + 4]);
     Parsecp.cmap[i][1] := 16 * HexChar(Data[i*8 + 5]) + HexChar(Data[i*8 + 6]);
