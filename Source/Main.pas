@@ -1,5 +1,6 @@
 {
      Apophysis Copyright (C) 2001-2004 Mark Townsend
+     Apophysis Copyright (C) 2005-2006 Ronald Hordijk, Piotr Boris, Peter Sdobnov     
 
      This program is free software; you can redistribute it and/or modify
      it under the terms of the GNU General Public License as published by
@@ -36,7 +37,7 @@ const
   RS_XO = 2;
   RS_VO = 3;
 
-  AppVersionString = 'Apophysis 2.03c';
+  AppVersionString = 'Apophysis 2.03d pre-release 1';
 
 type
   TMouseMoveState = (msUsual, msZoomWindow, msZoomOutWindow, msZoomWindowMove, msZoomOutWindowMove, msDrag, msDragMove, msRotate, msRotateMove);
@@ -358,6 +359,7 @@ var
   MainForm: TMainForm;
   pname, ptime: string;
   nxform: integer;
+  FinalXformLoaded: boolean;
   ParseCp: TControlPoint; // For parsing;
   MainCp: TControlPoint;
 
@@ -1312,10 +1314,11 @@ begin
   Result := '   <colors count="256" data="';
 
   for i := 0 to 255 do  begin
-    Result := Result + IntToHex(0,2)
+    Result := Result + '00' //IntToHex(0,2)
                      + IntToHex(cp1.cmap[i, 0],2)
                      + IntToHex(cp1.cmap[i, 1],2)
                      + IntToHex(cp1.cmap[i, 2],2);
+    if ((i and 7) = 7) and (i <> 255) then Result := Result + #13#10 + '    ';
   end;
   Result := Result + '"/>';
 end;
@@ -1375,33 +1378,15 @@ begin
 
    { Write transform parameters }
     t := NumXForms(cp1);
-    for i := 0 to t - 1 do  begin
+    for i := 0 to t - 1 do
       FileList.Add(cp1.xform[i].ToXMLString);
-//      with cp1.xform[i] do
-//      begin
-//        a := c[0][0];
-//        b := c[1][0];
-//        cc := c[0][1];
-//        d := c[1][1];
-//        e := c[2][0];
-//        f := c[2][1];
-//        varlist := '';
-//        for j := 0 to NRVAR - 1 do
-//        begin
-//          if vars[j] <> 0 then
-//          begin
-//            varlist := varlist + varnames(j) + format('="%f" ', [vars[j]]);
-//          end;
-//        end;
-//        FileList.Add(Format('   <xform weight="%g" color="%g" symmetry="%g" ', [density, color, symmetry]) +
-//          varlist + Format('coefs="%g %g %g %g %g %g"/>', [a, cc, b, d, e, f]));
-//      end;
-    end;
+//  if cp1.HasFinalXForm then FileList.Add(cp1.finalxform.FinalToXMLString(cp1.finalXformEnabled));
+    if cp1.HasFinalXForm then FileList.Add(cp1.xform[t].FinalToXMLString(cp1.finalXformEnabled));
    { Write palette data }
     if not sheep then begin
-      if not compact then
-        FileList.Add(ColorToXml(cp1));
-      FileList.Add(ColorToXmlcompact(cp1));
+      if compact then // say no to duplicated data! (?)
+        FileList.Add(ColorToXmlCompact(cp1))
+      else FileList.Add(ColorToXml(cp1));
    end;
 
     FileList.Add('</flame>');
@@ -1562,7 +1547,7 @@ begin
           until (Pos('<' + Tag + '>', FileList[FileList.count - 1]) <> 0) or
                 (Pos('</Flames>', FileList[FileList.count - 1]) <> 0);
 
-        FileList.Add(Trim(FlameToXML(cp1, false)));
+        FileList.Add(Trim(FlameToXML(cp1, false, true)));
         FileList.Add('</Flames>');
         FileList.SaveToFile(filename);
 
@@ -1576,7 +1561,7 @@ begin
       AssignFile(IFile, filename);
       ReWrite(IFile);
       Writeln(IFile, '<Flames name="' + Tag + '">');
-      Write(IFile, FlameToXML(cp1, false));
+      Write(IFile, FlameToXML(cp1, false, true));
       Writeln(IFile, '</Flames>');
       CloseFile(IFile);
     end;
@@ -1894,7 +1879,7 @@ begin
   *)
       MainCp.name := RandomPrefix + RandomDate + '-' +
         IntToStr(RandomIndex);
-      Write(F, FlameToXML(MainCp, False));
+      Write(F, FlameToXML(MainCp, False, true));
 //      Write(F, FlameToString(Title));
 //      WriteLn(F, ' ');
     end;
@@ -2619,6 +2604,7 @@ begin
   time := -1;
   FileStrings := TStringList.Create;
   ParamStrings := TStringList.Create;
+
   if pos('*untitled', name) <> 0 then
   begin
     Tokens := TStringList.Create;
@@ -2684,7 +2670,7 @@ begin
     RedrawTimer.Enabled := True;
     Application.ProcessMessages;
 
-    EditForm.SelectedTriangle := 1; // --Z--
+    EditForm.SelectedTriangle := 0; // (?)
 
     UpdateWindows;
   finally
@@ -3578,8 +3564,10 @@ begin
   ScriptEditor.Stopped := True;
   StopThread;
   nxform := 0;
+  FinalXformLoaded := false;
   Parsecp.cmapindex := -2; // generate pallet from cmapindex and hue (apo 1 and earlier)
   ParseCp.symmetry := 0;
+  ParseCP.finalXformEnabled := false;
   XMLScanner.LoadFromBuffer(params);
   XMLScanner.Execute;
   cp1.copy(ParseCp);
@@ -3598,6 +3586,11 @@ begin
         HSVToRGB(h, s, v, cp1.cmap[i][0], cp1.cmap[i][1], cp1.cmap[i][2]);
       end;
     end;
+  end;
+
+  if FinalXformLoaded = false then begin
+    MainCP.xform[nxform].Clear;
+    MainCP.xform[nxform].symmetry := 1;
   end;
 
   if nxform < NXFORMS then
@@ -3987,77 +3980,83 @@ var
 begin
   Tokens := TStringList.Create;
   try
-    if TagName = 'xform' then
+    if (TagName = 'xform') or (TagName = 'finalxform') then
+     if (TagName = 'finalxform') and (FinalXformLoaded) then ShowMessage('ERROR: No xforms allowed after FinalXform!')
+     else
     begin
-      Parsecp.xform[nxform].Clear;
+      if (TagName = 'finalxform') then FinalXformLoaded := true;
+
+     with ParseCP.xform[nXform] do begin
+      Clear;
       v := Attributes.Value('weight');
-      if v <> '' then ParseCp.xform[nxform].density := StrToFloat(v);
+      if (v <> '') and (TagName = 'xform') then density := StrToFloat(v);
+      if (TagName = 'finalxform') then
+      begin
+        v := Attributes.Value('enabled');
+        if v <> '' then ParseCP.finalXformEnabled := (StrToInt(v) <> 0)
+        else ParseCP.finalXformEnabled := false;
+      end;
       v := Attributes.Value('color');
-      if v <> '' then Parsecp.xform[nxform].color := StrToFloat(v);
+      if v <> '' then color := StrToFloat(v);
       v := Attributes.Value('symmetry');
-      if v <> '' then Parsecp.xform[nxform].symmetry := StrToFloat(v);
+      if v <> '' then symmetry := StrToFloat(v);
       v := Attributes.Value('coefs');
       GetTokens(v, tokens);
       if Tokens.Count < 6 then ShowMessage('Not enough cooeficients...crash?');
-      with Parsecp.xform[nxform] do
-      begin
-        c[0][0] := StrToFloat(Tokens[0]);
-        c[0][1] := StrToFloat(Tokens[1]);
-        c[1][0] := StrToFloat(Tokens[2]);
-        c[1][1] := StrToFloat(Tokens[3]);
-        c[2][0] := StrToFloat(Tokens[4]);
-        c[2][1] := StrToFloat(Tokens[5]);
-      end;
+      c[0][0] := StrToFloat(Tokens[0]);
+      c[0][1] := StrToFloat(Tokens[1]);
+      c[1][0] := StrToFloat(Tokens[2]);
+      c[1][1] := StrToFloat(Tokens[3]);
+      c[2][0] := StrToFloat(Tokens[4]);
+      c[2][1] := StrToFloat(Tokens[5]);
+
       v := Attributes.Value('post');
       if v <> '' then begin
         GetTokens(v, tokens);
         if Tokens.Count < 6 then ShowMessage('Not enough post-cooeficients...crash?');
-        with Parsecp.xform[nxform] do
-        begin
-          p[0][0] := StrToFloat(Tokens[0]);
-          p[0][1] := StrToFloat(Tokens[1]);
-          p[1][0] := StrToFloat(Tokens[2]);
-          p[1][1] := StrToFloat(Tokens[3]);
-          p[2][0] := StrToFloat(Tokens[4]);
-          p[2][1] := StrToFloat(Tokens[5]);
-        end;
+        p[0][0] := StrToFloat(Tokens[0]);
+        p[0][1] := StrToFloat(Tokens[1]);
+        p[1][0] := StrToFloat(Tokens[2]);
+        p[1][1] := StrToFloat(Tokens[3]);
+        p[2][0] := StrToFloat(Tokens[4]);
+        p[2][1] := StrToFloat(Tokens[5]);
       end;
 
       for i := 0 to NRVAR - 1 do
       begin
-        Parsecp.xform[nxform].vars[i] := 0;
+        vars[i] := 0;
         v := Attributes.Value(varnames(i));
         if v <> '' then
-          Parsecp.xform[nxform].vars[i] := StrToFloat(v);
+          vars[i] := StrToFloat(v);
       end;
 
       v := Attributes.Value('var1');
       if v <> '' then
       begin
         for i := 0 to NRVAR - 1 do
-          Parsecp.xform[nxform].vars[i] := 0;
-        Parsecp.xform[nxform].vars[StrToInt(v)] := 1;
+          vars[i] := 0;
+        vars[StrToInt(v)] := 1;
       end;
       v := Attributes.Value('var');
       if v <> '' then
       begin
         for i := 0 to NRVAR - 1 do
-          Parsecp.xform[nxform].vars[i] := 0;
+          vars[i] := 0;
         GetTokens(v, tokens);
         if Tokens.Count > NRVAR then ShowMessage('To many vars..crash?');
         for i := 0 to Tokens.Count - 1 do
-          Parsecp.xform[nxform].vars[i] := StrToFloat(Tokens[i]);
+          vars[i] := StrToFloat(Tokens[i]);
       end;
 
       for i := 0 to GetNrVariableNames - 1 do begin
         v := Attributes.Value(GetVariableNameAt(i));
         if v <> '' then begin
           d := StrToFloat(v);
-          Parsecp.xform[nxform].SetVariable(GetVariableNameAt(i), d);
+          SetVariable(GetVariableNameAt(i), d);
         end;
       end;
-
-      inc(nxform);
+     end;
+      Inc(nXform);
     end;
     if TagName = 'color' then
     begin

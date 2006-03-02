@@ -78,6 +78,7 @@ type
     procedure Bubble;              // var[24]
     procedure Cylinder;            // var[25]
     procedure Smoke;               // var[26]
+    procedure Noise;               // var[27]
 
     function Mul33(const M1, M2: TMatrix): TMatrix;
     function Identity: TMatrix;
@@ -123,6 +124,7 @@ type
     procedure GetVariable(const name: string; var Value: double);
 
     function ToXMLString: string;
+    function FinalToXMLString(IsEnabled: boolean): string;
   end;
 
 implementation
@@ -131,7 +133,7 @@ uses
   SysUtils, Math;
 
 const
-  EPS: double = 1E-10;
+  EPS: double = 1E-6;
 
 procedure SinCos(const Theta: double; var Sin, Cos: double); // I'm not sure, but maybe it'll help...
 asm
@@ -1488,6 +1490,39 @@ asm
 {$endif}
 end;
 
+//--27--///////////////////////////////////////////////////////////////////////
+procedure TXForm.Noise;
+{$ifndef _ASM_}
+var
+  r, sinr, cosr: double;
+begin
+  SinCos(random * 2*pi, sinr, cosr);
+  r := vars[27]*random;//(sqrt(sqr(ftx)+sqr(fty)) + eps);
+  FPx := FPx + {FTx*}r*cosr;
+  FPy := FPy + {FTy*}r*sinr;
+{$else}
+asm
+    mov     edx, [ebx + vars]
+    fld     qword ptr [edx + 27*8]
+    call    System.@RandExt
+    fmulp
+    call    System.@RandExt
+    fadd    st, st
+    fldpi
+    fmulp
+    fsincos
+    fmul    st, st(2)
+    fmul    qword ptr [ebx + FTx]
+    fadd    qword ptr [ebx + FPx]
+    fstp    qword ptr [ebx + FPx]
+    fmulp
+    fmul    qword ptr [ebx + FTy]
+    fadd    qword ptr [ebx + FPy]
+    fstp    qword ptr [ebx + FPy]
+    fwait
+{$endif}
+end;
+
 //***************************************************************************//
 
 procedure TXForm.NextPoint(var px, py, pc: double);
@@ -1849,6 +1884,7 @@ begin
   FFunctionList[24] := Bubble;
   FFunctionList[25] := Cylinder;
   FFunctionList[26] := Smoke;
+  FFunctionList[27] := Noise;
 
   //registered
   for i := 0 to High(FRegVariations) do
@@ -1904,6 +1940,34 @@ var
   Value: double;
 begin
   result := Format('   <xform weight="%g" color="%g" symmetry="%g" ', [density, color, symmetry]);
+  for i := 0 to nrvar - 1 do begin
+    if vars[i] <> 0 then
+      Result := Result + varnames(i) + format('="%g" ', [vars[i]]);
+  end;
+  Result := Result + Format('coefs="%g %g %g %g %g %g" ', [c[0,0], c[0,1], c[1,0], c[1,1], c[2,0], c[2,1]]);
+  if (p[0,0]<>1) or (p[0,1]<>0) or(p[1,0]<>0) or (p[1,1]<>1) or (p[2,0]<>0) or (p[2,1]<>0) then
+    Result := Result + Format('post="%g %g %g %g %g %g" ', [p[0,0], p[0,1], p[1,0], p[1,1], p[2,0], p[2,1]]);
+
+  for i := 0 to High(FRegVariations)  do begin
+    if vars[i+NRLOCVAR] <> 0 then
+      for j:= 0 to FRegVariations[i].GetNrVariables -1 do begin
+        Name := FRegVariations[i].GetVariableNameAt(j);
+        FRegVariations[i].GetVariable(Name,Value);
+        Result := Result + Format('%s="%g" ', [name, value]);
+      end;
+  end;
+
+  Result := Result + '/>';
+end;
+
+function TXForm.FinalToXMLString(IsEnabled: boolean): string;
+var
+  i, j: integer;
+  Name: string;
+  Value: double;
+begin
+  result := Format('   <finalxform enabled="%d" color="%g" symmetry="%g" ',
+                   [ifthen(IsEnabled, 1, 0), color, symmetry]);
   for i := 0 to nrvar - 1 do begin
     if vars[i] <> 0 then
       Result := Result + varnames(i) + format('="%g" ', [vars[i]]);

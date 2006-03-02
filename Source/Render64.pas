@@ -22,16 +22,16 @@ interface
 
 uses
   Windows, Graphics, ImageMaker,
-   Render, Controlpoint;
+   Render, xform, Controlpoint;
 
 type
   TRenderer64 = class(TBaseRenderer)
   private
-    oversample: Int64;
+    oversample: integer;
 
-    BucketWidth: Int64;
-    BucketHeight: Int64;
-    BucketSize: Int64;
+    BucketWidth, BucketHeight: integer;
+    BucketSize: integer;
+
     gutter_width: Integer;
     max_gutter_width: Integer;
 
@@ -40,8 +40,12 @@ type
     Buckets: TBucketArray;
     ColorMap: TColorMapArray;
 
-    bounds: array[0..3] of extended;
-    size: array[0..1] of extended;
+    FinalXform: ^TXform;
+    UseFinalXform: boolean;
+
+    camX0, camX1, camY0, camY1, // camera bounds
+    camW, camH,                 // camera sizes
+    bws, bhs, cosa, sina, rcX, rcY: double;
     ppux, ppuy: extended;
     FImageMaker: TImageMaker;
 
@@ -53,8 +57,10 @@ type
     procedure CreateColorMap;
     procedure CreateCamera;
 
-    procedure AddPointsToBuckets(const points: TPointsArray); overload;
-    procedure AddPointsToBucketsAngle(const points: TPointsArray); overload;
+    procedure AddPointsToBuckets(const points: TPointsArray);
+    procedure AddPointsToBucketsAngle(const points: TPointsArray);
+    procedure AddPointsWithFX(const points: TPointsArray);
+    procedure AddPointsWithAngleFX(const points: TPointsArray);
 
     procedure SetPixels;
   public
@@ -117,7 +123,7 @@ var
   scale: double;
   t0, t1: double;
   t2, t3: double;
-  corner0, corner1: double;
+  corner_x, corner_y, Xsize, Ysize: double;
   shift: Integer;
 begin
   scale := power(2, fcp.zoom);
@@ -131,20 +137,32 @@ begin
   t1 := (gutter_width) / (oversample * ppuy);
   t2 := (2 * max_gutter_width - gutter_width) / (oversample * ppux);
   t3 := (2 * max_gutter_width - gutter_width) / (oversample * ppuy);
-  corner0 := fcp.center[0] - fcp.Width / ppux / 2.0;
-  corner1 := fcp.center[1] - fcp.Height / ppuy / 2.0;
-  bounds[0] := corner0 - t0;
-  bounds[1] := corner1 - t1 + shift;
-  bounds[2] := corner0 + fcp.Width / ppux + t2;
-  bounds[3] := corner1 + fcp.Height / ppuy + t3; //+ shift;
-  if abs(bounds[2] - bounds[0]) > 0.01 then
-    size[0] := 1.0 / (bounds[2] - bounds[0])
+  corner_x := fcp.center[0] - fcp.Width / ppux / 2.0;
+  corner_y := fcp.center[1] - fcp.Height / ppuy / 2.0;
+  camX0 := corner_x - t0;
+  camY0 := corner_y - t1 + shift;
+  camX1 := corner_x + fcp.Width / ppux + t2;
+  camY1 := corner_y + fcp.Height / ppuy + t3; //+ shift;
+  camW := camX1 - camX0;
+  if abs(camW) > 0.01 then
+    Xsize := 1.0 / camW
   else
-    size[0] := 1;
-  if abs(bounds[3] - bounds[1]) > 0.01 then
-    size[1] := 1.0 / (bounds[3] - bounds[1])
+    Xsize := 1;
+  camH := camY1 - camY0;
+  if abs(camH) > 0.01 then
+    Ysize := 1.0 / camH
   else
-    size[1] := 1;
+    Ysize := 1;
+  bws := (BucketWidth - 0.5)  * Xsize;
+  bhs := (BucketHeight - 0.5) * Ysize;
+
+  if FCP.FAngle <> 0 then
+  begin
+    cosa := cos(FCP.FAngle);
+    sina := sin(FCP.FAngle);
+    rcX := FCP.Center[0]*(1 - cosa) - FCP.Center[1]*sina - camX0;
+    rcY := FCP.Center[1]*(1 - cosa) + FCP.Center[0]*sina - camY0;
+  end;
 end;
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -202,6 +220,9 @@ begin
   CreateCamera;
 
   CreateColorMap;
+
+  FinalXForm := @fcp.xform[fcp.NumXForms];
+  UseFinalXForm := fcp.finalXformEnabled and fcp.HasFinalXform;
 end;
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -209,32 +230,19 @@ procedure TRenderer64.AddPointsToBuckets(const points: TPointsArray);
 var
   i: integer;
   px, py: double;
-  bws, bhs: double;
-  bx, by: double;
-  wx, wy: double;
   Bucket: PBucket;
   MapColor: PColorMapColor;
 begin
-  bws := (BucketWidth - 0.5)  * size[0];
-  bhs := (BucketHeight - 0.5) * size[1];
-  bx := bounds[0];
-  by := bounds[1];
-  wx := bounds[2] - bounds[0];
-  wy := bounds[3] - bounds[1];
-
   for i := SUB_BATCH_SIZE - 1 downto 0 do begin
-    if FStop then
-      Exit;
+//    if FStop then Exit;
 
-    px := points[i].x - bx;
-    py := points[i].y - by;
+    px := points[i].x - camX0;
+    if (px < 0) or (px > camW) then continue;
+    py := points[i].y - camY0;
+    if (py < 0) or (py > camH) then continue;
 
-    if ((px < 0) or (px > wx) or
-        (py < 0) or (py > wy)) then
-      continue;
-
-    MapColor := @ColorMap[Round(points[i].c * 255)];
     Bucket := @buckets[Round(bws * px) + Round(bhs * py) * BucketWidth];
+    MapColor := @ColorMap[Round(points[i].c * 255)];
 
     Inc(Bucket.Red,   MapColor.Red);
     Inc(Bucket.Green, MapColor.Green);
@@ -243,55 +251,140 @@ begin
   end;
 end;
 
+procedure TRenderer64.AddPointsWithFX(const points: TPointsArray);
+const
+  const255: single = 255;
+var
+  i: integer;
+  px, py: double;
+  Bucket: PBucket;
+  MapColor: PColorMapColor;
+begin
+ try
+  for i := SUB_BATCH_SIZE - 1 downto 0 do begin
+//    if FStop then Exit;
+
+    FinalXform.NextPoint(points[i]);
+
+{$if true}
+    px := points[i].x - camX0;
+    if (px < 0) or (px > camW) then continue;
+    py := points[i].y - camY0;
+    if (py < 0) or (py > camH) then continue;
+
+    Bucket := @buckets[Round(bws * px) + Round(bhs * py) * BucketWidth];
+    MapColor := @ColorMap[Round(points[i].c * 255)];
+
+    Inc(Bucket.Red,   MapColor.Red);
+    Inc(Bucket.Green, MapColor.Green);
+    Inc(Bucket.Blue,  MapColor.Blue);
+    Inc(Bucket.Count);
+{$else}
+asm
+    mov     eax, [points]
+    lea     edx, [eax + edi*8]  // assert: "i" in edi
+//    fld     qword ptr [edx + edi*8] // assert: "i" in edi
+    fld     qword ptr [edx]
+    fsub    qword ptr [bx]
+    fldz
+    fcomp   st(1), st
+    fnstsw  ax
+    sahf
+    jb      @skip1
+    fld     qword ptr [wx]
+    fcomp
+    fnstsw  ax
+    sahf
+    jnbe    @skip1
+
+    fld     qword ptr [edx + 8]
+    fsub    qword ptr [by]
+    fldz
+    fcomp
+    fnstsw  ax
+    sahf
+    jb      @skip2
+    fld   qword ptr [wy]
+    fcomp
+    fnstsw  ax
+    sahf
+    jnbe    @skip2
+
+    fmul    qword ptr [bhs]
+    fimul   [BucketWidth]
+
+    fld     qword ptr [edx + 16]
+    fmul    dword ptr [const255]
+    sub     esp, 4
+    fistp   dword ptr [esp]
+    pop     eax
+
+@skip2:
+    fstp    st
+@skip1:
+    fstp    st
+@continue:
+end;
+{$ifend}
+  end
+ except
+ end
+end;
+
 ///////////////////////////////////////////////////////////////////////////////
 procedure TRenderer64.AddPointsToBucketsAngle(const points: TPointsArray);
 var
   i: integer;
   px, py: double;
-  ca,sa: double;
-  nx, ny: double;
-  bws, bhs: double;
-  bx, by: double;
-  wx, wy: double;
   Bucket: PBucket;
   MapColor: PColorMapColor;
 begin
-
-  bws := (BucketWidth - 0.5)  * size[0];
-  bhs := (BucketHeight - 0.5) * size[1];
-  bx := bounds[0];
-  by := bounds[1];
-  wx := bounds[2] - bounds[0];
-  wy := bounds[3] - bounds[1];
-
-  ca := cos(FCP.FAngle);
-  sa := sin(FCP.FAngle);
-
   for i := SUB_BATCH_SIZE - 1 downto 0 do begin
-    if FStop then
-      Exit;
+//    if FStop then Exit;
 
-    px := points[i].x - FCP.Center[0];
-    py := points[i].y - FCP.Center[1];
+    px := points[i].x * cosa + points[i].y * sina + rcX;
+    if (px < 0) or (px > camW) then continue;
+    py := points[i].y * cosa - points[i].x * sina + rcY;
+    if (py < 0) or (py > camH) then continue;
 
-    nx := px * ca + py * sa;
-    ny := -px * sa + py * ca;
-
-    px := nx + FCP.Center[0] - bx;
-    py := ny + FCP.Center[1] - by;
-
-    if ((px < 0) or (px > wx) or
-        (py < 0) or (py > wy)) then
-      continue;
-
-    MapColor := @ColorMap[Round(points[i].c * 255)];
     Bucket := @buckets[Round(bws * px) + Round(bhs * py) * BucketWidth];
+    MapColor := @ColorMap[Round(points[i].c * 255)];
 
     Inc(Bucket.Red,   MapColor.Red);
     Inc(Bucket.Green, MapColor.Green);
     Inc(Bucket.Blue,  MapColor.Blue);
     Inc(Bucket.Count);
   end;
+end;
+
+procedure TRenderer64.AddPointsWithAngleFX(const points: TPointsArray);
+var
+  i: integer;
+  px, py: double;
+  Bucket: PBucket;
+  MapColor: PColorMapColor;
+begin
+ try
+  for i := SUB_BATCH_SIZE - 1 downto 0 do
+  begin
+//    if FStop then Exit;
+    FinalXform.NextPoint(points[i]);
+
+    px := points[i].x * cosa + points[i].y * sina + rcX;
+    if (px < 0) or (px > camW) then continue;
+    py := points[i].y * cosa - points[i].x * sina + rcY;
+    if (py < 0) or (py > camH) then continue;
+
+    Bucket := @buckets[Round(bws * px) + Round(bhs * py) * BucketWidth];
+    MapColor := @ColorMap[Round(points[i].c * 255)];
+
+    Inc(Bucket.Red,   MapColor.Red);
+    Inc(Bucket.Green, MapColor.Green);
+    Inc(Bucket.Blue,  MapColor.Blue);
+    Inc(Bucket.Count);
+  end;
+ except
+ end
 end;
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -301,12 +394,25 @@ var
   nsamples: Int64;
   nrbatches: Integer;
   points: TPointsArray;
+  AddPointsProc: procedure (const points: TPointsArray) of object;
 begin
 //  if FileExists('c:\temp\flame.txt') then
 //    Deletefile('c:\temp\flame.txt');
 
 //  AssignFile(F, 'c:\temp\flame.txt');
 //  Rewrite(F);
+  if FCP.FAngle = 0 then begin
+    if UseFinalXForm then
+      AddPointsProc := AddPointsWithFX
+    else
+      AddPointsProc := AddPointsToBuckets;
+  end
+  else begin
+    if UseFinalXForm then
+      AddPointsProc := AddPointsWithAngleFX
+    else
+      AddPointsProc := AddPointsToBucketsAngle;
+  end;
 
   SetLength(Points, SUB_BATCH_SIZE);
 
@@ -330,19 +436,19 @@ begin
 //      break;
     fcp.Testiterate(SUB_BATCH_SIZE, points);
 {$ELSE}
+{
     case Compatibility of
       0: fcp.iterate_Old(SUB_BATCH_SIZE, points);
       1: fcp.iterateXYC(SUB_BATCH_SIZE, points);
     end;
+}
+    fcp.IterateXYC(SUB_BATCH_SIZE, points);
 {$ENDIF}
 
 //    for j := SUB_BATCH_SIZE - 1 downto 0 do
 //      Writeln(f,  FloatTostr(points[j].x) + #9 + FloatTostr(points[j].y) + #9 + FloatTostr(points[j].c));
 
-    if FCP.FAngle = 0 then
-      AddPointsToBuckets(points)
-    else
-      AddPointsToBucketsAngle(points);
+    AddPointsProc(points);
   end;
 
 //  closefile(f);

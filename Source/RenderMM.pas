@@ -22,7 +22,7 @@ interface
 
 uses
   Windows, Graphics,
-   Render, Controlpoint, ImageMaker;
+   Render, Controlpoint, ImageMaker, XForm;
 
 type
   TRendererMM64 = class(TBaseRenderer)
@@ -41,9 +41,15 @@ type
     Buckets: TBucketArray;
     ColorMap: TColorMapArray;
 
-    bounds: array[0..3] of extended;
-    size: array[0..1] of extended;
-    FRotationCenter: array[0..1] of extended;
+    FinalXform: ^TXform;
+    UseFinalXform: boolean;
+
+    camX0, camX1, camY0, camY1, // camera bounds
+    camW, camH,                 // camera sizes
+    bws, bhs, cosa, sina, rcX, rcY: double;
+//    bounds: array[0..3] of extended;
+//    size: array[0..1] of extended;
+//    FRotationCenter: array[0..1] of extended;
     ppux, ppuy: extended;
     nrSlices: int64;
     Slice: int64;
@@ -56,8 +62,10 @@ type
     procedure CreateColorMap;
     procedure CreateCamera;
 
-    procedure AddPointsToBuckets(const points: TPointsArray); overload;
-    procedure AddPointsToBucketsAngle(const points: TPointsArray); overload;
+    procedure AddPointsToBuckets(const points: TPointsArray);
+    procedure AddPointsToBucketsAngle(const points: TPointsArray);
+    procedure AddPointsWithFX(const points: TPointsArray);
+    procedure AddPointsWithAngleFX(const points: TPointsArray);
 
     procedure SetPixels;
   protected
@@ -106,7 +114,7 @@ procedure TRendererMM64.CreateCamera;
 var
   scale: double;
   t0, t1: double;
-  corner0, corner1: double;
+  corner_x, corner_y, Xsize, Ysize: double;
   shift: Integer;
 begin
   scale := power(2, fcp.zoom);
@@ -117,8 +125,9 @@ begin
   shift := 0;
   t0 := gutter_width / (oversample * ppux);
   t1 := gutter_width / (oversample * ppuy);
-  corner0 := fcp.center[0] - image_width / ppux / 2.0;
-  corner1 := fcp.center[1] - image_height / ppuy / 2.0;
+  corner_x := fcp.center[0] - image_width / ppux / 2.0;
+  corner_y := fcp.center[1] - image_height / ppuy / 2.0;
+{
   bounds[0] := corner0 - t0;
   bounds[1] := corner1 - t1 + shift;
   bounds[2] := corner0 + image_width / ppux + t0;
@@ -131,6 +140,31 @@ begin
     size[1] := 1.0 / (bounds[3] - bounds[1])
   else
     size[1] := 1;
+}
+  camX0 := corner_x - t0;
+  camY0 := corner_y - t1 + shift;
+  camX1 := corner_x + image_width / ppux / 2.0;
+  camY1 := corner_y + image_height / ppuy + t1; //+ shift;
+  camW := camX1 - camX0;
+  if abs(camW) > 0.01 then
+    Xsize := 1.0 / camW
+  else
+    Xsize := 1;
+  camH := camY1 - camY0;
+  if abs(camH) > 0.01 then
+    Ysize := 1.0 / camH
+  else
+    Ysize := 1;
+  bws := (BucketWidth - 0.5)  * Xsize;
+  bhs := (BucketHeight - 0.5) * Ysize;
+
+  if FCP.FAngle <> 0 then
+  begin
+    cosa := cos(FCP.FAngle);
+    sina := sin(FCP.FAngle);
+    rcX := FCP.Center[0]*(1 - cosa) - FCP.Center[1]*sina - camX0;
+    rcY := FCP.Center[1]*(1 - cosa) + FCP.Center[0]*sina - camY0;
+  end;
 end;
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -188,6 +222,9 @@ begin
   InitBuffers;
 
   CreateColorMap;
+
+  FinalXForm := @fcp.xform[fcp.NumXForms];
+  UseFinalXForm := fcp.finalXformEnabled and fcp.HasFinalXform;
 end;
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -195,34 +232,21 @@ procedure TRendererMM64.AddPointsToBuckets(const points: TPointsArray);
 var
   i: integer;
   px, py: double;
-  bws, bhs: double;
-  bx, by: double;
-  wx, wy: double;
 //  R: double;
 //  V1, v2, v3: integer;
   Bucket: PBucket;
   MapColor: PColorMapColor;
 begin
-  bws := (BucketWidth - 0.5)  * size[0];
-  bhs := (BucketHeight - 0.5) * size[1];
-  bx := bounds[0];
-  by := bounds[1];
-  wx := bounds[2] - bounds[0];
-  wy := bounds[3] - bounds[1];
-
   for i := SUB_BATCH_SIZE - 1 downto 0 do begin
-    if FStop then
-      Exit;
+//    if FStop then Exit;
 
-    px := points[i].x - bx;
-    py := points[i].y - by;
+    px := points[i].x - camX0;
+    if (px < 0) or (px > camW) then continue;
+    py := points[i].y - camY0;
+    if (py < 0) or (py > camH) then continue;
 
-    if ((px < 0) or (px > wx) or
-        (py < 0) or (py > wy)) then
-      continue;
-
-    MapColor := @ColorMap[Round(points[i].c * 255)];
     Bucket := @buckets[Round(bws * px) + Round(bhs * py) * BucketWidth];
+    MapColor := @ColorMap[Round(points[i].c * 255)];
 
     Inc(Bucket.Red,   MapColor.Red);
     Inc(Bucket.Green, MapColor.Green);
@@ -231,57 +255,90 @@ begin
   end;
 end;
 
-///////////////////////////////////////////////////////////////////////////////
-procedure TRendererMM64.AddPointsToBucketsAngle(const points: TPointsArray);
+procedure TRendererMM64.AddPointsWithFX(const points: TPointsArray);
 var
   i: integer;
   px, py: double;
-  ca,sa: double;
-  nx, ny: double;
-  bws, bhs: double;
-  bx, by: double;
-  wx, wy: double;
-//  R: double;
-//  V1, v2, v3: integer;
   Bucket: PBucket;
   MapColor: PColorMapColor;
 begin
-
-  bws := (BucketWidth - 0.5)  * size[0];
-  bhs := (BucketHeight - 0.5) * size[1];
-  bx := bounds[0];
-  by := bounds[1];
-  wx := bounds[2] - bounds[0];
-  wy := bounds[3] - bounds[1];
-
-  ca := cos(FCP.FAngle);
-  sa := sin(FCP.FAngle);
-
+ try
   for i := SUB_BATCH_SIZE - 1 downto 0 do begin
-    if FStop then
-      Exit;
+//    if FStop then Exit;
 
-    px := points[i].x - FRotationCenter[0];
-    py := points[i].y - FRotationCenter[1];
+    FinalXform.NextPoint(points[i]);
 
-    nx := px * ca + py * sa;
-    ny := -px * sa + py * ca;
+    px := points[i].x - camX0;
+    if (px < 0) or (px > camW) then continue;
+    py := points[i].y - camY0;
+    if (py < 0) or (py > camH) then continue;
 
-    px := nx + FRotationCenter[0] - bx;
-    py := ny + FRotationCenter[1] - by;
-
-    if ((px < 0) or (px > wx) or
-        (py < 0) or (py > wy)) then
-      continue;
-
-    MapColor := @ColorMap[Round(points[i].c * 255)];
     Bucket := @buckets[Round(bws * px) + Round(bhs * py) * BucketWidth];
+    MapColor := @ColorMap[Round(points[i].c * 255)];
 
     Inc(Bucket.Red,   MapColor.Red);
     Inc(Bucket.Green, MapColor.Green);
     Inc(Bucket.Blue,  MapColor.Blue);
     Inc(Bucket.Count);
   end;
+ except
+ end
+end;
+
+///////////////////////////////////////////////////////////////////////////////
+procedure TRendererMM64.AddPointsToBucketsAngle(const points: TPointsArray);
+var
+  i: integer;
+  px, py: double;
+  Bucket: PBucket;
+  MapColor: PColorMapColor;
+begin
+  for i := SUB_BATCH_SIZE - 1 downto 0 do begin
+//    if FStop then Exit;
+
+    px := points[i].x * cosa + points[i].y * sina + rcX;
+    if (px < 0) or (px > camW) then continue;
+    py := points[i].y * cosa - points[i].x * sina + rcY;
+    if (py < 0) or (py > camH) then continue;
+
+    Bucket := @buckets[Round(bws * px) + Round(bhs * py) * BucketWidth];
+    MapColor := @ColorMap[Round(points[i].c * 255)];
+
+    Inc(Bucket.Red,   MapColor.Red);
+    Inc(Bucket.Green, MapColor.Green);
+    Inc(Bucket.Blue,  MapColor.Blue);
+    Inc(Bucket.Count);
+  end;
+end;
+
+procedure TRendererMM64.AddPointsWithAngleFX(const points: TPointsArray);
+var
+  i: integer;
+  px, py: double;
+  Bucket: PBucket;
+  MapColor: PColorMapColor;
+begin
+ try
+  for i := SUB_BATCH_SIZE - 1 downto 0 do
+  begin
+//    if FStop then Exit;
+    FinalXform.NextPoint(points[i]);
+
+    px := points[i].x * cosa + points[i].y * sina + rcX;
+    if (px < 0) or (px > camW) then continue;
+    py := points[i].y * cosa - points[i].x * sina + rcY;
+    if (py < 0) or (py > camH) then continue;
+
+    Bucket := @buckets[Round(bws * px) + Round(bhs * py) * BucketWidth];
+    MapColor := @ColorMap[Round(points[i].c * 255)];
+
+    Inc(Bucket.Red,   MapColor.Red);
+    Inc(Bucket.Green, MapColor.Green);
+    Inc(Bucket.Blue,  MapColor.Blue);
+    Inc(Bucket.Count);
+  end;
+ except
+ end
 end;
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -309,10 +366,13 @@ begin
         Progress(0);
 
     // generate points
+{
     case Compatibility of
       0: fcp.iterate_Old(SUB_BATCH_SIZE, points);
       1: fcp.iterateXYC(SUB_BATCH_SIZE, points);
     end;
+}
+    fcp.IterateXYC(SUB_BATCH_SIZE, points);
 
     if FCP.FAngle = 0 then
       AddPointsToBuckets(points)
@@ -343,8 +403,8 @@ var
 begin
   FStop := False;
 
-  FRotationCenter[0] := fcp.center[0];
-  FRotationCenter[1] := fcp.center[1];
+//  FRotationCenter[0] := fcp.center[0];
+//  FRotationCenter[1] := fcp.center[1];
 
   image_height := fcp.Height;
   image_Width := fcp.Width;
