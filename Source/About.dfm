@@ -1893,11 +1893,11 @@ object AboutForm: TAboutForm
   object Label4: TLabel
     Left = 120
     Top = 72
-    Width = 123
+    Width = 204
     Height = 13
     Cursor = crHandPoint
-    Hint = 'http://www.apophysis.org'
-    Caption = 'http://www.apophysis.org'
+    Hint = 'http://sourceforge.net/projects/apophysis/'
+    Caption = 'http://sourceforge.net/projects/apophysis/'
     Font.Charset = DEFAULT_CHARSET
     Font.Color = clBlue
     Font.Height = -11

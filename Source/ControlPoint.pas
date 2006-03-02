@@ -38,9 +38,15 @@ const
 // ---- MyTypes ----
 
 type
+  TCoefsArray= array[0..2, 0..1] of double;
+  pCoefsArray= ^TCoefsArray;
   TTriangle = record
     x: array[0..2] of double;
     y: array[0..2] of double;
+{    color: integer;
+    locked, visible: boolean;
+    pCoefs: pCoefsArray;
+    pXform: ^TXform; }
   end;
   TTriangles = array[-1..NXFORMS] of TTriangle;
   TSPoint = record
@@ -48,9 +54,9 @@ type
     y: double;
   end;
   TMapPalette = record
-    Red: array[0..255] of byte;
+    Red:   array[0..255] of byte;
     Green: array[0..255] of byte;
-    Blue: array[0..255] of byte;
+    Blue:  array[0..255] of byte;
   end;
   TColorMaps = record
     Identifier: string;
@@ -86,7 +92,9 @@ type
 
   TControlPoint = class
   public
-    xform: array[0..NXFORMS - 1] of TXForm;
+    xform: array[0..NXFORMS] of TXForm;
+//    finalxform: TXForm;
+    finalXformEnabled: boolean;
     variation: TVariation;
     cmap: TColorMap;
     cmapindex: integer;
@@ -141,7 +149,7 @@ type
 
     class function interpolate(cp1, cp2: TControlPoint; Time: double): TControlPoint; /// just for now
     procedure InterpolateX(cp1, cp2: TControlPoint; Tm: double);
-    procedure Iterate_Old(NrPoints: integer; var Points: TPointsArray);
+//    procedure Iterate_Old(NrPoints: integer; var Points: TPointsArray);
     procedure IterateXY(NrPoints: integer; var Points: TPointsXYArray);
     procedure IterateXYC(NrPoints: integer; var Points: TPointsArray);
     procedure IterateXYCC(NrPoints: integer; var Points: T2CPointsArray);
@@ -152,8 +160,9 @@ type
     procedure Copy(cp1: TControlPoint);
 
     function HasNewVariants: boolean;
+    function HasFinalXForm: boolean;
 
-    // CP-specific functions moved from unit Main 
+    // CP-specific functions moved from unit Main
     function NumXForms: integer;
     function TrianglesFromCP(var Triangles: TTriangles): integer;
     procedure GetFromTriangles(const Triangles: TTriangles; const t: integer);
@@ -203,9 +212,10 @@ constructor TControlPoint.Create;
 var
   i: Integer;
 begin
-  for i := 0 to NXFORMS - 1 do begin
+  for i := 0 to NXFORMS do begin
     xform[i] := TXForm.Create;
   end;
+//  finalxform := TXForm.Create;
 
   pulse[0][0] := 0;
   pulse[0][1] := 60;
@@ -253,6 +263,7 @@ var
 begin
   for i := 0 to NXFORMS - 1 do
     xform[i].Free;
+//  finalxform.Free;
 
   inherited;
 end;
@@ -285,6 +296,7 @@ begin
   end;
 end;
 
+(*
 procedure TControlPoint.Iterate_Old(NrPoints: integer; var Points: TPointsArray);
 var
   i: Integer;
@@ -516,6 +528,7 @@ begin
     end
   end;
 end;
+*)
 
 procedure TControlPoint.IterateXY(NrPoints: integer; var Points: TPointsXYArray);
 var
@@ -743,6 +756,9 @@ begin
     if AnsiCompareText(CurrentToken, 'xform') = 0 then begin
       Inc(ParsePos);
       CurrentXForm := StrToInt(ParseValues[ParsePos]);
+    end else if AnsiCompareText(CurrentToken, 'finalxformenabled') = 0 then begin
+      Inc(ParsePos);
+      finalxformenabled := StrToInt(ParseValues[ParsePos]) <> 0;
     end else if AnsiCompareText(CurrentToken, 'time') = 0 then begin
       Inc(ParsePos);
       time := StrToFloat(ParseValues[ParsePos]);
@@ -1087,10 +1103,12 @@ begin
 //  RandSeed := 1234567;
   try
     SetLength(Points, SUB_BATCH_SIZE);
-    case compatibility of
+{    case compatibility of
       0: iterate_Old(SUB_BATCH_SIZE, points);
       1: iterateXYC(SUB_BATCH_SIZE, points);
     end;
+}
+    IterateXYC(SUB_BATCH_SIZE, points);
 
     LimitOutSidePoints := Round(0.05 * SUB_BATCH_SIZE);
 
@@ -1546,10 +1564,11 @@ begin
     [nbatches, white_level, background[0], background[1], background[2]]));
   sl.add(format('brightness %f gamma %f vibrancy %f hue_rotation %f cmap_inter %d',
     [brightness * BRIGHT_ADJUST, gamma, vibrancy, hue_rotation, cmap_inter]));
+  sl.add(format('finalxformenabled %d', [ifthen(finalxformenabled, 1, 0)]));
 
-  for i := 0 to NXFORMS - 1 do
+  for i := 0 to NXFORMS do
     with xform[i] do begin
-      if density = 0 then continue;
+      //if density = 0 then continue; - FinalXform has weight=0
 
       sl.add(format('xform %d density %g color %g symmetry %g', [i, density, color, symmetry]));
       s := 'vars';
@@ -1568,7 +1587,6 @@ begin
       sl.Add(format('post %.6f %.6f %.6f %.6f %.6f %.6f',
         [p[0][0], p[0][1], p[1][0], p[1][1], p[2][0], p[2][1]]));
     end;
-
   DecimalSeparator := OldDecimalSperator;
 end;
 
@@ -1612,8 +1630,9 @@ begin
   nick := cp1.nick;
   url := cp1.url;
 
-  for i := 0 to NXFORMS - 1 do
+  for i := 0 to NXFORMS do // was: NXFORMS-1
     xform[i].assign(cp1.xform[i]);
+  finalXformEnabled := cp1.finalXformEnabled;
 
   sl.Free;
 end;
@@ -1623,6 +1642,7 @@ var
   s: string;
   i: integer;
 begin
+  finalXformEnabled := false;
   for i := 0 to sl.Count - 1 do begin
     s := s + sl[i] + ' ';
   end;
@@ -1634,7 +1654,9 @@ var
   i, j: Integer;
 begin
   symmetry := 0;
-  for i := 0 to NXFORMS - 1 do begin
+  for i := 0 to NXFORMS do begin
+    xform[i].Clear;
+{
     xform[i].density := 0;
     xform[i].symmetry := 0;
     xform[i].color := 0;
@@ -1642,8 +1664,27 @@ begin
     for j := 1 to NRVAR - 1 do begin
       xform[i].vars[j] := 0;
     end;
+}
   end;
   zoom := 0;
+end;
+
+function TControlPoint.HasFinalXForm: boolean;
+var
+  i: integer;
+begin
+//  if finalXformEnabled then Result := true else
+  with xform[NumXForms] do
+  begin
+    Result := (c[0,0]<>1) or (c[0,1]<>0) or(c[1,0]<>0) or (c[1,1]<>1) or (c[2,0]<>0) or (c[2,1]<>0) or
+              (p[0,0]<>1) or (p[0,1]<>0) or(p[1,0]<>0) or (p[1,1]<>1) or (p[2,0]<>0) or (p[2,1]<>0) or
+              (symmetry <> 1);
+    if Result = false then
+    begin
+      Result := Result or (vars[0] <> 1);
+      for i := 1 to NRVAR-1 do Result := Result or (vars[i] <> 0);
+    end
+  end;
 end;
 
 function add_symmetry_to_control_point(var cp: TControlPoint; sym: integer): integer;
@@ -1911,7 +1952,6 @@ var
   i, j: integer;
   temp_x, temp_y, xset, yset: double;
   left, top, bottom, right: double;
-  a, b, c, d, e, f: double;
 begin
   top := 0; bottom := 0; right := 0; left := 0;
   Result := NumXForms;
@@ -1919,18 +1959,12 @@ begin
   begin
     for i := 0 to Result-1 do
     begin
-      a := xform[i].c[0][0];
-      b := xform[i].c[0][1];
-      c := xform[i].c[1][0];
-      d := xform[i].c[1][1];
-      e := xform[i].c[2][0];
-      f := xform[i].c[2][1];
       xset := 1.0;
       yset := 1.0;
       for j := 0 to 5 do
-      begin
-        temp_x := xset * a + yset * c + e;
-        temp_y := xset * b + yset * d + f;
+      with xform[i] do begin
+        temp_x := xset * c[0][0] + yset * c[1][0] + c[2][0];
+        temp_y := xset * c[0][1] + yset * c[1][1] + c[2][1];
         xset := temp_x;
         yset := temp_y;
       end;
@@ -1975,25 +2009,20 @@ begin
     Triangles[-1].x[2] := 0; Triangles[-1].y[2] := -1; // "y"
   end;
 
-  for j := 0 to Result-1 do
+  for j := 0 to Result do
   begin
-    a := xform[j].c[0][0];
-    b := xform[j].c[0][1];
-    c := xform[j].c[1][0];
-    d := xform[j].c[1][1];
-    e := xform[j].c[2][0];
-    f := xform[j].c[2][1];
     for i := 0 to 2 do
-    begin
-      triangles[j].x[i] := Triangles[-1].x[i] * a + Triangles[-1].y[i] * c + e;
-      triangles[j].y[i] := Triangles[-1].x[i] * b + Triangles[-1].y[i] * d + f;
+    with xform[j] do begin
+      Triangles[j].x[i] := Triangles[-1].x[i] * c[0][0] + Triangles[-1].y[i] * c[1][0] + c[2][0];
+      Triangles[j].y[i] := Triangles[-1].x[i] * c[0][1] + Triangles[-1].y[i] * c[1][1] + c[2][1];
     end;
   end;
+  EnableFinalXform := FinalXformEnabled;
 
   // I don't like this... :-/
-  for j := -1 to Result-1 do
+  for j := -1 to Result do // was: Result-1
     for i := 0 to 2 do
-      triangles[j].y[i] := -triangles[j].y[i];
+      Triangles[j].y[i] := -Triangles[j].y[i];
 end;
 
 procedure TControlPoint.EqualizeWeights;
@@ -2051,7 +2080,7 @@ procedure TControlPoint.GetFromTriangles(const Triangles: TTriangles; const t: i
 var
   i: integer;
 begin
-  for i := 0 to t-1 do
+  for i := 0 to t do
   begin
     solve3(Triangles[-1].x[0], -Triangles[-1].y[0], Triangles[i].x[0],
            Triangles[-1].x[1], -Triangles[-1].y[1], Triangles[i].x[1],
@@ -2063,6 +2092,7 @@ begin
            Triangles[-1].x[2], -Triangles[-1].y[2], -Triangles[i].y[2],
            xform[i].c[0][1],    xform[i].c[1][1],    xform[i].c[2][1]);
   end;
+  FinalXformEnabled := EnableFinalXform;
 end;
 
 procedure TControlPoint.AdjustScale(w, h: integer);

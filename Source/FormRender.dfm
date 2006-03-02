@@ -467,8 +467,19 @@ object RenderForm: TRenderForm
     Caption = 'Post render'
     TabOrder = 9
   end
+  object chkSaveIncompleteRenders: TCheckBox
+    Left = 272
+    Top = 328
+    Width = 145
+    Height = 17
+    Alignment = taLeftJustify
+    Caption = 'Save incomplete renders'
+    TabOrder = 13
+    Visible = False
+    OnClick = chkSaveIncompleteRendersClick
+  end
   object SaveDialog: TSaveDialog
     Left = 376
-    Top = 320
+    Top = 304
   end
 end

@@ -4,7 +4,7 @@ interface
 
 uses
   Classes, Windows,
-  ControlPoint, Render;
+  ControlPoint, Render, XForm;
 
 type
   TBucketFillerThread = class(TThread)
@@ -17,9 +17,17 @@ type
 
     BucketWidth: Int64;
     BucketHeight: Int64;
+{
     bounds: array[0..3] of extended;
     size: array[0..1] of extended;
     RotationCenter: array[0..1] of extended;
+}
+    FinalXform: ^TXform;
+    UseFinalXform: boolean;
+
+    camX0, camY0, camW, camH,
+    bws, bhs, cosa, sina, rcX, rcY: double;
+
     Buckets: PBucketArray;
     ColorMap: TColorMapArray;
     CriticalSection: TRTLCriticalSection;
@@ -29,8 +37,10 @@ type
 
     procedure Execute; override;
 
-    procedure AddPointsToBuckets(const points: TPointsArray); overload;
-    procedure AddPointsToBucketsAngle(const points: TPointsArray); overload;
+    procedure AddPointsToBuckets(const points: TPointsArray); 
+    procedure AddPointsToBucketsAngle(const points: TPointsArray);
+    procedure AddPointsWithFX(const points: TPointsArray);
+    procedure AddPointsWithAngleFX(const points: TPointsArray);
   end;
 
 implementation
@@ -42,29 +52,21 @@ procedure TBucketFillerThread.AddPointsToBuckets(const points: TPointsArray);
 var
   i: integer;
   px, py: double;
-  bws, bhs: double;
-  bx, by: double;
-  wx, wy: double;
+//  R: double;
+//  V1, v2, v3: integer;
   Bucket: PBucket;
   MapColor: PColorMapColor;
 begin
-  bws := (BucketWidth - 0.5)  * size[0];
-  bhs := (BucketHeight - 0.5) * size[1];
-  bx := bounds[0];
-  by := bounds[1];
-  wx := bounds[2] - bounds[0];
-  wy := bounds[3] - bounds[1];
-
   for i := SUB_BATCH_SIZE - 1 downto 0 do begin
-    px := points[i].x - bx;
-    py := points[i].y - by;
+//    if FStop then Exit;
 
-    if ((px < 0) or (px > wx) or
-        (py < 0) or (py > wy)) then
-      continue;
+    px := points[i].x - camX0;
+    if (px < 0) or (px > camW) then continue;
+    py := points[i].y - camY0;
+    if (py < 0) or (py > camH) then continue;
 
+    Bucket := @TBucketArray(buckets^)[Round(bws * px) + Round(bhs * py) * BucketWidth];
     MapColor := @ColorMap[Round(points[i].c * 255)];
-    Bucket := @TbucketArray(buckets^)[Round(bws * px) + Round(bhs * py) * BucketWidth];
 
     Inc(Bucket.Red,   MapColor.Red);
     Inc(Bucket.Green, MapColor.Green);
@@ -73,51 +75,90 @@ begin
   end;
 end;
 
-///////////////////////////////////////////////////////////////////////////////
-procedure TBucketFillerThread.AddPointsToBucketsAngle(const points: TPointsArray);
+procedure TBucketFillerThread.AddPointsWithFX(const points: TPointsArray);
 var
   i: integer;
   px, py: double;
-  ca,sa: double;
-  nx, ny: double;
-  bws, bhs: double;
-  bx, by: double;
-  wx, wy: double;
   Bucket: PBucket;
   MapColor: PColorMapColor;
 begin
-  bws := (BucketWidth - 0.5)  * size[0];
-  bhs := (BucketHeight - 0.5) * size[1];
-  bx := bounds[0];
-  by := bounds[1];
-  wx := bounds[2] - bounds[0];
-  wy := bounds[3] - bounds[1];
-
-  ca := cos(FCP.FAngle);
-  sa := sin(FCP.FAngle);
-
+ try
   for i := SUB_BATCH_SIZE - 1 downto 0 do begin
-    px := points[i].x - RotationCenter[0];
-    py := points[i].y - RotationCenter[1];
+//    if FStop then Exit;
 
-    nx := px * ca + py * sa;
-    ny := -px * sa + py * ca;
+    FinalXform.NextPoint(points[i]);
 
-    px := nx + FCP.Center[0] - bx;
-    py := ny + FCP.Center[1] - by;
+    px := points[i].x - camX0;
+    if (px < 0) or (px > camW) then continue;
+    py := points[i].y - camY0;
+    if (py < 0) or (py > camH) then continue;
 
-    if ((px < 0) or (px > wx) or
-        (py < 0) or (py > wy)) then
-      continue;
-
+    Bucket := @TBucketArray(buckets^)[Round(bws * px) + Round(bhs * py) * BucketWidth];
     MapColor := @ColorMap[Round(points[i].c * 255)];
-    Bucket := @TbucketArray(buckets^)[Round(bws * px) + Round(bhs * py) * BucketWidth];
 
     Inc(Bucket.Red,   MapColor.Red);
     Inc(Bucket.Green, MapColor.Green);
     Inc(Bucket.Blue,  MapColor.Blue);
     Inc(Bucket.Count);
   end;
+ except
+ end
+end;
+
+///////////////////////////////////////////////////////////////////////////////
+procedure TBucketFillerThread.AddPointsToBucketsAngle(const points: TPointsArray);
+var
+  i: integer;
+  px, py: double;
+  Bucket: PBucket;
+  MapColor: PColorMapColor;
+begin
+  for i := SUB_BATCH_SIZE - 1 downto 0 do begin
+//    if FStop then Exit;
+
+    px := points[i].x * cosa + points[i].y * sina + rcX;
+    if (px < 0) or (px > camW) then continue;
+    py := points[i].y * cosa - points[i].x * sina + rcY;
+    if (py < 0) or (py > camH) then continue;
+
+    Bucket := @TBucketArray(buckets^)[Round(bws * px) + Round(bhs * py) * BucketWidth];
+    MapColor := @ColorMap[Round(points[i].c * 255)];
+
+    Inc(Bucket.Red,   MapColor.Red);
+    Inc(Bucket.Green, MapColor.Green);
+    Inc(Bucket.Blue,  MapColor.Blue);
+    Inc(Bucket.Count);
+  end;
+end;
+
+procedure TBucketFillerThread.AddPointsWithAngleFX(const points: TPointsArray);
+var
+  i: integer;
+  px, py: double;
+  Bucket: PBucket;
+  MapColor: PColorMapColor;
+begin
+ try
+  for i := SUB_BATCH_SIZE - 1 downto 0 do
+  begin
+//    if FStop then Exit;
+    FinalXform.NextPoint(points[i]);
+
+    px := points[i].x * cosa + points[i].y * sina + rcX;
+    if (px < 0) or (px > camW) then continue;
+    py := points[i].y * cosa - points[i].x * sina + rcY;
+    if (py < 0) or (py > camH) then continue;
+
+    Bucket := @TBucketArray(buckets^)[Round(bws * px) + Round(bhs * py) * BucketWidth];
+    MapColor := @ColorMap[Round(points[i].c * 255)];
+
+    Inc(Bucket.Red,   MapColor.Red);
+    Inc(Bucket.Green, MapColor.Green);
+    Inc(Bucket.Blue,  MapColor.Blue);
+    Inc(Bucket.Count);
+  end;
+ except
+ end
 end;
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -129,6 +170,9 @@ begin
   Fcp := cp.Clone;
 
   SetLength(Points, SUB_BATCH_SIZE);
+
+  FinalXForm := @fcp.xform[fcp.NumXForms];
+  UseFinalXForm := fcp.finalXformEnabled and fcp.HasFinalXform;
 end;
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -143,8 +187,22 @@ end;
 procedure TBucketFillerThread.Execute;
 var
   bc: integer;
+  AddPointsProc: procedure (const points: TPointsArray) of object;
 begin
   inherited;
+
+  if FCP.FAngle = 0 then begin
+    if UseFinalXForm then
+      AddPointsProc := AddPointsWithFX
+    else
+      AddPointsProc := AddPointsToBuckets;
+  end
+  else begin
+    if UseFinalXForm then
+      AddPointsProc := AddPointsWithAngleFX
+    else
+      AddPointsProc := AddPointsToBucketsAngle;
+  end;
 
   bc := 0;
   while (not Terminated) and (bc < Nrbatches) do begin
@@ -152,10 +210,7 @@ begin
     try
       EnterCriticalSection(CriticalSection);
 
-      if FCP.FAngle = 0 then
-        AddPointsToBuckets(Points)
-      else
-        AddPointsToBucketsAngle(Points);
+      AddPointsProc(Points);
 
       Inc(batchcounter^);
       bc := batchcounter^

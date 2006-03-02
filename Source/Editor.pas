@@ -24,7 +24,7 @@ uses
   Windows, Messages, SysUtils, Classes, Graphics, Controls, Forms, Dialogs,
   ExtCtrls, StdCtrls, ComCtrls, Math, Menus, ToolWin, Registry,
   ControlPoint, Render, cmap, Grids, ValEdit, Buttons, ImgList, CustomDrawControl,
-  Types;
+  Types, xform;
 
 const
 //  PixelCountMax = 32768;
@@ -35,6 +35,7 @@ const
   crEditRotate = 22;
   crEditScale = 23;
 
+type PXForm = ^TXForm;
 type
   TEditForm = class(TForm)
     GrphPnl: TPanel;
@@ -65,7 +66,7 @@ type
     PageControl: TPageControl;
     TriangleTab: TTabSheet;
     tabXForm: TTabSheet;
-    Label6: TLabel;
+    lblWeight: TLabel;
     txtA: TEdit;
     txtB: TEdit;
     txtC: TEdit;
@@ -81,7 +82,6 @@ type
     pnlXFormColor: TPanel;
     txtXFormColor: TEdit;
     GroupBox2: TGroupBox;
-    chkUseXFormColor: TCheckBox;
     chkHelpers: TCheckBox;
     TriangleScrollBox: TScrollBox;
     TrianglePanel: TPanel;
@@ -164,6 +164,9 @@ type
     btnResetPivot: TSpeedButton;
     btnPickPivot: TSpeedButton;
     btnPivotMode: TSpeedButton;
+    tbEnableFinalXform: TToolButton;
+    chkUseXFormColor: TCheckBox;
+    ToolButton3: TToolButton;
     procedure ValidateVariable;
     procedure vleVariablesValidate(Sender: TObject; ACol, ARow: Integer; const KeyName, KeyValue: string);
     procedure vleVariablesKeyPress(Sender: TObject; var Key: Char);
@@ -290,6 +293,9 @@ type
     procedure PivotKeyPress(Sender: TObject; var Key: Char);
     procedure btnResetPivotClick(Sender: TObject);
     procedure btnPickPivotClick(Sender: TObject);
+    procedure VEVarsDrawCell(Sender: TObject; ACol, ARow: Integer;
+      Rect: TRect; State: TGridDrawState);
+    procedure tbEnableFinalXformClick(Sender: TObject);
 
   private
     TriangleView: TCustomDrawControl;
@@ -368,6 +374,8 @@ type
     procedure UpdateDisplay(PreviewOnly: boolean = false); //(?)
 
     function GetTriangleColor(n: integer): TColor;
+    function LastTriangle: integer;
+    function InsideTriangle(x, y: double): integer;
   end;
 
 const
@@ -507,25 +515,6 @@ begin
   end;
 end;
 
-{
-procedure ScaleAll;
-var
-  i, j: integer;
-begin
-  for i := 0 to 2 do
-  begin
-    MainTriangles[-1].y[i] := MainTriangles[-1].y[i] * 0.2;
-    MainTriangles[-1].x[i] := MainTriangles[-1].x[i] * 0.2;
-  end;
-  for j := 0 to Transforms - 1 do
-    for i := 0 to 2 do
-    begin
-      MainTriangles[j].y[i] := MainTriangles[j].y[i] * 0.2;
-      MainTriangles[j].x[i] := MainTriangles[j].x[i] * 0.2;
-    end;
-end;
-}
-
 function RotateTriangleCenter(t: TTriangle; rad: double): TTriangle;
 var
   i: integer;
@@ -610,11 +599,15 @@ begin
   end;
   }
   cp.copy(MainCp);
-  if SelectedTriangle >= NumXForms(cp) then
+
+  if SelectedTriangle > LastTriangle{???} then//NumXForms(cp) then
   begin
     SelectedTriangle := NumXForms(cp)-1;
     mouseOverTriangle := -1;
   end;
+
+  EnableFinalXform := cp.finalXformEnabled;
+  tbEnableFinalXform.Down := EnableFinalXform;
 
   UpdatePreview;
 
@@ -625,6 +618,7 @@ begin
 
   cbTransforms.Clear;
   for i := 1 to Transforms do cbTransforms.Items.Add(IntToStr(i));
+  if cp.HasFinalXForm then cbTransforms.Items.Add('Final');
 
   // just in case:
   SetCaptureControl(nil);
@@ -699,7 +693,7 @@ var
   v: double;
   strval: string;
 begin
-  if (SelectedTriangle >= Transforms) then SelectedTriangle := Transforms - 1;
+  if (SelectedTriangle > LastTriangle) then SelectedTriangle := LastTriangle;
 
   cbTransforms.ItemIndex := SelectedTriangle;
   cbTransforms.Refresh;
@@ -745,7 +739,17 @@ begin
     txtPost21.text := Format('%.6g', [arctan2(-p[2][1], p[2][0])*180/PI]);
    end;
 
-    txtP.text := Format('%.6g', [density]);
+    if SelectedTriangle < Transforms then
+    begin
+      txtP.text := Format('%.6g', [density]);
+      txtP.Enabled := true;
+    end
+    else begin
+      txtP.Enabled := false;
+      txtP.Text := 'n/a';
+    end;
+    tbEnableFinalXform.Down := EnableFinalXform;
+
     txtSymmetry.text := Format('%.6g', [symmetry]);
 
     pnlXFormColor.Color := ColorValToColor(cp.cmap, color);
@@ -778,6 +782,8 @@ begin
     editPivotX.Text := Format('%.6g', [WorldPivot.x]);
     editPivotY.Text := Format('%.6g', [WorldPivot.y]);
   end;
+
+  if cp.finalXformEnabled then tbEnableFinalXform.Down := true;
 
   PageControl.Refresh;
 end;
@@ -829,7 +835,7 @@ procedure TEditForm.UpdateFlameX;
 var
   i: integer;
 begin
-  for i := 0 to Transforms - 1 do
+  for i := 0 to Transforms do
   begin
 //    CP_compute(cp1, Triangles[i], Triangles[-1], i);
     solve3(MainTriangles[-1].x[0], MainTriangles[-1].y[0], MainTriangles[i].x[0],
@@ -842,9 +848,8 @@ begin
            MainTriangles[-1].x[2], MainTriangles[-1].y[2], MainTriangles[i].y[2],
            cp.xform[i].c[0][1],    cp.xform[i].c[1][1],    cp.xform[i].c[2][1]);
   end;
-
   cp.GetFromTriangles(MainTriangles, Transforms);
-  if not chkPreserve.checked then cp.ComputeWeights(MainTriangles, transforms);
+  if not chkPreserve.checked then cp.ComputeWeights(MainTriangles, Transforms);
   DrawPreview;
   ShowSelectedInfo;
   TriangleView.Refresh;;
@@ -854,7 +859,7 @@ procedure TEditForm.UpdateFlame(DrawMain: boolean);
 begin
 //;    MainForm.StopThread;
   StatusBar.Panels[2].Text := Format('Zoom: %f', [GraphZoom]);
-  cp.GetFromTriangles(MainTriangles, transforms);
+  cp.GetFromTriangles(MainTriangles, Transforms);
 //  if not chkPreserve.Checked then ComputeWeights(cp, MainTriangles, transforms);
   DrawPreview;
   ShowSelectedInfo;
@@ -878,38 +883,47 @@ procedure TEditForm.DeleteTriangle(t: integer);
 var
   i, j: integer;
 begin
-  if Transforms > 2 then
-  { Can't have less than 2 transofms}
+  if (t = Transforms ) then
   begin
+    assert(cp.HasFinalXForm);
+    MainForm.UpdateUndo;
+    EnableFinalXform := false;
+    cp.finalXformEnabled := false;
+    cp.xform[Transforms].Clear;
+    cp.xform[Transforms].symmetry := 1;
+    assert(cp.HasFinalXForm = false);
+    MainTriangles[Transforms] := MainTriangles[-1];
+    tbEnableFinalXform.Down := false;
+    if (SelectedTriangle = Transforms ) then Dec(SelectedTriangle);
+  end
+  else
+  if (Transforms <= 2) then exit
+  else begin
     MainForm.UpdateUndo;
     if t = (Transforms - 1) then
-    { Last triangle...just reduce number}
     begin
-      Transforms := Transforms - 1;
-      SelectedTriangle := Transforms - 1;
-      cp.xform[transforms].density := 0;
-      cbTransforms.Clear;
-      UpdateFlame(True);
+      MainTriangles[t] := MainTriangles[Transforms];
+      Dec(SelectedTriangle);
     end
-    else
-    begin
-      for i := t to Transforms - 2 do
+    else begin
+      for i := t to Transforms-1 do // was: -2
       begin
-      { copy higher transforms down }
+        { copy higher transforms down }
         MainTriangles[i] := MainTriangles[i + 1];
         cp.xform[i].Assign(cp.xform[i + 1]);
       end;
-      Transforms := Transforms - 1;
-      cp.xform[transforms].density := 0;
-      UpdateFlame(True);
     end;
-    cbTransforms.clear;
-    for i := 1 to Transforms do cbTransforms.Items.Add(IntToStr(i));
-    cbTransforms.ItemIndex := SelectedTriangle;
+    Dec(Transforms);
+    assert(cp.xform[transforms].density = 0); // cp.xform[transforms].density := 0;
   end;
+  UpdateFlame(True);
+  cbTransforms.clear;
+  for i := 1 to Transforms do cbTransforms.Items.Add(IntToStr(i));
+  if cp.HasFinalXForm then cbTransforms.Items.Add('Final');
+  cbTransforms.ItemIndex := SelectedTriangle;
 end;
 
-function InsideTriangle(x, y: double): integer;
+function TEditForm.InsideTriangle(x, y: double): integer;
 var
   i, j, k: integer;
   inside: boolean;
@@ -918,7 +932,7 @@ begin
   Result := -1;
   inside := False;
   j := 2;
-  for k := Transforms - 1 downto 0 do
+  for k := LastTriangle downto 0 do
   begin
     for i := 0 to 2 do
     begin
@@ -940,9 +954,17 @@ end;
 
 function TEditForm.GetTriangleColor(n: integer): TColor;
 begin
+  if n = Transforms then Result := clWhite
+  else
   if chkUseXFormColor.checked then
     Result := ColorValToColor(MainCp.cmap, cp.xform[n].color)
   else Result := TrgColors[n mod 14];
+end;
+
+function TEditForm.LastTriangle: integer;
+begin
+  if EnableFinalXform or cp.HasFinalXForm then Result := Transforms
+  else Result := Transforms-1;
 end;
 
 procedure TEditForm.TriangleViewPaint(Sender: TObject);
@@ -981,7 +1003,7 @@ var
     end;
   end;
 var
-  i, n, tc: integer;
+  i, n, tc, tn: integer;
   d, d1: double;
   tx, ty: double;
 
@@ -996,7 +1018,7 @@ label DrawCorner;
 begin
   assert(SelectedTriangle >= 0);
   assert(TCustomDrawControl(Sender) = TriangleView);
-  if SelectedTriangle >= Transforms then SelectedTriangle := Transforms-1;
+  if SelectedTriangle > LastTriangle then SelectedTriangle := LastTriangle;
 
   BitMap := TBitMap.Create;
   Width := TriangleView.Width;
@@ -1066,13 +1088,13 @@ begin
       brush.Color := EditorBkgColor;
       Font.color := Pen.color;
       TextOut(c.x-9, c.y-12, 'Y');
-      TextOut(b.x-8, b.y+1, 'O');
       TextOut(a.x+2, a.y+1, 'X');
+      TextOut(b.x-8, b.y+1, 'O');
 
       Pen.Style := psSolid;
 
-      {Transforms}
-      for i := 0 to Transforms - 1 do
+      // Draw Triangles
+      for i := 0 to LastTriangle do
       begin
         if i <> SelectedTriangle then Pen.Style := psDot;
 
@@ -1119,8 +1141,8 @@ end;
 
         Font.color := Pen.color;
         TextOut(c.x+2, c.y+1, 'Y');
-        TextOut(b.x+2, b.y+1, 'O');
         TextOut(a.x+2, a.y+1, 'X');
+        TextOut(b.x+2, b.y+1, 'O');
       end;
 
       if tbVarPreview.Down then
@@ -1129,6 +1151,7 @@ end;
         assert(trkVarPreviewDensity.position > 0);
 
         cp.xform[SelectedTriangle].prepare;
+
         n := trkVarPreviewRange.position * trkVarPreviewDensity.position * 5;
         d1 := trkVarPreviewDensity.position * 5;
         tc := GetTriangleColor(SelectedTriangle);
@@ -1464,7 +1487,7 @@ begin
     if SelectMode then
     begin
       i0:=0;
-      i1:=Transforms-1;
+      i1:=LastTriangle;//Transforms-1;
     end
     else begin
       i0:=SelectedTriangle;
@@ -1786,7 +1809,7 @@ begin
     if SelectMode then
     begin
       i0:=0;
-      i1:=Transforms-1;
+      i1:=LastTriangle;
     end
     else begin // Only check selected triangle
       i0:=SelectedTriangle;
@@ -1923,40 +1946,19 @@ begin
       begin
         UseTransformColors := False;
       end;
-(*
-      if Registry.ValueExists('UseFlameBackground') then
-      begin
-        UseFlameBackground := Registry.ReadBool('UseFlameBackground');
-      end
-      else
-      begin
-        UseFlameBackground := False;
-      end;
-      if Registry.ValueExists('BackgroundColor') then
-        BackgroundColor := Registry.ReadInteger('BackgroundColor')
-      else
-        BackgroundColor := integer(clBlack);
-      if Registry.ValueExists('GridColor1') then
-        GridColor1 := Registry.ReadInteger('GridColor1')
-      else
-        GridColor1 := $444444;
-      if Registry.ValueExists('GridColor2') then
-        GridColor2 := Registry.ReadInteger('GridColor2')
-      else
-        GridColor2 := $333333;
-      if Registry.ValueExists('HelpersColor') then
-        HelpersColor := Registry.ReadInteger('HelpersColor')
-      else
-        HelpersColor := $808080;
-      if Registry.ValueExists('ReferenceTriangleColor') then
-        ReferenceTriangleColor := Registry.ReadInteger('ReferenceTriangleColor')
-      else
-        ReferenceTriangleColor := $7f7f7f;
-*)
+
       if Registry.ValueExists('ResetLocation') then
         mnuResetLoc.checked := Registry.ReadBool('ResetLocation')
       else mnuResetLoc.checked := true;
       //tbResetLoc.Down := mnuResetLoc.checked;
+      if Registry.ValueExists('HelpersEnabled') then
+      begin
+        HelpersEnabled := Registry.ReadBool('HelpersEnabled');
+      end
+      else
+      begin
+        HelpersEnabled := False;
+      end;
 
       if Registry.ValueExists('VariationPreview') then
         tbVarPreview.Down := Registry.ReadBool('VariationPreview')
@@ -1971,33 +1973,19 @@ begin
     else begin
       UseTransformColors := False;
       UseFlameBackground := False;
-//      BackgroundColor := $000000;
-//      GridColor1 := $444444;
-//      GridColor2 := $333333;
-//      HelpersColor := $808080;
-//      ReferenceTriangleColor := integer(clGray);
       mnuResetLoc.checked := true;
-      //tbResetLoc.Down := true;
     end;
     Registry.CloseKey;
   finally
     Registry.Free;
   end;
   chkUseXFormColor.checked := UseTransformColors;
-//  chkFlameBack.checked := UseFlameBackground;
-{
-  GrphPnl.Color := TColor(BackgroundColor);
-  pnlBackColor.Color := TColor(EditorBkgColor);
-  pnlGridColor1.Color := GridColor1;
-  pnlGridColor2.Color := GridColor2;
-  pnlReference.color := TColor(ReferenceTriangleColor);
-}
   UpdateDisplay;
 end;
 
 procedure TEditForm.mnuDeleteClick(Sender: TObject);
 begin
-  if SelectedTriangle > -1 then DeleteTriangle(SelectedTriangle);
+  if (SelectedTriangle > -1) then DeleteTriangle(SelectedTriangle);
 end;
 
 procedure TEditForm.mnuAddClick(Sender: TObject);
@@ -2007,6 +1995,8 @@ begin
   if Transforms < NXFORMS then
   begin
     MainForm.UpdateUndo;
+    MainTriangles[Transforms+1] := MainTriangles[Transforms];
+    cp.xform[Transforms+1].Assign(cp.xform[Transforms]);
     MainTriangles[Transforms] := MainTriangles[-1];
     SelectedTriangle := Transforms;
     cp.xform[Transforms].density := 0.5;
@@ -2016,6 +2006,7 @@ begin
     Inc(Transforms);
     cbTransforms.clear;
     for i := 1 to Transforms do cbTransforms.Items.Add(IntToStr(i));
+    if cp.HasFinalXForm = true then cbTransforms.Items.Add('Final');
     UpdateFlame(True);
   end;
 end;
@@ -2027,6 +2018,8 @@ begin
   if Transforms < NXFORMS then
   begin
     MainForm.UpdateUndo;
+    MainTriangles[Transforms+1] := MainTriangles[Transforms];
+    cp.xform[Transforms+1].Assign(cp.xform[Transforms]);
     MainTriangles[Transforms] := MainTriangles[SelectedTriangle];
     cp.xform[Transforms].Assign(cp.xform[SelectedTriangle]);
     SelectedTriangle := Transforms;
@@ -2073,7 +2066,8 @@ begin
   else if Sender = txtCy then
     Val := Format('%.6f', [MainTriangles[SelectedTriangle].y[2]])
   else if Sender = txtP then
-    val := Format('%.6f', [cp.xform[SelectedTriangle].density]);
+    if SelectedTriangle < Transforms then
+      val := Format('%.6f', [cp.xform[SelectedTriangle].density]);
   OldText := Val;
   { Test that it's a valid floating point number }
   try
@@ -2181,6 +2175,7 @@ var
   Allow: boolean;
   NewVal, OldVal: double;
 begin
+  if SelectedTriangle >= Transforms then key := #0;
   if key = #13 then
   begin
     { Stop the beep }
@@ -2437,7 +2432,7 @@ begin
     FillRect(Rect);
 
     Font.Color := clWhite;
-    TextOut(Rect.Left+h+2, Rect.Top, IntToStr(Index+1));
+    TextOut(Rect.Left+h+2, Rect.Top, cbTransforms.Items[Index]);//IntToStr(Index+1));
 
     pen.Color := TrgColor;
     brush.Color := pen.Color shr 1 and $7f7f7f;
@@ -3265,7 +3260,7 @@ procedure TEditForm.EditKeyDown(Sender: TObject; var Key: Word;
 begin
   case key of
     VK_ADD:
-      if SelectedTriangle < Transforms-1 then begin
+      if SelectedTriangle < LastTriangle then begin
         Inc(SelectedTriangle);
         TriangleView.Invalidate;
         ShowSelectedInfo;
@@ -3813,6 +3808,50 @@ begin
   cp.TrianglesFromCP(MainTriangles);
   ShowSelectedInfo;
   UpdateFlame(true);
+end;
+
+procedure TEditForm.VEVarsDrawCell(Sender: TObject; ACol, ARow: Integer;
+  Rect: TRect; State: TGridDrawState);
+var
+  c: TColor;
+begin
+//  if ARow = 0 then exit;
+  if (ARow > NRLOCVAR) then
+  begin
+//    if ARow and 1 = 1 then c := c shr 1;
+    VEVars.canvas.brush.Color := $ffe0e0;
+    VEVars.canvas.fillRect(Rect);
+    VEVars.canvas.TextOut(Rect.Left+2, Rect.Top, VEVars.Cells[ACol,ARow]);
+  end;
+end;
+
+procedure TEditForm.tbEnableFinalXformClick(Sender: TObject);
+var
+  i: integer;
+begin
+  MainForm.UpdateUndo;
+  EnableFinalXform := tbEnableFinalXform.Down;
+  if (cp.HasFinalXForm = false) then
+  begin
+    if (EnableFinalXform = true) then
+    begin
+      //cp.xform[Transforms].Clear;
+      //cp.xform[Transforms].Symmetry := 1;
+      cbTransforms.Items.Add('Final');
+      SelectedTriangle := Transforms;
+      if (mouseOverTriangle > LastTriangle) then mouseOverTriangle := -1;
+    end
+    else begin
+      //cp.xform[Transforms].Clear;
+      //cp.xform[Transforms].Symmetry := 1;
+      if cbTransforms.Items.Count = Transforms+1 then
+        cbTransforms.Items.Delete(Transforms);
+      if SelectedTriangle >= Transforms then SelectedTriangle := Transforms-1;
+    end;
+  end;
+  cp.finalXformEnabled := EnableFinalXform;
+  UpdateFlame(True);
+  TriangleView.Invalidate;
 end;
 
 end.

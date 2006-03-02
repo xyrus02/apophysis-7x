@@ -64,6 +64,7 @@ type
     chkShutdown: TCheckBox;
     cbPostProcess: TCheckBox;
     txtDensity: TComboBox;
+    chkSaveIncompleteRenders: TCheckBox;
     procedure FormCreate(Sender: TObject);
     procedure FormDestroy(Sender: TObject);
     procedure btnRenderClick(Sender: TObject);
@@ -84,9 +85,11 @@ type
     procedure btnDeletePresetClick(Sender: TObject);
     procedure cmbPresetChange(Sender: TObject);
     procedure chkMaintainClick(Sender: TObject);
+    procedure chkSaveIncompleteRendersClick(Sender: TObject);
   private
     StartTime, oldElapsed, edt: TDateTime;
     oldProg: double;
+    SaveIncompleteRenders: boolean;
 
     procedure DoPostProcess;
 
@@ -180,6 +183,8 @@ procedure TRenderForm.HandleThreadTermination(var Message: TMessage);
 begin
   if Assigned(Renderer) then
   begin
+    if SaveIncompleteRenders then Renderer.SaveImage(FileName);
+
     Renderer.Free;
     Renderer := nil;
     ResetControls;
@@ -758,6 +763,11 @@ begin
     end;
   end;
   Result := ExitWindowsEx(RebootParam, 0);
+end;
+
+procedure TRenderForm.chkSaveIncompleteRendersClick(Sender: TObject);
+begin
+  SaveIncompleteRenders := chkSaveIncompleteRenders.Checked;
 end;
 
 end.

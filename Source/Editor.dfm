@@ -252,8 +252,27 @@ object EditForm: TEditForm
         ImageIndex = 14
         Style = tbsSeparator
       end
-      object tbVarPreview: TToolButton
+      object tbEnableFinalXform: TToolButton
         Left = 332
+        Top = 0
+        Hint = 'Enable final transform'
+        Caption = 'Show Final Xform'
+        ImageIndex = 15
+        ParentShowHint = False
+        ShowHint = True
+        Style = tbsCheck
+        OnClick = tbEnableFinalXformClick
+      end
+      object ToolButton3: TToolButton
+        Left = 357
+        Top = 0
+        Width = 8
+        Caption = 'ToolButton3'
+        ImageIndex = 16
+        Style = tbsSeparator
+      end
+      object tbVarPreview: TToolButton
+        Left = 365
         Top = 0
         Hint = 'Show/hide variation preview'
         Caption = 'Variation Preview'
@@ -1134,7 +1153,7 @@ object EditForm: TEditForm
           end
           object tabXForm: TTabSheet
             Caption = 'Transform'
-            object Label6: TLabel
+            object lblWeight: TLabel
               Left = 10
               Top = 126
               Width = 38
@@ -1220,10 +1239,8 @@ object EditForm: TEditForm
               Height = 21
               Hint = 'Reset vector X'
               Caption = 'X'
-              Enabled = False
               ParentShowHint = False
               ShowHint = True
-              Visible = False
               OnClick = btnXpostClick
             end
             object btnYpost: TSpeedButton
@@ -1233,10 +1250,8 @@ object EditForm: TEditForm
               Height = 21
               Hint = 'Reset vector Y'
               Caption = 'Y'
-              Enabled = False
               ParentShowHint = False
               ShowHint = True
-              Visible = False
               OnClick = btnYpostClick
             end
             object btnOpost: TSpeedButton
@@ -1246,10 +1261,8 @@ object EditForm: TEditForm
               Height = 21
               Hint = 'Reset vector O'
               Caption = 'O'
-              Enabled = False
               ParentShowHint = False
               ShowHint = True
-              Visible = False
               OnClick = btnOpostClick
             end
             object btnResetPostXForm: TSpeedButton
@@ -1259,10 +1272,8 @@ object EditForm: TEditForm
               Height = 22
               Hint = 'Reset post-transform vectors to defaults'
               Caption = 'Reset post-transform'
-              Enabled = False
               ParentShowHint = False
               ShowHint = True
-              Visible = False
               OnClick = btnResetPostXFormClick
             end
             object btnSwapXforms: TSpeedButton
@@ -1272,7 +1283,6 @@ object EditForm: TEditForm
               Height = 22
               Hint = 'Swap Xform with PostXform'
               Caption = '[ Xform <-> PostXform ]'
-              Enabled = False
               Flat = True
               Font.Charset = ANSI_CHARSET
               Font.Color = clWindowText
@@ -1282,7 +1292,6 @@ object EditForm: TEditForm
               ParentFont = False
               ParentShowHint = False
               ShowHint = True
-              Visible = False
               OnClick = btnSwapXformsClick
             end
             object txtA: TEdit
@@ -1376,10 +1385,8 @@ object EditForm: TEditForm
               Top = 188
               Width = 57
               Height = 21
-              Enabled = False
               TabOrder = 8
               Text = '0'
-              Visible = False
               OnExit = PostCoefValidate
               OnKeyPress = PostCoefKeypress
             end
@@ -1388,10 +1395,8 @@ object EditForm: TEditForm
               Top = 188
               Width = 57
               Height = 21
-              Enabled = False
               TabOrder = 9
               Text = '0'
-              Visible = False
               OnExit = PostCoefValidate
               OnKeyPress = PostCoefKeypress
             end
@@ -1400,10 +1405,8 @@ object EditForm: TEditForm
               Top = 212
               Width = 57
               Height = 21
-              Enabled = False
               TabOrder = 10
               Text = '0'
-              Visible = False
               OnExit = PostCoefValidate
               OnKeyPress = PostCoefKeypress
             end
@@ -1412,10 +1415,8 @@ object EditForm: TEditForm
               Top = 212
               Width = 57
               Height = 21
-              Enabled = False
               TabOrder = 11
               Text = '0'
-              Visible = False
               OnExit = PostCoefValidate
               OnKeyPress = PostCoefKeypress
             end
@@ -1424,10 +1425,8 @@ object EditForm: TEditForm
               Top = 236
               Width = 57
               Height = 21
-              Enabled = False
               TabOrder = 12
               Text = '0'
-              Visible = False
               OnExit = PostCoefValidate
               OnKeyPress = PostCoefKeypress
             end
@@ -1436,10 +1435,8 @@ object EditForm: TEditForm
               Top = 236
               Width = 57
               Height = 21
-              Enabled = False
               TabOrder = 13
               Text = '0'
-              Visible = False
               OnExit = PostCoefValidate
               OnKeyPress = PostCoefKeypress
             end
@@ -1450,7 +1447,7 @@ object EditForm: TEditForm
               Left = 0
               Top = 0
               Width = 162
-              Height = 289
+              Height = 287
               Align = alClient
               ScrollBars = ssVertical
               TabOrder = 0
@@ -1458,6 +1455,7 @@ object EditForm: TEditForm
                 'Variation'
                 'Value')
               OnDblClick = VEVarsDblClick
+              OnDrawCell = VEVarsDrawCell
               OnExit = VEVarsChange
               OnKeyPress = VEVarsKeyPress
               OnMouseDown = VEVarsMouseDown
@@ -1476,7 +1474,7 @@ object EditForm: TEditForm
               Left = 0
               Top = 0
               Width = 162
-              Height = 289
+              Height = 287
               Align = alClient
               ScrollBars = ssVertical
               TabOrder = 0
@@ -1572,15 +1570,6 @@ object EditForm: TEditForm
                 Height = 13
                 Caption = 'Variation preview'
               end
-              object chkUseXFormColor: TCheckBox
-                Left = 8
-                Top = 16
-                Width = 129
-                Height = 17
-                Caption = 'Use transform color'
-                TabOrder = 0
-                OnClick = chkUseXFormColorClick
-              end
               object chkHelpers: TCheckBox
                 Left = 8
                 Top = 36
@@ -1589,7 +1578,7 @@ object EditForm: TEditForm
                 Caption = 'Helper lines'
                 Checked = True
                 State = cbChecked
-                TabOrder = 1
+                TabOrder = 0
                 OnClick = chkHelpersClick
               end
               object trkVarPreviewDensity: TTrackBar
@@ -1603,7 +1592,7 @@ object EditForm: TEditForm
                 PageSize = 1
                 Position = 2
                 ShowHint = True
-                TabOrder = 2
+                TabOrder = 1
                 TabStop = False
                 ThumbLength = 15
                 OnChange = trkVarPreviewDensityChange
@@ -1618,7 +1607,7 @@ object EditForm: TEditForm
                 PageSize = 1
                 Position = 2
                 ShowHint = True
-                TabOrder = 3
+                TabOrder = 2
                 TabStop = False
                 ThumbLength = 15
                 OnChange = trkVarPreviewRangeChange
@@ -1634,10 +1623,19 @@ object EditForm: TEditForm
                 PageSize = 1
                 Position = 1
                 ShowHint = True
-                TabOrder = 4
+                TabOrder = 3
                 TabStop = False
                 ThumbLength = 15
                 OnChange = trkVarPreviewDepthChange
+              end
+              object chkUseXFormColor: TCheckBox
+                Left = 8
+                Top = 16
+                Width = 129
+                Height = 17
+                Caption = 'Use transform color'
+                TabOrder = 4
+                OnClick = chkUseXFormColorClick
               end
             end
           end
@@ -1759,7 +1757,7 @@ object EditForm: TEditForm
     Left = 353
     Top = 80
     Bitmap = {
-      494C01010F001300040010001000FFFFFFFFFF10FFFFFFFFFFFFFFFF424D3600
+      494C010110001300040010001000FFFFFFFFFF10FFFFFFFFFFFFFFFF424D3600
       0000000000003600000028000000400000005000000001002000000000000050
       0000000000000000000000000000000000000000000000000000000000000000
       0000000000000000000000000000000000000000000000000000000000000000
@@ -1951,57 +1949,57 @@ object EditForm: TEditForm
       0000000000000000000000000000000000000000000000000000000000000000
       0000000000000000000000000000000000000000000000000000000000000000
       0000EBEBEB00EBEBEB00EBEBEB000000000000000000EBEBEB00EBEBEB00EBEB
-      EB00000000000000000000000000000000000000000000000000000000000000
-      0000000000000000000000000000000000000000000000000000000000000000
-      0000000000000000000000000000000000000000000000000000000000000000
+      EB00000000000000000000000000000000000000000000000000FFFFFF000000
+      00000000000000000000000000000000000000000000FFFFFF00000000000000
+      000000000000FFFFFF0000000000000000000000000000000000000000000000
       0000000000000000000000000000000000008000800000000000000000000000
       0000000000000000000000000000000000008000800080008000800080008000
       8000000000000000000080008000800080008000800080008000800080008000
       8000800080008000800080008000800080000000000000000000000000000000
       0000EBEBEB00EBEBEB00EBEBEB000000000000000000EBEBEB00EBEBEB00EBEB
-      EB00000000000000000000000000000000000000000000000000000000000000
-      0000000000000000000000000000000000000000000000000000000000000000
-      0000000000000000000000000000000000000000000000000000000000000000
+      EB00000000000000000000000000000000000000000000000000FFFFFF000000
+      00000000000000000000000000000000000000000000FFFFFF00000000000000
+      000000000000FFFFFF0000000000000000000000000000000000000000000000
       0000000000000000000000000000000000008000800000000000000000000000
       0000000000000000000000000000000000000000000000000000000000000000
       0000000000000000000000000000000000000000000000000000000000000000
       00000000000000000000000000000000000049004B0000000000000000000000
       00000000000000000000EBEBEB00A0A0A000A0A0A000EBEBEB00000000000000
-      000000000000000000000000000049004B000000000000000000000000000000
-      0000000000000000000000000000000000000000000000000000000000000000
-      0000000000000000000000000000000000000000000000000000000000000000
+      000000000000000000000000000049004B000000000000000000FFFFFF000000
+      0000000000000000000000000000000000000000000000000000FFFFFF000000
+      0000FFFFFF000000000000000000000000000000000000000000000000000000
       0000000000000000000000000000000000000000000000000000000000000000
       0000000000000000000000000000000000000000000000000000000000000000
       0000000000000000000000000000000000000000000000000000000000000000
       000000000000000000000000000000000000000000000000000049004B000000
       0000000000000000000000000000000000000000000000000000000000000000
-      00000000000049004B0000000000000000000000000000000000000000000000
-      0000000000000000000000000000000000000000000000000000000000000000
-      0000000000000000000000000000000000000000000000000000000000000000
+      00000000000049004B0000000000000000000000000000000000FFFFFF00FFFF
+      FF00FFFFFF00000000000000000000000000000000000000000000000000FFFF
+      FF00000000000000000000000000000000000000000000000000000000000000
       0000000000000000000000000000000000000000000000000000000000000000
       0000000000000000000000000000000000000000000000000000000000000000
       0000000000000000000000000000000000000000000000000000000000000000
       0000000000000000000000000000000000000000000000000000000000000000
       000049004B000000000000000000000000000000000000000000000000004900
-      4B00000000000000000000000000000000000000000000000000000000000000
-      0000000000000000000000000000000000000000000000000000000000000000
-      0000000000000000000000000000000000000000000000000000000000000000
+      4B00000000000000000000000000000000000000000000000000FFFFFF000000
+      0000000000000000000000000000000000000000000000000000FFFFFF000000
+      0000FFFFFF000000000000000000000000000000000000000000000000000000
       0000000000000000000000000000000000008000800000000000000000000000
       0000000000000000000000000000000000000000000000000000000000000000
       0000000000000000000000000000000000000000000000000000000000000000
       00000000000000000000000000000000000049004B0000000000000000000000
       0000000000000000000049004B00000000000000000049004B00000000000000
-      000000000000000000000000000049004B000000000000000000000000000000
-      0000000000000000000000000000000000000000000000000000000000000000
-      0000000000000000000000000000000000000000000000000000000000000000
+      000000000000000000000000000049004B000000000000000000FFFFFF000000
+      00000000000000000000000000000000000000000000FFFFFF00000000000000
+      000000000000FFFFFF0000000000000000000000000000000000000000000000
       0000000000000000000000000000000000008000800000000000000000000000
       0000000000000000000000000000000000000000000000000000000000000000
       0000000000000000000000000000000000000000000000000000000000000000
       0000000000000000000000000000000000000000000000000000000000004900
       4B00000000000000000000000000000000000000000000000000000000000000
-      000049004B000000000000000000000000000000000000000000000000000000
-      0000000000000000000000000000000000000000000000000000000000000000
-      0000000000000000000000000000000000000000000000000000000000000000
+      000049004B000000000000000000000000000000000000000000FFFFFF00FFFF
+      FF00FFFFFF00FFFFFF00000000000000000000000000FFFFFF00000000000000
+      000000000000FFFFFF0000000000000000000000000000000000000000000000
       0000000000000000000000000000000000008000800000000000000000000000
       0000000000000000000000000000000000000000000000000000000000000000
       0000000000000000000000000000000000000000000000000000000000000000
@@ -2407,11 +2405,11 @@ object EditForm: TEditForm
       0000000000000000000000000000000000000000000000000000000000000000
       0000000000000000000000000000000000000000000000000000000000000000
       0000000000000000000000000000000000000000000000000000000000000000
-      00000000000000000000000000000000FF7FFFFFFFFF0000FF7FFFFFFDBF0000
-      FF7FFFFFEFF70000E00FF3E77DBE0000E007E1E7F7EF0000FF63C0E7DC3B0000
-      FF73F3E7700E0000FF73F3E7E0070000FB730000E0070000F363F3E7700E0000
-      E007F3E7DC3B0000E00FF1C7F7EF0000F37FF80F7DBE0000FB7FFC1FEFF70000
-      FF7FFFFFFDBF0000FF7FFFFFFFFF0000FFFFFFFFFFFFFFFFF0070001FEFF8003
+      00000000000000000000000000000000FF7FFFFFFFFFFFFFFF7FFFFFFDBFE1B7
+      FF7FFFFFEFF7EDA7E00FF3E77DBEED97E007E1E7F7EFE1B7FF63C0E7DC3BFFFF
+      FF73F3E7700E8F11FF73F3E7E0078F11FB730000E0078F11F363F3E7700E8383
+      E007F3E7DC3B83C7E00FF1C7F7EF8383F37FF80F7DBE8111FB7FFC1FEFF78111
+      FF7FFFFFFDBF8111FF7FFFFFFFFFFFFFFFFFFFFFFFFFFFFFF0070001FEFF8003
       F9F79FFD7FFDCFE7FCF7C8053EF9E7CFF277E4F51FF1F39FEF37F2754EE5F93F
       EF97F93567CDFC7FDFC7FC95729DFEFFDFE7FE45793D5555DFF7FF25729DFEFF
       DFFFFF9567CDFC7FEFC3FFCD4EE5F93FEFF3FFE51FF1F39FF3CBFFF13EF9E7CF

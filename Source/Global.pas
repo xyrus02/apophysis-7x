@@ -59,6 +59,7 @@ var
   ConfirmDelete: boolean; // Flag confirmation of entry deletion
 //  FlameTitle: string;
   Transforms: integer; // Count of Tranforms
+  EnableFinalXform: boolean;
   AppPath: string; // Path of applicatio file
   OpenFile: string; // Name of currently open file
   CanDrawOnResize: boolean;
