@@ -1,5 +1,6 @@
 {
      Apophysis Copyright (C) 2001-2004 Mark Townsend
+     Apophysis Copyright (C) 2005-2006 Ronald Hordijk, Piotr Boris, Peter Sdobnov     
 
      This program is free software; you can redistribute it and/or modify
      it under the terms of the GNU General Public License as published by
@@ -24,7 +25,7 @@ uses
   Windows, Messages, SysUtils, Classes, Graphics, Controls, Forms, Dialogs,
   ExtCtrls, StdCtrls, ComCtrls, Math, Menus, ToolWin, Registry,
   ControlPoint, Render, cmap, Grids, ValEdit, Buttons, ImgList, CustomDrawControl,
-  Types, xform;
+  Types, XForm;
 
 const
 //  PixelCountMax = 32768;
@@ -35,7 +36,6 @@ const
   crEditRotate = 22;
   crEditScale = 23;
 
-type PXForm = ^TXForm;
 type
   TEditForm = class(TForm)
     GrphPnl: TPanel;
@@ -45,9 +45,6 @@ type
     PrevPnl: TPanel;
     PreviewImage: TImage;
     EditPopup: TPopupMenu;
-    MenuItem1: TMenuItem;
-    mnuDelete: TMenuItem;
-    mnuDuplicate: TMenuItem;
     mnuAdd: TMenuItem;
     mnuAutoZoom: TMenuItem;
     N1: TMenuItem;
@@ -66,7 +63,6 @@ type
     PageControl: TPageControl;
     TriangleTab: TTabSheet;
     tabXForm: TTabSheet;
-    lblWeight: TLabel;
     txtA: TEdit;
     txtB: TEdit;
     txtC: TEdit;
@@ -144,7 +140,6 @@ type
     ToolButton2: TToolButton;
     tbVarPreview: TToolButton;
     trkVarPreviewDepth: TTrackBar;
-    Label29: TLabel;
     chkPreserve: TCheckBox;
     btnXpost: TSpeedButton;
     btnYpost: TSpeedButton;
@@ -157,7 +152,6 @@ type
     txtPost21: TEdit;
     btnResetPostXForm: TSpeedButton;
     btnSwapXforms: TSpeedButton;
-    txtSymmetry: TComboBox;
     GroupBox3: TGroupBox;
     editPivotY: TEdit;
     editPivotX: TEdit;
@@ -167,6 +161,19 @@ type
     tbEnableFinalXform: TToolButton;
     chkUseXFormColor: TCheckBox;
     ToolButton3: TToolButton;
+    TrianglePopup: TPopupMenu;
+    mnuDuplicate: TMenuItem;
+    mnuDelete: TMenuItem;
+    mnuAdd1: TMenuItem;
+    N2: TMenuItem;
+    mnuShowVarPreview: TMenuItem;
+    mnuReset: TMenuItem;
+    N6: TMenuItem;
+    Rotatetriangle90CCW1: TMenuItem;
+    Rotatetriangle90CCW2: TMenuItem;
+    txtSymmetry: TEdit;
+    pnlWeight: TPanel;
+    pnlSymmetry: TPanel;
     procedure ValidateVariable;
     procedure vleVariablesValidate(Sender: TObject; ACol, ARow: Integer; const KeyName, KeyValue: string);
     procedure vleVariablesKeyPress(Sender: TObject; var Key: Char);
@@ -226,7 +233,7 @@ type
     procedure txtXFormColorExit(Sender: TObject);
     procedure txtXFormColorKeyPress(Sender: TObject; var Key: Char);
     procedure txtSymmetrySet(Sender: TObject);
-    procedure txtSymmetryKeyPress(Sender: TObject; var Key: Char);
+    procedure txtSymmetrKeyPress(Sender: TObject; var Key: Char);
 
     procedure btTrgRotateLeftClick(Sender: TObject);
     procedure btTrgRotateRightClick(Sender: TObject);
@@ -296,6 +303,13 @@ type
     procedure VEVarsDrawCell(Sender: TObject; ACol, ARow: Integer;
       Rect: TRect; State: TGridDrawState);
     procedure tbEnableFinalXformClick(Sender: TObject);
+    procedure DragPanelMouseDown(Sender: TObject; Button: TMouseButton;
+      Shift: TShiftState; X, Y: Integer);
+    procedure DragPanelMouseMove(Sender: TObject; Shift: TShiftState; X,
+      Y: Integer);
+    procedure DragPanelMouseUp(Sender: TObject; Button: TMouseButton;
+      Shift: TShiftState; X, Y: Integer);
+    procedure DragPanelDblClick(Sender: TObject);
 
   private
     TriangleView: TCustomDrawControl;
@@ -314,17 +328,12 @@ type
     mouseOverPos: TSPoint;
 
     varDragMode: boolean;
-    varDragIndex :integer;
+    varDragIndex: integer;
     varDragValue: double;
     varDragPos, varDragOld: integer;
     varMM: boolean; //hack?
 
-{
-    spinnerMode: boolean;
-    spinnerOld, spinnerPos: integer;
-    spinnerValue: double;
-    SpinnerAssoc: TEdit;
-}
+    showVarPreview: boolean;
 
     // --Z-- variables moved from outside
     GraphZoom: double;
@@ -340,8 +349,9 @@ type
     PivotMode: (pivotLocal, pivotWorld); 
     VarsCache: array[0..64] of double; // hack: to prevent slow valuelist redraw
 
-    colorDrag, colorChanged: boolean;
-    colorDragX, colorOldX: integer;
+    pnlDragMode: boolean;
+    pnlDragPos, pnlDragOld: integer;
+    pnlDragValue: double;
 
 (*
     { Options }
@@ -404,10 +414,6 @@ implementation
 
 uses
   Main, Global, Adjust, Mutate, XformMan;
-
-const
-  SUB_BATCH_SIZE = 1000;
-  SC_MyMenuItem1 = WM_USER + 1;
 
 var
   oldTriangle: TTriangle;
@@ -587,7 +593,6 @@ procedure TEditForm.UpdateDisplay(PreviewOnly: boolean = false);
 var
   i: integer;
 //  pw, ph: integer;
-  r: double;
 begin
   // currently EditForm does not really know if we select another
   // flame in the Main Window - which is not good...
@@ -602,7 +607,7 @@ begin
 
   if SelectedTriangle > LastTriangle{???} then//NumXForms(cp) then
   begin
-    SelectedTriangle := NumXForms(cp)-1;
+    SelectedTriangle := cp.NumXForms-1;
     mouseOverTriangle := -1;
   end;
 
@@ -625,6 +630,7 @@ begin
   HasChanged := false;
   viewDragMode := false;
   varDragMode := false;
+  pnlDragMode := false;
   CornerCaught := false;
   TriangleCaught := false;
 
@@ -657,35 +663,6 @@ begin
   PreviewImage.Picture.Bitmap.Assign(Render.GetImage);
   PreviewImage.refresh;
 end;
-
-(*
-procedure TEditForm.ReadjustWeights(var cp: TControlPoint);
-{ Thanks to Rudy...code from Chaos }
-// --Z-- and thanks to me for removing this! ;-)
-var
-  total, othertotals, excess: double;
-  t, i: integer;
-begin
-  t := NumXForms(cp);
-  { /* First determine the excess. */ }
-  total := 0.0;
-  othertotals := 0.0;
-  for i := 0 to T - 1 do
-    if cp.xform[i].density <> 0.0 then
-    begin
-      total := total + cp.xform[i].density;
-      if (i <> SelectedTriangle) then
-        othertotals := othertotals + cp.xform[i].density;
-    end;
-  { /* Now we need to fix'em */ }
-//z  excess := total - 1.0;
-  excess := 1.0 - (total - 1.0)/othertotals; // --Z--
-  for i := 0 to T - 1 do
-    if (i <> SelectedTriangle) and (cp.xform[i].density <> 0) then
-//z      cp.xform[i].density := cp.xform[i].density - cp.xform[i].density / othertotals * excess;
-      cp.xform[i].density := cp.xform[i].density * excess; // --Z--
-end;
-*)
 
 procedure TEditForm.ShowSelectedInfo;
 var
@@ -783,8 +760,6 @@ begin
     editPivotY.Text := Format('%.6g', [WorldPivot.y]);
   end;
 
-  if cp.finalXformEnabled then tbEnableFinalXform.Down := true;
-
   PageControl.Refresh;
 end;
 
@@ -881,11 +856,11 @@ end;
 
 procedure TEditForm.DeleteTriangle(t: integer);
 var
-  i, j: integer;
+  i: integer;
 begin
-  if (t = Transforms ) then
+  if (t = Transforms) then
   begin
-    assert(cp.HasFinalXForm);
+    assert(EnableFinalXform);
     MainForm.UpdateUndo;
     EnableFinalXform := false;
     cp.finalXformEnabled := false;
@@ -903,6 +878,7 @@ begin
     if t = (Transforms - 1) then
     begin
       MainTriangles[t] := MainTriangles[Transforms];
+      cp.xform[t].Assign(cp.xform[Transforms]);
       Dec(SelectedTriangle);
     end
     else begin
@@ -1145,7 +1121,7 @@ end;
         TextOut(b.x+2, b.y+1, 'O');
       end;
 
-      if tbVarPreview.Down then
+      if showVarPreview then
       begin
         assert(trkVarPreviewRange.position > 0);
         assert(trkVarPreviewDensity.position > 0);
@@ -1910,7 +1886,13 @@ begin
     if viewDragged=false then // haven't dragged - popup menu then
     begin
       GetCursorPos(mousepos); // hmmm
-      EditPopup.Popup(mousepos.x, mousepos.y);
+      if mouseOverTriangle < 0 then
+        EditPopup.Popup(mousepos.x, mousepos.y)
+      else begin
+        SelectedTriangle := mouseOverTriangle;
+        TriangleView.Refresh;
+        TrianglePopup.Popup(mousepos.x, mousepos.y)
+      end;
     end
     else viewDragged := false;
     Screen.Cursor := crDefault;
@@ -1957,12 +1939,18 @@ begin
       end
       else
       begin
-        HelpersEnabled := False;
+        HelpersEnabled := true;
       end;
 
       if Registry.ValueExists('VariationPreview') then
-        tbVarPreview.Down := Registry.ReadBool('VariationPreview')
-      else tbVarPreview.Down := false;
+      begin
+        showVarPreview := Registry.ReadBool('VariationPreview');
+        tbVarPreview.Down := showVarPreview;
+      end
+      else begin
+        showVarPreview := false;
+        tbVarPreview.Down := false;
+      end;
       if Registry.ValueExists('VariationPreviewRange') then
         trkVarPreviewRange.Position := Registry.ReadInteger('VariationPreviewRange');
       if Registry.ValueExists('VariationPreviewDensity') then
@@ -2193,8 +2181,8 @@ begin
       end;
     end;
     NewVal := Round6(StrToFloat(TEdit(Sender).Text));
-    if NewVal < 0 then NewVal := 0;
-    if NewVal > 0.99 then NewVal := 0.99;
+  if NewVal < 0.000001 then NewVal := 0.000001;
+  if NewVal > 100 then NewVal := 100;
     { If it's not the same as the old value and it was valid }
     TEdit(Sender).Text := Format('%.6g', [NewVal]);
     if (OldVal <> NewVal) and Allow then
@@ -2225,8 +2213,8 @@ begin
     end;
   end;
   NewVal := Round6(StrToFloat(TEdit(Sender).Text));
-  if NewVal < 0 then NewVal := 0;
-  if NewVal > 0.99 then NewVal := 0.99;
+  if NewVal < 0.000001 then NewVal := 0.000001;
+  if NewVal > 100 then NewVal := 100;
     { If it's not the same as the old value and it was valid }
   TEdit(Sender).Text := Format('%.6g', [NewVal]);
   if (OldVal <> NewVal) and Allow then
@@ -2262,7 +2250,8 @@ begin
       Registry.WriteInteger('ReferenceTriangleColor', ReferenceTriangleColor);
 }
       Registry.WriteBool('ResetLocation', mnuResetLoc.checked);
-      Registry.WriteBool('VariationPreview', tbVarPreview.Down);
+      Registry.WriteBool('VariationPreview', showVarPreview);
+      Registry.WriteBool('HelpersEnabled', HelpersEnabled);
       Registry.WriteInteger('VariationPreviewRange', trkVarPreviewRange.Position);
       Registry.WriteInteger('VariationPreviewDensity', trkVarPreviewDensity.Position);
       Registry.WriteInteger('VariationPreviewDepth', trkVarPreviewDepth.Position);
@@ -2534,11 +2523,14 @@ begin
 end;
 
 procedure TEditForm.scrlXFormColorChange(Sender: TObject);
+var
+  v: double;
 begin
-  cp.xform[SelectedTriangle].color := (scrlXFormColor.Position) / scrlXFormColor.Max;
-  txtXFormColor.Text := Format('%1.3f', [cp.xform[SelectedTriangle].color]);
+  v := (scrlXFormColor.Position) / scrlXFormColor.Max;
+  cp.xform[SelectedTriangle].color := v;
+  pnlXFormColor.color := ColorValToColor(MainCp.cmap, v);
+  txtXFormColor.Text := Format('%1.3f', [v]);
   txtXFormColor.Refresh;
-  pnlXFormColor.color := ColorValToColor(MainCp.cmap, cp.xform[SelectedTriangle].color);
 
   DrawPreview;
 end;
@@ -2554,64 +2546,6 @@ begin
   HelpersEnabled := chkHelpers.checked;
   TriangleView.Invalidate;
 end;
-
-(*
-procedure TEditForm.pnlBackColorClick(Sender: TObject);
-begin
-  AdjustForm.ColorDialog.Color := EditorBkgColor; //pnlBackColor.Color;
-  if AdjustForm.ColorDialog.Execute then
-  begin
-    pnlBackColor.Color := AdjustForm.ColorDialog.Color;
-    BackgroundColor := Integer(pnlBackColor.color);
-    GrphPnl.Color := BackgroundColor;
-    TriangleView.Invalidate;
-  end;
-end;
-
-procedure TEditForm.pnlReferenceClick(Sender: TObject);
-begin
-  AdjustForm.ColorDialog.Color := pnlReference.Color;
-  if AdjustForm.ColorDialog.Execute then
-  begin
-    pnlReference.Color := AdjustForm.ColorDialog.Color;
-    ReferenceTriangleColor := Integer(pnlReference.color);
-    TriangleView.Invalidate;
-  end;
-end;
-
-procedure TEditForm.pnlGridColor1Click(Sender: TObject);
-begin
-  AdjustForm.ColorDialog.Color := pnlGridColor1.Color;
-  if AdjustForm.ColorDialog.Execute then
-  begin
-    pnlGridColor1.Color := AdjustForm.ColorDialog.Color;
-    GridColor1 := Integer(pnlGridColor1.color);
-    TriangleView.Invalidate;
-  end;
-end;
-
-procedure TEditForm.pnlGridColor2Click(Sender: TObject);
-begin
-  AdjustForm.ColorDialog.Color := pnlGridColor2.Color;
-  if AdjustForm.ColorDialog.Execute then
-  begin
-    pnlGridColor2.Color := AdjustForm.ColorDialog.Color;
-    GridColor2 := Integer(pnlGridColor2.color);
-    TriangleView.Invalidate;
-  end;
-end;
-
-procedure TEditForm.pnlHelpersColorClick(Sender: TObject);
-begin
-  AdjustForm.ColorDialog.Color := pnlHelpersColor.Color;
-  if AdjustForm.ColorDialog.Execute then
-  begin
-    pnlHelpersColor.Color := AdjustForm.ColorDialog.Color;
-    HelpersColor := Integer(pnlHelpersColor.color);
-    TriangleView.Invalidate;
-  end;
-end;
-*)
 
 procedure TEditForm.txtXFormColorExit(Sender: TObject);
 var
@@ -2689,7 +2623,7 @@ begin
   end;
 end;
 
-procedure TEditForm.txtSymmetryKeyPress(Sender: TObject; var Key: Char);
+procedure TEditForm.txtSymmetrKeyPress(Sender: TObject; var Key: Char);
 var
   Allow: boolean;
   NewVal, OldVal: double;
@@ -2837,6 +2771,7 @@ begin
 
     varDragMode:=true;
     varDragPos:=0;
+    varMM := false;
     SetCaptureControl(TValueListEditor(Sender));
     if Sender = VEVars then
       varDragValue := cp.xform[SelectedTriangle].vars[varDragIndex]
@@ -2883,11 +2818,11 @@ begin
     if Sender = VEVars then
     begin
       cp.xform[SelectedTriangle].vars[varDragIndex] := v;
-      TValueListEditor(Sender).Values[VarNames(varDragIndex)] := Format('%.6g', [v]);
+      TValueListEditor(Sender).Values[VarNames(varDragIndex)] := FloatToStr(v); //Format('%.6g', [v]);
     end
     else begin
       cp.xform[SelectedTriangle].SetVariable(vleVariables.Keys[varDragIndex+1], v);
-      vleVariables.Values[vleVariables.Keys[varDragIndex+1]] := Format('%.6g', [v]);
+      vleVariables.Values[vleVariables.Keys[varDragIndex+1]] := FloatToStr(v); //Format('%.6g', [v]);
     end;
 
     HasChanged := True;
@@ -3453,12 +3388,22 @@ var
   i: integer;
 begin
   MainForm.UpdateUndo;
-  for i := 2 to Transforms-1 do cp.xform[i].density := 0;
+  for i := 0 to Transforms-1 do cp.xform[i].Clear;//density := 0;
+  cp.xform[0].vars[0] := 1;
+  cp.xform[0].density := 0.5;
+  cp.xform[1].vars[0] := 1;
+  cp.xform[1].density := 0.5;
+  cp.xform[1].color := 1;
+  cp.xform[2].symmetry := 1;
 
   Transforms := 2;
   SelectedTriangle := 1;
   MainTriangles[0] := MainTriangles[-1];
-  with cp.xform[0] do begin
+  MainTriangles[1] := MainTriangles[-1];
+  MainTriangles[2] := MainTriangles[-1];
+
+  assert(cp.HasFinalXForm = false);
+{  with cp.xform[0] do begin
     density := 0.5;
     color := 0;
     symmetry := 0;
@@ -3470,7 +3415,6 @@ begin
     p[2, 0] := 0;
     p[2, 1] := 0;
   end;
-  MainTriangles[1] := MainTriangles[-1];
   with cp.xform[1] do begin
     density := 0.5;
     color := 1;
@@ -3488,7 +3432,7 @@ begin
     cp.xform[0].vars[i] := 0;
     cp.xform[1].vars[i] := 0;
   end;
-
+}
   cbTransforms.clear;
   cbTransforms.Items.Add('1');
   cbTransforms.Items.Add('2');
@@ -3543,6 +3487,8 @@ end;
 
 procedure TEditForm.tbVarPreviewClick(Sender: TObject);
 begin
+  showVarPreview := not showVarPreview;
+  tbVarPreview.Down := showVarPreview;
   TriangleView.Invalidate;
 end;
 
@@ -3809,25 +3755,20 @@ begin
   ShowSelectedInfo;
   UpdateFlame(true);
 end;
+// .............................................................................
 
 procedure TEditForm.VEVarsDrawCell(Sender: TObject; ACol, ARow: Integer;
   Rect: TRect; State: TGridDrawState);
-var
-  c: TColor;
 begin
-//  if ARow = 0 then exit;
-  if (ARow > NRLOCVAR) then
+  if (ARow > NRLOCVAR) and not (gdSelected in	State) then
   begin
-//    if ARow and 1 = 1 then c := c shr 1;
     VEVars.canvas.brush.Color := $ffe0e0;
     VEVars.canvas.fillRect(Rect);
-    VEVars.canvas.TextOut(Rect.Left+2, Rect.Top, VEVars.Cells[ACol,ARow]);
+    VEVars.canvas.TextOut(Rect.Left+2, Rect.Top+2, VEVars.Cells[ACol,ARow]);
   end;
 end;
 
 procedure TEditForm.tbEnableFinalXformClick(Sender: TObject);
-var
-  i: integer;
 begin
   MainForm.UpdateUndo;
   EnableFinalXform := tbEnableFinalXform.Down;
@@ -3835,15 +3776,11 @@ begin
   begin
     if (EnableFinalXform = true) then
     begin
-      //cp.xform[Transforms].Clear;
-      //cp.xform[Transforms].Symmetry := 1;
       cbTransforms.Items.Add('Final');
       SelectedTriangle := Transforms;
       if (mouseOverTriangle > LastTriangle) then mouseOverTriangle := -1;
     end
     else begin
-      //cp.xform[Transforms].Clear;
-      //cp.xform[Transforms].Symmetry := 1;
       if cbTransforms.Items.Count = Transforms+1 then
         cbTransforms.Items.Delete(Transforms);
       if SelectedTriangle >= Transforms then SelectedTriangle := Transforms-1;
@@ -3852,6 +3789,142 @@ begin
   cp.finalXformEnabled := EnableFinalXform;
   UpdateFlame(True);
   TriangleView.Invalidate;
+end;
+
+procedure TEditForm.DragPanelMouseDown(Sender: TObject;
+  Button: TMouseButton; Shift: TShiftState; X, Y: Integer);
+begin
+  if Button <> mbLeft then exit;
+
+  //assert(pnlDragMode = false);
+
+  if (Sender = pnlWeight) then
+    if SelectedTriangle < Transforms then
+      pnlDragValue := cp.xform[SelectedTriangle].density
+    else exit
+  else if (Sender = pnlSymmetry) then
+    pnlDragValue := cp.xform[SelectedTriangle].symmetry
+  else if (Sender = pnlXformColor) then
+    pnlDragValue := cp.xform[SelectedTriangle].color
+  else assert(false);
+
+  pnlDragMode := true;
+  pnlDragPos := 0;
+  pnlDragOld := x;
+  varMM := false;
+  SetCaptureControl(TControl(Sender));
+  Screen.Cursor := crHSplit;
+  GetCursorPos(mousepos); // hmmm
+  HasChanged := false;
+end;
+
+procedure TEditForm.DragPanelMouseMove(Sender: TObject; Shift: TShiftState;
+  X, Y: Integer);
+var
+  v: double;
+  pEdit: ^TEdit;
+begin
+  if varMM then // hack: to skip MouseMove event
+  begin
+    varMM:=false;
+  end
+  else
+  if pnlDragMode and (x <> pnlDragOld) then
+  begin
+    Inc(pnlDragPos, x - pnlDragOld);
+
+    if GetKeyState(VK_MENU) < 0 then v := 100000
+    else if GetKeyState(VK_CONTROL) < 0 then v := 10000
+    else if GetKeyState(VK_SHIFT) < 0 then v := 100
+    else v := 1000;
+
+    v := Round6(pnlDragValue + pnlDragPos / v);
+
+    SetCursorPos(MousePos.x, MousePos.y); // hmmm
+    varMM:=true;
+
+    if (Sender = pnlWeight) then
+    begin
+      if v <= 0.000001 then v := 0.000001;
+      cp.xform[SelectedTriangle].density := v;
+      pEdit := @txtP;
+    end
+    else if (Sender = pnlSymmetry) then
+    begin
+      if v < -1 then v := -1
+      else if v > 1 then v := 1;
+      cp.xform[SelectedTriangle].symmetry := v;
+      pEdit := @txtSymmetry;
+    end
+    else if (Sender = pnlXformColor) then
+    begin
+      if v < 0 then v := 0
+      else if v > 1 then v := 1;
+      cp.xform[SelectedTriangle].color := v;
+      pnlXFormColor.Color := ColorValToColor(cp.cmap, v);
+      scrlXformColor.Position := round(v*1000);
+      pEdit := @txtXformColor;
+    end;
+    pEdit^.Text := FloatToStr(v); // Format('%.6g', [v])
+    //pEdit.Refresh;
+    HasChanged := True;
+    DrawPreview;
+  end;
+end;
+
+procedure TEditForm.DragPanelMouseUp(Sender: TObject; Button: TMouseButton;
+  Shift: TShiftState; X, Y: Integer);
+begin
+  if Button <> mbLeft then exit;
+
+  if pnlDragMode then
+  begin
+    SetCaptureControl(nil);
+    pnlDragMode := false;
+    Screen.Cursor := crDefault;
+
+    if HasChanged then
+    begin
+      MainForm.UpdateUndo;
+
+      UpdateFlame(true);
+      HasChanged := False;
+    end;
+  end;
+end;
+
+procedure TEditForm.DragPanelDblClick(Sender: TObject);
+var
+  pValue: ^double;
+  pEdit: ^TEdit;
+begin
+  if (Sender = pnlWeight) then
+  begin
+    if SelectedTriangle = LastTriangle then exit; // hmm
+    pValue := @cp.xform[SelectedTriangle].density;
+    if pValue^ = 0.5 then exit;
+    pValue^ := 0.5;
+    pEdit := @txtP;
+  end
+  else if (Sender = pnlSymmetry) then
+  begin
+    pValue := @cp.xform[SelectedTriangle].symmetry;
+    if pValue^ = 0 then exit;
+    pValue^ := 0;
+    pEdit := @txtSymmetry;
+  end
+  else if (Sender = pnlXformColor) then
+  begin
+    pValue := @cp.xform[SelectedTriangle].color;
+    if pValue^ = 0 then exit;
+    pValue^ := 0;
+    pEdit := @txtXformColor;
+  end
+  else assert(false);
+
+  MainForm.UpdateUndo;
+  pEdit^.Text := FloatToStr(pValue^);
+  UpdateFlame(true);
 end;
 
 end.

@@ -19,6 +19,10 @@ type
   end;
   PXYpoint = ^TXYpoint;
 
+  T2Cpoint = record
+    x, y, c1, c2: double;
+  end;
+
   TMatrix = array[0..2, 0..2] of double;
 
 {$define _ASM_}
@@ -36,13 +40,14 @@ type
     FSinA: double;
     FCosA: double;
     FLength: double;
-//    CalculateAngle, CalculateLength, CalculateSinCos: boolean;
     colorC1, colorC2: double;
 
+    // precalculated constants for some variations
     waves_f1, waves_f2,
     rings_dx,
     fan_dx, fan_dx2,
-    cosine_var2: double; // precalc...
+    cosine_var2,
+    polar_vpi: double;
 
     FRegVariations: array of TBaseVariation;
 
@@ -111,9 +116,10 @@ type
 
     procedure NextPoint(var px, py, pc: double); overload;
     procedure NextPoint(var CPpoint: TCPpoint); overload;
+    procedure NextPointTo(var CPpoint, ToPoint: TCPpoint);
 //    procedure NextPoint(var px, py, pz, pc: double); overload;
     procedure NextPointXY(var px, py: double);
-    procedure NextPoint2C(var px, py, pc1, pc2: double);
+    procedure NextPoint2C(var p: T2CPoint);
 
     procedure Rotate(const degrees: double);
     procedure Translate(const x, y: double);
@@ -243,6 +249,8 @@ begin
 
   cosine_var2 := vars[20]/2;
 
+  polar_vpi := vars[5]/pi;
+
   if (p[0,0]<>1) or (p[0,1]<>0) or(p[1,0]<>0) or (p[1,1]<>1) or (p[2,0]<>0) or (p[2,1]<>0) then
   begin
     p00 := p[0][0];
@@ -308,9 +316,7 @@ asm
     fmul    st, st
     faddp
     fsqrt
-
-    fadd    qword ptr [EPS] // test...
-
+    fadd    qword ptr [EPS] // avoid divide by zero...(?)
     fdiv    st(1), st
     fdiv    st(2), st
     fstp    qword ptr [eax + FLength]
@@ -333,9 +339,7 @@ asm
     fmul    st, st
     faddp
     fsqrt
-
-    fadd    qword ptr [EPS] // test...
-
+    fadd    qword ptr [EPS] // avoid divide by zero...(?)
     fdiv    st(1), st
     fdiv    st(2), st
     fstp    qword ptr [eax + FLength]
@@ -546,16 +550,12 @@ begin
   FPy := FPy + vars[5] * ny;
 }
 begin
-  FPx := FPx + vars[5] * FAngle / PI;
+  FPx := FPx + polar_vpi * FAngle; //vars[5] * FAngle / PI;
   FPy := FPy + vars[5] * (sqrt(sqr(FTx) + sqr(FTy)) - 1.0);
 {$else}
 asm
-    mov     edx, [eax + vars]
-    fld     qword ptr [edx + 5*8]
     fld     qword ptr [eax + FAngle]
-    fldpi
-    fdivp   st(1), st
-    fmul    st, st(1)
+    fmul    qword ptr [eax + polar_vpi]
     fadd    qword ptr [eax + FPx]
     fstp    qword ptr [eax + FPx]
     fld     qword ptr [eax + FTx]
@@ -566,7 +566,8 @@ asm
     fsqrt
     fld1
     fsubp   st(1), st
-    fmulp
+    mov     edx, [eax + vars]
+    fmul    qword ptr [edx + 5*8]
     fadd    qword ptr [eax + FPy]
     fstp    qword ptr [eax + FPy]
     fwait
@@ -648,14 +649,8 @@ end;
 procedure TXForm.Disc;
 {$ifndef _ASM_}
 var
-//  nx, ny: double;
   r, sinr, cosr: double;
 begin
-// --Z-- ????? - calculating PI^2 to get square root from it, hmm?
-//  nx := FTx * PI;
-//  ny := FTy * PI;
-//  r := sqrt(nx * nx + ny * ny);
-
   SinCos(PI * sqrt(sqr(FTx) + sqr(FTy)), sinr, cosr);
   r := vars[8] * FAngle / PI;
   FPx := FPx + sinr * r;
@@ -841,17 +836,12 @@ end;
 procedure TXForm.Julia;
 {$ifndef _ASM_}
 var
-  a, r: double;
-  sinr, cosr: double;
+  r, sina, cosa: double;
 begin
-  if random(2) <> 0 then
-    a := FAngle/2 + PI
-  else
-    a := FAngle/2;
-  SinCos(a, sinr, cosr);
+  SinCos(FAngle/2 + pi*random(2), sina, cosa);
   r := vars[13] * sqrt(sqrt(sqr(FTx) + sqr(FTy)));
-  FPx := FPx + r * cosr;
-  FPy := FPy + r * sinr;
+  FPx := FPx + r * cosa;
+  FPy := FPy + r * sina;
 {$else}
 asm
     fld     qword ptr [ebx + FAngle] // assert: self is in ebx
@@ -862,11 +852,12 @@ asm
     xor     eax, eax        // hmm...
     add     eax, $02        // hmmm....
     call    System.@RandInt // hmmmm.....
-    test    al, al
-    jnz     @skip
+    push    eax
+    fild    dword ptr [esp]
+    add     esp, 4
     fldpi
+    fmulp
     faddp
-@skip:
     fsincos
     fld     qword ptr [ebx + FTx]
     fmul    st, st
@@ -965,25 +956,25 @@ begin
   FPy := FPy + vars[15] * (FTy + c11 * sin(FTx * waves_f2));
 {$else}
 asm
-    mov     edx, [ebx + vars]
+    mov     edx, [eax + vars]
     fld     qword ptr [edx + 15*8]
-    fld     qword ptr [ebx + FTy]
-    fld     qword ptr [ebx + FTx]
+    fld     qword ptr [eax + FTy]
+    fld     qword ptr [eax + FTx]
     fld     st(1)
-    fmul    qword ptr [ebx + waves_f1]
+    fmul    qword ptr [eax + waves_f1]
     fsin
-    fmul    qword ptr [ebx + c10]
+    fmul    qword ptr [eax + c10]
     fadd    st, st(1)
     fmul    st, st(3)
-    fadd    qword ptr [ebx + FPx]
-    fstp    qword ptr [ebx + FPx]
-    fmul    qword ptr [ebx + waves_f2]
+    fadd    qword ptr [eax + FPx]
+    fstp    qword ptr [eax + FPx]
+    fmul    qword ptr [eax + waves_f2]
     fsin
-    fmul    qword ptr [ebx + c11]
+    fmul    qword ptr [eax + c11]
     faddp
     fmulp
-    fadd    qword ptr [ebx + FPy]
-    fstp    qword ptr [ebx + FPy]
+    fadd    qword ptr [eax + FPy]
+    fstp    qword ptr [eax + FPy]
     fwait
 {$endif}
 end;
@@ -1009,11 +1000,11 @@ begin
   FPy := FPy +  r * FTx;
 {$else}
 asm
-    mov     edx, [ebx + vars]
+    mov     edx, [eax + vars]
     fld     qword ptr [edx + 16*8]
     fadd    st, st
-    fld     qword ptr [ebx + FTx]
-    fld     qword ptr [ebx + FTy]
+    fld     qword ptr [eax + FTx]
+    fld     qword ptr [eax + FTy]
     fld     st(1)
     fmul    st, st
     fld     st(1)
@@ -1024,11 +1015,11 @@ asm
     faddp
     fdivp   st(3), st
     fmul    st, st(2)
-    fadd    qword ptr [ebx + FPx]
-    fstp    qword ptr [ebx + FPx]
+    fadd    qword ptr [eax + FPx]
+    fstp    qword ptr [eax + FPx]
     fmulp
-    fadd    qword ptr [ebx + FPy]
-    fstp    qword ptr [ebx + FPy]
+    fadd    qword ptr [eax + FPy]
+    fstp    qword ptr [eax + FPy]
     fwait
 {$endif}
 end;
@@ -1371,11 +1362,11 @@ begin
   FPy := FPy + r * FTy;
 {$else}
 asm
-    mov     edx, [ebx + vars]
+    mov     edx, [eax + vars]
     fld     qword ptr [edx + 23*8]
     fadd    st, st
-    fld     qword ptr [ebx + FTy]
-    fld     qword ptr [ebx + FTx]
+    fld     qword ptr [eax + FTy]
+    fld     qword ptr [eax + FTx]
     fld     st(1)
     fmul    st, st
     fld     st(1)
@@ -1386,11 +1377,11 @@ asm
     faddp
     fdivp   st(3), st
     fmul    st, st(2)
-    fadd    qword ptr [ebx + FPx]
-    fstp    qword ptr [ebx + FPx]
+    fadd    qword ptr [eax + FPx]
+    fstp    qword ptr [eax + FPx]
     fmulp
-    fadd    qword ptr [ebx + FPy]
-    fstp    qword ptr [ebx + FPy]
+    fadd    qword ptr [eax + FPy]
+    fstp    qword ptr [eax + FPy]
     fwait
 {$endif}
 end;
@@ -1407,8 +1398,8 @@ begin
   FPy := FPy + r * FTy;
 {$else}
 asm
-    fld     qword ptr [ebx + FTy]
-    fld     qword ptr [ebx + FTx]
+    fld     qword ptr [eax + FTy]
+    fld     qword ptr [eax + FTx]
     fld     st(1)
     fmul    st, st
     fld     st(1)
@@ -1420,14 +1411,14 @@ asm
     fdivp   st(1), st
     fld1
     fadd
-    mov     edx, [ebx + vars]
+    mov     edx, [eax + vars]
     fdivr   qword ptr [edx + 24*8]
     fmul    st(2), st
     fmulp
-    fadd    qword ptr [ebx + FPx]
-    fstp    qword ptr [ebx + FPx]
-    fadd    qword ptr [ebx + FPy]
-    fstp    qword ptr [ebx + FPy]
+    fadd    qword ptr [eax + FPx]
+    fstp    qword ptr [eax + FPx]
+    fadd    qword ptr [eax + FPy]
+    fstp    qword ptr [eax + FPy]
     fwait
 {$endif}
 end;
@@ -1440,17 +1431,17 @@ begin
   FPy := FPy + vars[25] * FTy;
 {$else}
 asm
-    mov     edx, [ebx + vars]
+    mov     edx, [eax + vars]
     fld     qword ptr [edx + 25*8]
-    fld     qword ptr [ebx + FTx]
+    fld     qword ptr [eax + FTx]
     fsin
-    fld     qword ptr [ebx + FTy]
+    fld     qword ptr [eax + FTy]
     fmul    st, st(2)
-    fadd    qword ptr [ebx + FPy]
-    fstp    qword ptr [ebx + FPy]
+    fadd    qword ptr [eax + FPy]
+    fstp    qword ptr [eax + FPy]
     fmulp
-    fadd    qword ptr [ebx + FPx]
-    fstp    qword ptr [ebx + FPx]
+    fadd    qword ptr [eax + FPx]
+    fstp    qword ptr [eax + FPx]
     fwait
 {$endif}
 end;
@@ -1465,27 +1456,27 @@ begin
   FPy := FPy + vars[26] * (FTy + amplitude * sin(FTx * pi));
 {$else}
 asm
-    mov     edx, [ebx + vars]
+    mov     edx, [eax + vars]
     fld     qword ptr [edx + 26*8]
     fld     dword ptr [amplitude]
-    fld     qword ptr [ebx + FTy]
+    fld     qword ptr [eax + FTy]
     fldpi
-    fld     qword ptr [ebx + FTx]
+    fld     qword ptr [eax + FTx]
     fld     st(2)
     fmul    st, st(2)
     fsin
     fmul    st, st(4)
     fadd    st, st(1)
     fmul    st, st(5)
-    fadd    qword ptr [ebx + FPx]
-    fstp    qword ptr [ebx + FPx]
+    fadd    qword ptr [eax + FPx]
+    fstp    qword ptr [eax + FPx]
     fmulp
     fsin
     fmulp   st(2), st
     faddp
     fmulp
-    fadd    qword ptr [ebx + FPy]
-    fstp    qword ptr [ebx + FPy]
+    fadd    qword ptr [eax + FPy]
+    fstp    qword ptr [eax + FPy]
     fwait
 {$endif}
 end;
@@ -1580,6 +1571,24 @@ begin
 //  CPpoint.y := p[0,1] * FPx + p[1,1] * FPy + p[2,1];
 end;
 
+procedure TXForm.NextPointTo(var CPpoint, ToPoint: TCPpoint);
+var
+  i: Integer;
+begin
+  ToPoint.c := CPpoint.c * colorC1 + colorC2;
+
+  FTx := c00 * CPpoint.x + c10 * CPpoint.y + c20;
+  FTy := c01 * CPpoint.x + c11 * CPpoint.y + c21;
+
+  Fpx := 0;
+  Fpy := 0;
+
+  for i:= 0 to FNrFunctions-1 do
+    FCalcFunctionList[i];
+
+  ToPoint.x := FPx;
+  ToPoint.y := FPy;
+end;
 
 {
 ///////////////////////////////////////////////////////////////////////////////
@@ -1659,18 +1668,18 @@ end;
 }
 
 ///////////////////////////////////////////////////////////////////////////////
-procedure TXForm.NextPoint2C(var px, py, pc1, pc2: double);
+procedure TXForm.NextPoint2C(var p: T2CPoint);
 var
   i: Integer;
 begin
   // first compute the color coord
 //  pc1 := (pc1 + color) * 0.5 * (1 - symmetry) + symmetry * pc1;
 //  pc2 := (pc2 + color) * 0.5 * (1 - symmetry) + symmetry * pc2;
-  pc1 := pc1 * colorC1 + colorC2;
-  pc2 := pc2 * colorC1 + colorC2;
+  p.c1 := p.c1 * colorC1 + colorC2;
+  p.c2 := p.c2 * colorC1 + colorC2;
 
-  FTx := c00 * px + c10 * py + c20;
-  FTy := c01 * px + c11 * py + c21;
+  FTx := c00 * p.x + c10 * p.y + c20;
+  FTy := c01 * p.x + c11 * p.y + c21;
 
   Fpx := 0;
   Fpy := 0;
@@ -1678,8 +1687,8 @@ begin
   for i:= 0 to FNrFunctions-1 do
     FCalcFunctionList[i];
 
-  px := FPx;
-  py := FPy;
+  p.x := FPx;
+  p.y := FPy;
 //  px := p[0,0] * FPx + p[1,0] * FPy + p[2,0];
 //  py := p[0,1] * FPx + p[1,1] * FPy + p[2,1];
 end;

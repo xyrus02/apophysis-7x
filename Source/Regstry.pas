@@ -586,7 +586,7 @@ begin
     { Editor } // --Z-- moved from EditForm
     if Registry.OpenKey('Software\' + APP_NAME + '\Forms\Editor', False) then
     begin
-      if Registry.ValueExists('UseTransformColors') then
+{      if Registry.ValueExists('UseTransformColors') then
       begin
         UseTransformColors := Registry.ReadBool('UseTransformColors');
       end
@@ -602,6 +602,7 @@ begin
       begin
         UseFlameBackground := False;
       end;
+}
       if Registry.ValueExists('BackgroundColor') then
         EditorBkgColor := Registry.ReadInteger('BackgroundColor')
       else

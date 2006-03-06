@@ -33,7 +33,7 @@ type
     procedure FormKeyPress(Sender: TObject; var Key: Char);
     procedure ImageDblClick(Sender: TObject);
   private
-    Remainder, StartTime, Now: Extended;
+    Remainder, StartTime, t: double;
     Renderer: TRenderThread;
     procedure showTaskbar;
     procedure hideTaskbar;
@@ -68,15 +68,17 @@ begin
 //  cp.center[1] := MainForm.center[1];
   cp.sample_density := defSampleDensity;
   StartTime := Now;
+  t := now;
   Remainder := 1;
   if Assigned(Renderer) then Renderer.Terminate;
   if Assigned(Renderer) then Renderer.WaitFor;
+  assert(not assigned(renderer));
   if not Assigned(Renderer) then
   begin
     Renderer := TRenderThread.Create;
     Renderer.TargetHandle := Handle;
     Renderer.OnProgress := OnProgress;
-    Renderer.Compatibility := Compatibility;    
+    Renderer.Compatibility := Compatibility;
     Renderer.SetCP(cp);
     Renderer.Resume;
   end;
@@ -90,7 +92,7 @@ begin
   begin
     bm := TBitmap.Create;
     bm.assign(Renderer.GetImage);
-   Image.Picture.Graphic := bm;
+    Image.Picture.Graphic := bm;
 
 //    Canvas.StretchDraw(Rect(0, 0, ClientWidth, ClientHeight), bm);
     Renderer.Free;
@@ -100,11 +102,18 @@ begin
 end;
 
 procedure TFullscreenForm.HandleThreadTermination(var Message: TMessage);
+//var
+//  bm: TBitmap;
 begin
   if Assigned(Renderer) then
   begin
+//    bm := TBitmap.Create;
+//    bm.assign(Renderer.GetImage);
+//    Image.Picture.Graphic := bm;
+
     Renderer.Free;
     Renderer := nil;
+//    bm.Free;
   end;
 end;
 

@@ -17,7 +17,7 @@ type
     FTransparentImage: TBitmap;
     Fcp: Tcontrolpoint;
 
-    FBucketWidth: Int64;
+    FBucketWidth: integer;
     FBuckets: TBucketArray;
     FOnProgress: TOnProgress;
 
@@ -39,7 +39,7 @@ type
 
     procedure SetCP(CP: TControlPoint);
     procedure Init;
-    procedure SetBucketData(const Buckets: TBucketArray; const BucketWidth: int64);
+    procedure SetBucketData(const Buckets: TBucketArray; const BucketWidth: integer);
 
     function GetFilterSize: Integer;
 
@@ -174,7 +174,7 @@ begin
 end;
 
 ///////////////////////////////////////////////////////////////////////////////
-procedure TImageMaker.SetBucketData(const Buckets: TBucketArray; const BucketWidth: int64);
+procedure TImageMaker.SetBucketData(const Buckets: TBucketArray; const BucketWidth: integer);
 begin
   FBuckets := Buckets;
   FBucketWidth := BucketWidth;

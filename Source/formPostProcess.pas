@@ -16,28 +16,46 @@ type
     pnlBackColor: TPanel;
     ColorDialog: TColorDialog;
     ProgressBar1: TProgressBar;
-    Label2: TLabel;
     btnApply: TButton;
     txtFilterRadius: TEdit;
-    Label3: TLabel;
     txtGamma: TEdit;
-    Label4: TLabel;
-    txtVib: TEdit;
-    Label5: TLabel;
+    txtVibrancy: TEdit;
     txtContrast: TEdit;
-    Label6: TLabel;
     txtBrightness: TEdit;
+    pnlGamma: TPanel;
+    pnlBrightness: TPanel;
+    pnlContrast: TPanel;
+    pnlVibrancy: TPanel;
+    pnlFilter: TPanel;
     procedure btnSaveClick(Sender: TObject);
     procedure btnApplyClick(Sender: TObject);
     procedure FormDestroy(Sender: TObject);
     procedure pnlBackColorClick(Sender: TObject);
     procedure FormClose(Sender: TObject; var Action: TCloseAction);
     procedure FormShow(Sender: TObject);
+
+    procedure DragPanelMouseDown(Sender: TObject; Button: TMouseButton;
+      Shift: TShiftState; X, Y: Integer);
+    procedure DragPanelMouseMove(Sender: TObject; Shift: TShiftState; X,
+      Y: Integer);
+    procedure DragPanelMouseUp(Sender: TObject; Button: TMouseButton;
+      Shift: TShiftState; X, Y: Integer);
+    procedure DragPanelDblClick(Sender: TObject);
   private
     { Private declarations }
     FRenderer: TBaseRenderer;
     FCP: TControlPoint;
     FImagename: string;
+
+    pnlDragMode, pnlDragged, pnlMM: boolean;
+    pnlDragPos, pnlDragOld: integer;
+    pnlDragValue: double;
+    mousepos: TPoint;
+
+    BkgColor: TColor;
+    Filter,
+    Gamma, Brightness,
+    Contrast, Vibrancy: double;
 
     procedure UpdateFlame;
     procedure SetDefaultValues;
@@ -123,12 +141,18 @@ end;
 ///////////////////////////////////////////////////////////////////////////////
 procedure TfrmPostProcess.SetDefaultValues;
 begin
-  pnlBackColor.Color := RGB(Fcp.background[0], Fcp.background[1], Fcp.background[2]);
-  txtFilterRadius.Text := FloatTostr(FCP.spatial_filter_radius);
-  txtGamma.Text := FloatTostr(FCP.gamma);
-  txtVib.Text := FloatTostr(FCP.vibrancy);
-  txtContrast.Text := FloatTostr(FCP.contrast);
-  txtBrightness.Text := FloatTostr(FCP.brightness);
+  BkgColor := RGB(Fcp.background[0], Fcp.background[1], Fcp.background[2]);
+  pnlBackColor.Color := BkgColor;
+  Filter := FCP.spatial_filter_radius;
+  txtFilterRadius.Text := FloatTostr(Filter);
+  Gamma := FCP.gamma;
+  txtGamma.Text := FloatTostr(Gamma);
+  Vibrancy := FCP.vibrancy;
+  txtVibrancy.Text := FloatTostr(Vibrancy);
+  Contrast := FCP.contrast;
+  txtContrast.Text := FloatTostr(Contrast);
+  Brightness := FCP.brightness;
+  txtBrightness.Text := FloatTostr(brightness);
 end;
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -201,13 +225,13 @@ begin
     txtGamma.Text := FloatTostr(0.01);
   end;
 
-  TryStrToFloat(txtVib.Text, FCP.vibrancy);
+  TryStrToFloat(txtVibrancy.Text, FCP.vibrancy);
   if FCP.vibrancy > 10 then begin
     FCP.vibrancy := 10;
-    txtVib.Text := '10';
+    txtVibrancy.Text := '10';
   end else if FCP.vibrancy < 0.01 then begin
     FCP.vibrancy := 0.01;
-    txtVib.Text := FloatTostr(0.01);
+    txtVibrancy.Text := FloatTostr(0.01);
   end;
 
   TryStrToFloat(txtContrast.Text, FCP.contrast);
@@ -220,9 +244,9 @@ begin
   end;
 
   TryStrToFloat(txtBrightness.Text, FCP.brightness);
-  if FCP.brightness > 10 then begin
-    FCP.brightness := 10;
-    txtBrightness.Text := '10';
+  if FCP.brightness > 100 then begin
+    FCP.brightness := 100;
+    txtBrightness.Text := '100';
   end else if FCP.brightness < 0.01 then begin
     FCP.brightness := 0.01;
     txtBrightness.Text := FloatTostr(0.01);
@@ -243,5 +267,165 @@ begin
   FImagename := imagename;
 end;
 
-///////////////////////////////////////////////////////////////////////////////
+// -----------------------------------------------------------------------------
+
+procedure TfrmPostProcess.DragPanelMouseDown(Sender: TObject;
+  Button: TMouseButton; Shift: TShiftState; X, Y: Integer);
+begin
+  if Button <> mbLeft then exit;
+
+  if (Sender = pnlFilter) then
+    pnlDragValue := fcp.spatial_filter_radius * 10
+  else if (Sender = pnlGamma) then
+    pnlDragValue := fcp.gamma
+  else if (Sender = pnlBrightness) then
+    pnlDragValue := fcp.brightness
+  else if (Sender = pnlContrast) then
+    pnlDragValue := fcp.contrast
+  else if (Sender = pnlVibrancy) then
+    pnlDragValue := fcp.vibrancy
+  else assert(false);
+
+  pnlDragMode := true;
+  pnlDragPos := 0;
+  pnlDragOld := x;
+  pnlMM := false;
+  SetCaptureControl(TControl(Sender));
+  Screen.Cursor := crHSplit;
+  GetCursorPos(mousepos); // hmmm
+  pnlDragged := false;
+end;
+
+procedure TfrmPostProcess.DragPanelMouseMove(Sender: TObject; Shift: TShiftState;
+  X, Y: Integer);
+var
+  v: double;
+  pEdit: ^TEdit;
+begin
+  if pnlMM then // hack: to skip MouseMove event
+  begin
+    pnlMM:=false;
+  end
+  else
+  if pnlDragMode and (x <> pnlDragOld) then
+  begin
+    Inc(pnlDragPos, x - pnlDragOld);
+
+    if GetKeyState(VK_MENU) < 0 then v := 100000
+    else if GetKeyState(VK_CONTROL) < 0 then v := 10000
+    else if GetKeyState(VK_SHIFT) < 0 then v := 100
+    else v := 1000;
+
+    v := Round6(pnlDragValue + pnlDragPos / v);
+
+    SetCursorPos(MousePos.x, MousePos.y); // hmmm
+    pnlMM:=true;
+
+    if (Sender = pnlFilter) then
+    begin
+      v := v / 10;
+      if v > 2 then v := 2
+      else if v < 0.01 then v := 0.01;
+      fcp.spatial_filter_radius := v;
+      pEdit := @txtFilterRadius;
+    end
+    else if (Sender = pnlGamma) then
+    begin
+      if v > 10 then v := 10
+      else if v < 0.01 then v := 0.01;
+      fcp.gamma := v;
+      pEdit := @txtGamma;
+    end
+    else if (Sender = pnlBrightness) then
+    begin
+      if v > 100 then v := 100
+      else if v < 0.01 then v := 0.01;
+      fcp.brightness := v;
+      pEdit := @txtBrightness;
+    end
+    else if (Sender = pnlContrast) then
+    begin
+      if v > 10 then v := 10
+      else if v < 0.01 then v := 0.01;
+      fcp.contrast := v;
+      pEdit := @txtContrast;
+    end
+    else if (Sender = pnlVibrancy) then
+    begin
+      if v > 10 then v := 10
+      else if v < 0.01 then v := 0.01;
+      fcp.vibrancy := v;
+      pEdit := @txtVibrancy;
+    end;
+    pEdit^.Text := FloatToStr(v);
+    //pEdit.Refresh;
+    pnlDragged := True;
+    // TODO: image preview (?)
+    //DrawPreview;
+  end;
+end;
+
+procedure TfrmPostProcess.DragPanelMouseUp(Sender: TObject; Button: TMouseButton;
+  Shift: TShiftState; X, Y: Integer);
+begin
+  if Button <> mbLeft then exit;
+
+  if pnlDragMode then
+  begin
+    SetCaptureControl(nil);
+    pnlDragMode := false;
+    Screen.Cursor := crDefault;
+
+    if pnlDragged then
+    begin
+      UpdateFlame;
+      pnlDragged := False;
+    end;
+  end;
+end;
+
+procedure TfrmPostProcess.DragPanelDblClick(Sender: TObject);
+var
+  pValue: ^double;
+  pDefaultValue: ^double;
+  pEdit: ^TEdit;
+begin
+  if (Sender = pnlFilter) then
+  begin
+    pValue := @fcp.spatial_filter_radius;
+    pDefaultValue := @Filter;
+    pEdit := @txtFilterRadius;
+  end
+  else if (Sender = pnlGamma) then
+  begin
+    pValue := @fcp.gamma;
+    pDefaultValue := @Gamma;
+    pEdit := @txtGamma;
+  end
+  else if (Sender = pnlBrightness) then
+  begin
+    pValue := @fcp.brightness;
+    pDefaultValue := @Brightness;
+    pEdit := @txtBrightness;
+  end
+  else if (Sender = pnlContrast) then
+  begin
+    pValue := @fcp.contrast;
+    pDefaultValue := @Contrast;
+    pEdit := @txtContrast
+  end
+  else if (Sender = pnlVibrancy) then
+  begin
+    pValue := @fcp.vibrancy;
+    pDefaultValue := @Vibrancy;
+    pEdit := @txtVibrancy;
+  end
+  else assert(false);
+
+  if pValue^ = pDefaultValue^ then exit;
+  pValue^ := pDefaultValue^;
+  pEdit^.Text := FloatToStr(pValue^);
+  UpdateFlame;
+end;
+
 end.

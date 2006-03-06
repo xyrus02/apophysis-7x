@@ -61,6 +61,7 @@ object AdjustForm: TAdjustForm
     Top = 5
     Width = 23
     Height = 22
+    Hint = 'Undo'
     Flat = True
     Glyph.Data = {
       36040000424D3604000000000000360000002800000010000000100000000100
@@ -106,6 +107,7 @@ object AdjustForm: TAdjustForm
     Top = 5
     Width = 23
     Height = 22
+    Hint = 'Redo'
     Flat = True
     Glyph.Data = {
       36040000424D3604000000000000360000002800000010000000100000000100
@@ -170,62 +172,14 @@ object AdjustForm: TAdjustForm
   end
   object PageControl: TPageControl
     Left = 0
-    Top = 131
+    Top = 132
     Width = 388
-    Height = 130
+    Height = 129
     ActivePage = TabSheet1
     Align = alBottom
     TabOrder = 1
     object TabSheet1: TTabSheet
       Caption = 'Camera'
-      object btnZoom: TSpeedButton
-        Left = 4
-        Top = 4
-        Width = 61
-        Height = 21
-        Hint = 'Reset value'
-        Caption = 'Zoom'
-        Flat = True
-        ParentShowHint = False
-        ShowHint = True
-        OnClick = btnZoomClick
-      end
-      object btnXpos: TSpeedButton
-        Left = 4
-        Top = 28
-        Width = 61
-        Height = 21
-        Hint = 'Reset value'
-        Caption = 'X position'
-        Flat = True
-        ParentShowHint = False
-        ShowHint = True
-        OnClick = btnXposClick
-      end
-      object btnYpos: TSpeedButton
-        Left = 4
-        Top = 52
-        Width = 61
-        Height = 21
-        Hint = 'Reset value'
-        Caption = 'Y position'
-        Flat = True
-        ParentShowHint = False
-        ShowHint = True
-        OnClick = btnYposClick
-      end
-      object btnAngle: TSpeedButton
-        Left = 4
-        Top = 76
-        Width = 61
-        Height = 21
-        Hint = 'Reset value'
-        Caption = 'Rotation'
-        Flat = True
-        ParentShowHint = False
-        ShowHint = True
-        OnClick = btnAngleClick
-      end
       object scrollZoom: TScrollBar
         Left = 72
         Top = 7
@@ -307,8 +261,7 @@ object AdjustForm: TAdjustForm
         Width = 257
         Height = 15
         LargeChange = 1500
-        Max = 18000
-        Min = -18000
+        Max = 36000
         PageSize = 0
         SmallChange = 100
         TabOrder = 6
@@ -326,6 +279,74 @@ object AdjustForm: TAdjustForm
         OnExit = txtAngleExit
         OnKeyPress = txtAngleKeyPress
       end
+      object pnlZoom: TPanel
+        Left = 4
+        Top = 4
+        Width = 61
+        Height = 21
+        Cursor = crHandPoint
+        Hint = 'Click and drag to change value'
+        BevelOuter = bvLowered
+        Caption = 'Zoom'
+        ParentShowHint = False
+        ShowHint = True
+        TabOrder = 8
+        OnDblClick = DragPanelDblClick
+        OnMouseDown = DragPanelMouseDown
+        OnMouseMove = DragPanelMouseMove
+        OnMouseUp = DragPanelMouseUp
+      end
+      object pnlXpos: TPanel
+        Left = 4
+        Top = 28
+        Width = 61
+        Height = 21
+        Cursor = crHandPoint
+        Hint = 'Click and drag to change value'
+        BevelOuter = bvLowered
+        Caption = 'X position'
+        ParentShowHint = False
+        ShowHint = True
+        TabOrder = 9
+        OnDblClick = DragPanelDblClick
+        OnMouseDown = DragPanelMouseDown
+        OnMouseMove = DragPanelMouseMove
+        OnMouseUp = DragPanelMouseUp
+      end
+      object pnlYpos: TPanel
+        Left = 4
+        Top = 52
+        Width = 61
+        Height = 21
+        Cursor = crHandPoint
+        Hint = 'Click and drag to change value'
+        BevelOuter = bvLowered
+        Caption = 'Y position'
+        ParentShowHint = False
+        ShowHint = True
+        TabOrder = 10
+        OnDblClick = DragPanelDblClick
+        OnMouseDown = DragPanelMouseDown
+        OnMouseMove = DragPanelMouseMove
+        OnMouseUp = DragPanelMouseUp
+      end
+      object pnlAngle: TPanel
+        Left = 4
+        Top = 76
+        Width = 61
+        Height = 21
+        Cursor = crHandPoint
+        Hint = 'Click and drag to change value'
+        BevelOuter = bvLowered
+        Caption = 'Rotation'
+        ParentShowHint = False
+        ShowHint = True
+        TabOrder = 11
+        OnDblClick = DragPanelDblClick
+        OnMouseDown = DragPanelMouseDown
+        OnMouseMove = DragPanelMouseMove
+        OnMouseUp = DragPanelMouseUp
+      end
     end
     object TabSheet2: TTabSheet
       Caption = 'Rendering'
@@ -338,48 +359,40 @@ object AdjustForm: TAdjustForm
         AutoSize = False
         Caption = 'Background'
       end
-      object btnGamma: TSpeedButton
+      object pnlMasterScale: TPanel
+        Left = 232
+        Top = 76
+        Width = 73
+        Height = 21
+        Cursor = crHandPoint
+        Hint = 'Click and drag to change value'
+        Alignment = taLeftJustify
+        BevelOuter = bvLowered
+        Caption = ' Master Scale'
+        ParentShowHint = False
+        ShowHint = True
+        TabOrder = 9
+        OnDblClick = DragPanelDblClick
+        OnMouseDown = DragPanelMouseDown
+        OnMouseMove = DragPanelMouseMove
+        OnMouseUp = DragPanelMouseUp
+      end
+      object pnlGamma: TPanel
         Left = 4
         Top = 4
         Width = 61
         Height = 21
-        Hint = 'Reset value'
+        Cursor = crHandPoint
+        Hint = 'Click and drag to change value'
+        BevelOuter = bvLowered
         Caption = 'Gamma'
-        Flat = True
         ParentShowHint = False
         ShowHint = True
-        OnClick = btnGammaClick
-      end
-      object btnBritghtness: TSpeedButton
-        Left = 4
-        Top = 28
-        Width = 61
-        Height = 21
-        Hint = 'Reset value'
-        Caption = 'Brightness'
-        Flat = True
-        ParentShowHint = False
-        ShowHint = True
-        OnClick = btnBritghtnessClick
-      end
-      object btnVibrancy: TSpeedButton
-        Left = 4
-        Top = 52
-        Width = 61
-        Height = 21
-        Hint = 'Reset value'
-        Caption = 'Vibrancy'
-        Flat = True
-        ParentShowHint = False
-        ShowHint = True
-        OnClick = btnVibrancyClick
-      end
-      object Label1: TLabel
-        Left = 236
-        Top = 80
-        Width = 62
-        Height = 13
-        Caption = 'Master Scale'
+        TabOrder = 10
+        OnDblClick = DragPanelDblClick
+        OnMouseDown = DragPanelMouseDown
+        OnMouseMove = DragPanelMouseMove
+        OnMouseUp = DragPanelMouseUp
       end
       object scrollGamma: TScrollBar
         Left = 72
@@ -481,6 +494,40 @@ object AdjustForm: TAdjustForm
         OnExit = editPPUValidate
         OnKeyPress = editPPUKeyPress
       end
+      object pnlBrightness: TPanel
+        Left = 4
+        Top = 28
+        Width = 61
+        Height = 21
+        Cursor = crHandPoint
+        Hint = 'Click and drag to change value'
+        BevelOuter = bvLowered
+        Caption = 'Brightness'
+        ParentShowHint = False
+        ShowHint = True
+        TabOrder = 11
+        OnDblClick = DragPanelDblClick
+        OnMouseDown = DragPanelMouseDown
+        OnMouseMove = DragPanelMouseMove
+        OnMouseUp = DragPanelMouseUp
+      end
+      object pnlVibrancy: TPanel
+        Left = 4
+        Top = 52
+        Width = 61
+        Height = 21
+        Cursor = crHandPoint
+        Hint = 'Click and drag to change value'
+        BevelOuter = bvLowered
+        Caption = 'Vibrancy'
+        ParentShowHint = False
+        ShowHint = True
+        TabOrder = 12
+        OnDblClick = DragPanelDblClick
+        OnMouseDown = DragPanelMouseDown
+        OnMouseMove = DragPanelMouseMove
+        OnMouseUp = DragPanelMouseUp
+      end
     end
     object TabSheet3: TTabSheet
       Caption = 'Gradient'
@@ -499,7 +546,6 @@ object AdjustForm: TAdjustForm
         Height = 21
         Hint = 'Click for menu'
         Caption = 'Rotate'
-        Flat = True
         ParentShowHint = False
         ShowHint = True
         OnClick = btnMenuClick
@@ -682,7 +728,7 @@ object AdjustForm: TAdjustForm
         object GradientImage: TImage
           Left = 1
           Top = 1
-          Width = 380
+          Width = 378
           Height = 47
           Cursor = crHandPoint
           Align = alClient

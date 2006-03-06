@@ -1,6 +1,6 @@
 object frmPostProcess: TfrmPostProcess
-  Left = 38
-  Top = 43
+  Left = 61
+  Top = 77
   Width = 640
   Height = 534
   Caption = 'Post Render'
@@ -36,40 +36,75 @@ object frmPostProcess: TfrmPostProcess
       Height = 13
       Caption = 'Background Color'
     end
-    object Label2: TLabel
-      Left = 12
-      Top = 34
-      Width = 24
-      Height = 13
-      Caption = 'Filter'
+    object pnlFilter: TPanel
+      Left = 8
+      Top = 32
+      Width = 97
+      Height = 21
+      Cursor = crHandPoint
+      BevelOuter = bvLowered
+      Caption = 'Filter Radius'
+      TabOrder = 13
+      OnDblClick = DragPanelDblClick
+      OnMouseDown = DragPanelMouseDown
+      OnMouseMove = DragPanelMouseMove
+      OnMouseUp = DragPanelMouseUp
     end
-    object Label3: TLabel
-      Left = 172
-      Top = 12
-      Width = 35
-      Height = 13
-      Caption = 'Gamma'
+    object pnlVibrancy: TPanel
+      Left = 344
+      Top = 32
+      Width = 81
+      Height = 21
+      Cursor = crHandPoint
+      BevelOuter = bvLowered
+      Caption = 'Vibrancy'
+      TabOrder = 12
+      OnDblClick = DragPanelDblClick
+      OnMouseDown = DragPanelMouseDown
+      OnMouseMove = DragPanelMouseMove
+      OnMouseUp = DragPanelMouseUp
     end
-    object Label4: TLabel
-      Left = 332
-      Top = 34
-      Width = 45
-      Height = 13
-      Caption = 'Vibrancy:'
-    end
-    object Label5: TLabel
-      Left = 332
-      Top = 12
-      Width = 42
-      Height = 13
-      Caption = 'Contrast'
-    end
-    object Label6: TLabel
-      Left = 172
-      Top = 34
-      Width = 50
-      Height = 13
+    object pnlBrightness: TPanel
+      Left = 184
+      Top = 32
+      Width = 81
+      Height = 21
+      Cursor = crHandPoint
+      BevelOuter = bvLowered
       Caption = 'Brightness'
+      TabOrder = 10
+      OnDblClick = DragPanelDblClick
+      OnMouseDown = DragPanelMouseDown
+      OnMouseMove = DragPanelMouseMove
+      OnMouseUp = DragPanelMouseUp
+    end
+    object pnlContrast: TPanel
+      Left = 344
+      Top = 8
+      Width = 81
+      Height = 21
+      Cursor = crHandPoint
+      BevelOuter = bvLowered
+      Caption = 'Contrast'
+      TabOrder = 11
+      OnDblClick = DragPanelDblClick
+      OnMouseDown = DragPanelMouseDown
+      OnMouseMove = DragPanelMouseMove
+      OnMouseUp = DragPanelMouseUp
+    end
+    object pnlGamma: TPanel
+      Left = 184
+      Top = 8
+      Width = 81
+      Height = 21
+      Cursor = crHandPoint
+      BevelOuter = bvLowered
+      Caption = 'Gamma'
+      TabOrder = 9
+      OnDblClick = DragPanelDblClick
+      OnMouseDown = DragPanelMouseDown
+      OnMouseMove = DragPanelMouseMove
+      OnMouseUp = DragPanelMouseUp
     end
     object btnSave: TButton
       Left = 552
@@ -112,7 +147,7 @@ object frmPostProcess: TfrmPostProcess
     end
     object txtFilterRadius: TEdit
       Left = 104
-      Top = 30
+      Top = 32
       Width = 57
       Height = 21
       TabOrder = 2
@@ -124,9 +159,9 @@ object frmPostProcess: TfrmPostProcess
       Height = 21
       TabOrder = 3
     end
-    object txtVib: TEdit
+    object txtVibrancy: TEdit
       Left = 424
-      Top = 30
+      Top = 32
       Width = 57
       Height = 21
       TabOrder = 6
@@ -140,7 +175,7 @@ object frmPostProcess: TfrmPostProcess
     end
     object txtBrightness: TEdit
       Left = 264
-      Top = 30
+      Top = 32
       Width = 57
       Height = 21
       TabOrder = 4

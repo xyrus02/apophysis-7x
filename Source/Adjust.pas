@@ -63,13 +63,6 @@ type
     TabSheet3: TTabSheet;
     scrollAngle: TScrollBar;
     txtAngle: TEdit;
-    btnZoom: TSpeedButton;
-    btnXpos: TSpeedButton;
-    btnYpos: TSpeedButton;
-    btnAngle: TSpeedButton;
-    btnGamma: TSpeedButton;
-    btnBritghtness: TSpeedButton;
-    btnVibrancy: TSpeedButton;
     GradientPnl: TPanel;
     GradientImage: TImage;
     lblVal: TLabel;
@@ -130,8 +123,15 @@ type
     Bevel2: TBevel;
     N8: TMenuItem;
     mnuInstantPreview: TMenuItem;
-    Label1: TLabel;
     editPPU: TEdit;
+    pnlMasterScale: TPanel;
+    pnlZoom: TPanel;
+    pnlXpos: TPanel;
+    pnlYpos: TPanel;
+    pnlAngle: TPanel;
+    pnlGamma: TPanel;
+    pnlBrightness: TPanel;
+    pnlVibrancy: TPanel;
     procedure FormCreate(Sender: TObject);
     procedure FormClose(Sender: TObject; var Action: TCloseAction);
     procedure FormDestroy(Sender: TObject);
@@ -188,13 +188,6 @@ type
     procedure txtAngleEnter(Sender: TObject);
     procedure txtAngleExit(Sender: TObject);
     procedure txtAngleKeyPress(Sender: TObject; var Key: Char);
-    procedure btnZoomClick(Sender: TObject);
-    procedure btnXposClick(Sender: TObject);
-    procedure btnYposClick(Sender: TObject);
-    procedure btnAngleClick(Sender: TObject);
-    procedure btnGammaClick(Sender: TObject);
-    procedure btnBritghtnessClick(Sender: TObject);
-    procedure btnVibrancyClick(Sender: TObject);
 
     // --Z-- // gradient functions
     procedure cmbPaletteChange(Sender: TObject);
@@ -252,6 +245,14 @@ type
     procedure editPPUKeyPress(Sender: TObject; var Key: Char);
     procedure editPPUValidate(Sender: TObject);
 
+    procedure DragPanelMouseDown(Sender: TObject; Button: TMouseButton;
+      Shift: TShiftState; X, Y: Integer);
+    procedure DragPanelMouseMove(Sender: TObject; Shift: TShiftState; X,
+      Y: Integer);
+    procedure DragPanelMouseUp(Sender: TObject; Button: TMouseButton;
+      Shift: TShiftState; X, Y: Integer);
+    procedure DragPanelDblClick(Sender: TObject);
+
   private
     Resetting: boolean;
     Render: TRenderer;
@@ -259,6 +260,11 @@ type
     EditBoxValue: string;
 
     cp: TControlPoint;
+
+    pnlDragMode, pnlDragged, pnlMM: boolean;
+    pnlDragPos, pnlDragOld: integer;
+    pnlDragValue: double;
+    mousepos: TPoint;
 
   private // gradient stuff
     Palette, BackupPal: TColorMap;
@@ -353,7 +359,8 @@ begin
   scrollBrightness.Position := trunc(cp.Brightness * 100);
   scrollVibrancy.Position := trunc(cp.vibrancy * 100);
   scrollZoom.Position := trunc(cp.zoom * 1000);
-  ScrollAngle.Position := Trunc(cp.FAngle * 18000.0 / PI) mod scrollAngle.Max;
+//  ScrollAngle.Position := Trunc(cp.FAngle * 18000.0 / PI) mod scrollAngle.Max;
+  scrollAngle.Position := Trunc((cp.FAngle + pi)* 18000.0 / PI) mod 36000;
 
   if (abs(cp.Center[0]) < 1000) and (abs(cp.Center[1]) < 1000) then begin
     scrollCenterX.Position := trunc(cp.Center[0] * 1000);
@@ -926,7 +933,7 @@ end;
 
 procedure TAdjustForm.scrollAngleChange(Sender: TObject);
 begin
-  cp.FAngle := scrollAngle.Position * PI / 18000.0;
+  cp.FAngle := (scrollAngle.Position - 18000) * PI / 18000.0;
   txtAngle.text := FloatToStr(cp.FAngle * 180 / PI);
   DrawPreview;
 end;
@@ -950,9 +957,9 @@ begin
   begin
     key := #0;
     try
-      v := Trunc(StrToFloat(txtAngle.Text) * 100) mod (scrollAngle.Max*2);
-      if v > scrollAngle.Max then v := v - scrollAngle.Max*2
-      else if v < scrollAngle.Min then v := v + scrollAngle.Max*2;
+      v := Trunc(StrToFloat(txtAngle.Text) * 100) mod scrollAngle.Max - 18000;
+      //if v > scrollAngle.Max then v := v - scrollAngle.Max*2
+      if v < scrollAngle.Min then v := v + scrollAngle.Max;
       ScrollAngle.Position := v;
       UpdateFlame;
       EditBoxValue := txtAngle.Text;
@@ -975,48 +982,6 @@ begin
   except on EConvertError do
       txtAngle.Text := FloatToStr(cp.FAngle * 180 / PI);
   end;
-end;
-
-procedure TAdjustForm.btnZoomClick(Sender: TObject);
-begin
-  scrollZoom.Position := 0;
-  UpdateFlame;
-end;
-
-procedure TAdjustForm.btnXposClick(Sender: TObject);
-begin
-  scrollCenterX.Position := 0;
-  UpdateFlame;
-end;
-
-procedure TAdjustForm.btnYposClick(Sender: TObject);
-begin
-  scrollCenterY.Position := 0;
-  UpdateFlame;
-end;
-
-procedure TAdjustForm.btnAngleClick(Sender: TObject);
-begin
-  scrollAngle.Position := 0;
-  UpdateFlame;
-end;
-
-procedure TAdjustForm.btnGammaClick(Sender: TObject);
-begin
-  scrollGamma.Position := 400;
-  UpdateFlame;
-end;
-
-procedure TAdjustForm.btnBritghtnessClick(Sender: TObject);
-begin
-  scrollBrightness.Position := 400;
-  UpdateFlame;
-end;
-
-procedure TAdjustForm.btnVibrancyClick(Sender: TObject);
-begin
-  scrollVibrancy.Position := 100;
-  UpdateFlame;
 end;
 
 // --Z-- // gradient stuff implementation --------------------------------------
@@ -1906,6 +1871,170 @@ begin
   end;
   MainForm.UpdateUndo;
   cp.pixels_per_unit := v;
+  UpdateFlame;
+end;
+
+// -----------------------------------------------------------------------------
+
+procedure TAdjustForm.DragPanelMouseDown(Sender: TObject;
+  Button: TMouseButton; Shift: TShiftState; X, Y: Integer);
+begin
+  if Button <> mbLeft then exit;
+
+  if (Sender = pnlMasterScale) then
+    pnlDragValue := cp.pixels_per_unit / 10
+  else if (Sender = pnlZoom) then
+    pnlDragValue := cp.zoom
+  else if (Sender = pnlXpos) then
+    pnlDragValue := cp.Center[0]
+  else if (Sender = pnlYpos) then
+    pnlDragValue := cp.Center[1]
+  else if (Sender = pnlAngle) then
+    pnlDragValue := cp.FAngle
+  else if (Sender = pnlGamma) then
+    pnlDragValue := cp.gamma
+  else if (Sender = pnlBrightness) then
+    pnlDragValue := cp.brightness
+  else if (Sender = pnlVibrancy) then
+    pnlDragValue := cp.vibrancy
+  else assert(false);
+
+  pnlDragMode := true;
+  pnlDragPos := 0;
+  pnlDragOld := x;
+  pnlMM := false;
+  SetCaptureControl(TControl(Sender));
+  Screen.Cursor := crHSplit;
+  GetCursorPos(mousepos); // hmmm
+  pnlDragged := false;
+end;
+
+procedure TAdjustForm.DragPanelMouseMove(Sender: TObject; Shift: TShiftState;
+  X, Y: Integer);
+var
+  v: double;
+begin
+  if pnlMM then // hack: to skip MouseMove event
+  begin
+    pnlMM:=false;
+  end
+  else
+  if pnlDragMode and (x <> pnlDragOld) then
+  begin
+    Inc(pnlDragPos, x - pnlDragOld);
+
+    if GetKeyState(VK_MENU) < 0 then v := 100000
+    else if GetKeyState(VK_CONTROL) < 0 then v := 10000
+    else if GetKeyState(VK_SHIFT) < 0 then v := 100
+    else v := 1000;
+
+    v := Round6(pnlDragValue + pnlDragPos / v);
+
+    SetCursorPos(MousePos.x, MousePos.y); // hmmm
+    pnlMM:=true;
+
+    if (Sender = pnlMasterScale) then
+    begin
+      v := v * 10;
+      if v <= 0.1 then v := 0.1;
+      cp.pixels_per_unit := v;
+      editPPU.Text := FloatToStr(v);
+    end
+    else if (Sender = pnlZoom) then
+    begin
+      scrollZoom.Position := trunc(v * 1000);
+    end
+    else if (Sender = pnlXpos) then
+    begin
+      scrollCenterX.Position := trunc(v * 1000);
+    end
+    else if (Sender = pnlYpos) then
+    begin
+      scrollCenterY.Position := trunc(v * 1000);
+    end
+    else if (Sender = pnlAngle) then
+    begin
+      scrollAngle.Position := Trunc((v + pi)* 18000.0 / PI) mod 36000;
+    end
+    else if (Sender = pnlGamma) then
+    begin
+      scrollGamma.Position := trunc(v * 100);
+    end
+    else if (Sender = pnlBrightness) then
+    begin
+      scrollBrightness.Position := trunc(v * 100);
+    end
+    else if (Sender = pnlVibrancy) then
+    begin
+      scrollVibrancy.Position := trunc(v * 100);
+    end;
+    //pEdit^.Text := FloatToStr(v);
+    //pEdit.Refresh;
+    pnlDragged := True;
+    DrawPreview;
+  end;
+end;
+
+procedure TAdjustForm.DragPanelMouseUp(Sender: TObject; Button: TMouseButton;
+  Shift: TShiftState; X, Y: Integer);
+begin
+  if Button <> mbLeft then exit;
+
+  if pnlDragMode then
+  begin
+    SetCaptureControl(nil);
+    pnlDragMode := false;
+    Screen.Cursor := crDefault;
+
+    if pnlDragged then
+    begin
+      UpdateFlame;
+      pnlDragged := False;
+    end;
+  end;
+end;
+
+procedure TAdjustForm.DragPanelDblClick(Sender: TObject);
+var
+  pValue: ^double;
+begin
+  if (Sender = pnlMasterScale) then
+  begin
+    pValue := @cp.pixels_per_unit;
+    if pValue^ = 32 then exit;
+    pValue^ := 32;
+    editPPU.Text := FloatToStr(pValue^);
+  end
+  else if (Sender = pnlZoom) then
+  begin
+    scrollZoom.Position := 0;
+  end
+  else if (Sender = pnlXpos) then
+  begin
+    scrollCenterX.Position := 0;
+  end
+  else if (Sender = pnlYpos) then
+  begin
+    scrollCenterY.Position := 0;
+  end
+  else if (Sender = pnlAngle) then
+  begin
+    scrollAngle.Position := 18000;
+  end
+  else if (Sender = pnlGamma) then
+  begin
+    scrollGamma.Position := 400;
+  end
+  else if (Sender = pnlBrightness) then
+  begin
+    scrollBrightness.Position := 400;
+  end
+  else if (Sender = pnlVibrancy) then
+  begin
+    scrollVibrancy.Position := 100;
+  end
+  else assert(false);
+
   UpdateFlame;
 end;
 

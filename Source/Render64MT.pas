@@ -42,9 +42,6 @@ type
     Buckets: TBucketArray;
     ColorMap: TColorMapArray;
 
-    FinalXform: ^TXform;
-    UseFinalXform: boolean;
-
     camX0, camX1, camY0, camY1, // camera bounds
     camW, camH,                 // camera sizes
     Xsize, Ysize: double;
@@ -239,6 +236,8 @@ begin
   CreateCamera;
 
   CreateColorMap;
+  
+  fcp.Prepare;
 end;
 
 

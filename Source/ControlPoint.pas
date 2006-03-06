@@ -24,8 +24,6 @@ uses
   Classes, Windows, Cmap, XForm, XFormMan;
 
 const
-  EPS = 1E-10;
-
   NXFORMS = 100;
 
   SUB_BATCH_SIZE = 10000;
@@ -84,17 +82,15 @@ type
   TPointsArray = array of TCPpoint;
   TPointsXYArray = array of TXYpoint;
 
-  T2Cpoint = record
-    x, y, c1, c2: double;
-  end;
   P2Cpoint = ^T2Cpoint;
   T2CPointsArray = array of T2Cpoint;
 
   TControlPoint = class
   public
     xform: array[0..NXFORMS] of TXForm;
-//    finalxform: TXForm;
+    finalXform: ^TXForm;
     finalXformEnabled: boolean;
+    useFinalXform: boolean;
     variation: TVariation;
     cmap: TColorMap;
     cmapindex: integer;
@@ -129,7 +125,6 @@ type
     FAngle: Double;
     FTwoColorDimensions: Boolean;
   private
-    procedure PreparePropTable;
     function getppux: double;
     function getppuy: double;
 
@@ -154,7 +149,8 @@ type
     procedure IterateXYC(NrPoints: integer; var Points: TPointsArray);
     procedure IterateXYCC(NrPoints: integer; var Points: T2CPointsArray);
 
-    procedure Testiterate(NrPoints: integer; var Points: TPointsArray);
+    procedure Prepare;
+//    procedure Testiterate(NrPoints: integer; var Points: TPointsArray);
 
     function Clone: TControlPoint;
     procedure Copy(cp1: TControlPoint);
@@ -215,7 +211,6 @@ begin
   for i := 0 to NXFORMS do begin
     xform[i] := TXForm.Create;
   end;
-//  finalxform := TXForm.Create;
 
   pulse[0][0] := 0;
   pulse[0][1] := 60;
@@ -255,6 +250,8 @@ begin
   white_level := 200;
 
   FTwoColorDimensions := False;
+
+  finalXformEnabled := false;
 end;
 
 destructor TControlPoint.Destroy;
@@ -263,14 +260,13 @@ var
 begin
   for i := 0 to NXFORMS - 1 do
     xform[i].Free;
-//  finalxform.Free;
 
   inherited;
 end;
 
-procedure TControlPoint.PreparePropTable;
+procedure TControlPoint.Prepare;
 var
-  i: Integer;
+  i, n: Integer;
   propsum: double;
   LoopValue: double;
   j: integer;
@@ -279,7 +275,12 @@ begin
   SetLength(PropTable, PROP_TABLE_SIZE);
 
   totValue := 0;
-  for i := 0 to NXFORMS - 1 do begin
+  n := NumXforms;
+  finalXform := @xform[n];
+  finalXform.Prepare;
+  useFinalXform := FinalXformEnabled and HasFinalXform;
+  for i := 0 to n - 1 do begin
+    xform[i].Prepare;
     totValue := totValue + xform[i].density;
   end;
 
@@ -290,10 +291,11 @@ begin
     repeat
       inc(j);
       propsum := propsum + xform[j].density;
-    until (propsum > LoopValue) or (j = NXFORMS - 1);
+    until (propsum > LoopValue) or (j = n - 1);
     PropTable[i] := @xform[j];
     LoopValue := LoopValue + TotValue / PROP_TABLE_SIZE;
   end;
+
 end;
 
 (*
@@ -534,25 +536,33 @@ procedure TControlPoint.IterateXY(NrPoints: integer; var Points: TPointsXYArray)
 var
   i: Integer;
   px, py: double;
-  CurrentPoint: PXYPoint;
+  pPoint: PXYPoint;
 begin
   px := 2 * random - 1;
   py := 2 * random - 1;
 
-  PreparePropTable;
-
-  for i := 0 to NXFORMS - 1 do
-    xform[i].prepare;
+//  PreparePropTable;
+//  for i := 0 to NXFORMS do xform[i].prepare;
 
   try
     for i := 0 to FUSE do
       PropTable[Random(PROP_TABLE_SIZE)].NextPointXY(px,py);
 
+    pPoint := @Points[0];
+if UseFinalXform then
     for i := 0 to NrPoints - 1 do begin
       PropTable[Random(PROP_TABLE_SIZE)].NextPointXY(px,py);
-      CurrentPoint := @Points[i];
-      CurrentPoint.X := px;
-      CurrentPoint.Y := py;
+      pPoint^.X := px;
+      pPoint^.Y := py;
+      finalXform^.NextPointXY(pPoint^.X, pPoint^.y);
+      Inc(pPoint);
+    end
+else
+    for i := 0 to NrPoints - 1 do begin
+      PropTable[Random(PROP_TABLE_SIZE)].NextPointXY(px,py);
+      pPoint.X := px;
+      pPoint.Y := py;
+      Inc(pPoint);
     end
   except
     on EMathError do begin
@@ -562,31 +572,53 @@ begin
 end;
 
 procedure TControlPoint.IterateXYC(NrPoints: integer; var Points: TPointsArray);
-{ Variations for Draves conpatibility }
 var
   i: Integer;
-  px, py, pc: double;
-  CurrentPoint: PCPPoint;
+  p: TCPPoint;
+  pPoint: PCPPoint;
 begin
-  px := 2 * random - 1;
-  py := 2 * random - 1;
-  pc := random;
+{$if false}
+  p.x := 2 * random - 1;
+  p.y := 2 * random - 1;
+  p.c := random;
+{$else}
+asm
+    fld1
+    call    System.@RandExt
+    fadd    st, st
+    fsub    st, st(1)
+    fstp    qword ptr [p.x]
+    call    System.@RandExt
+    fadd    st, st
+    fsubrp  st(1), st
+    fstp    qword ptr [p.y]
+    call    System.@RandExt
+    fstp    qword ptr [p.c]
+end;
+{$ifend}
 
-  PreparePropTable;
-
-  for i := 0 to NXFORMS - 1 do
-    xform[i].prepare;
+//  PreparePropTable;
+//  for i := 0 to NXFORMS do xform[i].prepare;
 
   try
     for i := 0 to FUSE do
-      PropTable[Random(PROP_TABLE_SIZE)].NextPoint(px,py,pc);
+      PropTable[Random(PROP_TABLE_SIZE)].NextPoint(p);
 
+    pPoint := @Points[0];
+
+if UseFinalXform then
     for i := 0 to NrPoints - 1 do begin
-      PropTable[Random(PROP_TABLE_SIZE)].NextPoint(px,py,pc);
-      CurrentPoint := @Points[i];
-      CurrentPoint.X := px;
-      CurrentPoint.Y := py;
-      CurrentPoint.C := pc;
+      PropTable[Random(PROP_TABLE_SIZE)].NextPoint(p);
+      finalXform^.NextPointTo(p, pPoint^);
+      Inc(pPoint);
+    end
+else
+    for i := 0 to NrPoints - 1 do begin
+      PropTable[Random(PROP_TABLE_SIZE)].NextPoint(p);
+      pPoint^.x := p.x;
+      pPoint^.y := p.y;
+      pPoint^.c := p.c;
+      Inc(pPoint);
     end
   except
     on EMathError do begin
@@ -596,6 +628,7 @@ begin
 end;
 
 ///////////////////////////////////////////////////////////////////////////////
+{
 procedure TControlPoint.Testiterate(NrPoints: integer; var Points: TPointsArray);
 var
   i: Integer;
@@ -640,35 +673,46 @@ begin
     end
   end;
 end;
-
+}
 
 procedure TControlPoint.IterateXYCC(NrPoints: integer; var Points: T2CPointsArray);
 var
   i: Integer;
-  px, py, pc1, pc2: double;
+  //px, py, pc1, pc2: double;
+  p: T2CPoint;
   CurrentPoint: P2Cpoint;
 begin
-  px := 2 * random - 1;
-  py := 2 * random - 1;
-  pc1 := random;
-  pc2 := random;
+  p.x := 2 * random - 1;
+  p.y := 2 * random - 1;
+  p.c1 := random;
+  p.c2 := random;
 
-  PreparePropTable;
-
-  for i := 0 to NXFORMS - 1 do
-    xform[i].prepare;
+//  PreparePropTable;
+//  for i := 0 to NXFORMS do xform[i].prepare;
 
   try
     for i := 0 to FUSE do
-      PropTable[Random(PROP_TABLE_SIZE)].NextPoint2C(px, py, pc1, pc2);
+      PropTable[Random(PROP_TABLE_SIZE)].NextPoint2C(p);//px, py, pc1, pc2);
 
+    CurrentPoint := @Points[0];
+if UseFinalXform then
     for i := 0 to NrPoints - 1 do begin
-      PropTable[Random(PROP_TABLE_SIZE)].NextPoint2C(px, py, pc1, pc2);
-      CurrentPoint := @Points[i];
-      CurrentPoint.X := px;
-      CurrentPoint.Y := py;
-      CurrentPoint.C1 := pc1;
-      CurrentPoint.C2 := pc2;
+      PropTable[Random(PROP_TABLE_SIZE)].NextPoint2C(p);//px, py, pc1, pc2);
+      CurrentPoint.X := p.x;
+      CurrentPoint.Y := p.y;
+      CurrentPoint.C1 := p.c1;
+      CurrentPoint.C2 := p.c2;
+      finalXform^.NextPoint2C(CurrentPoint^);
+      Inc(CurrentPoint);
+    end
+else
+    for i := 0 to NrPoints - 1 do begin
+      PropTable[Random(PROP_TABLE_SIZE)].NextPoint2C(p);
+      CurrentPoint.X := p.x;
+      CurrentPoint.Y := p.y;
+      CurrentPoint.C1 := p.c1;
+      CurrentPoint.C2 := p.c2;
+      Inc(CurrentPoint);
     end
   except
     on EMathError do begin
@@ -680,7 +724,7 @@ end;
 
 function TControlPoint.BlowsUp(NrPoints: integer): boolean;
 var
-  i: Integer;
+  i, n: Integer;
   px, py: double;
   minx, maxx, miny, maxy: double;
   Points: TPointsXYArray;
@@ -688,25 +732,25 @@ var
 begin
   Result := false;
 
-  SetLength(Points, SUB_BATCH_SIZE);
+  n := min(SUB_BATCH_SIZE, NrPoints);
+  SetLength(Points, n);
 
   px := 2 * random - 1;
   py := 2 * random - 1;
 
-  PreparePropTable;
-
-  for i := 0 to NXFORMS - 1 do
-    xform[i].prepare;
+  Prepare;
 
   try
     for i := 0 to FUSE do
       PropTable[Random(PROP_TABLE_SIZE)].NextPointXY(px,py);
 
-    for i := 0 to NrPoints - 1 do begin
+    CurrentPoint := @Points[0];
+    for i := 0 to n-1 do begin
       PropTable[Random(PROP_TABLE_SIZE)].NextPointXY(px,py);
-      CurrentPoint := @Points[i];
       CurrentPoint.X := px;
       CurrentPoint.Y := py;
+      Inc(CurrentPoint);
+      // random CPs don't use finalXform...
     end;
   except
     on EMathError do begin
@@ -720,7 +764,7 @@ begin
   maxx := -1E10;
   miny := 1E10;
   maxy := -1E10;
-  for i := 0 to SUB_BATCH_SIZE - 1 do begin
+  for i := 0 to n-1 do begin
     minx := min(minx, Points[i].x);
     maxx := max(maxx, Points[i].x);
     miny := min(miny, Points[i].y);
@@ -1085,7 +1129,7 @@ end;
 
 procedure TControlPoint.CalcBoundbox;
 var
-  Points: TPointsArray;
+  Points: TPointsXYArray;
   i, j: integer;
   deltax, minx, maxx: double;
   cntminx, cntmaxx: integer;
@@ -1108,7 +1152,18 @@ begin
       1: iterateXYC(SUB_BATCH_SIZE, points);
     end;
 }
-    IterateXYC(SUB_BATCH_SIZE, points);
+    Prepare;
+
+    IterateXY(SUB_BATCH_SIZE, points);
+
+{    if finalXformEnabled and HasFinalXform then begin
+     try
+      finalXform := @xform[NumXforms];
+      for i := 0 to SUB_BATCH_SIZE - 1 do
+        finalXform.NextPoint(points[i]);
+     except
+     end
+    end;}
 
     LimitOutSidePoints := Round(0.05 * SUB_BATCH_SIZE);
 
@@ -1678,12 +1733,9 @@ begin
   begin
     Result := (c[0,0]<>1) or (c[0,1]<>0) or(c[1,0]<>0) or (c[1,1]<>1) or (c[2,0]<>0) or (c[2,1]<>0) or
               (p[0,0]<>1) or (p[0,1]<>0) or(p[1,0]<>0) or (p[1,1]<>1) or (p[2,0]<>0) or (p[2,1]<>0) or
-              (symmetry <> 1);
+              (symmetry <> 1) or (vars[0] <> 1);
     if Result = false then
-    begin
-      Result := Result or (vars[0] <> 1);
       for i := 1 to NRVAR-1 do Result := Result or (vars[i] <> 0);
-    end
   end;
 end;
 
