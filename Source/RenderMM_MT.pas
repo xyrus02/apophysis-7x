@@ -84,6 +84,9 @@ type
     procedure SaveImage(const FileName: String); override;
 
     procedure Render; override;
+    procedure Stop; override;
+
+    procedure Pause(paused: boolean); override;
 
     property NrOfTreads: integer
         read FNrOfTreads
@@ -134,20 +137,7 @@ begin
   t1 := gutter_width / (oversample * ppuy);
   corner_x := fcp.center[0] - image_width / ppux / 2.0;
   corner_y := fcp.center[1] - image_height / ppuy / 2.0;
-{
-  bounds[0] := corner0 - t0;
-  bounds[1] := corner1 - t1 + shift;
-  bounds[2] := corner0 + image_width / ppux + t0;
-  bounds[3] := corner1 + image_height / ppuy + t1; //+ shift;
-  if abs(bounds[2] - bounds[0]) > 0.01 then
-    size[0] := 1.0 / (bounds[2] - bounds[0])
-  else
-    size[0] := 1;
-  if abs(bounds[3] - bounds[1]) > 0.01 then
-    size[1] := 1.0 / (bounds[3] - bounds[1])
-  else
-    size[1] := 1;
-}
+
   camX0 := corner_x - t0;
   camY0 := corner_y - t1 + shift;
   camX1 := corner_x + image_width / ppux + t0;
@@ -220,8 +210,6 @@ end;
 
 ///////////////////////////////////////////////////////////////////////////////
 procedure TRendererMM64_MT.InitValues;
-var
-  i, n: integer;
 begin
   image_height := fcp.Height;
   image_Width := fcp.Width;
@@ -331,6 +319,31 @@ begin
   end;
 
   Progress(1);
+end;
+
+///////////////////////////////////////////////////////////////////////////////
+procedure TRendererMM64_MT.Stop;
+var
+  i: integer;
+begin
+  for i := 0 to NrOfTreads - 1 do
+    WorkingThreads[i].Terminate;
+
+  inherited;
+end;
+
+procedure TRendererMM64_MT.Pause(paused: boolean);
+var
+  i: integer;
+begin
+  if paused then begin
+    for i := 0 to NrOfTreads - 1 do
+      WorkingThreads[i].Suspend;
+  end
+  else begin
+    for i := 0 to NrOfTreads - 1 do
+      WorkingThreads[i].Resume;
+  end;
 end;
 
 ///////////////////////////////////////////////////////////////////////////////

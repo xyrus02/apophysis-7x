@@ -250,9 +250,6 @@ end;
 
 procedure TRenderForm.FormDestroy(Sender: TObject);
 begin
-//  if assigned(Renderer) then Renderer.Terminate;
-//  if assigned(Renderer) then Renderer.WaitFor;
-//  if assigned(Renderer) then Renderer.Free;
   if assigned(Renderer) then begin
     Renderer.Terminate;
     Renderer.WaitFor;
@@ -336,8 +333,12 @@ begin
   btnCancel.Caption := 'Stop';
   StartTime := Now;
 //  Remaining := 365;
-  if Assigned(Renderer) then Renderer.Terminate;
-  if Assigned(Renderer) then Renderer.WaitFor;
+  if Assigned(Renderer) then begin
+    Renderer.Terminate;
+    Renderer.WaitFor;
+    Renderer.Free;
+    Renderer := nil; //?
+  end;
   if not Assigned(Renderer) then
   begin
     // disable screensaver
@@ -475,6 +476,10 @@ procedure TRenderForm.btnCancelClick(Sender: TObject);
 begin
   if Assigned(Renderer) then
   begin
+    if Renderer.Suspended then begin
+      Renderer.Resume;
+      btnPause.caption := 'Pause';
+    end;
     Renderer.Terminate;
     Renderer.WaitFor; // --?--
   end
@@ -529,10 +534,10 @@ procedure TRenderForm.btnPauseClick(Sender: TObject);
 begin
   if Assigned(Renderer) then
     if Renderer.Suspended = false then begin
-      renderer.suspend;
+      renderer.Suspend;
       btnPause.caption := 'Resume';
     end else begin
-      renderer.resume;
+      renderer.Resume;
       btnPause.caption := 'Pause';
     end;
 end;

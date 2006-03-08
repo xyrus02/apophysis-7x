@@ -210,8 +210,6 @@ end;
 
 ///////////////////////////////////////////////////////////////////////////////
 procedure TRenderer64.InitValues;
-var
-  i, n: integer;
 begin
   InitBuffers;
   CreateCamera;

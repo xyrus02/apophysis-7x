@@ -208,8 +208,6 @@ end;
 
 ///////////////////////////////////////////////////////////////////////////////
 procedure TRendererMM64.InitValues;
-var
-  i: integer;
 begin
   image_height := fcp.Height;
   image_Width := fcp.Width;

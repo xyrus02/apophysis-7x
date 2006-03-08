@@ -73,9 +73,10 @@ type
 
     function  GetImage: TBitmap; override;
 
+    procedure Render; override;
     procedure Stop; override;
 
-    procedure Render; override;
+    procedure Pause(paused: boolean); override;
 
     procedure UpdateImage(CP: TControlPoint); override;
     procedure SaveImage(const FileName: String); override;
@@ -133,20 +134,7 @@ begin
   t3 := (2 * max_gutter_width - gutter_width) / (oversample * ppuy);
   corner_x := fcp.center[0] - fcp.Width / ppux / 2.0;
   corner_y := fcp.center[1] - fcp.Height / ppuy / 2.0;
-{
-  bounds[0] := corner0 - t0;
-  bounds[1] := corner1 - t1 + shift;
-  bounds[2] := corner0 + fcp.Width / ppux + t2;
-  bounds[3] := corner1 + fcp.Height / ppuy + t3; //+ shift;
-  if abs(bounds[2] - bounds[0]) > 0.01 then
-    size[0] := 1.0 / (bounds[2] - bounds[0])
-  else
-    size[0] := 1;
-  if abs(bounds[3] - bounds[1]) > 0.01 then
-    size[1] := 1.0 / (bounds[3] - bounds[1])
-  else
-    size[1] := 1;
-}
+
   camX0 := corner_x - t0;
   camY0 := corner_y - t1 + shift;
   camX1 := corner_x + fcp.Width / ppux + t2;
@@ -240,7 +228,6 @@ begin
   fcp.Prepare;
 end;
 
-
 ///////////////////////////////////////////////////////////////////////////////
 procedure TRenderer64MT.SetPixelsMT;
 var
@@ -287,10 +274,24 @@ procedure TRenderer64MT.Stop;
 var
   i: integer;
 begin
-  inherited;
-
   for i := 0 to NrOfTreads - 1 do
     WorkingThreads[i].Terminate;
+
+  inherited;
+end;
+
+procedure TRenderer64MT.Pause(paused: boolean);
+var
+  i: integer;
+begin
+  if paused then begin
+    for i := 0 to NrOfTreads - 1 do
+      WorkingThreads[i].Suspend;
+  end
+  else begin
+    for i := 0 to NrOfTreads - 1 do
+      WorkingThreads[i].Resume;
+  end;
 end;
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -346,19 +347,11 @@ end;
 function TRenderer64MT.NewThread: TBucketFillerThread;
 begin
   Result := TBucketFillerThread.Create(fcp);
+  assert(Result<>nil);
   Result.BucketWidth := BucketWidth;
   Result.BucketHeight := BucketHeight;
   Result.Buckets := @Buckets;
-{
-  Result.size[0] := size[0];
-  Result.size[1] := size[1];
-  Result.bounds[0] := Bounds[0];
-  Result.bounds[1] := Bounds[1];
-  Result.bounds[2] := Bounds[2];
-  Result.bounds[3] := Bounds[3];
-  Result.RotationCenter[0] := FCP.Center[0];
-  Result.RotationCenter[1] := FCP.Center[1];
-}
+
   Result.camX0 := camX0;
   Result.camY0 := camY0;
   Result.camW := camW;

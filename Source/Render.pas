@@ -74,6 +74,7 @@ type
     procedure SaveImage(const FileName: String); virtual;
 
     procedure Stop; virtual;
+    procedure Pause(paused: boolean); virtual;
 
     property OnProgress: TOnProgress
         read FOnProgress
@@ -283,6 +284,11 @@ end;
 procedure TBaseRenderer.Stop;
 begin
   FStop := True;
+end;
+
+procedure TBaseRenderer.Pause(paused: boolean);
+begin
+
 end;
 
 ///////////////////////////////////////////////////////////////////////////////

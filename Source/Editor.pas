@@ -860,7 +860,7 @@ var
 begin
   if (t = Transforms) then
   begin
-    assert(EnableFinalXform);
+    assert(cp.HasFinalXForm or EnableFinalXform);
     MainForm.UpdateUndo;
     EnableFinalXform := false;
     cp.finalXformEnabled := false;

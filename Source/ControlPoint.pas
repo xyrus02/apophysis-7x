@@ -276,6 +276,8 @@ begin
 
   totValue := 0;
   n := NumXforms;
+  assert(n > 0);
+
   finalXform := @xform[n];
   finalXform.Prepare;
   useFinalXform := FinalXformEnabled and HasFinalXform;

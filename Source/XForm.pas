@@ -29,6 +29,22 @@ type
 
 type
   TXForm = class
+  public
+    vars: array of double; // {normalized} interp coefs between variations
+    c: array[0..2, 0..1] of double;      // the coefs to the affine part of the function
+    p: array[0..2, 0..1] of double;      // post-transform coefs!
+    density: double;                     // prob is this function is chosen
+    color: double;                       // color coord for this function. 0 - 1
+    color2: double;                      // Second color coord for this function. 0 - 1
+    symmetry: double;
+    c00, c01, c10, c11, c20, c21: double;
+    p00, p01, p10, p11, p20, p21: double;
+
+//    nx,ny,x,y: double;
+//    script: TatPascalScripter;
+
+    Orientationtype: integer;
+
   private
     FNrFunctions: Integer;
     FFunctionList: array of TCalcMethod;
@@ -92,21 +108,6 @@ type
     procedure AddRegVariations;
 
   public
-    vars: array of double; // {normalized} interp coefs between variations
-    c: array[0..2, 0..1] of double;      // the coefs to the affine part of the function
-    p: array[0..2, 0..1] of double;      // post-transform coefs!
-    density: double;                     // prob is this function is chosen
-    color: double;                       // color coord for this function. 0 - 1
-    color2: double;                      // Second color coord for this function. 0 - 1
-    symmetry: double;
-    c00, c01, c10, c11, c20, c21: double;
-    p00, p01, p10, p11, p20, p21: double;
-
-//    nx,ny,x,y: double;
-//    script: TatPascalScripter;
-
-    Orientationtype: integer;
-
     constructor Create;
     destructor Destroy; override;
     procedure Clear;
@@ -141,7 +142,7 @@ uses
 const
   EPS: double = 1E-6;
 
-procedure SinCos(const Theta: double; var Sin, Cos: double); // I'm not sure, but maybe it'll help...
+procedure SinCos(const Theta: double; var Sin, Cos: double); // to avoid using 'extended' type
 asm
     FLD     Theta
     FSINCOS
@@ -298,15 +299,26 @@ begin
 end;
 
 procedure TXForm.PrecalcAngle;
+{$ifndef _ASM_}
+begin
+  FAngle := arctan2(FTx, FTy);
+{$else}
 asm
     fld     qword ptr [eax + FTx]
     fld     qword ptr [eax + FTy]
     fpatan
     fstp    qword ptr [eax + FAngle]
-    fwait
+    //fwait
+{$endif}
 end;
 
 procedure TXForm.PrecalcSinCos;
+{$ifndef _ASM_}
+begin
+  FLength := sqrt(sqr(FTx) + sqr(FTy)) + EPS;
+  FSinA := FTx / FLength;
+  FCosA := FTy / FLength;
+{$else}
 asm
     fld     qword ptr [eax + FTx]
     fld     qword ptr [eax + FTy]
@@ -322,10 +334,18 @@ asm
     fstp    qword ptr [eax + FLength]
     fstp    qword ptr [eax + FCosA]
     fstp    qword ptr [eax + FSinA]
-    fwait
+    //fwait
+{$endif}
 end;
 
 procedure TXForm.PrecalcAll;
+{$ifndef _ASM_}
+begin
+  FLength := sqrt(sqr(FTx) + sqr(FTy)) + EPS;
+  FSinA := FTx / FLength;
+  FCosA := FTy / FLength;
+  FAngle := arctan2(FTx, FTy);
+{$else}
 asm
     fld     qword ptr [eax + FTx]
     fld     qword ptr [eax + FTy]
@@ -345,12 +365,16 @@ asm
     fstp    qword ptr [eax + FLength]
     fstp    qword ptr [eax + FCosA]
     fstp    qword ptr [eax + FSinA]
-    fwait
+    //fwait
+{$endif}
 end;
 
 procedure TXForm.DoPostTransform;
-//  x := p00 * FPx + p10 * FPy + p20;
-//  y := p01 * FPx + p11 * FPy + p21;
+{$ifndef _ASM_}
+begin
+  x := p00 * FPx + p10 * FPy + p20;
+  y := p01 * FPx + p11 * FPy + p21;
+{$else}
 asm
     fld     qword ptr [eax + FPy]
     fld     qword ptr [eax + FPx]
@@ -368,6 +392,7 @@ asm
     fadd    qword ptr [eax + p21]
     fstp    qword ptr [eax + FPy]
     fwait
+{$endif}
 end;
 
 //--0--////////////////////////////////////////////////////////////////////////
@@ -1488,9 +1513,9 @@ var
   r, sinr, cosr: double;
 begin
   SinCos(random * 2*pi, sinr, cosr);
-  r := vars[27]*random;//(sqrt(sqr(ftx)+sqr(fty)) + eps);
-  FPx := FPx + {FTx*}r*cosr;
-  FPy := FPy + {FTy*}r*sinr;
+  r := vars[27]*random;
+  FPx := FPx + FTx*r*cosr;
+  FPy := FPy + FTy*r*sinr;
 {$else}
 asm
     mov     edx, [ebx + vars]

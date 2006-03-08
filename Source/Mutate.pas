@@ -343,9 +343,11 @@ begin
   finally
     Registry.Free;
   end;
-  Interpolate;
-  ShowMain;
-  ShowMutants;
+  if cps[0].xform[0].density <> 0 then begin // hmm...!?
+    Interpolate;
+    ShowMain;
+    ShowMutants;
+  end;
 end;
 
 procedure TMutateForm.FormCreate(Sender: TObject);

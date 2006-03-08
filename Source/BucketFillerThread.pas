@@ -109,7 +109,7 @@ end;
 ///////////////////////////////////////////////////////////////////////////////
 destructor TBucketFillerThread.Destroy;
 begin
-   FCP.Free;
+  FCP.Free;
 
   inherited;
 end;

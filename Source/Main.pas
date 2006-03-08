@@ -37,7 +37,7 @@ const
   RS_XO = 2;
   RS_VO = 3;
 
-  AppVersionString = 'Apophysis 2.03d pre-release 1';
+  AppVersionString = 'Apophysis 2.03d pre-release 2';
 
 type
   TMouseMoveState = (msUsual, msZoomWindow, msZoomOutWindow, msZoomWindowMove, msZoomOutWindowMove, msDrag, msDragMove, msRotate, msRotateMove);
@@ -345,7 +345,6 @@ function CleanUPRTitle(ident: string): string;
 function GradientString(c: TColorMap): string;
 function PackVariations: cardinal;
 procedure UnpackVariations(v: integer);
-function NumXForms(const cp: TControlPoint): integer;
 //procedure NormalizeWeights(var cp: TControlPoint);
 //procedure EqualizeWeights(var cp: TControlPoint);
 procedure MultMatrix(var s: TMatrix; const m: TMatrix);
@@ -441,46 +440,6 @@ begin
   s[1, 1] := c * f + d * h;
 
 end;
-
-function NumXForms(const cp: TControlPoint): integer;
-var
-  i: integer;
-begin
-  Result := NXFORMS;
-  for i := 0 to NXFORMS - 1 do begin
-    if cp.xform[i].density = 0 then
-    begin
-      Result := i;
-      Break;
-    end;
-  end;
-end;
-
-{
-procedure EqualizeWeights(var cp: TControlPoint);
-var
-  t, i: integer;
-begin
-  t := NumXForms(cp);
-  for i := 0 to t - 1 do
-    cp.xform[i].density := 1.0 / t;
-end;
-
-procedure NormalizeWeights(var cp: TControlPoint);
-var
-  i: integer;
-  td: double;
-begin
-  td := 0.0;
-  for i := 0 to NumXForms(cp) - 1 do
-    td := td + cp.xform[i].Density;
-  if (td < 0.001) then
-    EqualizeWeights(cp)
-  else
-    for i := 0 to NumXForms(cp) - 1 do
-      cp.xform[i].Density := cp.xform[i].Density / td;
-end;
-}
 
 function PackVariations: cardinal;
 { Packs the variation options into an integer with Linear as lowest bit }
@@ -580,8 +539,10 @@ end;
 procedure TMainForm.StopThread;
 begin
   RedrawTimer.Enabled := False;
-  if Assigned(Renderer) then Renderer.Terminate;
-  if Assigned(Renderer) then Renderer.WaitFor;
+  if Assigned(Renderer) then begin
+    Renderer.Terminate;
+    Renderer.WaitFor;
+  end;
 end;
 
 procedure EqualizeVars(const x: integer);
@@ -614,7 +575,7 @@ var
 begin
   inc(MainSeed);
   RandSeed := MainSeed;
-  for i := 0 to NumXForms(cp) - 1 do
+  for i := 0 to cp.NumXForms - 1 do
   begin
     for j := 0 to NRVAR - 1 do
       cp.xform[i].vars[j] := 0;
@@ -646,7 +607,7 @@ begin
     RandomVariation(cp);
   end
   else
-    for i := 0 to NumXForms(cp) - 1 do
+    for i := 0 to cp.NumXForms - 1 do
     begin
       for j := 0 to NRVAR - 1 do
         cp.xform[i].vars[j] := 0;
@@ -1377,7 +1338,7 @@ begin
       format('vibrancy="%g" ', [cp1.vibrancy]) + hue + url + nick + '>');
 
    { Write transform parameters }
-    t := NumXForms(cp1);
+    t := cp1.NumXForms;
     for i := 0 to t - 1 do
       FileList.Add(cp1.xform[i].ToXMLString);
 //  if cp1.HasFinalXForm then FileList.Add(cp1.finalxform.FinalToXMLString(cp1.finalXformEnabled));
@@ -1766,12 +1727,15 @@ end;
 procedure TMainForm.DrawFlame;
 begin
   RedrawTimer.Enabled := False;
-  if Assigned(Renderer) then Renderer.Terminate;
-  if Assigned(Renderer) then Renderer.WaitFor;
   if Assigned(Renderer) then begin
+    Renderer.Terminate;
+    Renderer.WaitFor;
     Renderer.Free;
     Renderer := nil;
   end;
+
+  assert(Renderer = nil); //...
+
   if not Assigned(Renderer) then
   begin
     if (MainCp.width <> Image.Width) or (MainCp.height <> Image.height) then
@@ -2100,7 +2064,7 @@ function TMainForm.UPRString(cp1: TControlPoint; Entry: string): string;
 { Returns a string containing an Ultra Fractal parameter set for copying
   or saving to file }
 var
-  IterDensity, m, i, j: integer;
+  IterDensity, m, i: integer;
   scale, a, b, c, d, e, f, p: double;
   GradStrings, Strings: TStringList;
   rept, cby, smap, sol: string;
@@ -2165,9 +2129,9 @@ begin
         'p_xf' + inttostr(m) + '_cfd=' + Format('%.6g ', [d]));
       Strings.Add('  p_xf' + inttostr(m) + '_cfe=' + Format('%.6g ', [e]) +
         ' p_xf' + inttostr(m) + '_cff=' + Format('%.6g ', [f]));
-      for j := 0 to NRVAR - 1 do
-        Strings.Add('  p_xf' + inttostr(m) + '_var' + inttostr(j) + '=' +
-          floatToStr(cp1.xform[m].vars[j]));
+      for i := 0 to NRVAR - 1 do
+        Strings.Add('  p_xf' + inttostr(m) + '_var' + inttostr(i) + '=' +
+          floatToStr(cp1.xform[m].vars[i]));
     end;
     Strings.Add('gradient:');
     Strings.Add(GradientString(cp1.cmap));
@@ -2772,7 +2736,7 @@ begin
           end;
           FlameString := EntryStrings.Text;
           maincp.ParseString(FlameString);
-          Transforms := NumXForms(maincp);
+          Transforms := MainCP.NumXForms;
         end
         else
         begin
@@ -4098,6 +4062,7 @@ var
   DestRect: TRect;
   SourceRect: TRect;
 begin
+  if button <> mbLeft then exit;
   case FMouseMoveState of
     msZoomWindow:
       begin

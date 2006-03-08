@@ -1,6 +1,6 @@
 object MutateForm: TMutateForm
-  Left = 858
-  Top = 312
+  Left = 407
+  Top = 207
   BorderIcons = [biSystemMenu, biMinimize]
   BorderStyle = bsSingle
   Caption = 'Mutation'

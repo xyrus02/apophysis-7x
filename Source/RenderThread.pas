@@ -59,6 +59,8 @@ type
     function  GetRenderer: TBaseRenderer;
 
     procedure Terminate;
+    procedure Suspend;
+    procedure Resume;
 
     property OnProgress: TOnProgress
         read FOnProgress
@@ -167,6 +169,22 @@ begin
   inherited Terminate;
 end;
 
+procedure TRenderThread.Suspend;
+begin
+  if NrThreads > 1 then
+    if assigned(FRenderer) then FRenderer.Pause(true);
+
+  inherited;
+end;
+
+procedure TRenderThread.Resume;
+begin
+  if NrThreads > 1 then
+    if assigned(FRenderer) then FRenderer.Pause(false);
+
+  inherited;
+end;
+
 ///////////////////////////////////////////////////////////////////////////////
 function TRenderThread.GetNrSlices: integer;
 begin
@@ -204,18 +222,18 @@ begin
   FRenderer := nil;
 end;
 
-///////////////////////////////////////////////////////////////////////////////end.
+///////////////////////////////////////////////////////////////////////////////
 procedure TRenderThread.SetNrThreads(const Value: Integer);
 begin
   FNrThreads := Value;
 end;
 
-///////////////////////////////////////////////////////////////////////////////end.
+///////////////////////////////////////////////////////////////////////////////
 procedure TRenderThread.SaveImage(const FileName: String);
 begin
   if assigned(FRenderer) then
     FRenderer.SaveImage(FileName);
 end;
 
-///////////////////////////////////////////////////////////////////////////////end.
+///////////////////////////////////////////////////////////////////////////////
 end.
