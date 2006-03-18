@@ -314,7 +314,6 @@ type
   private
     TriangleView: TCustomDrawControl;
     cmap: TColorMap;
- //   cp1: TControlPoint;
     PreviewDensity: double;
 
     // --Z--
@@ -322,6 +321,7 @@ type
     editMode, oldMode: (modeNone, modeMove, modeRotate, modeScale, modePick);
     modeKey: word;
     key_handled: boolean;
+    updating: boolean;
 
     MousePos: TPoint; // in screen coordinates
     mouseOverTriangle, mouseOverCorner: integer;
@@ -670,6 +670,8 @@ var
   v: double;
   strval: string;
 begin
+  updating := true;
+
   if (SelectedTriangle > LastTriangle) then SelectedTriangle := LastTriangle;
 
   cbTransforms.ItemIndex := SelectedTriangle;
@@ -761,6 +763,8 @@ begin
   end;
 
   PageControl.Refresh;
+
+  updating := false;
 end;
 
 procedure TEditForm.Scale(var fx, fy: double; x, y: integer);
@@ -782,7 +786,7 @@ begin
   yminz := 0;
   xmaxz := 0;
   ymaxz := 0;
-  for i := -1 to Transforms - 1 do
+  for i := -1 to LastTriangle do
   begin
     for j := 0 to 2 do
     begin
@@ -810,19 +814,6 @@ procedure TEditForm.UpdateFlameX;
 var
   i: integer;
 begin
-  for i := 0 to Transforms do
-  begin
-//    CP_compute(cp1, Triangles[i], Triangles[-1], i);
-    solve3(MainTriangles[-1].x[0], MainTriangles[-1].y[0], MainTriangles[i].x[0],
-           MainTriangles[-1].x[1], MainTriangles[-1].y[1], MainTriangles[i].x[1],
-           MainTriangles[-1].x[2], MainTriangles[-1].y[2], MainTriangles[i].x[2],
-           cp.xform[i].c[0][0],    cp.xform[i].c[1][0],    cp.xform[i].c[2][0]);
-
-    solve3(MainTriangles[-1].x[0], MainTriangles[-1].y[0], MainTriangles[i].y[0],
-           MainTriangles[-1].x[1], MainTriangles[-1].y[1], MainTriangles[i].y[1],
-           MainTriangles[-1].x[2], MainTriangles[-1].y[2], MainTriangles[i].y[2],
-           cp.xform[i].c[0][1],    cp.xform[i].c[1][1],    cp.xform[i].c[2][1]);
-  end;
   cp.GetFromTriangles(MainTriangles, Transforms);
   if not chkPreserve.checked then cp.ComputeWeights(MainTriangles, Transforms);
   DrawPreview;
@@ -2008,9 +1999,13 @@ begin
     MainForm.UpdateUndo;
     MainTriangles[Transforms+1] := MainTriangles[Transforms];
     cp.xform[Transforms+1].Assign(cp.xform[Transforms]);
-    MainTriangles[Transforms] := MainTriangles[SelectedTriangle];
-    cp.xform[Transforms].Assign(cp.xform[SelectedTriangle]);
-    SelectedTriangle := Transforms;
+    if SelectedTriangle <> Transforms then
+    begin
+      MainTriangles[Transforms] := MainTriangles[SelectedTriangle];
+      cp.xform[Transforms].Assign(cp.xform[SelectedTriangle]);
+      SelectedTriangle := Transforms;
+    end
+    else cp.xform[Transforms].density := 0.5;
     Inc(Transforms);
     cbTransforms.clear;
     for i := 1 to Transforms do cbTransforms.Items.Add(IntToStr(i));
@@ -2526,6 +2521,8 @@ procedure TEditForm.scrlXFormColorChange(Sender: TObject);
 var
   v: double;
 begin
+  if updating then exit;
+
   v := (scrlXFormColor.Position) / scrlXFormColor.Max;
   cp.xform[SelectedTriangle].color := v;
   pnlXFormColor.color := ColorValToColor(MainCp.cmap, v);
@@ -3812,7 +3809,8 @@ begin
   pnlDragPos := 0;
   pnlDragOld := x;
   varMM := false;
-  SetCaptureControl(TControl(Sender));
+  //SetCaptureControl(TControl(Sender));
+
   Screen.Cursor := crHSplit;
   GetCursorPos(mousepos); // hmmm
   HasChanged := false;
@@ -3862,9 +3860,12 @@ begin
       else if v > 1 then v := 1;
       cp.xform[SelectedTriangle].color := v;
       pnlXFormColor.Color := ColorValToColor(cp.cmap, v);
+      updating := true;
       scrlXformColor.Position := round(v*1000);
       pEdit := @txtXformColor;
-    end;
+      updating := false;
+    end
+    else assert(false);
     pEdit^.Text := FloatToStr(v); // Format('%.6g', [v])
     //pEdit.Refresh;
     HasChanged := True;
@@ -3879,7 +3880,8 @@ begin
 
   if pnlDragMode then
   begin
-    SetCaptureControl(nil);
+    //SetCaptureControl(nil);
+
     pnlDragMode := false;
     Screen.Cursor := crDefault;
 

@@ -1229,8 +1229,10 @@ object EditForm: TEditForm
               Height = 21
               Hint = 'Reset vector X'
               Caption = 'X'
+              Enabled = False
               ParentShowHint = False
               ShowHint = True
+              Visible = False
               OnClick = btnXpostClick
             end
             object btnYpost: TSpeedButton
@@ -1240,8 +1242,10 @@ object EditForm: TEditForm
               Height = 21
               Hint = 'Reset vector Y'
               Caption = 'Y'
+              Enabled = False
               ParentShowHint = False
               ShowHint = True
+              Visible = False
               OnClick = btnYpostClick
             end
             object btnOpost: TSpeedButton
@@ -1251,8 +1255,10 @@ object EditForm: TEditForm
               Height = 21
               Hint = 'Reset vector O'
               Caption = 'O'
+              Enabled = False
               ParentShowHint = False
               ShowHint = True
+              Visible = False
               OnClick = btnOpostClick
             end
             object btnResetPostXForm: TSpeedButton
@@ -1262,8 +1268,10 @@ object EditForm: TEditForm
               Height = 22
               Hint = 'Reset post-transform vectors to defaults'
               Caption = 'Reset post-transform'
+              Enabled = False
               ParentShowHint = False
               ShowHint = True
+              Visible = False
               OnClick = btnResetPostXFormClick
             end
             object btnSwapXforms: TSpeedButton
@@ -1273,6 +1281,7 @@ object EditForm: TEditForm
               Height = 22
               Hint = 'Swap Xform with PostXform'
               Caption = '[ Xform <-> PostXform ]'
+              Enabled = False
               Flat = True
               Font.Charset = ANSI_CHARSET
               Font.Color = clWindowText
@@ -1282,6 +1291,7 @@ object EditForm: TEditForm
               ParentFont = False
               ParentShowHint = False
               ShowHint = True
+              Visible = False
               OnClick = btnSwapXformsClick
             end
             object pnlWeight: TPanel
@@ -1393,8 +1403,10 @@ object EditForm: TEditForm
               Top = 188
               Width = 57
               Height = 21
+              Enabled = False
               TabOrder = 8
               Text = '0'
+              Visible = False
               OnExit = PostCoefValidate
               OnKeyPress = PostCoefKeypress
             end
@@ -1403,8 +1415,10 @@ object EditForm: TEditForm
               Top = 188
               Width = 57
               Height = 21
+              Enabled = False
               TabOrder = 9
               Text = '0'
+              Visible = False
               OnExit = PostCoefValidate
               OnKeyPress = PostCoefKeypress
             end
@@ -1413,8 +1427,10 @@ object EditForm: TEditForm
               Top = 212
               Width = 57
               Height = 21
+              Enabled = False
               TabOrder = 10
               Text = '0'
+              Visible = False
               OnExit = PostCoefValidate
               OnKeyPress = PostCoefKeypress
             end
@@ -1423,8 +1439,10 @@ object EditForm: TEditForm
               Top = 212
               Width = 57
               Height = 21
+              Enabled = False
               TabOrder = 11
               Text = '0'
+              Visible = False
               OnExit = PostCoefValidate
               OnKeyPress = PostCoefKeypress
             end
@@ -1433,8 +1451,10 @@ object EditForm: TEditForm
               Top = 236
               Width = 57
               Height = 21
+              Enabled = False
               TabOrder = 12
               Text = '0'
+              Visible = False
               OnExit = PostCoefValidate
               OnKeyPress = PostCoefKeypress
             end
@@ -1443,8 +1463,10 @@ object EditForm: TEditForm
               Top = 236
               Width = 57
               Height = 21
+              Enabled = False
               TabOrder = 13
               Text = '0'
+              Visible = False
               OnExit = PostCoefValidate
               OnKeyPress = PostCoefKeypress
             end
