@@ -157,10 +157,12 @@ begin
   GlobalMemoryInfo.dwLength := SizeOf(GlobalMemoryInfo);
   GlobalMemoryStatus(GlobalMemoryInfo);
   PhysicalMemory := GlobalMemoryInfo.dwAvailPhys div 1048576;
-  ApproxMemory := ImageHeight * ImageWidth * Oversample * Oversample *
-                  SizeOf(TBucket) div 1048576;
-  lblPhysical.Caption := 'Physical memory available: ' + Format('%d', [PhysicalMemory]) + ' Mb';
-  lblApproxMem.Caption := 'Approximate memory required: ' + Format('%d', [ApproxMemory]) + ' Mb';
+  ApproxMemory := int64(ImageHeight) * int64(ImageWidth) * int64(Oversample * Oversample
+                  * SizeOf(TBucket)) div 1048576;
+
+  lblPhysical.Caption := 'Physical memory available: ' + Format('%u', [PhysicalMemory]) + ' Mb';
+  lblApproxMem.Caption := 'Approximate memory required: ' + Format('%u', [ApproxMemory]) + ' Mb';
+
   if ApproxMemory > PhysicalMemory then lblPhysical.Font.Color := clRed
   else lblPhysical.Font.Color := clWindowText;
 end;
@@ -264,15 +266,17 @@ var
 begin
   ImageWidth := StrToInt(cbWidth.text);
   ImageHeight := StrToInt(cbHeight.text);
+
   if (not chkLimitMem.checked) and (ApproxMemory > PhysicalMemory) then
   begin
     Application.MessageBox('You do not have enough memory for this render. Please use memory limiting.', 'Apophysis', 48);
-//    exit;
+    exit;
   end;
   if chkLimitMem.checked and (PhysicalMemory < StrToInt(cbMaxMemory.text)) and (Approxmemory > PhysicalMemory) then begin
     Application.MessageBox('You do not have enough memory for this render. Please use a lower Maximum memory setting.', 'Apophysis', 48);
-//    exit;
+    exit;
   end;
+
   t := txtFilename.Text;
   if t = '' then
   begin
@@ -337,7 +341,6 @@ begin
     Renderer.Terminate;
     Renderer.WaitFor;
     Renderer.Free;
-    Renderer := nil; //?
   end;
   if not Assigned(Renderer) then
   begin
@@ -356,7 +359,10 @@ begin
     oldElapsed:=0;
     edt:=0;
 
+   try
+
     Renderer := TRenderThread.Create;
+    assert(Renderer <> nil);
     if chkLimitMem.checked then
       Renderer.MaxMem := StrToInt(cbMaxMemory.text);
     Renderer.OnProgress := OnProgress;
@@ -366,6 +372,10 @@ begin
     Renderer.Priority := tpLower;
     Renderer.NrThreads := NrTreads;
     Renderer.Resume;
+
+   except
+     Application.MessageBox('Error while rendering!', 'Apophysis', 48)
+   end;
 
     // enable screensaver
     SystemParametersInfo(SPI_SETSCREENSAVEACTIVE, 1, nil, 0);
