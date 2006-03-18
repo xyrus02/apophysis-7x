@@ -1,6 +1,10 @@
 unit BaseVariation;
 
 interface
+
+type
+  TCalcFunction = procedure of object;
+
 type
   TBaseVariation = class
   protected
@@ -22,6 +26,7 @@ type
     procedure Prepare; virtual;
 
     procedure CalcFunction; virtual; abstract;
+    procedure GetCalcFunction(var Delphi_Suxx: TCalcFunction); virtual;
   end;
 
   TBaseVariationClass = class of TBaseVariation;
@@ -61,4 +66,9 @@ begin
 end;
 
 ///////////////////////////////////////////////////////////////////////////////
+procedure TBaseVariation.GetCalcFunction(var Delphi_Suxx: TCalcFunction);
+begin
+  Delphi_Suxx := CalcFunction;
+end;
+
 end.
