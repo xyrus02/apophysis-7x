@@ -1,6 +1,7 @@
 {
      Flame screensaver Copyright (C) 2002 Ronald Hordijk
      Apophysis Copyright (C) 2001-2004 Mark Townsend
+     Apophysis Copyright (C) 2005-2006 Ronald Hordijk, Piotr Boris, Peter Sdobnov     
 
      This program is free software; you can redistribute it and/or modify
      it under the terms of the GNU General Public License as published by
@@ -88,9 +89,11 @@ type
   TControlPoint = class
   public
     xform: array[0..NXFORMS] of TXForm;
-    finalXform: ^TXForm;
+
+    finalXform: TXForm;
     finalXformEnabled: boolean;
     useFinalXform: boolean;
+
     variation: TVariation;
     cmap: TColorMap;
     cmapindex: integer;
@@ -121,7 +124,7 @@ type
     pulse: array[0..1, 0..1] of double; // [i][0]=magnitute [i][1]=frequency */
     wiggle: array[0..1, 0..1] of double; // frequency is /minute, assuming 30 frames/s */
 
-    PropTable: array of ^TXForm;//Integer;
+    PropTable: array of TXForm;//Integer;
     FAngle: Double;
     FTwoColorDimensions: Boolean;
   private
@@ -258,7 +261,7 @@ destructor TControlPoint.Destroy;
 var
   i: Integer;
 begin
-  for i := 0 to NXFORMS - 1 do
+  for i := 0 to NXFORMS do
     xform[i].Free;
 
   inherited;
@@ -278,7 +281,7 @@ begin
   n := NumXforms;
   assert(n > 0);
 
-  finalXform := @xform[n];
+  finalXform := xform[n];
   finalXform.Prepare;
   useFinalXform := FinalXformEnabled and HasFinalXform;
   for i := 0 to n - 1 do begin
@@ -294,7 +297,7 @@ begin
       inc(j);
       propsum := propsum + xform[j].density;
     until (propsum > LoopValue) or (j = n - 1);
-    PropTable[i] := @xform[j];
+    PropTable[i] := xform[j];
     LoopValue := LoopValue + TotValue / PROP_TABLE_SIZE;
   end;
 
@@ -543,9 +546,6 @@ begin
   px := 2 * random - 1;
   py := 2 * random - 1;
 
-//  PreparePropTable;
-//  for i := 0 to NXFORMS do xform[i].prepare;
-
   try
     for i := 0 to FUSE do
       PropTable[Random(PROP_TABLE_SIZE)].NextPointXY(px,py);
@@ -556,7 +556,7 @@ if UseFinalXform then
       PropTable[Random(PROP_TABLE_SIZE)].NextPointXY(px,py);
       pPoint^.X := px;
       pPoint^.Y := py;
-      finalXform^.NextPointXY(pPoint^.X, pPoint^.y);
+      finalXform.NextPointXY(pPoint^.X, pPoint^.y);
       Inc(pPoint);
     end
 else
@@ -599,9 +599,6 @@ asm
 end;
 {$ifend}
 
-//  PreparePropTable;
-//  for i := 0 to NXFORMS do xform[i].prepare;
-
   try
     for i := 0 to FUSE do
       PropTable[Random(PROP_TABLE_SIZE)].NextPoint(p);
@@ -611,7 +608,7 @@ end;
 if UseFinalXform then
     for i := 0 to NrPoints - 1 do begin
       PropTable[Random(PROP_TABLE_SIZE)].NextPoint(p);
-      finalXform^.NextPointTo(p, pPoint^);
+      finalXform.NextPointTo(p, pPoint^);
       Inc(pPoint);
     end
 else
@@ -689,9 +686,6 @@ begin
   p.c1 := random;
   p.c2 := random;
 
-//  PreparePropTable;
-//  for i := 0 to NXFORMS do xform[i].prepare;
-
   try
     for i := 0 to FUSE do
       PropTable[Random(PROP_TABLE_SIZE)].NextPoint2C(p);//px, py, pc1, pc2);
@@ -704,7 +698,7 @@ if UseFinalXform then
       CurrentPoint.Y := p.y;
       CurrentPoint.C1 := p.c1;
       CurrentPoint.C2 := p.c2;
-      finalXform^.NextPoint2C(CurrentPoint^);
+      finalXform.NextPoint2C(CurrentPoint^);
       Inc(CurrentPoint);
     end
 else
@@ -1157,15 +1151,6 @@ begin
     Prepare;
 
     IterateXY(SUB_BATCH_SIZE, points);
-
-{    if finalXformEnabled and HasFinalXform then begin
-     try
-      finalXform := @xform[NumXforms];
-      for i := 0 to SUB_BATCH_SIZE - 1 do
-        finalXform.NextPoint(points[i]);
-     except
-     end
-    end;}
 
     LimitOutSidePoints := Round(0.05 * SUB_BATCH_SIZE);
 
@@ -1730,7 +1715,6 @@ function TControlPoint.HasFinalXForm: boolean;
 var
   i: integer;
 begin
-//  if finalXformEnabled then Result := true else
   with xform[NumXForms] do
   begin
     Result := (c[0,0]<>1) or (c[0,1]<>0) or(c[1,0]<>0) or (c[1,1]<>1) or (c[2,0]<>0) or (c[2,1]<>0) or

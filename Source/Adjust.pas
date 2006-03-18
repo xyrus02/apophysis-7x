@@ -1,5 +1,6 @@
 {
      Apophysis Copyright (C) 2001-2004 Mark Townsend
+     Apophysis Copyright (C) 2005-2006 Ronald Hordijk, Piotr Boris, Peter Sdobnov     
 
      This program is free software; you can redistribute it and/or modify
      it under the terms of the GNU General Public License as published by
@@ -1903,7 +1904,8 @@ begin
   pnlDragPos := 0;
   pnlDragOld := x;
   pnlMM := false;
-  SetCaptureControl(TControl(Sender));
+  //SetCaptureControl(TControl(Sender));
+
   Screen.Cursor := crHSplit;
   GetCursorPos(mousepos); // hmmm
   pnlDragged := false;
@@ -1982,7 +1984,8 @@ begin
 
   if pnlDragMode then
   begin
-    SetCaptureControl(nil);
+    //SetCaptureControl(nil);
+
     pnlDragMode := false;
     Screen.Cursor := crDefault;
 

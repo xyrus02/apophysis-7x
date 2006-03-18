@@ -3,10 +3,7 @@ unit XForm;
 interface
 
 uses
-  XFormMan, baseVariation;
-
-type
-  TCalcMethod = procedure of object;
+  XFormMan, BaseVariation;
 
 type
   TCPpoint = record
@@ -47,8 +44,8 @@ type
 
   private
     FNrFunctions: Integer;
-    FFunctionList: array of TCalcMethod;
-    FCalcFunctionList: array[0..64] of TCalcMethod;
+    FFunctionList: array of TCalcFunction;
+    FCalcFunctionList: array[0..64] of TCalcFunction;
 
     FTx, FTy: double;
     FPx, FPy: double;
@@ -140,7 +137,7 @@ uses
   SysUtils, Math;
 
 const
-  EPS: double = 1E-6;
+  EPS: double = 1E-300;
 
 procedure SinCos(const Theta: double; var Sin, Cos: double); // to avoid using 'extended' type
 asm
@@ -215,11 +212,13 @@ begin
     FRegVariations[i].FTY := @FTY;
 
     FRegVariations[i].vvar := vars[i + NRLOCVAR];
-    FRegVariations[i].prepare;
+    FRegVariations[i].Prepare;
+    FRegVariations[i].GetCalcFunction(FFunctionList[NRLOCVAR + i]);
   end;
 
-  CalculateAngle := (vars[5] <> 0.0) or (vars[6] <> 0.0) or (vars[7] <> 0.0) or (vars[8] <> 0.0) or
-                    (vars[12] <> 0.0) or (vars[13] <> 0.0) or (vars[21] <> 0.0) or (vars[22] <> 0.0);
+  CalculateAngle := (vars[5] <> 0.0) or (vars[6] <> 0.0) or (vars[7] <> 0.0) or
+                    (vars[8] <> 0.0) or (vars[12] <> 0.0) or (vars[13] <> 0.0) or
+                    (vars[21] <> 0.0) or (vars[22] <> 0.0) or (vars[27] <> 0.0);
 //  CalculateLength := False;
   CalculateSinCos := (vars[9] <> 0.0) or (vars[11] <> 0.0) or (vars[19] <> 0.0) or (vars[21] <> 0.0);
 
@@ -447,7 +446,7 @@ procedure TXForm.Spherical;
 var
   r: double;
 begin
-  r := vars[2] / (sqr(FTx) + sqr(FTy) + 1E-6);
+  r := vars[2] / (sqr(FTx) + sqr(FTy) + EPS);
   FPx := FPx + FTx * r;
   FPy := FPy + FTy * r;
 {$else}
@@ -1513,9 +1512,9 @@ var
   r, sinr, cosr: double;
 begin
   SinCos(random * 2*pi, sinr, cosr);
-  r := vars[27]*random;
-  FPx := FPx + FTx*r*cosr;
-  FPy := FPy + FTy*r*sinr;
+  r := vars[27] * random;
+  FPx := FPx + FTx * r * cosr;
+  FPy := FPy + FTy * r * sinr;
 {$else}
 asm
     mov     edx, [ebx + vars]

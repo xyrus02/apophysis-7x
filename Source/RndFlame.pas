@@ -61,21 +61,6 @@ begin
 end;
 
 ///////////////////////////////////////////////////////////////////////////////
-function NumXForms(const cp: TControlPoint): integer;
-var
-  i: integer;
-begin
-  Result := NXFORMS;
-  for i := 0 to NXFORMS - 1 do begin
-    if cp.xform[i].density = 0 then
-    begin
-      Result := i;
-      Break;
-    end;
-  end;
-end;
-
-///////////////////////////////////////////////////////////////////////////////
 procedure RandomVariation(cp: TControlPoint);
 { Randomise variation parameters }
 var
@@ -90,7 +75,7 @@ begin
     VarPossible := VarPossible or Variations[j];
   end;
 
-  for i := 0 to NumXForms(cp) - 1 do begin
+  for i := 0 to cp.NumXForms - 1 do begin
     for j := 0 to NRVAR - 1 do
       cp.xform[i].vars[j] := 0;
 
@@ -125,7 +110,7 @@ begin
   if Variation = vRandom then begin
     RandomVariation(cp);
   end else
-    for i := 0 to NumXForms(cp) - 1 do  begin
+    for i := 0 to cp.NumXForms - 1 do  begin
       for j := 0 to NRVAR - 1 do
         cp.xform[i].vars[j] := 0;
       cp.xform[i].vars[integer(Variation)] := 1;
@@ -222,7 +207,7 @@ procedure EqualizeWeights(var cp: TControlPoint);
 var
   t, i: integer;
 begin
-  t := NumXForms(cp);
+  t := cp.NumXForms;
   for i := 0 to t - 1 do
     cp.xform[i].density := 1.0 / t;
 end;
@@ -234,12 +219,12 @@ var
   td: double;
 begin
   td := 0.0;
-  for i := 0 to NumXForms(cp) - 1 do
+  for i := 0 to cp.NumXForms - 1 do
     td := td + cp.xform[i].Density;
   if (td < 0.001) then
     EqualizeWeights(cp)
   else
-    for i := 0 to NumXForms(cp) - 1 do
+    for i := 0 to cp.NumXForms - 1 do
       cp.xform[i].Density := cp.xform[i].Density / td;
 end;
 

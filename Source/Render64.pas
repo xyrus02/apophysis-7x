@@ -1,6 +1,7 @@
 {
      Flame screensaver Copyright (C) 2002 Ronald Hordijk
      Apophysis Copyright (C) 2001-2004 Mark Townsend
+     Apophysis Copyright (C) 2005-2006 Ronald Hordijk, Piotr Boris, Peter Sdobnov     
 
      This program is free software; you can redistribute it and/or modify
      it under the terms of the GNU General Public License as published by
@@ -21,7 +22,7 @@ unit Render64;
 interface
 
 uses
-  Windows, Graphics, ImageMaker,
+  Windows, Forms, Graphics, ImageMaker,
    Render, xform, Controlpoint;
 
 type
@@ -54,10 +55,19 @@ type
     procedure CreateColorMap;
     procedure CreateCamera;
 
-    procedure AddPointsToBuckets(const points: TPointsArray);
-    procedure AddPointsToBucketsAngle(const points: TPointsArray);
-
     procedure SetPixels;
+
+  private
+    PropTable: array[0..SUB_BATCH_SIZE] of TXform;
+    finalXform: TXform;
+    UseFinalXform: boolean;
+
+    procedure Prepare;
+    procedure IterateBatch;
+    procedure IterateBatchAngle;
+    procedure IterateBatchFX;
+    procedure IterateBatchAngleFX;
+
   public
     constructor Create; override;
     destructor Destroy; override;
@@ -70,6 +80,8 @@ type
   end;
 
 implementation
+
+{$define _ASM_}
 
 uses
   Math, Sysutils;
@@ -200,8 +212,12 @@ begin
   Bucketwidth := oversample * fcp.Width + 2 * max_gutter_width;
   BucketSize := BucketWidth * BucketHeight;
 
-  if high(buckets) <> (BucketSize - 1) then begin
+  if high(buckets) <> (BucketSize - 1) then
+  try
     SetLength(buckets, BucketSize);
+  except
+    on EOutOfMemory do
+      Application.MessageBox('Error: not enough memory for this render!', 'Apophysis', 48)
   end;
 
   // share the buffer with imagemaker
@@ -215,60 +231,8 @@ begin
   CreateCamera;
 
   CreateColorMap;
-  
+
   fcp.Prepare;
-end;
-
-///////////////////////////////////////////////////////////////////////////////
-procedure TRenderer64.AddPointsToBuckets(const points: TPointsArray);
-var
-  i: integer;
-  px, py: double;
-  Bucket: PBucket;
-  MapColor: PColorMapColor;
-begin
-  for i := SUB_BATCH_SIZE - 1 downto 0 do begin
-//    if FStop then Exit;
-
-    px := points[i].x - camX0;
-    if (px < 0) or (px > camW) then continue;
-    py := points[i].y - camY0;
-    if (py < 0) or (py > camH) then continue;
-
-    Bucket := @buckets[Round(bws * px) + Round(bhs * py) * BucketWidth];
-    MapColor := @ColorMap[Round(points[i].c * 255)];
-
-    Inc(Bucket.Red,   MapColor.Red);
-    Inc(Bucket.Green, MapColor.Green);
-    Inc(Bucket.Blue,  MapColor.Blue);
-    Inc(Bucket.Count);
-  end;
-end;
-
-///////////////////////////////////////////////////////////////////////////////
-procedure TRenderer64.AddPointsToBucketsAngle(const points: TPointsArray);
-var
-  i: integer;
-  px, py: double;
-  Bucket: PBucket;
-  MapColor: PColorMapColor;
-begin
-  for i := SUB_BATCH_SIZE - 1 downto 0 do begin
-//    if FStop then Exit;
-
-    px := points[i].x * cosa + points[i].y * sina + rcX;
-    if (px < 0) or (px > camW) then continue;
-    py := points[i].y * cosa - points[i].x * sina + rcY;
-    if (py < 0) or (py > camH) then continue;
-
-    Bucket := @buckets[Round(bws * px) + Round(bhs * py) * BucketWidth];
-    MapColor := @ColorMap[Round(points[i].c * 255)];
-
-    Inc(Bucket.Red,   MapColor.Red);
-    Inc(Bucket.Green, MapColor.Green);
-    Inc(Bucket.Blue,  MapColor.Blue);
-    Inc(Bucket.Count);
-  end;
 end;
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -277,57 +241,40 @@ var
   i: integer;
   nsamples: Int64;
   nrbatches: Integer;
-  points: TPointsArray;
-  AddPointsProc: procedure (const points: TPointsArray) of object;
+  //points: TPointsArray;
+  IterateBatchProc: procedure of object;
 begin
-//  if FileExists('c:\temp\flame.txt') then
-//    Deletefile('c:\temp\flame.txt');
+  Prepare;
+  Randomize;
 
-//  AssignFile(F, 'c:\temp\flame.txt');
-//  Rewrite(F);
-  if FCP.FAngle = 0 then
-    AddPointsProc := AddPointsToBuckets
-  else
-    AddPointsProc := AddPointsToBucketsAngle;
-
-  SetLength(Points, SUB_BATCH_SIZE);
+  if FCP.FAngle = 0 then begin
+    if UseFinalXform then
+      IterateBatchProc := IterateBatchFX
+    else
+      IterateBatchProc := IterateBatch;
+  end
+  else begin
+    if UseFinalXform then
+      IterateBatchProc := IterateBatchAngleFX
+    else
+      IterateBatchProc := IterateBatchAngle;
+  end;
 
   nsamples := Round(sample_density * bucketSize / (oversample * oversample));
   nrbatches := Round(nsamples / (fcp.nbatches * SUB_BATCH_SIZE));
-  Randomize;
 
   for i := 0 to nrbatches do begin
     if FStop then
       Exit;
 
-    if ((i and $F) = 0) then
+    if ((i and $1F) = 0) then
       if nrbatches > 0 then
         Progress(i / nrbatches)
       else
         Progress(0);
 
-    // generate points
-{$IFDEF TESTVARIANT}
-//    if i > 10 then
-//      break;
-    fcp.Testiterate(SUB_BATCH_SIZE, points);
-{$ELSE}
-{
-    case Compatibility of
-      0: fcp.iterate_Old(SUB_BATCH_SIZE, points);
-      1: fcp.iterateXYC(SUB_BATCH_SIZE, points);
-    end;
-}
-    fcp.IterateXYC(SUB_BATCH_SIZE, points);
-{$ENDIF}
-
-//    for j := SUB_BATCH_SIZE - 1 downto 0 do
-//      Writeln(f,  FloatTostr(points[j].x) + #9 + FloatTostr(points[j].y) + #9 + FloatTostr(points[j].c));
-
-    AddPointsProc(points);
+    IterateBatchProc;
   end;
-
-//  closefile(f);
 
   Progress(1);
 end;
@@ -335,10 +282,13 @@ end;
 ///////////////////////////////////////////////////////////////////////////////
 procedure TRenderer64.Render;
 begin
+  if fcp.NumXForms <= 0 then exit;
+
   FStop := False;
 
   FImageMaker.SetCP(FCP);
   FImageMaker.Init;
+
   InitValues;
 
   ClearBuffers;
@@ -373,6 +323,272 @@ begin
   FImageMaker.SaveImage(FileName);
 end;
 
-///////////////////////////////////////////////////////////////////////////////
+//******************************************************************************
+
+procedure TRenderer64.Prepare;
+var
+  i, n: Integer;
+  propsum: double;
+  LoopValue: double;
+  j: integer;
+  TotValue: double;
+begin
+  totValue := 0;
+  n := fcp.NumXforms;
+  assert(n > 0);
+
+  finalXform := fcp.xform[n];
+  finalXform.Prepare;
+  useFinalXform := fcp.FinalXformEnabled and fcp.HasFinalXform;
+
+  for i := 0 to n - 1 do begin
+    fcp.xform[i].Prepare;
+    totValue := totValue + fcp.xform[i].density;
+  end;
+
+  LoopValue := 0;
+  for i := 0 to PROP_TABLE_SIZE-1 do begin
+    propsum := 0;
+    j := -1;
+    repeat
+      inc(j);
+      propsum := propsum + fcp.xform[j].density;
+    until (propsum > LoopValue) or (j = n - 1);
+    PropTable[i] := fcp.xform[j];
+    LoopValue := LoopValue + TotValue / PROP_TABLE_SIZE;
+  end;
+end;
+
+procedure TRenderer64.IterateBatch;
+var
+  i: integer;
+  px, py: double;
+  Bucket: PBucket;
+  MapColor: PColorMapColor;
+
+  p: TCPPoint;
+begin
+{$ifndef _ASM_}
+  p.x := 2 * random - 1;
+  p.y := 2 * random - 1;
+  p.c := random;
+{$else}
+asm
+    fld1
+    call    System.@RandExt
+    fadd    st, st
+    fsub    st, st(1)
+    fstp    qword ptr [p.x]
+    call    System.@RandExt
+    fadd    st, st
+    fsubrp  st(1), st
+    fstp    qword ptr [p.y]
+    call    System.@RandExt
+    fstp    qword ptr [p.c]
+end;
+{$endif}
+
+  try
+    for i := 0 to FUSE do
+      PropTable[Random(PROP_TABLE_SIZE)].NextPoint(p);
+
+    for i := 0 to SUB_BATCH_SIZE-1 do begin
+      PropTable[Random(PROP_TABLE_SIZE)].NextPoint(p);
+
+      px := p.x - camX0;
+      if (px < 0) or (px > camW) then continue;
+      py := p.y - camY0;
+      if (py < 0) or (py > camH) then continue;
+
+      Bucket := @buckets[Round(bws * px) + Round(bhs * py) * BucketWidth];
+      MapColor := @ColorMap[Round(p.c * 255)];
+
+      Inc(Bucket.Red,   MapColor.Red);
+      Inc(Bucket.Green, MapColor.Green);
+      Inc(Bucket.Blue,  MapColor.Blue);
+      Inc(Bucket.Count);
+    end;
+
+  except
+    on EMathError do begin
+      exit;
+    end;
+  end;
+end;
+
+procedure TRenderer64.IterateBatchAngle;
+var
+  i: integer;
+  px, py: double;
+  Bucket: PBucket;
+  MapColor: PColorMapColor;
+
+  p: TCPPoint;
+begin
+{$ifndef _ASM_}
+  p.x := 2 * random - 1;
+  p.y := 2 * random - 1;
+  p.c := random;
+{$else}
+asm
+    fld1
+    call    System.@RandExt
+    fadd    st, st
+    fsub    st, st(1)
+    fstp    qword ptr [p.x]
+    call    System.@RandExt
+    fadd    st, st
+    fsubrp  st(1), st
+    fstp    qword ptr [p.y]
+    call    System.@RandExt
+    fstp    qword ptr [p.c]
+end;
+{$endif}
+
+  try
+    for i := 0 to FUSE do
+      PropTable[Random(PROP_TABLE_SIZE)].NextPoint(p);
+
+    for i := 0 to SUB_BATCH_SIZE-1 do begin
+      PropTable[Random(PROP_TABLE_SIZE)].NextPoint(p);
+
+      px := p.x * cosa + p.y * sina + rcX;
+      if (px < 0) or (px > camW) then continue;
+      py := p.y * cosa - p.x * sina + rcY;
+      if (py < 0) or (py > camH) then continue;
+
+      Bucket := @buckets[Round(bws * px) + Round(bhs * py) * BucketWidth];
+      MapColor := @ColorMap[Round(p.c * 255)];
+
+      Inc(Bucket.Red,   MapColor.Red);
+      Inc(Bucket.Green, MapColor.Green);
+      Inc(Bucket.Blue,  MapColor.Blue);
+      Inc(Bucket.Count);
+    end;
+
+  except
+    on EMathError do begin
+      exit;
+    end;
+  end;
+end;
+
+
+procedure TRenderer64.IterateBatchFX;
+var
+  i: integer;
+  px, py: double;
+  Bucket: PBucket;
+  MapColor: PColorMapColor;
+
+  p, q: TCPPoint;
+begin
+{$ifndef _ASM_}
+  p.x := 2 * random - 1;
+  p.y := 2 * random - 1;
+  p.c := random;
+{$else}
+asm
+    fld1
+    call    System.@RandExt
+    fadd    st, st
+    fsub    st, st(1)
+    fstp    qword ptr [p.x]
+    call    System.@RandExt
+    fadd    st, st
+    fsubrp  st(1), st
+    fstp    qword ptr [p.y]
+    call    System.@RandExt
+    fstp    qword ptr [p.c]
+end;
+{$endif}
+
+  try
+    for i := 0 to FUSE do
+      PropTable[Random(PROP_TABLE_SIZE)].NextPoint(p);
+
+    for i := 0 to SUB_BATCH_SIZE-1 do begin
+      PropTable[Random(PROP_TABLE_SIZE)].NextPoint(p);
+      finalXform.NextPointTo(p, q);
+
+      px := q.x - camX0;
+      if (px < 0) or (px > camW) then continue;
+      py := q.y - camY0;
+      if (py < 0) or (py > camH) then continue;
+
+      Bucket := @buckets[Round(bws * px) + Round(bhs * py) * BucketWidth];
+      MapColor := @ColorMap[Round(q.c * 255)];
+
+      Inc(Bucket.Red,   MapColor.Red);
+      Inc(Bucket.Green, MapColor.Green);
+      Inc(Bucket.Blue,  MapColor.Blue);
+      Inc(Bucket.Count);
+    end;
+
+  except
+    on EMathError do begin
+      exit;
+    end;
+  end;
+end;
+
+procedure TRenderer64.IterateBatchAngleFX;
+var
+  i: integer;
+  px, py: double;
+  Bucket: PBucket;
+  MapColor: PColorMapColor;
+
+  p, q: TCPPoint;
+begin
+{$ifndef _ASM_}
+  p.x := 2 * random - 1;
+  p.y := 2 * random - 1;
+  p.c := random;
+{$else}
+asm
+    fld1
+    call    System.@RandExt
+    fadd    st, st
+    fsub    st, st(1)
+    fstp    qword ptr [p.x]
+    call    System.@RandExt
+    fadd    st, st
+    fsubrp  st(1), st
+    fstp    qword ptr [p.y]
+    call    System.@RandExt
+    fstp    qword ptr [p.c]
+end;
+{$endif}
+
+  try
+    for i := 0 to FUSE do
+      PropTable[Random(PROP_TABLE_SIZE)].NextPoint(p);
+
+    for i := 0 to SUB_BATCH_SIZE-1 do begin
+      PropTable[Random(PROP_TABLE_SIZE)].NextPoint(p);
+      finalXform.NextPointTo(p, q);
+
+      px := q.x * cosa + q.y * sina + rcX;
+      if (px < 0) or (px > camW) then continue;
+      py := q.y * cosa - q.x * sina + rcY;
+      if (py < 0) or (py > camH) then continue;
+
+      Bucket := @buckets[Round(bws * px) + Round(bhs * py) * BucketWidth];
+      MapColor := @ColorMap[Round(q.c * 255)];
+
+      Inc(Bucket.Red,   MapColor.Red);
+      Inc(Bucket.Green, MapColor.Green);
+      Inc(Bucket.Blue,  MapColor.Blue);
+      Inc(Bucket.Count);
+    end;
+
+  except
+    on EMathError do begin
+      exit;
+    end;
+  end;
+end;
+
 end.
 

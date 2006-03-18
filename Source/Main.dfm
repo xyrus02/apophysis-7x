@@ -2549,7 +2549,6 @@ object MainForm: TMainForm
         ImageIndex = 45
         ShortCut = 16456
         Visible = False
-        OnClick = mnuPostSheepClick
       end
       object N21: TMenuItem
         Caption = '-'

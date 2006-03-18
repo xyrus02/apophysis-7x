@@ -93,8 +93,6 @@ end;
 
 ///////////////////////////////////////////////////////////////////////////////
 constructor TBucketFillerThread.Create(cp: TControlPoint);
-var
-  i, n: integer;
 begin
   inherited Create(True);
   Self.FreeOnTerminate := True;

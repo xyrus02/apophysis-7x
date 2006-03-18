@@ -378,7 +378,7 @@ begin
 
     if pnlDragged then
     begin
-      UpdateFlame;
+      //UpdateFlame;
       pnlDragged := False;
     end;
   end;

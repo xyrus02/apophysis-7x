@@ -37,7 +37,7 @@ const
   RS_XO = 2;
   RS_VO = 3;
 
-  AppVersionString = 'Apophysis 2.03d pre-release 2';
+  AppVersionString = 'Apophysis 2.03d pre-release 3';
 
 type
   TMouseMoveState = (msUsual, msZoomWindow, msZoomOutWindow, msZoomWindowMove, msZoomOutWindowMove, msDrag, msDragMove, msRotate, msRotateMove);
@@ -246,15 +246,8 @@ type
     procedure ApplicationEventsActivate(Sender: TObject);
     procedure mnuPasteClick(Sender: TObject);
     procedure mnuCopyClick(Sender: TObject);
-    procedure mnuExportFLameClick(Sender: TObject);
-    procedure mnuPostSheepClick(Sender: TObject);
-{
-    procedure HTTPRedirect(Sender: TObject; var dest: string;
-      var NumRedirect: Integer; var Handled: Boolean;
-      var VMethod: TIdHTTPMethod);
-    procedure HTTPStatus(ASender: TObject; const AStatus: TIdStatus;
-      const AStatusText: string);
-}
+    procedure mnuExportFlameClick(Sender: TObject);
+
     procedure ListXmlScannerStartTag(Sender: TObject; TagName: string;
       Attributes: TAttrList);
     procedure XMLScannerStartTag(Sender: TObject; TagName: string;
@@ -312,7 +305,6 @@ type
     procedure ParseXML(var cp1: TControlPoint; const params: PCHAR);
     function SaveFlame(cp1: TControlPoint; title, filename: string): boolean;
     function SaveXMLFlame(const cp1: TControlPoint; title, filename: string): boolean;
-    //function TrianglesFromCP(const cp1: TControlPoint; var Triangles: TTriangles): integer;
     procedure DisplayHint(Sender: TObject);
     procedure OnProgress(prog: double);
     procedure DrawFlame;
@@ -358,8 +350,9 @@ var
   MainForm: TMainForm;
   pname, ptime: string;
   nxform: integer;
-  FinalXformLoaded: boolean;
-  ParseCp: TControlPoint; // For parsing;
+  FinalXformLoaded: boolean; //
+  ParseCp: TControlPoint;    // For parsing;
+  ActiveXformSet: integer;   //
   MainCp: TControlPoint;
 
 implementation
@@ -540,6 +533,7 @@ procedure TMainForm.StopThread;
 begin
   RedrawTimer.Enabled := False;
   if Assigned(Renderer) then begin
+    assert(Renderer.Suspended = false);
     Renderer.Terminate;
     Renderer.WaitFor;
   end;
@@ -1303,7 +1297,7 @@ function FlameToXML(const cp1: TControlPoint; sheep: boolean; compact: boolean =
 var
   t, i{, j}: integer;
   FileList: TStringList;
-  x, y{, a, b, cc, d, e, f}: double;
+  x, y: double;
   {varlist,} nick, url, pal, hue: string;
 begin
   FileList := TStringList.create;
@@ -1341,8 +1335,19 @@ begin
     t := cp1.NumXForms;
     for i := 0 to t - 1 do
       FileList.Add(cp1.xform[i].ToXMLString);
-//  if cp1.HasFinalXForm then FileList.Add(cp1.finalxform.FinalToXMLString(cp1.finalXformEnabled));
-    if cp1.HasFinalXForm then FileList.Add(cp1.xform[t].FinalToXMLString(cp1.finalXformEnabled));
+    if cp1.HasFinalXForm then
+    begin
+
+{$if false} // new file format - how about this?
+      FileList.Add(Format('   <xformset enabled="%d">', [IfThen(cp1.finalXformEnabled, 1, 0)]));
+      FileList.Add('   ' + cp1.xform[t].ToXMLString);
+      Filelist.Add('   </xformset>');
+{$else}
+      FileList.Add(cp1.xform[i].FinalToXMLString(cp1.finalXformEnabled));
+{$ifend}
+
+    end;
+
    { Write palette data }
     if not sheep then begin
       if compact then // say no to duplicated data! (?)
@@ -1728,13 +1733,15 @@ procedure TMainForm.DrawFlame;
 begin
   RedrawTimer.Enabled := False;
   if Assigned(Renderer) then begin
+    assert(Renderer.Suspended = false);
+
     Renderer.Terminate;
     Renderer.WaitFor;
     Renderer.Free;
     Renderer := nil;
   end;
 
-  assert(Renderer = nil); //...
+  assert(Renderer = nil); //...?
 
   if not Assigned(Renderer) then
   begin
@@ -1768,22 +1775,6 @@ end;
 { ************************** IFS and triangle stuff ************************* }
 
                    { ---Z--- moved to ControlPoint ---Z--- }
-
-{ // unused function, hmmm...
-
-procedure CP_compute(var cp1: TControlPoint; t1, t0: TTriangle; const i: integer);
-begin
-  solve3(t0.x[0], t0.y[0], t1.x[0],
-    t0.x[1], t0.y[1], t1.x[1],
-    t0.x[2], t0.y[2], t1.x[2],
-    cp1.xform[i].c[0][0], cp1.xform[i].c[1][0], cp1.xform[i].c[2][0]);
-
-  solve3(t0.x[0], t0.y[0], t1.y[0],
-    t0.x[1], t0.y[1], t1.y[1],
-    t0.x[2], t0.y[2], t1.y[2],
-    cp1.xform[i].c[0][1], cp1.xform[i].c[1][1], cp1.xform[i].c[2][1]);
-end;
-}
 
 function FlameToString(Title: string): string;
 { Creates a string containing the formated flame parameter set }
@@ -3529,7 +3520,8 @@ begin
   StopThread;
   nxform := 0;
   FinalXformLoaded := false;
-  Parsecp.cmapindex := -2; // generate pallet from cmapindex and hue (apo 1 and earlier)
+  activeXformSet:=0;
+  Parsecp.cmapindex := -2; // generate palette from cmapindex and hue (apo 1 and earlier)
   ParseCp.symmetry := 0;
   ParseCP.finalXformEnabled := false;
   XMLScanner.LoadFromBuffer(params);
@@ -3726,87 +3718,6 @@ begin
   end;
 end;
 
-procedure TMainForm.mnuPostSheepClick(Sender: TObject);
-{
-var
-  URL: string;
-  StringList: TStringList;
-  ResponseStream: TMemoryStream;
-  MultiPartFormDataStream: TmsMultiPartFormDataStream;
-}
-begin
-//  if MainCp.HasNewVariants then begin
-//    showMessage('The posting of sheep with new variants (exponential, power, cosine and sawtooth) is disabled in this version.');
-//    Exit;
-//  end;
-
-//  if MainCp.FAngle <> 0 then begin
-//    showMessage('The posting of sheep with are rotated is disabled in this version.');
-//    Exit;
-//  end;
-{
-  if SheepDialog.ShowModal = mrOK then
-  begin
-    DeleteFile('apophysis.log');
-    SetCurrentDir(ExtractFilePath(Application.exename));
-    StringList := TStringList.Create;
-    MultiPartFormDataStream := TmsMultiPartFormDataStream.Create;
-    ResponseStream := TMemoryStream.Create;
-    try
-      LogFile.Active := True;
-      StringList.Text := FlameToXMLSheep(SheepDialog.cp);
-      if FileExists('sheep.flame') then DeleteFile('sheep.flame');
-      StringList.SaveToFile('sheep.flame');
-      HTTP.Request.ContentType := MultiPartFormDataStream.RequestContentType;
-      MultiPartFormDataStream.AddFormField('type', 'upload');
-      MultiPartFormDataStream.AddFile('file', 'sheep.flame', 'text/xml');
-      MultiPartFormDataStream.AddFormField('nick', SheepDialog.txtNick.text);
-      MultiPartFormDataStream.AddFormField('url', SheepDialog.txtURL.text);
-      MultiPartFormDataStream.AddFormField('pw', SheepPW); //SheepPw
-    // You must make sure you call this method *before* sending the stream
-      MultiPartFormDataStream.PrepareStreamForDispatch;
-      MultiPartFormDataStream.Position := 0;
-      URL := URLEncode(SheepServer + 'cgi/apophysis.cgi');
-      try
-        HTTP.Post(URL, MultiPartFormDataStream, ResponseStream);
-      except
-        on E: Exception do
-          StatusBar.SimpleText := (E.Message);
-      end;
-      ResponseStream.SaveToFile('response.log');
-      StringList.LoadFromFile('response.log');
-      if Trim(StringList.Text) = 'bad password.' then
-        ShowMessage('Bad Password');
-    finally
-      MultiPartFormDataStream.Free;
-      ResponseStream.Free;
-      StringList.Free;
-      logFile.Active := False;
-    end;
-  end;
-}
-end;
-
-{
-procedure TMainForm.HTTPRedirect(Sender: TObject; var dest: string;
-  var NumRedirect: Integer; var Handled: Boolean;
-  var VMethod: TIdHTTPMethod);
-var
-  URL: string;
-begin
-  URL := SheepServer + 'cgi/' + dest;
-  ShellExecute(ValidParentForm(Self).Handle, 'open', PChar(URL),
-    nil, nil, SW_SHOWNORMAL);
-  Handled := True;
-end;
-
-procedure TMainForm.HTTPStatus(ASender: TObject; const AStatus: TIdStatus;
-  const AStatusText: string);
-begin
-  StatusBar.SimpleText := AStatusTExt;
-end;
-}
-
 procedure TMainForm.ListXmlScannerStartTag(Sender: TObject;
   TagName: string; Attributes: TAttrList);
 begin
@@ -3821,7 +3732,18 @@ var
   v: string;
 begin
   Tokens := TStringList.Create;
-  try
+ try
+
+  if TagName='xformset' then
+  begin
+    v := Attributes.Value('enabled');
+    if v <> '' then ParseCP.finalXformEnabled := (StrToInt(v) <> 0)
+    else ParseCP.finalXformEnabled := false;
+
+    inc(activeXformSet);
+  end
+  else if TagName='flame' then
+  begin
     v := Attributes.value('name');
     if v <> '' then Parsecp.name := v else Parsecp.name := 'untitled';
     v := Attributes.Value('time');
@@ -3893,10 +3815,10 @@ begin
     v := Attributes.Value('url');
     if Trim(v) = '' then v := SheepUrl;
     Parsecp.URL := v;
-
-  finally
-    Tokens.free;
   end;
+ finally
+    Tokens.free;
+ end;
 end;
 
 procedure ParseCompactcolors(cp: TControlPoint; count: integer; in_data: string);
@@ -3948,7 +3870,7 @@ begin
      if (TagName = 'finalxform') and (FinalXformLoaded) then ShowMessage('ERROR: No xforms allowed after FinalXform!')
      else
     begin
-      if (TagName = 'finalxform') then FinalXformLoaded := true;
+      if (TagName = 'finalxform') or (activeXformSet > 0) then FinalXformLoaded := true;
 
      with ParseCP.xform[nXform] do begin
       Clear;
@@ -3960,13 +3882,16 @@ begin
         if v <> '' then ParseCP.finalXformEnabled := (StrToInt(v) <> 0)
         else ParseCP.finalXformEnabled := false;
       end;
+
+      if activexformset > 0 then density := 0; // tmp...
+
       v := Attributes.Value('color');
       if v <> '' then color := StrToFloat(v);
       v := Attributes.Value('symmetry');
       if v <> '' then symmetry := StrToFloat(v);
       v := Attributes.Value('coefs');
       GetTokens(v, tokens);
-      if Tokens.Count < 6 then ShowMessage('Not enough cooeficients...crash?');
+      if Tokens.Count < 6 then ShowMessage('Not enough coefficients...crash?');
       c[0][0] := StrToFloat(Tokens[0]);
       c[0][1] := StrToFloat(Tokens[1]);
       c[1][0] := StrToFloat(Tokens[2]);
@@ -3977,7 +3902,7 @@ begin
       v := Attributes.Value('post');
       if v <> '' then begin
         GetTokens(v, tokens);
-        if Tokens.Count < 6 then ShowMessage('Not enough post-cooeficients...crash?');
+        if Tokens.Count < 6 then ShowMessage('Not enough post-coefficients...crash?');
         p[0][0] := StrToFloat(Tokens[0]);
         p[0][1] := StrToFloat(Tokens[1]);
         p[1][0] := StrToFloat(Tokens[2]);
