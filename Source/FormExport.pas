@@ -56,6 +56,14 @@ type
     Label8: TLabel;
     txtStrips: TEdit;
     udStrips: TUpDown;
+    Label9: TLabel;
+    Label11: TLabel;
+    Label12: TLabel;
+    Label13: TLabel;
+    txtJitters: TEdit;
+    txtEstimator: TEdit;
+    txtEstimatorMin: TEdit;
+    txtEstimatorCurve: TEdit;
     procedure btnBrowseClick(Sender: TObject);
     procedure FormShow(Sender: TObject);
     procedure btnOKClick(Sender: TObject);
@@ -67,13 +75,17 @@ type
     procedure txtOversampleChange(Sender: TObject);
     procedure txtBatchesChange(Sender: TObject);
     procedure cmbDepthChange(Sender: TObject);
+    procedure txtEstimatorChange(Sender: TObject);
+    procedure txtEstimatorMinChange(Sender: TObject);
+    procedure txtEstimatorCurveChange(Sender: TObject);
+    procedure txtJittersChange(Sender: TObject);
   private
-    { Private declarations }
+    FloatFormatSettings: TFormatSettings;
   public
     Filename: string;
     ImageWidth, ImageHeight, Oversample, Batches, Strips: Integer;
     Sample_Density, Filter_Radius: double;
-    { Public declarations }
+    Estimator, EstimatorMin, EstimatorCurve, Jitters: double;
   end;
 
 var
@@ -122,6 +134,16 @@ begin
   txtOversample.text := IntToSTr(Oversample);
   udOversample.Position := Oversample;
   Ratio := ImageWidth / ImageHeight;
+  Estimator := 5.0;
+  EstimatorMin := 0.0;
+  EstimatorCurve := 0.6;
+  Jitters := 1;
+  txtEstimator.Text := '5.0';
+  txtEstimatorMin.Text := '0.0';
+  txtEstimatorCurve.Text := '0.6';
+  txtJitters.Text := '1';
+
+  GetLocaleFormatSettings(LOCALE_SYSTEM_DEFAULT, FloatFormatSettings);
 end;
 
 procedure TExportDialog.btnOKClick(Sender: TObject);
@@ -210,6 +232,42 @@ begin
     txtBatches.text := IntToStr(Round(Sample_density / 4))
   else
     txtBatches.text := IntToStr(1);
+end;
+
+procedure TExportDialog.txtEstimatorChange(Sender: TObject);
+begin
+  Estimator := 0;
+  try
+    Estimator := StrToFloat(txtEstimator.Text, FloatFormatSettings);
+  except
+  end;
+end;
+
+procedure TExportDialog.txtEstimatorMinChange(Sender: TObject);
+begin
+  EstimatorMin := 0;
+  try
+    EstimatorMin := StrToFloat(txtEstimatorMin.Text, FloatFormatSettings);
+  except
+  end;
+end;
+
+procedure TExportDialog.txtEstimatorCurveChange(Sender: TObject);
+begin
+  EstimatorCurve := 0;
+  try
+    EstimatorCurve := StrToFloat(txtEstimatorCurve.Text, FloatFormatSettings);
+  except
+  end;
+end;
+
+procedure TExportDialog.txtJittersChange(Sender: TObject);
+begin
+  Jitters := 0;
+  try
+    Jitters := StrToFloat(txtJitters.Text, FloatFormatSettings);
+  except
+  end;
 end;
 
 end.

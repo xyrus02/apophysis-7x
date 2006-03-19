@@ -3,8 +3,8 @@ object ExportDialog: TExportDialog
   Top = 276
   BorderStyle = bsDialog
   Caption = 'Export Flame'
-  ClientHeight = 270
-  ClientWidth = 424
+  ClientHeight = 325
+  ClientWidth = 419
   Color = clBtnFace
   Font.Charset = DEFAULT_CHARSET
   Font.Color = clWindowText
@@ -17,9 +17,9 @@ object ExportDialog: TExportDialog
   PixelsPerInch = 96
   TextHeight = 13
   object btnOK: TButton
-    Left = 336
-    Top = 178
-    Width = 75
+    Left = 326
+    Top = 182
+    Width = 89
     Height = 25
     Caption = '&OK'
     Default = True
@@ -28,9 +28,9 @@ object ExportDialog: TExportDialog
     OnClick = btnOKClick
   end
   object btnCancel: TButton
-    Left = 336
+    Left = 326
     Top = 210
-    Width = 75
+    Width = 89
     Height = 25
     Caption = 'Cancel'
     ModalResult = 2
@@ -41,7 +41,7 @@ object ExportDialog: TExportDialog
     Top = 5
     Width = 408
     Height = 57
-    Caption = 'Destination'
+    Caption = '  Destination  '
     TabOrder = 2
     object btnBrowse: TSpeedButton
       Left = 368
@@ -108,7 +108,7 @@ object ExportDialog: TExportDialog
     Top = 66
     Width = 200
     Height = 105
-    Caption = 'Rendering'
+    Caption = '  Quality  '
     TabOrder = 3
     object Label3: TLabel
       Left = 10
@@ -174,7 +174,7 @@ object ExportDialog: TExportDialog
     Top = 66
     Width = 200
     Height = 105
-    Caption = 'Size'
+    Caption = '  Size  '
     TabOrder = 4
     object Label1: TLabel
       Left = 10
@@ -241,8 +241,8 @@ object ExportDialog: TExportDialog
     Left = 8
     Top = 176
     Width = 313
-    Height = 89
-    Caption = 'hqi/flam3'
+    Height = 145
+    Caption = '  flam3 parameters  '
     TabOrder = 5
     object Label6: TLabel
       Left = 10
@@ -264,6 +264,37 @@ object ExportDialog: TExportDialog
       Width = 29
       Height = 13
       Caption = 'Strips:'
+    end
+    object Label9: TLabel
+      Left = 8
+      Top = 88
+      Width = 43
+      Height = 13
+      Caption = 'Estimator'
+    end
+    object Label11: TLabel
+      Left = 8
+      Top = 112
+      Width = 49
+      Height = 25
+      Caption = 'Estimator min.'
+      WordWrap = True
+    end
+    object Label12: TLabel
+      Left = 160
+      Top = 80
+      Width = 57
+      Height = 25
+      Caption = 'Estimator curve'
+      WordWrap = True
+    end
+    object Label13: TLabel
+      Left = 160
+      Top = 112
+      Width = 57
+      Height = 25
+      Caption = 'Temporal samples'
+      WordWrap = True
     end
     object txtBatches: TEdit
       Left = 64
@@ -328,6 +359,42 @@ object ExportDialog: TExportDialog
       Max = 512
       Position = 1
       TabOrder = 5
+    end
+    object txtJitters: TEdit
+      Left = 224
+      Top = 116
+      Width = 57
+      Height = 21
+      TabOrder = 6
+      Text = '1'
+      OnChange = txtJittersChange
+    end
+    object txtEstimator: TEdit
+      Left = 64
+      Top = 84
+      Width = 57
+      Height = 21
+      TabOrder = 7
+      Text = '5'
+      OnChange = txtEstimatorChange
+    end
+    object txtEstimatorMin: TEdit
+      Left = 64
+      Top = 116
+      Width = 57
+      Height = 21
+      TabOrder = 8
+      Text = '0'
+      OnChange = txtEstimatorMinChange
+    end
+    object txtEstimatorCurve: TEdit
+      Left = 224
+      Top = 84
+      Width = 57
+      Height = 21
+      TabOrder = 9
+      Text = '0.6'
+      OnChange = txtEstimatorCurveChange
     end
   end
   object SaveDialog: TSaveDialog

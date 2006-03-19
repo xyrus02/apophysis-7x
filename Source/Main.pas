@@ -1329,7 +1329,12 @@ begin
       format('" background="%g %g %g" ', [cp1.background[0] / 255, cp1.background[1] / 255, cp1.background[2] / 255]) +
       format('brightness="%g" ', [cp1.brightness]) +
       format('gamma="%g" ', [cp1.gamma]) +
-      format('vibrancy="%g" ', [cp1.vibrancy]) + hue + url + nick + '>');
+      format('vibrancy="%g" ', [cp1.vibrancy]) +
+      format('estimator="%g" ', [cp1.estimator]) +
+      format('estimator_minimum="%g" ', [cp1.estimator_min]) +
+      format('estimator_curve="%g" ', [cp1.estimator_curve]) +
+      format('temporal_samples="%g" ', [cp1.jitters]) +
+      hue + url + nick + '>');
 
    { Write transform parameters }
     t := cp1.NumXForms;
@@ -3618,7 +3623,10 @@ var
 begin
   if (MainCp.NumXForms > 12) or
      (MainCP.HasNewVariants) then begin
-    showMessage('This flame will not be correctly rendered this way. Please use the internal renderer.');
+    showMessage('WARNING: This flame will not be correctly rendered '#10#13+
+                'by the flam3 version < 2.7b4.'#10#13+
+                'Please use the 2.7b4 version or newer '#10#13+
+                'or use the internal renderer.');
   end;
 
   if not FileExists(HqiPath) then
@@ -3661,12 +3669,20 @@ begin
       ExportFilter := ExportDialog.Filter_Radius;
       ExportOversample := ExportDialog.Oversample;
       ExportBatches := ExportDialog.Batches;
+      ExportEstimator := ExportDialog.Estimator;
+      ExportEstimatorMin := ExportDialog.EstimatorMin;
+      ExportEstimatorCurve := ExportDialog.EstimatorCurve;
+      ExportJitters := ExportDialog.Jitters;
       cp1.sample_density := ExportDensity;
       cp1.spatial_oversample := ExportOversample;
       cp1.spatial_filter_radius := ExportFilter;
       cp1.nbatches := ExportBatches;
       if (cp1.width <> ExportWidth) or (cp1.Height <> ExportHeight) then
         cp1.AdjustScale(ExportWidth, ExportHeight);
+      cp1.estimator := ExportEstimator;
+      cp1.estimator_min := ExportEstimatorMin;
+      cp1.estimator_curve := ExportEstimatorCurve;
+      cp1.jitters := ExportJitters;
       FileList.Text := FlameToXML(cp1, false);
       FileList.SaveToFile(ChangeFileExt(ExportDialog.Filename, '.flame'));
       FileList.Clear;

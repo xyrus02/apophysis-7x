@@ -124,6 +124,8 @@ type
     pulse: array[0..1, 0..1] of double; // [i][0]=magnitute [i][1]=frequency */
     wiggle: array[0..1, 0..1] of double; // frequency is /minute, assuming 30 frames/s */
 
+    estimator, estimator_min, estimator_curve, jitters: double; // density estimator.
+
     PropTable: array of TXForm;//Integer;
     FAngle: Double;
     FTwoColorDimensions: Boolean;
