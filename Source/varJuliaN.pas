@@ -17,6 +17,7 @@ type
     N: integer;
     c: double;
 
+    rN: integer;
     cn: double;
 
     procedure CalcPower1;
@@ -57,6 +58,7 @@ end;
 
 procedure TVariationJulian.Prepare;
 begin
+  rN := abs(N);
   cn := c / N / 2;
 end;
 
@@ -77,7 +79,7 @@ var
   r: double;
   sina, cosa: extended;
 begin
-  sincos((arctan2(FTy^, FTx^) + 2*pi*random(n)) / N, sina, cosa);
+  sincos((arctan2(FTy^, FTx^) + 2*pi*random(rn)) / N, sina, cosa);
   r := vvar * Math.Power(sqr(FTx^) + sqr(FTy^), cn);
 
   FPx^ := FPx^ + r * cosa;
@@ -93,7 +95,7 @@ asm
     fld     st(1)
     fpatan
     mov     ecx, eax
-    mov     eax, dword ptr [eax + N]
+    mov     eax, dword ptr [eax + rN]
     call    System.@RandInt
     push    eax
     fild    dword ptr [esp]
