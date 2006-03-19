@@ -371,8 +371,8 @@ end;
 procedure TXForm.DoPostTransform;
 {$ifndef _ASM_}
 begin
-  x := p00 * FPx + p10 * FPy + p20;
-  y := p01 * FPx + p11 * FPy + p21;
+  FPx := p00 * FPx + p10 * FPy + p20;
+  FPy := p01 * FPx + p11 * FPy + p21;
 {$else}
 asm
     fld     qword ptr [eax + FPy]
@@ -873,15 +873,22 @@ asm
     fld1
     faddp
     fdivp   st(1), st
-    xor     eax, eax        // hmm...
-    add     eax, $02        // hmmm....
-    call    System.@RandInt // hmmmm.....
+    mov     eax, 2
+    call    System.@RandInt
+
+    shr     eax, 1
+    jnc     @skip
+    fldpi
+    faddp
+@skip:
+{
     push    eax
     fild    dword ptr [esp]
     add     esp, 4
     fldpi
     fmulp
     faddp
+}
     fsincos
     fld     qword ptr [ebx + FTx]
     fmul    st, st

@@ -70,9 +70,12 @@ begin
   StartTime := Now;
   t := now;
   Remainder := 1;
-  if Assigned(Renderer) then Renderer.Terminate;
-  if Assigned(Renderer) then Renderer.WaitFor;
-  assert(not assigned(renderer));
+  if Assigned(Renderer) then begin
+    Renderer.Terminate;
+    Renderer.WaitFor;
+    Application.ProcessMessages;//Renderer.Free;
+  end;
+  assert(not assigned(renderer), 'Render thread is still running!?');
   if not Assigned(Renderer) then
   begin
     Renderer := TRenderThread.Create;

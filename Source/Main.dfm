@@ -195,7 +195,7 @@ object MainForm: TMainForm
     object btnDefine: TToolButton
       Left = 348
       Top = 0
-      Hint = 'Edit Script (F8)|Open the Script Editor'
+      Hint = 'Edit Script|Open the Script Editor'
       Caption = 'btnDefine'
       ImageIndex = 42
       OnClick = mnuEditScriptClick
@@ -203,7 +203,7 @@ object MainForm: TMainForm
     object btnRun: TToolButton
       Left = 371
       Top = 0
-      Hint = 'Run Script|Run Script'
+      Hint = 'Run Script (F9)|Run Script'
       Caption = 'Run'
       ImageIndex = 43
       OnClick = btnRunClick
@@ -211,7 +211,7 @@ object MainForm: TMainForm
     object btnStop: TToolButton
       Left = 394
       Top = 0
-      Hint = 'Stop Script|Stop Script'
+      Hint = 'Stop Script (F10)|Stop Script'
       Caption = 'Stop'
       ImageIndex = 36
       OnClick = mnuStopClick

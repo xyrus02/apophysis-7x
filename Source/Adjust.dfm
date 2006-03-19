@@ -546,6 +546,7 @@ object AdjustForm: TAdjustForm
         Height = 21
         Hint = 'Click for menu'
         Caption = 'Rotate'
+        Flat = True
         ParentShowHint = False
         ShowHint = True
         OnClick = btnMenuClick
