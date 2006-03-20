@@ -1,5 +1,6 @@
 {
      Apophysis Copyright (C) 2001-2004 Mark Townsend
+     Apophysis Copyright (C) 2005-2006 Ronald Hordijk, Piotr Boris, Peter Sdobnov     
 
      This program is free software; you can redistribute it and/or modify
      it under the terms of the GNU General Public License as published by
@@ -18,8 +19,6 @@
 program Apophysis203;
 
 {%ToDo 'Apophysis203.todo'}
-{%File 'readme.txt'}
-{%ToDo 'Apophysis203.todo'}
 
 uses
   Forms,
@@ -31,9 +30,6 @@ uses
   Options in '..\..\Source\Options.pas' {OptionsForm},
   Regstry in '..\..\Source\Regstry.pas',
   Fullscreen in '..\..\Source\Fullscreen.pas' {FullscreenForm},
-  Render in '..\..\Source\Render.pas',
-  Render64 in '..\..\Source\Render64.pas',
-  RenderThread in '..\..\Source\RenderThread.pas',
   FormRender in '..\..\Source\FormRender.pas' {RenderForm},
   Mutate in '..\..\Source\Mutate.pas' {MutateForm},
   Adjust in '..\..\Source\Adjust.pas' {AdjustForm},
@@ -44,32 +40,38 @@ uses
   SavePreset in '..\..\Source\SavePreset.pas' {SavePresetForm},
   ControlPoint in '..\..\Source\ControlPoint.pas',
   HtmlHlp in '..\..\Source\HtmlHlp.pas',
-  ScriptForm in '..\..\Source\ScriptForm.pas' {ScriptEditor},
   Preview in '..\..\Source\Preview.pas' {PreviewForm},
+  ScriptForm in '..\..\Source\ScriptForm.pas' {ScriptEditor},
   ScriptRender in '..\..\Source\ScriptRender.pas' {ScriptRenderForm},
   FormFavorites in '..\..\Source\FormFavorites.pas' {FavoritesForm},
   FormExport in '..\..\Source\FormExport.pas' {ExportDialog},
   MsMultiPartFormData in '..\..\Source\MsMultiPartFormData.pas',
   XForm in '..\..\Source\XForm.pas',
+  XFormMan in '..\..\Source\XFormMan.pas',
   cmapdata in '..\..\Source\cmapdata.pas',
-  RenderMM in '..\..\Source\RenderMM.pas',
   GradientHlpr in '..\..\Source\GradientHlpr.pas',
   formPostProcess in '..\..\Source\formPostProcess.pas' {frmPostProcess},
   RndFlame in '..\..\Source\RndFlame.pas',
   bmdll32 in '..\..\Source\bmdll32.PAS',
   ImageColoring in '..\..\Source\ImageColoring.pas' {frmImageColoring},
-  XFormMan in '..\..\Source\XFormMan.pas',
   BaseVariation in '..\..\Source\BaseVariation.pas',
   ImageMaker in '..\..\Source\ImageMaker.pas',
-  Render64MT in '..\..\Source\Render64MT.pas',
-  BucketFillerThread in '..\..\Source\BucketFillerThread.pas',
+  Render in '..\..\Source\Render.pas',
+  Render64 in '..\..\Source\Render64.pas',
+  RenderMM in '..\..\Source\RenderMM.pas',
   RenderMM_MT in '..\..\Source\RenderMM_MT.pas',
+  Render64MT in '..\..\Source\Render64MT.pas',
+  RenderThread in '..\..\Source\RenderThread.pas',
+  BucketFillerThread in '..\..\Source\BucketFillerThread.pas',
   CustomDrawControl in '..\..\Source\CustomDrawControl.pas',
-  varblob in '..\..\Source\varblob.pas',
-  varFan2 in '..\..\Source\varFan2.pas',
-  varpdj in '..\..\Source\varpdj.pas',
   varRings2 in '..\..\Source\varRings2.pas',
-  varPerspective in '..\..\Source\varPerspective.pas';
+  varFan2 in '..\..\Source\varFan2.pas',
+  varblob in '..\..\Source\varblob.pas',
+  varpdj in '..\..\Source\varpdj.pas',
+  varPerspective in '..\..\Source\varPerspective.pas',
+  varSmoke2 in '..\..\Source\varSmoke2.pas',
+  varJuliaN in '..\..\Source\varJuliaN.pas',
+  varJuliaScope in '..\..\Source\varJuliaScope.pas';
 
 {$R *.RES}
 
