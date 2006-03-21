@@ -1330,10 +1330,11 @@ begin
       format('brightness="%g" ', [cp1.brightness]) +
       format('gamma="%g" ', [cp1.gamma]) +
       format('vibrancy="%g" ', [cp1.vibrancy]) +
-      format('estimator="%g" ', [cp1.estimator]) +
+      format('estimator_radius="%g" ', [cp1.estimator]) +
       format('estimator_minimum="%g" ', [cp1.estimator_min]) +
       format('estimator_curve="%g" ', [cp1.estimator_curve]) +
-      format('temporal_samples="%g" ', [cp1.jitters]) +
+      format('temporal_samples="%d" ', [cp1.jitters]) +
+      format('gamma_thresholds="%g" ', [cp1.gamma_tresholds]) +
       hue + url + nick + '>');
 
    { Write transform parameters }
@@ -3673,6 +3674,7 @@ begin
       ExportEstimatorMin := ExportDialog.EstimatorMin;
       ExportEstimatorCurve := ExportDialog.EstimatorCurve;
       ExportJitters := ExportDialog.Jitters;
+      ExportGammaTresholds := ExportDialog.GammaTresholds;
       cp1.sample_density := ExportDensity;
       cp1.spatial_oversample := ExportOversample;
       cp1.spatial_filter_radius := ExportFilter;
@@ -3683,6 +3685,7 @@ begin
       cp1.estimator_min := ExportEstimatorMin;
       cp1.estimator_curve := ExportEstimatorCurve;
       cp1.jitters := ExportJitters;
+      cp1.gamma_tresholds := ExportGammaTresholds;
       FileList.Text := FlameToXML(cp1, false);
       FileList.SaveToFile(ChangeFileExt(ExportDialog.Filename, '.flame'));
       FileList.Clear;

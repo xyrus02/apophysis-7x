@@ -127,7 +127,9 @@ var
   SheepServer, SheepNick, SheepURL, SheepPW, HqiPath: string;
   ExportBatches, ExportOversample, ExportWidth, ExportHeight, ExportFileFormat: Integer;
   ExportFilter, ExportDensity: Double;
-  ExportEstimator, ExportEstimatorMin, ExportEstimatorCurve, ExportJitters: double;
+  ExportEstimator, ExportEstimatorMin, ExportEstimatorCurve: double;
+  ExportJitters: integer;
+  ExportGammaTresholds: double;
   OpenFileType: TFileType;
   ResizeOnLoad: Boolean;
   ShowProgress: Boolean;

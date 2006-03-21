@@ -267,33 +267,42 @@ object ExportDialog: TExportDialog
     end
     object Label9: TLabel
       Left = 8
-      Top = 88
-      Width = 43
-      Height = 13
-      Caption = 'Estimator'
+      Top = 80
+      Width = 49
+      Height = 25
+      Caption = 'Estimator radius'
+      WordWrap = True
     end
     object Label11: TLabel
       Left = 8
       Top = 112
-      Width = 49
-      Height = 25
+      Width = 46
+      Height = 26
       Caption = 'Estimator min.'
       WordWrap = True
     end
     object Label12: TLabel
       Left = 160
       Top = 80
-      Width = 57
-      Height = 25
+      Width = 46
+      Height = 26
       Caption = 'Estimator curve'
       WordWrap = True
     end
     object Label13: TLabel
       Left = 160
       Top = 112
-      Width = 57
-      Height = 25
+      Width = 47
+      Height = 26
       Caption = 'Temporal samples'
+      WordWrap = True
+    end
+    object Label14: TLabel
+      Left = 160
+      Top = 48
+      Width = 57
+      Height = 26
+      Caption = 'Gamma tresholds'
       WordWrap = True
     end
     object txtBatches: TEdit
@@ -330,22 +339,12 @@ object ExportDialog: TExportDialog
         '32 bits'
         '64 bits')
     end
-    object chkRender: TCheckBox
-      Left = 224
-      Top = 54
-      Width = 65
-      Height = 17
-      Caption = 'Render'
-      Checked = True
-      State = cbChecked
-      TabOrder = 3
-    end
     object txtStrips: TEdit
       Left = 64
       Top = 52
       Width = 57
       Height = 21
-      TabOrder = 4
+      TabOrder = 3
       Text = '1'
       OnChange = txtBatchesChange
     end
@@ -358,14 +357,14 @@ object ExportDialog: TExportDialog
       Min = 1
       Max = 512
       Position = 1
-      TabOrder = 5
+      TabOrder = 4
     end
     object txtJitters: TEdit
       Left = 224
       Top = 116
       Width = 57
       Height = 21
-      TabOrder = 6
+      TabOrder = 5
       Text = '1'
       OnChange = txtJittersChange
     end
@@ -374,7 +373,7 @@ object ExportDialog: TExportDialog
       Top = 84
       Width = 57
       Height = 21
-      TabOrder = 7
+      TabOrder = 6
       Text = '5'
       OnChange = txtEstimatorChange
     end
@@ -383,7 +382,7 @@ object ExportDialog: TExportDialog
       Top = 116
       Width = 57
       Height = 21
-      TabOrder = 8
+      TabOrder = 7
       Text = '0'
       OnChange = txtEstimatorMinChange
     end
@@ -392,10 +391,29 @@ object ExportDialog: TExportDialog
       Top = 84
       Width = 57
       Height = 21
-      TabOrder = 9
+      TabOrder = 8
       Text = '0.6'
       OnChange = txtEstimatorCurveChange
     end
+    object txtGammaTresholds: TEdit
+      Left = 224
+      Top = 52
+      Width = 57
+      Height = 21
+      TabOrder = 9
+      Text = '0.01'
+      OnChange = txtGammaTresholdsChange
+    end
+  end
+  object chkRender: TCheckBox
+    Left = 328
+    Top = 302
+    Width = 65
+    Height = 17
+    Caption = 'Render'
+    Checked = True
+    State = cbChecked
+    TabOrder = 6
   end
   object SaveDialog: TSaveDialog
     DefaultExt = 'jpg'

@@ -64,6 +64,8 @@ type
     txtEstimator: TEdit;
     txtEstimatorMin: TEdit;
     txtEstimatorCurve: TEdit;
+    Label14: TLabel;
+    txtGammaTresholds: TEdit;
     procedure btnBrowseClick(Sender: TObject);
     procedure FormShow(Sender: TObject);
     procedure btnOKClick(Sender: TObject);
@@ -79,13 +81,16 @@ type
     procedure txtEstimatorMinChange(Sender: TObject);
     procedure txtEstimatorCurveChange(Sender: TObject);
     procedure txtJittersChange(Sender: TObject);
+    procedure txtGammaTresholdsChange(Sender: TObject);
   private
     FloatFormatSettings: TFormatSettings;
   public
     Filename: string;
     ImageWidth, ImageHeight, Oversample, Batches, Strips: Integer;
     Sample_Density, Filter_Radius: double;
-    Estimator, EstimatorMin, EstimatorCurve, Jitters: double;
+    Estimator, EstimatorMin, EstimatorCurve: double;
+    GammaTresholds: double;
+    Jitters: integer;
   end;
 
 var
@@ -138,12 +143,13 @@ begin
   EstimatorMin := 0.0;
   EstimatorCurve := 0.6;
   Jitters := 1;
-  txtEstimator.Text := '5.0';
-  txtEstimatorMin.Text := '0.0';
-  txtEstimatorCurve.Text := '0.6';
-  txtJitters.Text := '1';
-
+  GammaTresholds := 0.01;
   GetLocaleFormatSettings(LOCALE_SYSTEM_DEFAULT, FloatFormatSettings);
+  txtEstimator.Text := FloatToStr(Estimator, FloatFormatSettings);
+  txtEstimatorMin.Text := FloatToStr(EstimatorMin, FloatFormatSettings);
+  txtEstimatorCurve.Text := FloatToStr(EstimatorCurve, FloatFormatSettings);
+  txtJitters.Text := IntToStr(Jitters);
+  txtGammaTresholds.Text := FloatToStr(GammaTresholds, FloatFormatSettings);
 end;
 
 procedure TExportDialog.btnOKClick(Sender: TObject);
@@ -265,7 +271,16 @@ procedure TExportDialog.txtJittersChange(Sender: TObject);
 begin
   Jitters := 0;
   try
-    Jitters := StrToFloat(txtJitters.Text, FloatFormatSettings);
+    Jitters := StrToInt(txtJitters.Text);
+  except
+  end;
+end;
+
+procedure TExportDialog.txtGammaTresholdsChange(Sender: TObject);
+begin
+  GammaTresholds := 0.01;
+  try
+    GammaTresholds := StrToFloat(txtGammaTresholds.Text, FloatFormatSettings);
   except
   end;
 end;
