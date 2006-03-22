@@ -1,7 +1,7 @@
 {
      Flame screensaver Copyright (C) 2002 Ronald Hordijk
      Apophysis Copyright (C) 2001-2004 Mark Townsend
-     Apophysis Copyright (C) 2005-2006 Ronald Hordijk, Piotr Boris, Peter Sdobnov     
+     Apophysis Copyright (C) 2005-2006 Ronald Hordijk, Piotr Borys, Peter Sdobnov     
 
      This program is free software; you can redistribute it and/or modify
      it under the terms of the GNU General Public License as published by
@@ -23,28 +23,28 @@ interface
 
 uses
   Windows, Forms, Graphics, ImageMaker,
-   Render, xform, Controlpoint;
+  Render, xform, Controlpoint;
 
 type
   TRenderer64 = class(TBaseRenderer)
-  private
-    oversample: integer;
 
-    BucketWidth, BucketHeight: integer;
-    BucketSize: integer;
-
-    gutter_width: Integer;
-    max_gutter_width: Integer;
-
-    sample_density: extended;
-
-    Buckets: TBucketArray;
-    ColorMap: TColorMapArray;
-
+  protected
     camX0, camX1, camY0, camY1, // camera bounds
     camW, camH,                 // camera sizes
     bws, bhs, cosa, sina, rcX, rcY: double;
     ppux, ppuy: extended;
+
+    BucketWidth, BucketHeight: int64;
+    BucketSize: int64;
+
+    sample_density: extended;
+    oversample: integer;
+    gutter_width: Integer;
+    max_gutter_width: Integer;
+
+    Buckets: TBucketArray;
+    ColorMap: TColorMapArray;
+
     FImageMaker: TImageMaker;
 
     procedure InitValues;
@@ -57,7 +57,7 @@ type
 
     procedure SetPixels;
 
-  private
+  protected
     PropTable: array[0..SUB_BATCH_SIZE] of TXform;
     finalXform: TXform;
     UseFinalXform: boolean;
@@ -216,8 +216,10 @@ begin
   try
     SetLength(buckets, BucketSize);
   except
-    on EOutOfMemory do
-      Application.MessageBox('Error: not enough memory for this render!', 'Apophysis', 48)
+    on EOutOfMemory do begin
+      Application.MessageBox('Error: not enough memory for this render!', 'Apophysis', 48);
+      FStop := true;
+    end;
   end;
 
   // share the buffer with imagemaker
@@ -241,7 +243,6 @@ var
   i: integer;
   nsamples: Int64;
   nrbatches: Integer;
-  //points: TPointsArray;
   IterateBatchProc: procedure of object;
 begin
   Prepare;

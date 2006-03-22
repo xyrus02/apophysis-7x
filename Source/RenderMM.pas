@@ -1,7 +1,7 @@
 {
      Flame screensaver Copyright (C) 2002 Ronald Hordijk
      Apophysis Copyright (C) 2001-2004 Mark Townsend
-     Apophysis Copyright (C) 2005-2006 Ronald Hordijk, Piotr Boris, Peter Sdobnov     
+     Apophysis Copyright (C) 2005-2006 Ronald Hordijk, Piotr Borys, Peter Sdobnov     
 
      This program is free software; you can redistribute it and/or modify
      it under the terms of the GNU General Public License as published by
@@ -22,61 +22,31 @@ unit RenderMM;
 interface
 
 uses
-  Windows, Graphics,
-   Render, Controlpoint, ImageMaker, XForm;
+  Windows, Forms, Graphics,
+  Render64, Controlpoint, ImageMaker, XForm;
 
 type
-  TRendererMM64 = class(TBaseRenderer)
+  TRendererMM64 = class(TRenderer64)
+
   private
-    oversample: Integer;
+    image_Width, image_Height: Int64;
+    image_Center_X, image_Center_Y: double;
 
-    image_Width: Int64;
-    image_Height: Int64;
-    BucketWidth: Integer;
-    BucketHeight: Integer;
-    BucketSize: Integer;
-    gutter_width: Integer;
-
-    sample_density: extended;
-
-    Buckets: TBucketArray;
-    ColorMap: TColorMapArray;
-
-    camX0, camX1, camY0, camY1, // camera bounds
-    camW, camH,                 // camera sizes
-    bws, bhs, cosa, sina, rcX, rcY: double;
-//    bounds: array[0..3] of extended;
-//    size: array[0..1] of extended;
-//    FRotationCenter: array[0..1] of extended;
-    ppux, ppuy: extended;
-    nrSlices: int64;
-    Slice: int64;
-    FImageMaker: TImageMaker;
+    Slice, nrSlices: integer;
 
     procedure InitValues;
     procedure InitBuffers;
-    procedure ClearBuffers;
-    procedure ClearBuckets;
-    procedure CreateColorMap;
     procedure CreateCamera;
 
-    procedure AddPointsToBuckets(const points: TPointsArray);
-    procedure AddPointsToBucketsAngle(const points: TPointsArray);
-
-    procedure SetPixels;
   protected
     function GetSlice: integer; override;
     function GetNrSlices: integer; override;
 
   public
-    constructor Create; override;
-    destructor Destroy; override;
-
     function  GetImage: TBitmap; override;
     procedure SaveImage(const FileName: String); override;
 
     procedure Render; override;
-
   end;
 
 implementation
@@ -85,25 +55,6 @@ uses
   Math, Sysutils;
 
 { TRendererMM64 }
-
-///////////////////////////////////////////////////////////////////////////////
-procedure TRendererMM64.ClearBuckets;
-var
-  i: integer;
-begin
-  for i := 0 to BucketSize - 1 do begin
-    buckets[i].Red   := 0;
-    buckets[i].Green := 0;
-    buckets[i].Blue  := 0;
-    buckets[i].Count := 0;
-  end;
-end;
-
-///////////////////////////////////////////////////////////////////////////////
-procedure TRendererMM64.ClearBuffers;
-begin
-  ClearBuckets;
-end;
 
 ///////////////////////////////////////////////////////////////////////////////
 procedure TRendererMM64.CreateCamera;
@@ -123,24 +74,12 @@ begin
   t1 := gutter_width / (oversample * ppuy);
   corner_x := fcp.center[0] - image_width / ppux / 2.0;
   corner_y := fcp.center[1] - image_height / ppuy / 2.0;
-{
-  bounds[0] := corner0 - t0;
-  bounds[1] := corner1 - t1 + shift;
-  bounds[2] := corner0 + image_width / ppux + t0;
-  bounds[3] := corner1 + image_height / ppuy + t1; //+ shift;
-  if abs(bounds[2] - bounds[0]) > 0.01 then
-    size[0] := 1.0 / (bounds[2] - bounds[0])
-  else
-    size[0] := 1;
-  if abs(bounds[3] - bounds[1]) > 0.01 then
-    size[1] := 1.0 / (bounds[3] - bounds[1])
-  else
-    size[1] := 1;
-}
+
   camX0 := corner_x - t0;
   camY0 := corner_y - t1 + shift;
-  camX1 := corner_x + image_width / ppux / 2.0;
+  camX1 := corner_x + image_width / ppux + t0;
   camY1 := corner_y + image_height / ppuy + t1; //+ shift;
+
   camW := camX1 - camX0;
   if abs(camW) > 0.01 then
     Xsize := 1.0 / camW
@@ -158,30 +97,9 @@ begin
   begin
     cosa := cos(FCP.FAngle);
     sina := sin(FCP.FAngle);
-    rcX := FCP.Center[0]*(1 - cosa) - FCP.Center[1]*sina - camX0;
-    rcY := FCP.Center[1]*(1 - cosa) + FCP.Center[0]*sina - camY0;
+    rcX := image_Center_X*(1 - cosa) - image_Center_X*sina - camX0;
+    rcY := image_Center_Y*(1 - cosa) + image_Center_Y*sina - camY0;
   end;
-end;
-
-///////////////////////////////////////////////////////////////////////////////
-procedure TRendererMM64.CreateColorMap;
-var
-  i: integer;
-begin
-  for i := 0 to 255 do begin
-    ColorMap[i].Red   := (fcp.CMap[i][0] * fcp.white_level) div 256;
-    ColorMap[i].Green := (fcp.CMap[i][1] * fcp.white_level) div 256;
-    ColorMap[i].Blue  := (fcp.CMap[i][2] * fcp.white_level) div 256;
-//    cmap[i][3] := fcp.white_level;
-  end;
-end;
-
-///////////////////////////////////////////////////////////////////////////////
-destructor TRendererMM64.Destroy;
-begin
-  FImageMaker.Free;
-
-  inherited;
 end;
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -199,8 +117,14 @@ begin
   Bucketwidth := oversample * image_width + 2 * gutter_width;
   BucketSize := BucketWidth * BucketHeight;
 
-  if high(buckets) <> (BucketSize - 1) then begin
+  if high(buckets) <> (BucketSize - 1) then
+  try
     SetLength(buckets, BucketSize);
+  except
+    on EOutOfMemory do begin
+      Application.MessageBox('Error: not enough memory for this render!', 'Apophysis', 48);
+      FStop := true;
+    end;
   end;
 
   // share the buffer with imagemaker
@@ -214,117 +138,11 @@ begin
   image_Width := fcp.Width;
 
   CreateCamera;
-
   InitBuffers;
 
   CreateColorMap;
 
   fcp.Prepare;
-end;
-
-///////////////////////////////////////////////////////////////////////////////
-procedure TRendererMM64.AddPointsToBuckets(const points: TPointsArray);
-var
-  i: integer;
-  px, py: double;
-//  R: double;
-//  V1, v2, v3: integer;
-  Bucket: PBucket;
-  MapColor: PColorMapColor;
-begin
-  for i := SUB_BATCH_SIZE - 1 downto 0 do begin
-//    if FStop then Exit;
-
-    px := points[i].x - camX0;
-    if (px < 0) or (px > camW) then continue;
-    py := points[i].y - camY0;
-    if (py < 0) or (py > camH) then continue;
-
-    Bucket := @buckets[Round(bws * px) + Round(bhs * py) * BucketWidth];
-    MapColor := @ColorMap[Round(points[i].c * 255)];
-
-    Inc(Bucket.Red,   MapColor.Red);
-    Inc(Bucket.Green, MapColor.Green);
-    Inc(Bucket.Blue,  MapColor.Blue);
-    Inc(Bucket.Count);
-  end;
-end;
-
-///////////////////////////////////////////////////////////////////////////////
-procedure TRendererMM64.AddPointsToBucketsAngle(const points: TPointsArray);
-var
-  i: integer;
-  px, py: double;
-  Bucket: PBucket;
-  MapColor: PColorMapColor;
-begin
-  for i := SUB_BATCH_SIZE - 1 downto 0 do begin
-//    if FStop then Exit;
-
-    px := points[i].x * cosa + points[i].y * sina + rcX;
-    if (px < 0) or (px > camW) then continue;
-    py := points[i].y * cosa - points[i].x * sina + rcY;
-    if (py < 0) or (py > camH) then continue;
-
-    Bucket := @buckets[Round(bws * px) + Round(bhs * py) * BucketWidth];
-    MapColor := @ColorMap[Round(points[i].c * 255)];
-
-    Inc(Bucket.Red,   MapColor.Red);
-    Inc(Bucket.Green, MapColor.Green);
-    Inc(Bucket.Blue,  MapColor.Blue);
-    Inc(Bucket.Count);
-  end;
-end;
-
-///////////////////////////////////////////////////////////////////////////////
-procedure TRendererMM64.SetPixels;
-var
-  i: integer;
-  nsamples: Int64;
-  nrbatches: Integer;
-  points: TPointsArray;
-begin
-  SetLength(Points, SUB_BATCH_SIZE);
-
-  nsamples := Round(sample_density * bucketSize / (oversample * oversample));
-  nrbatches := Round(nsamples / (fcp.nbatches * SUB_BATCH_SIZE));
-  Randomize;
-
-  for i := 0 to nrbatches do begin
-    if FStop then
-      Exit;
-
-    if (i and $F = 0) then
-      if nrbatches > 0 then
-        Progress(i / nrbatches)
-      else
-        Progress(0);
-
-    // generate points
-{
-    case Compatibility of
-      0: fcp.iterate_Old(SUB_BATCH_SIZE, points);
-      1: fcp.iterateXYC(SUB_BATCH_SIZE, points);
-    end;
-}
-    fcp.IterateXYC(SUB_BATCH_SIZE, points);
-
-    if FCP.FAngle = 0 then
-      AddPointsToBuckets(points)
-    else
-      AddPointsToBucketsAngle(points);
-  end;
-
-  Progress(1);
-end;
-
-
-///////////////////////////////////////////////////////////////////////////////
-constructor TRendererMM64.Create;
-begin
-  inherited Create;
-
-  FImageMaker  := TImageMaker.Create;
 end;
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -338,8 +156,8 @@ var
 begin
   FStop := False;
 
-//  FRotationCenter[0] := fcp.center[0];
-//  FRotationCenter[1] := fcp.center[1];
+  image_Center_X := fcp.center[0];
+  image_Center_Y := fcp.center[1];
 
   image_height := fcp.Height;
   image_Width := fcp.Width;

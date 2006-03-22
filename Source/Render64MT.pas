@@ -1,7 +1,7 @@
 {
      Flame screensaver Copyright (C) 2002 Ronald Hordijk
      Apophysis Copyright (C) 2001-2004 Mark Townsend
-     Apophysis Copyright (C) 2005-2006 Ronald Hordijk, Piotr Boris, Peter Sdobnov     
+     Apophysis Copyright (C) 2005-2006 Ronald Hordijk, Piotr Borys, Peter Sdobnov     
 
      This program is free software; you can redistribute it and/or modify
      it under the terms of the GNU General Public License as published by
@@ -22,34 +22,32 @@ unit Render64MT;
 interface
 
 uses
-  Windows, Classes, Graphics,
-   Render, Controlpoint, ImageMaker, BucketFillerthread;
+  Windows, Forms, Classes, Graphics,
+  Render, Controlpoint, ImageMaker, BucketFillerthread;
 
 type
   TRenderer64MT = class(TBaseRenderer)
-  private
-    oversample: Int64;
-    batchcounter: Integer;
-    FNrBatches: Int64;
 
-    BucketWidth: Int64;
-    BucketHeight: Int64;
+  protected
+    camX0, camX1, camY0, camY1, // camera bounds
+    camW, camH,                 // camera sizes
+    bws, bhs, cosa, sina, rcX, rcY: double;
+    ppux, ppuy: extended;
+
+    BucketWidth, BucketHeight: Int64;
     BucketSize: Int64;
+
+    sample_density: extended;
+    oversample: integer;
     gutter_width: Integer;
     max_gutter_width: Integer;
 
-    sample_density: extended;
+    batchcounter: Integer;
+    FNrBatches: Int64;
 
     Buckets: TBucketArray;
     ColorMap: TColorMapArray;
 
-    camX0, camX1, camY0, camY1, // camera bounds
-    camW, camH,                 // camera sizes
-    Xsize, Ysize: double;
-    bws, bhs, cosa, sina, rcX, rcY: double;
-//    bounds: array[0..3] of extended;
-//    size: array[0..1] of extended;
-    ppux, ppuy: extended;
     FNrOfTreads: integer;
     WorkingThreads: array of TBucketFillerThread;
     CriticalSection: TRTLCriticalSection;
@@ -119,7 +117,7 @@ var
   scale: double;
   t0, t1: double;
   t2, t3: double;
-  corner_x, corner_y: double;
+  corner_x, corner_y, Xsize, Ysize: double;
   shift: Integer;
 begin
   scale := power(2, fcp.zoom);
@@ -185,6 +183,14 @@ begin
 end;
 
 ///////////////////////////////////////////////////////////////////////////////
+constructor TRenderer64MT.Create;
+begin
+  inherited Create;
+
+  FImageMaker := TImageMaker.Create;
+end;
+
+///////////////////////////////////////////////////////////////////////////////
 destructor TRenderer64MT.Destroy;
 begin
   FImageMaker.Free;
@@ -210,8 +216,14 @@ begin
   Bucketwidth := oversample * fcp.width + 2 * max_gutter_width;
   BucketSize := BucketWidth * BucketHeight;
 
-  if high(buckets) <> (BucketSize - 1) then begin
+  if high(buckets) <> (BucketSize - 1) then
+  try
     SetLength(buckets, BucketSize);
+  except
+    on EOutOfMemory do begin
+      Application.MessageBox('Error: not enough memory for this render!', 'Apophysis', 48);
+      FStop := true;
+    end;
   end;
 
   // share the buffer with imagemaker
@@ -238,7 +250,7 @@ var
 begin
   nsamples := Round(sample_density * bucketSize / (oversample * oversample));
   FNrBatches := Round(nsamples / (fcp.nbatches * SUB_BATCH_SIZE));
-  batchcounter :=  0;
+  batchcounter := 0;
   Randomize;
 
   InitializeCriticalSection(CriticalSection);
@@ -293,14 +305,6 @@ begin
     for i := 0 to NrOfTreads - 1 do
       WorkingThreads[i].Resume;
   end;
-end;
-
-///////////////////////////////////////////////////////////////////////////////
-constructor TRenderer64MT.Create;
-begin
-  inherited Create;
-
-  FImageMaker := TImageMaker.Create;
 end;
 
 ///////////////////////////////////////////////////////////////////////////////
