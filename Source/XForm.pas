@@ -95,8 +95,9 @@ type
     procedure Eyefish;             // var[23]
     procedure Bubble;              // var[24]
     procedure Cylinder;            // var[25]
-    procedure Smoke;               // var[26]
-    procedure Noise;               // var[27]
+    procedure Noise;               // var[26]
+    procedure Blur;                // var[27]
+    procedure Focus;               // var[28]
 
     function Mul33(const M1, M2: TMatrix): TMatrix;
     function Identity: TMatrix;
@@ -1478,54 +1479,19 @@ asm
 end;
 
 //--26--///////////////////////////////////////////////////////////////////////
-procedure TXForm.Smoke;
-const
-  amplitude: single = 0.353553390593274; // a = sqrt(2)/4
-{$ifndef _ASM_}
-begin
-  FPx := FPx + vars[26] * (FTx + amplitude * sin(FTy * pi));
-  FPy := FPy + vars[26] * (FTy + amplitude * sin(FTx * pi));
-{$else}
-asm
-    mov     edx, [eax + vars]
-    fld     qword ptr [edx + 26*8]
-    fld     dword ptr [amplitude]
-    fld     qword ptr [eax + FTy]
-    fldpi
-    fld     qword ptr [eax + FTx]
-    fld     st(2)
-    fmul    st, st(2)
-    fsin
-    fmul    st, st(4)
-    fadd    st, st(1)
-    fmul    st, st(5)
-    fadd    qword ptr [eax + FPx]
-    fstp    qword ptr [eax + FPx]
-    fmulp
-    fsin
-    fmulp   st(2), st
-    faddp
-    fmulp
-    fadd    qword ptr [eax + FPy]
-    fstp    qword ptr [eax + FPy]
-    fwait
-{$endif}
-end;
-
-//--27--///////////////////////////////////////////////////////////////////////
 procedure TXForm.Noise;
 {$ifndef _ASM_}
 var
   r, sinr, cosr: double;
 begin
   SinCos(random * 2*pi, sinr, cosr);
-  r := vars[27] * random;
+  r := vars[26] * random;
   FPx := FPx + FTx * r * cosr;
   FPy := FPy + FTy * r * sinr;
 {$else}
 asm
     mov     edx, [ebx + vars]
-    fld     qword ptr [edx + 27*8]
+    fld     qword ptr [edx + 26*8]
     call    System.@RandExt
     fmulp
     call    System.@RandExt
@@ -1545,6 +1511,75 @@ asm
 {$endif}
 end;
 
+//--27--///////////////////////////////////////////////////////////////////////
+procedure TXForm.Blur;
+{$ifndef _ASM_}
+var
+  r, sina, cosa: double;
+begin
+  SinCos(random * 2*pi, sina, cosa);
+  r := vars[27] * random;
+  FPx := FPx + r * cosa;
+  FPy := FPy + r * sina;
+{$else}
+asm
+    mov     edx, [ebx + vars]
+    fld     qword ptr [edx + 27*8]
+    call    System.@RandExt
+    fmulp
+    call    System.@RandExt
+    fadd    st, st
+    fldpi
+    fmulp
+    fsincos
+    fmul    st, st(2)
+    fadd    qword ptr [ebx + FPx]
+    fstp    qword ptr [ebx + FPx]
+    fmulp
+    fadd    qword ptr [ebx + FPy]
+    fstp    qword ptr [ebx + FPy]
+    fwait
+{$endif}
+end;
+
+//--28--///////////////////////////////////////////////////////////////////////
+procedure TXForm.Focus;
+{$ifndef _ASM_}
+var
+  r, sinr, cosr: double;
+begin
+  SinCos(random * 2*pi, sinr, cosr);
+  r := vars[28] * random * (sqr(FTx) + sqr(FTy));
+  FPx := FPx + r * cosr;
+  FPy := FPy + r * sinr;
+{$else}
+asm
+    mov     edx, [ebx + vars]
+    fld     qword ptr [edx + 28*8]
+    call    System.@RandExt
+    fmulp
+    fld     qword ptr [ebx + FTx]
+    fmul    st, st
+    fld     qword ptr [ebx + FTy]
+    fmul    st, st
+    faddp
+    //fsqrt
+    fmulp
+    call    System.@RandExt
+    fadd    st, st
+    fldpi
+    fmulp
+    fsincos
+    fmul    st, st(2)
+    fadd    qword ptr [ebx + FPx]
+    fstp    qword ptr [ebx + FPx]
+    fmulp
+    fadd    qword ptr [ebx + FPy]
+    fstp    qword ptr [ebx + FPy]
+    fwait
+{$endif}
+end;
+
 //***************************************************************************//
 
 procedure TXForm.NextPoint(var px, py, pc: double);
@@ -1554,11 +1589,6 @@ begin
   // first compute the color coord
 // --Z-- no, first let's optimize this huge expression ;)
 //  pc := (pc + color) * 0.5 * (1 - symmetry) + symmetry * pc;
-//      = (pc + color)/2 - (pc + color)/2*symmetry + symmetry * pc;
-//      = (pc + color)/2 - (pc + color)*symmetry/2 + 2*pc*symmetry/2
-//      = (pc + color - pc*symmetry - color*symmetry + 2*pc*symmetry)/2
-//      = (pc + pc*symmetry + color - color*symmetry)/2
-//      = (pc*(1 + symmetry) + color*(1 - symmetry))/2;
 // ---> = pc*(1 + symmetry)/2 + color*(1 - symmetry)/2;
 //           ^^^^^^const^^^^^   ^^^^^^^^^const^^^^^^^^
   pc := pc * colorC1 + colorC2; // heh! :-)
@@ -1574,8 +1604,6 @@ begin
 
   px := FPx;
   py := FPy;
-//  px := p[0,0] * FPx + p[1,0] * FPy + p[2,0];
-//  py := p[0,1] * FPx + p[1,1] * FPy + p[2,1];
 end;
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -1598,8 +1626,6 @@ begin
 
   CPpoint.x := FPx;
   CPpoint.y := FPy;
-//  CPpoint.x := p[0,0] * FPx + p[1,0] * FPy + p[2,0];
-//  CPpoint.y := p[0,1] * FPx + p[1,1] * FPy + p[2,1];
 end;
 
 procedure TXForm.NextPointTo(var CPpoint, ToPoint: TCPpoint);
@@ -1720,8 +1746,6 @@ begin
 
   p.x := FPx;
   p.y := FPy;
-//  px := p[0,0] * FPx + p[1,0] * FPy + p[2,0];
-//  py := p[0,1] * FPx + p[1,1] * FPy + p[2,1];
 end;
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -1740,8 +1764,6 @@ begin
 
   px := FPx;
   py := FPy;
-//  px := p[0,0] * FPx + p[1,0] * FPy + p[2,0];
-//  py := p[0,1] * FPx + p[1,1] * FPy + p[2,1];
 end;
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -1923,8 +1945,9 @@ begin
   FFunctionList[23] := Eyefish;
   FFunctionList[24] := Bubble;
   FFunctionList[25] := Cylinder;
-  FFunctionList[26] := Smoke;
-  FFunctionList[27] := Noise;
+  FFunctionList[26] := Noise;
+  FFunctionList[27] := Blur;
+  FFunctionList[28] := Focus;
 
   //registered
   for i := 0 to High(FRegVariations) do
