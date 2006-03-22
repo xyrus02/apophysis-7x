@@ -1,6 +1,6 @@
 {
      Apophysis Copyright (C) 2001-2004 Mark Townsend
-     Apophysis Copyright (C) 2005-2006 Ronald Hordijk, Piotr Boris, Peter Sdobnov     
+     Apophysis Copyright (C) 2005-2006 Ronald Hordijk, Piotr Borys, Peter Sdobnov     
 
      This program is free software; you can redistribute it and/or modify
      it under the terms of the GNU General Public License as published by
@@ -37,7 +37,7 @@ const
   RS_XO = 2;
   RS_VO = 3;
 
-  AppVersionString = 'Apophysis 2.03d pre-release 3';
+  AppVersionString = 'Apophysis 2.03d pre-release 4';
 
 type
   TMouseMoveState = (msUsual, msZoomWindow, msZoomOutWindow, msZoomWindowMove, msZoomOutWindowMove, msDrag, msDragMove, msRotate, msRotateMove);
@@ -335,8 +335,8 @@ function DeleteEntry(Entry, FileName: string): boolean;
 function CleanIdentifier(ident: string): string;
 function CleanUPRTitle(ident: string): string;
 function GradientString(c: TColorMap): string;
-function PackVariations: cardinal;
-procedure UnpackVariations(v: integer);
+function PackVariations: int64;
+procedure UnpackVariations(v: int64);
 //procedure NormalizeWeights(var cp: TControlPoint);
 //procedure EqualizeWeights(var cp: TControlPoint);
 procedure MultMatrix(var s: TMatrix; const m: TMatrix);
@@ -434,20 +434,19 @@ begin
 
 end;
 
-function PackVariations: cardinal;
+function PackVariations: int64;
 { Packs the variation options into an integer with Linear as lowest bit }
 var
-  r, i: cardinal;
+  i: integer;
 begin
-  r := 0;
-  for i := 0 to NRVAR - 1 do
+  result := 0;
+  for i := NRVAR-1 downto 0 do
   begin
-    r := r or byte(Variations[i]) shl i;
+    result := (result shl 1) or integer(Variations[i]);
   end;
-  Result := r;
 end;
 
-procedure UnpackVariations(v: integer);
+procedure UnpackVariations(v: int64);
 { Unpacks the variation options form an integer }
 var
   i: integer;
@@ -1349,7 +1348,7 @@ begin
       FileList.Add('   ' + cp1.xform[t].ToXMLString);
       Filelist.Add('   </xformset>');
 {$else}
-      FileList.Add(cp1.xform[i].FinalToXMLString(cp1.finalXformEnabled));
+      FileList.Add(cp1.xform[t].FinalToXMLString(cp1.finalXformEnabled));
 {$ifend}
 
     end;

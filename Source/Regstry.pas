@@ -277,7 +277,9 @@ begin
       end;
       if Registry.ValueExists('VariationOptions') then
       begin
-        VariationOptions := Registry.ReadInteger('VariationOptions');
+        Registry.ReadBinaryData('VariationOptions', VariationOptions, 8);
+//        Delphi_Suxx := Registry.ReadString('VariationOptions');
+//        VariationOptions := StrToInt64(Delphi_Suxx);
       end
       else
       begin
@@ -940,7 +942,7 @@ begin
       Registry.WriteInteger('SymmetryType', SymmetryType);
       Registry.WriteInteger('SymmetryOrder', SymmetryOrder);
       Registry.WriteInteger('SymmetryNVars', SymmetryNVars);
-      Registry.WriteInteger('VariationOptions', VariationOptions);
+      Registry.WriteBinaryData('VariationOptions', VariationOptions, 8);
       Registry.WriteInteger('ReferenceMode', ReferenceMode);
       Registry.WriteInteger('RotationMode', MainForm_RotationMode);
       Registry.WriteInteger('MinNodes', MinNodes);

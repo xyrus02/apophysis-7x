@@ -1,6 +1,6 @@
 {
      Apophysis Copyright (C) 2001-2004 Mark Townsend
-     Apophysis Copyright (C) 2005-2006 Ronald Hordijk, Piotr Boris, Peter Sdobnov     
+     Apophysis Copyright (C) 2005-2006 Ronald Hordijk, Piotr Borys, Peter Sdobnov     
 
      This program is free software; you can redistribute it and/or modify
      it under the terms of the GNU General Public License as published by
@@ -811,8 +811,6 @@ begin
 end;
 
 procedure TEditForm.UpdateFlameX;
-var
-  i: integer;
 begin
   cp.GetFromTriangles(MainTriangles, Transforms);
   if not chkPreserve.checked then cp.ComputeWeights(MainTriangles, Transforms);
@@ -825,7 +823,7 @@ procedure TEditForm.UpdateFlame(DrawMain: boolean);
 begin
 //;    MainForm.StopThread;
   StatusBar.Panels[2].Text := Format('Zoom: %f', [GraphZoom]);
-  cp.GetFromTriangles(MainTriangles, Transforms);
+  cp.GetFromTriangles(MainTriangles, LastTriangle);
 //  if not chkPreserve.Checked then ComputeWeights(cp, MainTriangles, transforms);
   DrawPreview;
   ShowSelectedInfo;
@@ -1985,7 +1983,7 @@ begin
     Inc(Transforms);
     cbTransforms.clear;
     for i := 1 to Transforms do cbTransforms.Items.Add(IntToStr(i));
-    if cp.HasFinalXForm = true then cbTransforms.Items.Add('Final');
+    if EnableFinalXform or (cp.HasFinalXForm = true) then cbTransforms.Items.Add('Final');
     UpdateFlame(True);
   end;
 end;
@@ -2009,6 +2007,7 @@ begin
     Inc(Transforms);
     cbTransforms.clear;
     for i := 1 to Transforms do cbTransforms.Items.Add(IntToStr(i));
+    if EnableFinalXform or (cp.HasFinalXForm = true) then cbTransforms.Items.Add('Final');
     UpdateFlame(True);
   end;
 end;
