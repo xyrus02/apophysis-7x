@@ -256,6 +256,12 @@ begin
 
   white_level := 200;
 
+  estimator := 5.0;
+  estimator_min := 0.0;
+  estimator_curve := 0.6;
+  jitters = 1;
+  gamma_tresholds := 0.01;
+
   FTwoColorDimensions := False;
 
   finalXformEnabled := false;
