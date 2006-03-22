@@ -28,7 +28,7 @@ implementation
 
 uses Windows, SysUtils, Forms, Registry, Global, Dialogs, XFormMan;
 
-procedure UnpackVariations(v: integer);
+procedure UnpackVariations(v: int64);
 { Unpacks the variation options form an integer }
 var
   i: integer;
@@ -36,7 +36,6 @@ begin
   for i := 0 to NRVAR - 1 do
     Variations[i] := boolean(v shr i and 1);
 end;
-
 
 procedure ReadSettings;
 var

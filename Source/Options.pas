@@ -356,7 +356,7 @@ end;
 
 procedure TOptionsForm.btnOKClick(Sender: TObject);
 var
-  v: integer;
+  v: int64;
   i: integer;
 begin
 
