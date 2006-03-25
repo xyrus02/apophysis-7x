@@ -7,7 +7,9 @@ type
 
 type
   TBaseVariation = class
+
   protected
+    procedure CalcFunction; virtual; abstract;
 
   public
     vvar:  double; // normalized interp coefs between variations
@@ -22,10 +24,10 @@ type
 
     function SetVariable(const Name: string; var value: double): boolean; virtual;
     function GetVariable(const Name: string; var value: double): boolean; virtual;
+    function ResetVariable(const Name: string): boolean; virtual;
 
     procedure Prepare; virtual;
 
-    procedure CalcFunction; virtual; abstract;
     procedure GetCalcFunction(var Delphi_Suxx: TCalcFunction); virtual;
   end;
 
@@ -54,10 +56,17 @@ begin
   Result := False;
 end;
 
-///////////////////////////////////////////////////////////////////////////////
 class function TBaseVariation.GetVariableNameAt(const Index: integer): string;
 begin
   Result := ''
+end;
+
+function TBaseVariation.ResetVariable(const Name: string): boolean;
+var
+  zero: double;
+begin
+  zero := 0;
+  Result := SetVariable(Name, zero);
 end;
 
 ///////////////////////////////////////////////////////////////////////////////

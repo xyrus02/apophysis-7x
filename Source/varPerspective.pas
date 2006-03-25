@@ -26,6 +26,7 @@ type
 
     function SetVariable(const Name: string; var value: double): boolean; override;
     function GetVariable(const Name: string; var value: double): boolean; override;
+    function ResetVariable(const Name: string): boolean; override;
 
     procedure CalcFunction; override;
     procedure Prepare; override;
@@ -117,6 +118,19 @@ begin
     focus := Value;
     Result := True;
   end
+end;
+
+function TVariationPerspective.ResetVariable(const Name: string): boolean;
+begin
+  Result := False;
+  if Name = var_a_name then begin
+    angle := 0;
+    Result := True;
+  end
+  else if Name = var_f_name then begin
+    focus := 2;
+    Result := True;
+  end;
 end;
 
 ///////////////////////////////////////////////////////////////////////////////

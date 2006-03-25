@@ -127,6 +127,7 @@ type
 
     procedure SetVariable(const name: string; var Value: double);
     procedure GetVariable(const name: string; var Value: double);
+    procedure ResetVariable(const name: string);
 
     function ToXMLString: string;
     function FinalToXMLString(IsEnabled: boolean): string;
@@ -1950,8 +1951,8 @@ begin
   FFunctionList[28] := Focus;
 
   //registered
-  for i := 0 to High(FRegVariations) do
-    FFunctionList[NRLOCVAR + i] := FRegVariations[i].CalcFunction;
+//  for i := 0 to High(FRegVariations) do
+//    FFunctionList[NRLOCVAR + i] := FRegVariations[i].CalcFunction;
 end;
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -2061,13 +2062,21 @@ begin
       break;
 end;
 
-///////////////////////////////////////////////////////////////////////////////
 procedure TXForm.GetVariable(const name: string; var Value: double);
 var
   i: integer;
 begin
   for i := 0 to High(FRegVariations) do
     if FRegVariations[i].GetVariable(name, value) then
+      break;
+end;
+
+procedure TXForm.ResetVariable(const name: string);
+var
+  i: integer;
+begin
+  for i := 0 to High(FRegVariations) do
+    if FRegVariations[i].ResetVariable(name) then
       break;
 end;
 

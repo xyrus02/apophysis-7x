@@ -37,6 +37,7 @@ type
 
     function SetVariable(const Name: string; var value: double): boolean; override;
     function GetVariable(const Name: string; var value: double): boolean; override;
+    function ResetVariable(const Name: string): boolean; override;
 
     procedure Prepare; override;
     procedure CalcFunction; override;
@@ -387,6 +388,19 @@ begin
   end
   else if Name = var_c_name then begin
     c := value;
+  end;
+end;
+
+function TVariationJuliaScope.ResetVariable(const Name: string): boolean;
+begin
+  Result := False;
+  if Name = var_n_name then begin
+    N := 2;
+    Result := True;
+  end
+  else if Name = var_c_name then begin
+    c := 1;
+    Result := True;
   end;
 end;
 
