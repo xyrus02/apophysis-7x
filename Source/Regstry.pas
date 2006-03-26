@@ -274,15 +274,26 @@ begin
       begin
         SymmetryNVars := 12;
       end;
+
+// --- tmp fix for pre-d4 problem ---
+
+if Registry.ValueExists('VariationOptions') then
+  if Registry.GetDataType('VariationOptions') <> rdInteger then
+    Registry.WriteInteger('VariationOptions', 262143);
+
+// --- tmp fix for pre-d4 problem ---
+
       if Registry.ValueExists('VariationOptions') then
       begin
-        Registry.ReadBinaryData('VariationOptions', VariationOptions, 8);
-//        Delphi_Suxx := Registry.ReadString('VariationOptions');
-//        VariationOptions := StrToInt64(Delphi_Suxx);
+        VariationOptions := Registry.ReadInteger('VariationOptions');
       end
       else
       begin
         VariationOptions := 262143;
+      end;
+      if Registry.ValueExists('VariationOptions2') then
+      begin
+        VariationOptions := VariationOptions or (int64(Registry.ReadInteger('VariationOptions2')) shl 32);
       end;
       UnpackVariations(VariationOptions);
 
@@ -342,13 +353,6 @@ begin
       begin
         MaxSat := 100;
       end;
-{
-      if Registry.ValueExists('FixedReference') then
-      begin
-        FixedReference := Registry.ReadBool('FixedReference');
-      end
-      else FixedReference := False;
-}
       if Registry.ValueExists('ReferenceMode') then
         ReferenceMode := Registry.ReadInteger('ReferenceMode')
       else ReferenceMode := 0;
@@ -941,7 +945,8 @@ begin
       Registry.WriteInteger('SymmetryType', SymmetryType);
       Registry.WriteInteger('SymmetryOrder', SymmetryOrder);
       Registry.WriteInteger('SymmetryNVars', SymmetryNVars);
-      Registry.WriteBinaryData('VariationOptions', VariationOptions, 8);
+      Registry.WriteInteger('VariationOptions', VariationOptions);
+      Registry.WriteInteger('VariationOptions2', VariationOptions shr 32);
       Registry.WriteInteger('ReferenceMode', ReferenceMode);
       Registry.WriteInteger('RotationMode', MainForm_RotationMode);
       Registry.WriteInteger('MinNodes', MinNodes);
