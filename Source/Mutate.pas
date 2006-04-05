@@ -291,6 +291,8 @@ begin
       begin
         if cps[0].xform[j].Symmetry = 1 then
         begin
+          mutants[i].xform[j].Assign(cps[0].xform[j]);
+{
           mutants[i].xform[j].Symmetry := 1;
           mutants[i].xform[j].Color := cps[0].xform[j].color;
           mutants[i].xform[j].Density := cps[0].xform[j].Density;
@@ -302,6 +304,7 @@ begin
           mutants[i].xform[j].c[2][1] := cps[0].xform[j].c[2][1];
           for k := 0 to NRVAR - 1 do
             mutants[i].xform[j].vars[k] := cps[0].xform[j].vars[k];
+}
         end;
       end;
     end;
@@ -320,6 +323,11 @@ begin
     else
       cps[i].RandomCP(mutantMinTransforms, mutantMaxTransforms, false);
     cps[i].SetVariation(TVariation(cmbTrend.Items.Objects[cmbTrend.ItemIndex]));
+    if cps[0].HasFinalXForm = false then
+    begin
+      cps[i].xform[cps[i].NumXForms].Clear;
+      cps[i].xform[cps[i].NumXForms].symmetry := 1;
+    end;
   end;
   Interpolate;
 end;
@@ -475,6 +483,8 @@ begin
     begin
       if cpt.xform[i].Symmetry = 1 then
       begin
+        cps[0].xform[i].Assign(cpt.xform[i]);
+{
         cps[0].xform[i].Symmetry := 1;
         cps[0].xform[i].Color := cpt.xform[i].color;
         cps[0].xform[i].Density := cpt.xform[i].Density;
@@ -486,6 +496,7 @@ begin
         cps[0].xform[i].c[2][1] := cpt.xform[i].c[2][1];
         for j := 0 to NRVAR - 1 do
           cps[0].xform[i].vars[j] := cpt.xform[i].vars[j];
+}
       end;
     end;
   end;

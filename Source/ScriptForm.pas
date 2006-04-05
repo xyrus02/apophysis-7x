@@ -1,5 +1,6 @@
 {
      Apophysis Copyright (C) 2001-2004 Mark Townsend
+     Apophysis Copyright (C) 2005-2006 Ronald Hordijk, Piotr Borys, Peter Sdobnov     
 
      This program is free software; you can redistribute it and/or modify
      it under the terms of the GNU General Public License as published by
@@ -1321,7 +1322,7 @@ end;
 procedure TOperationLibrary.RotateProc(AMachine: TatVirtualMachine);
 begin
   try
-    if (ActiveTransform < 0) or (ActiveTransform > NXFORMS - 1) then raise EFormatInvalid.Create('Transform out of range.');
+    if (ActiveTransform < 0) or (ActiveTransform >= ScriptEditor.cp.NumXForms) then raise EFormatInvalid.Create('Transform out of range.');
     with AMachine do
       ScriptEditor.cp.xform[ActiveTransform].Rotate(GetInputArgAsFloat(0));
   except on E: EFormatInvalid do
@@ -1336,7 +1337,7 @@ end;
 procedure TOperationLibrary.MulProc(AMachine: TatVirtualMachine);
 begin
   try
-    if (ActiveTransform < 0) or (ActiveTransform > NXFORMS - 1) then raise EFormatInvalid.Create('Transform out of range.');
+    if (ActiveTransform < 0) or (ActiveTransform >= ScriptEditor.cp.NumXForms) then raise EFormatInvalid.Create('Transform out of range.');
     with AMachine do
       ScriptEditor.cp.xform[ActiveTransform].Multiply(GetInputArgAsFloat(0), GetInputArgAsFloat(1), GetInputArgAsFloat(2), GetInputArgAsFloat(3));
   except on E: EFormatInvalid do
@@ -1447,12 +1448,14 @@ begin
   NumTransforms := i;
 end;
 
+(*
 procedure ParseXML(var cp1: TControlPoint; const params: PCHAR);
 var
   i: integer;
   h, s, v: real;
 begin
   nxform := 0;
+  FinalXformLoaded := false;
   MainForm.XMLScanner.LoadFromBuffer(params);
   MainForm.XMLScanner.Execute;
   cp1.copy(ParseCp);
@@ -1483,6 +1486,7 @@ begin
     cp1.symmetry := 0;
   end;
 end;
+*)
 
 procedure LoadXMLFlame(index: integer);
 var
@@ -1513,7 +1517,7 @@ begin
       inc(i);
       IFSStrings.Add(FStrings[i]);
     until Pos('</flame>', FStrings[i]) <> 0;
-    ParseXML(ScriptEditor.Cp, PCHAR(IFSStrings.Text));
+    MainForm.ParseXML(ScriptEditor.Cp, PCHAR(IFSStrings.Text));
     for i := 0 to NXFORMS - 1 do
       if ScriptEditor.cp.xform[i].density = 0 then break;
     NumTransforms := i;
@@ -1644,17 +1648,22 @@ procedure TOperationLibrary.RotateReferenceProc(AMachine: TatVirtualMachine);
 var
   Triangles: TTriangles;
   r: double;
+  tx: TXForm;
 begin
+  tx := TXForm.Create;
+  tx.Assign(scripteditor.cp.xform[NumTransforms]);
   ScriptEditor.cp.TrianglesFromCp(Triangles);
   r := AMachine.GetInputArgAsFloat(0) * pi / 180;
   Triangles[-1] := RotateTriangle(Triangles[-1], r);
   ScriptEditor.cp.GetFromTriangles(Triangles, NumTransforms);
+  scripteditor.cp.xform[NumTransforms].Assign(tx);
+  tx.Free;
 end;
 
 procedure TOperationLibrary.ScaleProc(AMachine: TatVirtualMachine);
 begin
   try
-    if (ActiveTransform < 0) or (ActiveTransform > NXFORMS - 1) then raise EFormatInvalid.Create('Transform out of range.');
+    if (ActiveTransform < 0) or (ActiveTransform >= ScriptEditor.cp.NumXForms) then raise EFormatInvalid.Create('Transform out of range.');
     with AMachine do
       ScriptEditor.cp.xform[ActiveTransform].Scale(GetInputArgAsFloat(0));
   except on E: EFormatInvalid do
@@ -1799,9 +1808,10 @@ begin
   try
     if NumTransforms < NXFORMS then
     begin
+      ActiveTransform := NumTransforms;
       inc(NumTransforms);
-      ActiveTransform := NumTransforms - 1;
-      ScriptEditor.cp.xform[ActiveTransform].c[0, 0] := 1;
+      scriptEditor.cp.xform[NumTransforms].Assign(scriptEditor.cp.xform[ActiveTransform]);
+{      ScriptEditor.cp.xform[ActiveTransform].c[0, 0] := 1;
       ScriptEditor.cp.xform[ActiveTransform].c[0, 1] := 0;
       ScriptEditor.cp.xform[ActiveTransform].c[1, 0] := 0;
       ScriptEditor.cp.xform[ActiveTransform].c[1, 1] := 1;
@@ -1811,7 +1821,9 @@ begin
       ScriptEditor.cp.xform[ActiveTransform].density := 1 / NumTransforms;
       ScriptEditor.cp.xform[ActiveTransform].vars[0] := 1;
       for i := 1 to NRVAR - 1 do
-        ScriptEditor.cp.xform[ActiveTransform].vars[i] := 0;
+        ScriptEditor.cp.xform[ActiveTransform].vars[i] := 0;}
+      scriptEditor.cp.xform[ActiveTransform].Clear;
+      ScriptEditor.cp.xform[ActiveTransform].density := 1 / NumTransforms;
     end
     else raise EFormatInvalid.Create('Too many transforms.');
   except on E: EFormatInvalid do
@@ -1829,30 +1841,37 @@ var
 begin
   if NumTransforms > 0 then
   try
-
+    // I'm not sure, but *maybe* this will help scripts not to screw up finalXform
+    if ActiveTransform = NumTransforms then // final xform (?)
+      scriptEditor.cp.xform[NumTransforms].Clear;
+      scriptEditor.cp.xform[NumTransforms].symmetry := 1;
+      scriptEditor.cp.finalXformEnabled := false;
+    begin
+    end;
     if ActiveTransform = (NumTransforms - 1) then
     { Last triangle...just reduce number}
     begin
-      NumTransforms := NumTransforms - 1;
+      Dec(NumTransforms);
       ActiveTransform := NumTransforms - 1;
-      scriptEditor.cp.xform[NumTransforms].density := 0;
+//      scriptEditor.cp.xform[NumTransforms].density := 0;
+      scriptEditor.cp.xform[NumTransforms].Assign(scriptEditor.cp.xform[NumTransforms+1]);
     end
     else
     begin
       for i := ActiveTransform to NumTransforms - 2 do
-      begin
+        scriptEditor.cp.xform[i].Assign(scriptEditor.cp.xform[i + 1]);
+{      begin
     //  copy higher transforms down
         ScriptEditor.cp.xform[i].density := ScriptEditor.cp.xform[i + 1].density;
         ScriptEditor.cp.xform[i].color := ScriptEditor.cp.xform[i + 1].color;
         ScriptEditor.cp.xform[i].symmetry := ScriptEditor.cp.xform[i + 1].symmetry;
         for j := 0 to NRVAR - 1 do
           ScriptEditor.cp.xform[i].vars[j] := ScriptEditor.cp.xform[i + 1].vars[j];
-      end;
+      end;}
       NumTransforms := NumTransforms - 1;
-      ScriptEditor.cp.xform[Numtransforms].density := 0;
+//      ScriptEditor.cp.xform[Numtransforms].density := 0;
+      scriptEditor.cp.xform[NumTransforms].Assign(scriptEditor.cp.xform[NumTransforms+1]);
     end
-    //do we normalize weights?
-
   except
     begin
       Application.ProcessMessages;
@@ -1873,7 +1892,8 @@ begin
       inc(NumTransforms);
       old := ActiveTransform;
       ActiveTransform := NumTransforms - 1;
-      ScriptEditor.cp.xform[ActiveTransform].c[0, 0] := ScriptEditor.cp.xform[old].c[0, 0];
+      ScriptEditor.cp.xform[ActiveTransform].Assign(ScriptEditor.cp.xform[old]);
+{
       ScriptEditor.cp.xform[ActiveTransform].c[0, 1] := ScriptEditor.cp.xform[old].c[0, 1];
       ScriptEditor.cp.xform[ActiveTransform].c[1, 0] := ScriptEditor.cp.xform[old].c[1, 0];
       ScriptEditor.cp.xform[ActiveTransform].c[1, 1] := ScriptEditor.cp.xform[old].c[1, 1];
@@ -1883,6 +1903,7 @@ begin
       ScriptEditor.cp.xform[ActiveTransform].density := ScriptEditor.cp.xform[old].density;
       for i := 0 to NRVAR - 1 do
         ScriptEditor.cp.xform[ActiveTransform].vars[i] := ScriptEditor.cp.xform[old].vars[i]
+}
     end
     else raise EFormatInvalid.Create('Too many transforms.');
   except on E: EFormatInvalid do
