@@ -193,6 +193,7 @@ object RenderForm: TRenderForm
         '1024'
         '1280'
         '1600'
+        '1920'
         '2048'
         '2560'
         '3200')

@@ -85,6 +85,7 @@ var
   UseFlameBackground, UseTransformColors: boolean;
   EditorBkgColor, ReferenceTriangleColor: integer;
   GridColor1, GridColor2, HelpersColor: integer;
+  AutoEditMode: boolean;
 { Display }
   defSampleDensity, defPreviewDensity: Double;
   defGamma, defBrightness, defVibrancy, defFilterRadius: Double;
@@ -110,6 +111,10 @@ var
   KeepBackground: boolean;
   randGradient: Integer;
   defFlameFile: string;
+
+  PlaySoundOnRenderComplete: boolean;
+  RenderCompleteSoundFile: string;
+
   SymmetryType: integer;
   SymmetryOrder: integer;
   SymmetryNVars: integer;
@@ -129,7 +134,7 @@ var
   ExportFilter, ExportDensity: Double;
   ExportEstimator, ExportEstimatorMin, ExportEstimatorCurve: double;
   ExportJitters: integer;
-  ExportGammaTresholds: double;
+  ExportGammaTreshold: double;
   OpenFileType: TFileType;
   ResizeOnLoad: Boolean;
   ShowProgress: Boolean;

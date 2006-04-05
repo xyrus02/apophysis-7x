@@ -82,6 +82,16 @@ begin
       begin
         defSmoothPaletteFile := DefaultPath + 'smooth.ugr';
       end;
+
+      if Registry.ValueExists('PlaySoundOnRenderComplete') then
+        PlaySoundOnRenderComplete := Registry.ReadBool('PlaySoundOnRenderComplete')
+      else
+        PlaySoundOnRenderComplete := false;
+      if Registry.ValueExists('RenderCompleteSoundFile') then
+        RenderCompleteSoundFile := Registry.ReadString('RenderCompleteSoundFile')
+      else
+        RenderCompleteSoundFile := '';
+
       if Registry.ValueExists('ConfirmDelete') then
       begin
         ConfirmDelete := Registry.ReadBool('ConfirmDelete');
@@ -628,6 +638,10 @@ if Registry.ValueExists('VariationOptions') then
         ReferenceTriangleColor := Registry.ReadInteger('ReferenceTriangleColor')
       else
         ReferenceTriangleColor := $7f7f7f;
+      if Registry.ValueExists('AutoEditMode') then
+        AutoEditMode := Registry.ReadBool('AutoEditMode')
+      else AutoEditMode := true;
+
     end
     else begin
       EditorBkgColor := $000000;
@@ -915,6 +929,9 @@ begin
     begin
       Registry.WriteString('GradientFile', GradientFile);
       Registry.WriteString('SmoothPaletteFile', SmoothPaletteFile);
+      Registry.WriteBool('PlaySoundOnRenderComplete', PlaySoundOnRenderComplete);
+      Registry.WriteString('RenderCompleteSoundFile', RenderCompleteSoundFile);
+
       Registry.WriteBool('ConfirmDelete', ConfirmDelete);
       Registry.WriteInteger('NumTries', NumTries);
       Registry.WriteInteger('TryLength', TryLength);
@@ -990,6 +1007,7 @@ begin
       Registry.WriteInteger('GridColor2', GridColor2);
       Registry.WriteInteger('HelpersColor', HelpersColor);
       Registry.WriteInteger('ReferenceTriangleColor', ReferenceTriangleColor);
+      Registry.WriteBool('AutoEditMode', AutoEditMode);
     end;
     { Display }
     if Registry.OpenKey('\Software\' + APP_NAME + '\Display', True) then

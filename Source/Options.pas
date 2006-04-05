@@ -1,5 +1,6 @@
 {
      Apophysis Copyright (C) 2001-2004 Mark Townsend
+     Apophysis Copyright (C) 2005-2006 Ronald Hordijk, Piotr Borys, Peter Sdobnov     
 
      This program is free software; you can redistribute it and/or modify
      it under the terms of the GNU General Public License as published by
@@ -22,7 +23,8 @@ interface
 
 uses
   Windows, Messages, SysUtils, Classes, Graphics, Controls, Forms, Dialogs,
-  StdCtrls, ComCtrls, ExtCtrls, Buttons, Registry, Mask, CheckLst;
+  StdCtrls, ComCtrls, ExtCtrls, Buttons, Registry, Mask, CheckLst,
+  MMSystem;
 
 type
   TOptionsForm = class(TForm)
@@ -182,7 +184,10 @@ type
     Label39: TLabel;
     chkShowTransparency: TCheckBox;
     rgTransparency: TRadioGroup;
-    rgReferenceMode: TRadioGroup;
+    GroupBox15: TGroupBox;
+    btnBrowseSound: TSpeedButton;
+    txtSoundFile: TEdit;
+    EditorPage: TTabSheet;
     GroupBox1: TGroupBox;
     Label40: TLabel;
     Label41: TLabel;
@@ -195,6 +200,11 @@ type
     pnlGridColor1: TPanel;
     pnlGridColor2: TPanel;
     pnlHelpersColor: TPanel;
+    rgReferenceMode: TRadioGroup;
+    chkAutoEditMode: TCheckBox;
+    chkPlaysound: TCheckBox;
+    btnPlay: TSpeedButton;
+    Label44: TLabel;
     procedure btnCancelClick(Sender: TObject);
     procedure FormShow(Sender: TObject);
     procedure btnOKClick(Sender: TObject);
@@ -224,6 +234,8 @@ type
     procedure pnlGridColor1Click(Sender: TObject);
     procedure pnlGridColor2Click(Sender: TObject);
     procedure pnlHelpersColorClick(Sender: TObject);
+    procedure btnBrowseSoundClick(Sender: TObject);
+    procedure btnPlayClick(Sender: TObject);
   private
     { Private declarations }
   public
@@ -283,6 +295,10 @@ begin
     cbNrTheads.ItemIndex := 0
   else
     cbNrTheads.text := intTostr(NrTreads);
+  chkAutoEditMode.Checked := AutoEditMode;
+
+  chkPlaySound.Checked := PlaySoundOnRenderComplete;
+  txtSoundFile.Text := RenderCompleteSoundFile;
 
   { Display tab }
   txtSampleDensity.Text := FloatToStr(defSampleDensity);
@@ -375,8 +391,6 @@ begin
   end;
 
   { General tab }
-  defFlameFile := txtDefParameterFile.Text;
-  defSmoothPaletteFile := txtDefSmoothFile.Text;
   JPEGQuality := StrToInt(txtJPEGQuality.text);
   Numtries := StrToInt(txtNumtries.text);
   if NumTries < 1 then Numtries := 1;
@@ -393,9 +407,14 @@ begin
 
   NrTreads := StrToIntDef(cbNrTheads.text, 0);
   ConfirmDelete := chkConfirmDel.Checked;
-  ReferenceMode := rgReferenceMode.ItemIndex;
+
   MainForm_RotationMode := rgRotationMode.ItemIndex;
   ResizeOnLoad := chkResize.checked;
+
+  // Editor
+  ReferenceMode := rgReferenceMode.ItemIndex;
+  AutoEditMode := chkAutoEditMode.Checked;
+
   { Display tab }
   defSampleDensity := StrToFloat(txtSampleDensity.Text);
   if defSampleDensity > 100 then defSampleDensity := 100;
@@ -464,6 +483,10 @@ begin
 
   {Paths}
   defLibrary := txtLibrary.text;
+  defFlameFile := txtDefParameterFile.Text;
+  defSmoothPaletteFile := txtDefSmoothFile.Text;
+  PlaySoundOnRenderComplete := chkPlaySound.Checked;
+  RenderCompleteSoundFile := txtSoundFile.Text;
 
   Close;
 end;
@@ -649,8 +672,6 @@ begin
   begin
     pnlBackColor.Color := AdjustForm.ColorDialog.Color;
     EditorBkgColor := Integer(pnlBackColor.color);
-//    GrphPnl.Color := BackgroundColor;
-//    TriangleView.Invalidate;
   end;
 end;
 
@@ -661,7 +682,6 @@ begin
   begin
     pnlReference.Color := AdjustForm.ColorDialog.Color;
     ReferenceTriangleColor := Integer(pnlReference.color);
-//    TriangleView.Invalidate;
   end;
 end;
 
@@ -672,7 +692,6 @@ begin
   begin
     pnlGridColor1.Color := AdjustForm.ColorDialog.Color;
     GridColor1 := Integer(pnlGridColor1.color);
-//    TriangleView.Invalidate;
   end;
 end;
 
@@ -683,7 +702,6 @@ begin
   begin
     pnlGridColor2.Color := AdjustForm.ColorDialog.Color;
     GridColor2 := Integer(pnlGridColor2.color);
-//    TriangleView.Invalidate;
   end;
 end;
 
@@ -694,8 +712,23 @@ begin
   begin
     pnlHelpersColor.Color := AdjustForm.ColorDialog.Color;
     HelpersColor := Integer(pnlHelpersColor.color);
-//    TriangleView.Invalidate;
   end;
+end;
+
+procedure TOptionsForm.btnBrowseSoundClick(Sender: TObject);
+begin
+  OpenDialog.Filter := 'Waveform files (*.wav)|*.wav|MIDI files (*.mid)|*.mid';
+  OpenDialog.FileName := '';
+  if OpenDialog.Execute then
+  begin
+    txtSoundFile.text := OpenDialog.FileName;
+  end;
+end;
+
+procedure TOptionsForm.btnPlayClick(Sender: TObject);
+begin
+  if txtSoundFile.text <> '' then
+    sndPlaySound(PChar(txtSoundFile.text), SND_FILENAME or SND_ASYNC);
 end;
 
 end.

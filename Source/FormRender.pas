@@ -22,7 +22,7 @@ interface
 uses
   Windows, Messages, SysUtils, Classes, Graphics, Controls, Forms, Dialogs,
   StdCtrls, ControlPoint, RenderThread, ComCtrls, Math, Buttons, Registry, cmap,
-  ExtCtrls,
+  ExtCtrls, MMSystem,
   Render; // 'use'd only for SizeOf()
 
 type
@@ -173,6 +173,9 @@ begin
     DoPostProcess;
 
   Renderer.SaveImage(FileName);
+
+  if PlaySoundOnRenderComplete then
+    sndPlaySound(PChar(RenderCompleteSoundFile), SND_FILENAME or SND_NOSTOP or SND_ASYNC);
 
   Renderer.Free;
   Renderer := nil;

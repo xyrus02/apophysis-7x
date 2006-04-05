@@ -1,11 +1,11 @@
 object OptionsForm: TOptionsForm
-  Left = 430
-  Top = 204
+  Left = 540
+  Top = 274
   BorderIcons = [biSystemMenu, biMinimize, biMaximize, biHelp]
   BorderStyle = bsDialog
   Caption = 'Options'
-  ClientHeight = 308
-  ClientWidth = 467
+  ClientHeight = 311
+  ClientWidth = 463
   Color = clBtnFace
   Font.Charset = ANSI_CHARSET
   Font.Color = clWindowText
@@ -51,13 +51,13 @@ object OptionsForm: TOptionsForm
       HelpContext = 1
       Caption = 'General'
       object chkConfirmDel: TCheckBox
-        Left = 8
-        Top = 175
+        Left = 136
+        Top = 7
         Width = 121
         Height = 17
         HelpContext = 1005
         Caption = 'Confirm delete'
-        TabOrder = 2
+        TabOrder = 3
       end
       object JPEG: TGroupBox
         Left = 8
@@ -65,7 +65,7 @@ object OptionsForm: TOptionsForm
         Width = 121
         Height = 55
         Caption = 'JPEG Quality'
-        TabOrder = 0
+        TabOrder = 2
         object txtJPEGquality: TComboBox
           Left = 16
           Top = 20
@@ -83,12 +83,12 @@ object OptionsForm: TOptionsForm
         end
       end
       object chkResize: TCheckBox
-        Left = 8
-        Top = 193
+        Left = 136
+        Top = 25
         Width = 121
         Height = 17
         Caption = 'Resize on load'
-        TabOrder = 3
+        TabOrder = 4
       end
       object GroupBox16: TGroupBox
         Left = 8
@@ -96,7 +96,7 @@ object OptionsForm: TOptionsForm
         Width = 121
         Height = 55
         Caption = 'Multithreading'
-        TabOrder = 1
+        TabOrder = 0
         object cbNrTheads: TComboBox
           Left = 16
           Top = 20
@@ -122,28 +122,125 @@ object OptionsForm: TOptionsForm
         Items.Strings = (
           'Rotate image'
           'Rotate frame')
-        TabOrder = 4
+        TabOrder = 1
       end
-      object rgReferenceMode: TRadioGroup
-        Left = 288
-        Top = 4
-        Width = 145
-        Height = 69
-        Caption = 'Reference Triangle'
-        ItemIndex = 0
-        Items.Strings = (
-          'Normal'
-          'Proportional'
-          'Wandering (old-style)')
-        TabOrder = 5
-      end
-      object GroupBox1: TGroupBox
+      object GroupBox15: TGroupBox
         Left = 136
+        Top = 96
+        Width = 297
+        Height = 75
+        Caption = 'When render is finished'
+        TabOrder = 5
+        object btnBrowseSound: TSpeedButton
+          Left = 264
+          Top = 41
+          Width = 24
+          Height = 24
+          Hint = 'Browse...'
+          Flat = True
+          Font.Charset = ANSI_CHARSET
+          Font.Color = clWindowText
+          Font.Height = -11
+          Font.Name = 'Arial'
+          Font.Style = [fsBold]
+          Glyph.Data = {
+            36030000424D3603000000000000360000002800000010000000100000000100
+            18000000000000030000120B0000120B00000000000000000000FF00FFFF00FF
+            FF00FFFF00FFFF00FFFF00FFFF00FFFF00FFFF00FFFF00FFFF00FFFF00FFFF00
+            FFFF00FFFF00FFFF00FF00000000000000000000000000000000000000000000
+            0000000000000000000000FF00FFFF00FFFF00FFFF00FFFF00FF000000000000
+            9FCFFF9FCFFF9FCFFF9FCFFF9FCFFF9FCFFF9FCFFF9FCFFF9FCFFF000000FF00
+            FFFF00FFFF00FFFF00FF0000009FFFFF0000009FCFFF9FCFFF9FCFFF9FCFFF9F
+            CFFF9FCFFF9FCFFF9FCFFF9FCFFF000000FF00FFFF00FFFF00FF0000009FFFFF
+            9FFFFF0000009FCFFF9FCFFF9FCFFF9FCFFF9FCFFF9FCFFF9FCFFF9FCFFF9FCF
+            FF000000FF00FFFF00FF0000009FFFFF9FFFFF9FFFFF0000009FCFFF9FCFFF9F
+            CFFF9FCFFF9FCFFF9FCFFF9FCFFF9FCFFF9FCFFF000000FF00FF0000009FFFFF
+            9FFFFF9FFFFF9FFFFF0000000000000000000000000000000000000000000000
+            00000000000000FF00FF0000009FFFFF9FFFFF9FFFFF9FFFFF9FFFFF9FFFFF9F
+            FFFF9FFFFF9FFFFF000000FF00FFFF00FFFF00FFFF00FFFF00FF0000009FFFFF
+            9FFFFF9FFFFF9FFFFF9FFFFF9FFFFF9FFFFF9FFFFF9FFFFF000000FF00FFFF00
+            FFFF00FFFF00FFFF00FF0000009FFFFF9FFFFF9FFFFF00000000000000000000
+            0000000000000000000000FF00FFFF00FFFF00FFFF00FFFF00FFFF00FF000000
+            000000000000FF00FFFF00FFFF00FFFF00FFFF00FFFF00FFFF00FFFF00FF0000
+            00000000000000FF00FFFF00FFFF00FFFF00FFFF00FFFF00FFFF00FFFF00FFFF
+            00FFFF00FFFF00FFFF00FFFF00FFFF00FF000000000000FF00FFFF00FFFF00FF
+            FF00FFFF00FFFF00FFFF00FFFF00FFFF00FF0C0C0CFF00FFFF00FFFF00FF0000
+            00FF00FF000000FF00FFFF00FFFF00FFFF00FFFF00FFFF00FFFF00FFFF00FFFF
+            00FFFF00FF0B0B0B020202000000FF00FFFF00FFFF00FFFF00FFFF00FFFF00FF
+            FF00FFFF00FFFF00FFFF00FFFF00FFFF00FFFF00FFFF00FFFF00FFFF00FFFF00
+            FFFF00FFFF00FFFF00FFFF00FFFF00FFFF00FFFF00FFFF00FFFF00FFFF00FFFF
+            00FFFF00FFFF00FFFF00FFFF00FFFF00FFFF00FFFF00FFFF00FF}
+          ParentFont = False
+          ParentShowHint = False
+          ShowHint = True
+          OnClick = btnBrowseSoundClick
+        end
+        object btnPlay: TSpeedButton
+          Left = 264
+          Top = 14
+          Width = 24
+          Height = 24
+          Hint = 'Play'
+          Flat = True
+          Font.Charset = ANSI_CHARSET
+          Font.Color = clWindowText
+          Font.Height = -11
+          Font.Name = 'Arial'
+          Font.Style = [fsBold]
+          Glyph.Data = {
+            46010000424D4601000000000000460000002800000010000000100000000100
+            08000000000000010000120B0000120B00000400000004000000808080005454
+            540000000000FFFFFF0000000000000000000000000000000000000000000000
+            0000000000000000000000000000000000000000000000000000000000000000
+            0200000000000000000000000000000002020000000000000000000000000000
+            0202020000000000000000000000000002020202000000000000000000000000
+            0202020202000000000000000000000002020202020200000000000000000000
+            0202020202000000000000000000000002020202000000000000000000000000
+            0202020000000000000000000000000002020000000000000000000000000000
+            0200000000000000000000000000000000000000000000000000000000000000
+            00000000000000000000}
+          ParentFont = False
+          ParentShowHint = False
+          ShowHint = True
+          OnClick = btnPlayClick
+        end
+        object Label44: TLabel
+          Left = 10
+          Top = 44
+          Width = 49
+          Height = 13
+          Caption = 'File name:'
+        end
+        object txtSoundFile: TEdit
+          Left = 64
+          Top = 42
+          Width = 193
+          Height = 21
+          HelpContext = 1000
+          ParentShowHint = False
+          ShowHint = False
+          TabOrder = 0
+        end
+        object chkPlaysound: TCheckBox
+          Left = 8
+          Top = 18
+          Width = 81
+          Height = 17
+          Caption = 'Play sound'
+          TabOrder = 1
+        end
+      end
+    end
+    object EditorPage: TTabSheet
+      Caption = 'Editor'
+      ImageIndex = 8
+      object GroupBox1: TGroupBox
+        Left = 8
         Top = 4
         Width = 145
         Height = 138
         Caption = 'Editor Graph'
-        TabOrder = 6
+        TabOrder = 0
         object Label40: TLabel
           Left = 8
           Top = 56
@@ -189,7 +286,7 @@ object OptionsForm: TOptionsForm
           Width = 129
           Height = 17
           Caption = 'Use transform color'
-          TabOrder = 1
+          TabOrder = 4
         end
         object chkHelpers: TCheckBox
           Left = 8
@@ -199,7 +296,7 @@ object OptionsForm: TOptionsForm
           Caption = 'Helper lines'
           Checked = True
           State = cbChecked
-          TabOrder = 2
+          TabOrder = 6
         end
         object pnlReference: TPanel
           Left = 8
@@ -209,7 +306,7 @@ object OptionsForm: TOptionsForm
           Cursor = crHandPoint
           BevelOuter = bvLowered
           Color = clGray
-          TabOrder = 3
+          TabOrder = 1
           OnClick = pnlReferenceClick
         end
         object pnlGridColor1: TPanel
@@ -220,7 +317,7 @@ object OptionsForm: TOptionsForm
           Cursor = crHandPoint
           BevelOuter = bvLowered
           Color = clBlack
-          TabOrder = 4
+          TabOrder = 2
           OnClick = pnlGridColor1Click
         end
         object pnlGridColor2: TPanel
@@ -231,7 +328,7 @@ object OptionsForm: TOptionsForm
           Cursor = crHandPoint
           BevelOuter = bvLowered
           Color = clBlack
-          TabOrder = 5
+          TabOrder = 3
           OnClick = pnlGridColor2Click
         end
         object pnlHelpersColor: TPanel
@@ -242,9 +339,32 @@ object OptionsForm: TOptionsForm
           Cursor = crHandPoint
           BevelOuter = bvLowered
           Color = clGray
-          TabOrder = 6
+          TabOrder = 5
           OnClick = pnlHelpersColorClick
         end
+      end
+      object rgReferenceMode: TRadioGroup
+        Left = 160
+        Top = 4
+        Width = 145
+        Height = 69
+        Caption = 'Reference Triangle'
+        ItemIndex = 0
+        Items.Strings = (
+          'Normal'
+          'Proportional'
+          'Wandering (old-style)')
+        TabOrder = 1
+      end
+      object chkAutoEditMode: TCheckBox
+        Left = 160
+        Top = 84
+        Width = 145
+        Height = 17
+        Caption = 'Prefer "Auto" edit mode'
+        Checked = True
+        State = cbChecked
+        TabOrder = 2
       end
     end
     object DisplayPage: TTabSheet
@@ -1318,7 +1438,7 @@ object OptionsForm: TOptionsForm
         TabOrder = 0
         object btnDefGradient: TSpeedButton
           Left = 392
-          Top = 16
+          Top = 17
           Width = 24
           Height = 24
           Hint = 'Browse...'
@@ -1369,7 +1489,7 @@ object OptionsForm: TOptionsForm
         end
         object txtDefParameterFile: TEdit
           Left = 67
-          Top = 19
+          Top = 18
           Width = 310
           Height = 21
           HelpContext = 1000
@@ -1394,7 +1514,7 @@ object OptionsForm: TOptionsForm
         end
         object btnSmooth: TSpeedButton
           Left = 392
-          Top = 16
+          Top = 17
           Width = 24
           Height = 24
           Hint = 'Browse...'
@@ -1438,7 +1558,7 @@ object OptionsForm: TOptionsForm
         end
         object txtDefSmoothFile: TEdit
           Left = 67
-          Top = 16
+          Top = 18
           Width = 310
           Height = 21
           HelpContext = 1001
@@ -1454,7 +1574,7 @@ object OptionsForm: TOptionsForm
         TabOrder = 3
         object btnRenderer: TSpeedButton
           Left = 392
-          Top = 16
+          Top = 17
           Width = 24
           Height = 24
           Hint = 'Browse...'
@@ -1505,7 +1625,7 @@ object OptionsForm: TOptionsForm
         end
         object txtRenderer: TEdit
           Left = 67
-          Top = 19
+          Top = 18
           Width = 310
           Height = 21
           HelpContext = 1000
@@ -1523,7 +1643,7 @@ object OptionsForm: TOptionsForm
         TabOrder = 2
         object SpeedButton2: TSpeedButton
           Left = 392
-          Top = 16
+          Top = 17
           Width = 24
           Height = 24
           Hint = 'Browse...'
@@ -1574,7 +1694,7 @@ object OptionsForm: TOptionsForm
         end
         object txtLibrary: TEdit
           Left = 67
-          Top = 19
+          Top = 18
           Width = 310
           Height = 21
           HelpContext = 1000
