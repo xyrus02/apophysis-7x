@@ -74,7 +74,9 @@ begin
     s := Copy(s, 0, length(s) - 4);
     Listitem.Caption := s;
   end;
-  if Favorites.Count <> 0 then ListView.Selected := ListView.Items[0];
+  if Favorites.Count <> 0 then ListView.Selected := ListView.Items[0]
+  else
+    btnRemove.Enabled := False;
   if ListView.Items.Count <= 1 then
   begin
     btnMoveUp.Enabled := False;
