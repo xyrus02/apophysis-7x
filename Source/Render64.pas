@@ -47,7 +47,6 @@ type
 
     FImageMaker: TImageMaker;
 
-    procedure InitValues;
     procedure InitBuffers;
 
     procedure ClearBuffers;
@@ -75,7 +74,7 @@ type
     procedure Render; override;
 
     function  GetImage: TBitmap; override;
-    procedure UpdateImage(CP: TControlPoint); override;
+//    procedure UpdateImage(CP: TControlPoint); override;
     procedure SaveImage(const FileName: String); override;
   end;
 
@@ -212,6 +211,8 @@ begin
   Bucketwidth := oversample * fcp.Width + 2 * max_gutter_width;
   BucketSize := BucketWidth * BucketHeight;
 
+  assert(BucketSize > 0); // who knows ;)
+
   if high(buckets) <> (BucketSize - 1) then
   try
     SetLength(buckets, BucketSize);
@@ -219,22 +220,12 @@ begin
     on EOutOfMemory do begin
       Application.MessageBox('Error: not enough memory for this render!', 'Apophysis', 48);
       FStop := true;
+      exit;
     end;
   end;
 
   // share the buffer with imagemaker
   FImageMaker.SetBucketData(Buckets, BucketWidth);
-end;
-
-///////////////////////////////////////////////////////////////////////////////
-procedure TRenderer64.InitValues;
-begin
-  InitBuffers;
-  CreateCamera;
-
-  CreateColorMap;
-
-  fcp.Prepare;
 end;
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -245,7 +236,6 @@ var
   nrbatches: Integer;
   IterateBatchProc: procedure of object;
 begin
-  Prepare;
   Randomize;
 
   if FCP.FAngle = 0 then begin
@@ -290,7 +280,13 @@ begin
   FImageMaker.SetCP(FCP);
   FImageMaker.Init;
 
-  InitValues;
+  InitBuffers;
+  if FStop then exit; // memory allocation error
+
+  CreateColorMap;
+  Prepare;
+
+  CreateCamera;
 
   ClearBuffers;
   SetPixels;
@@ -302,6 +298,7 @@ begin
 end;
 
 ///////////////////////////////////////////////////////////////////////////////
+{
 procedure TRenderer64.UpdateImage(CP: TControlPoint);
 begin
   FCP.background := cp.background;
@@ -317,6 +314,7 @@ begin
   FImageMaker.OnProgress := OnProgress;
   FImageMaker.CreateImage;
 end;
+}
 
 ///////////////////////////////////////////////////////////////////////////////
 procedure TRenderer64.SaveImage(const FileName: String);

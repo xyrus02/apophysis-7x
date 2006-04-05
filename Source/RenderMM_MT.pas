@@ -22,19 +22,18 @@ unit RenderMM_MT;
 interface
 
 uses
-  Windows, Graphics,
+  Windows, Forms, Graphics,
   Render64MT, Controlpoint, ImageMaker, BucketFillerThread, XForm;
 
 type
   TRendererMM64_MT = class(TRenderer64MT)
 
   private
-    image_Width, image_Height: integer;
+    image_Width, image_Height: int64;
     image_Center_X, image_Center_Y: double;
 
     Slice, nrSlices: integer;
 
-    procedure InitValues;
     procedure InitBuffers;
     procedure CreateCamera;
 
@@ -118,21 +117,19 @@ begin
   Bucketwidth := oversample * image_width + 2 * gutter_width;
   BucketSize := BucketWidth * BucketHeight;
 
-  if high(buckets) <> (BucketSize - 1) then begin
+  if high(buckets) <> (BucketSize - 1) then
+  try
     SetLength(buckets, BucketSize);
+  except
+    on EOutOfMemory do begin
+      Application.MessageBox('Error: not enough memory for this render!', 'Apophysis', 48);
+      FStop := true;
+      exit;
+    end;
   end;
 
   // share the buffer with imagemaker
   FImageMaker.SetBucketData(Buckets, BucketWidth);
-end;
-
-///////////////////////////////////////////////////////////////////////////////
-procedure TRendererMM64_MT.InitValues;
-begin
-  image_height := fcp.Height;
-  image_Width := fcp.Width;
-
-  inherited;
 end;
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -216,7 +213,12 @@ begin
   zoom_scale := power(2.0, fcp.zoom);
   center_base := center_y - ((nrslices - 1) * fcp.height) /  (2 * fcp.pixels_per_unit * zoom_scale);
 
-  InitValues;
+  image_height := fcp.Height;
+  image_Width := fcp.Width;
+
+  InitBuffers;
+  CreateColorMap;
+  fcp.Prepare;
 
   for i := 0 to NrSlices - 1 do begin
     if FStop then

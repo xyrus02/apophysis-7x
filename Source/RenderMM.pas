@@ -34,7 +34,6 @@ type
 
     Slice, nrSlices: integer;
 
-    procedure InitValues;
     procedure InitBuffers;
     procedure CreateCamera;
 
@@ -43,7 +42,7 @@ type
     function GetNrSlices: integer; override;
 
   public
-    function  GetImage: TBitmap; override;
+    function GetImage: TBitmap; override;
     procedure SaveImage(const FileName: String); override;
 
     procedure Render; override;
@@ -124,25 +123,12 @@ begin
     on EOutOfMemory do begin
       Application.MessageBox('Error: not enough memory for this render!', 'Apophysis', 48);
       FStop := true;
+      exit;
     end;
   end;
 
   // share the buffer with imagemaker
   FImageMaker.SetBucketData(Buckets, BucketWidth);
-end;
-
-///////////////////////////////////////////////////////////////////////////////
-procedure TRendererMM64.InitValues;
-begin
-  image_height := fcp.Height;
-  image_Width := fcp.Width;
-
-  CreateCamera;
-  InitBuffers;
-
-  CreateColorMap;
-
-  fcp.Prepare;
 end;
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -160,7 +146,7 @@ begin
   image_Center_Y := fcp.center[1];
 
   image_height := fcp.Height;
-  image_Width := fcp.Width;
+  image_width := fcp.Width;
   oversample := fcp.spatial_oversample;
 
   // entered memory - imagesize
@@ -168,8 +154,10 @@ begin
 
   ApproxMemory := 32 * oversample * oversample * image_height * image_width;
 
-  if (MaxMemory < 0) then
-    Exit;
+  assert(MaxMemory > 0);
+  if MaxMemory <= 0 then exit;
+
+// All this 'dividers' stuff looks very VERY weird! :-\
 
   nrSlices := 1 + ApproxMemory div MaxMemory;
 
@@ -200,7 +188,12 @@ begin
   zoom_scale := power(2.0, fcp.zoom);
   center_base := center_y - ((nrslices - 1) * fcp.height) /  (2 * fcp.pixels_per_unit * zoom_scale);
 
-  InitValues;
+  image_height := fcp.Height;
+  image_width := fcp.Width;
+
+  InitBuffers;
+  CreateColorMap;
+  Prepare;
 
   for i := 0 to NrSlices - 1 do begin
     if FStop then
@@ -208,8 +201,10 @@ begin
 
     Slice := i;
     fcp.center[1] := center_base + fcp.height * slice / (fcp.pixels_per_unit * zoom_scale);
+
     CreateCamera;
     ClearBuffers;
+
     SetPixels;
 
     if not FStop then begin

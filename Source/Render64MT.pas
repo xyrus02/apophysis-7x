@@ -54,7 +54,6 @@ type
 
     FImageMaker: TImageMaker;
 
-    procedure InitValues;
     procedure InitBuffers;
 
     procedure ClearBuffers;
@@ -223,22 +222,12 @@ begin
     on EOutOfMemory do begin
       Application.MessageBox('Error: not enough memory for this render!', 'Apophysis', 48);
       FStop := true;
+      exit;
     end;
   end;
 
   // share the buffer with imagemaker
   FImageMaker.SetBucketData(Buckets, BucketWidth);
-end;
-
-///////////////////////////////////////////////////////////////////////////////
-procedure TRenderer64MT.InitValues;
-begin
-  InitBuffers;
-  CreateCamera;
-
-  CreateColorMap;
-  
-  fcp.Prepare;
 end;
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -278,6 +267,12 @@ begin
      end;
   end;
 
+{  for i := 0 to NrOfTreads - 1 do
+  begin
+    WorkingThreads[i].Terminate;
+    WorkingThreads[i].Free;
+  end;}
+
   DeleteCriticalSection(CriticalSection);
   Progress(1);
 end;
@@ -314,7 +309,14 @@ begin
 
   FImageMaker.SetCP(FCP);
   FImageMaker.Init;
-  InitValues;
+
+  InitBuffers;
+  if FStop then exit; // memory allocation error
+
+  CreateColorMap;
+  fcp.Prepare;
+
+  CreateCamera;
 
   ClearBuffers;
   SetPixelsMT;
