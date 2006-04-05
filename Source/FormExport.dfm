@@ -3,7 +3,7 @@ object ExportDialog: TExportDialog
   Top = 276
   BorderStyle = bsDialog
   Caption = 'Export Flame'
-  ClientHeight = 325
+  ClientHeight = 292
   ClientWidth = 419
   Color = clBtnFace
   Font.Charset = DEFAULT_CHARSET
@@ -100,7 +100,6 @@ object ExportDialog: TExportDialog
       Width = 281
       Height = 21
       TabOrder = 0
-      Text = 'txtFilename'
     end
   end
   object GroupBox3: TGroupBox
@@ -216,7 +215,10 @@ object ExportDialog: TExportDialog
         '1024'
         '1280'
         '1600'
-        '2048')
+        '1920'
+        '2048'
+        '2560'
+        '3200')
     end
     object cbHeight: TComboBox
       Left = 112
@@ -234,32 +236,27 @@ object ExportDialog: TExportDialog
         '768'
         '1024'
         '1200'
-        '2048')
+        '2048'
+        '2400')
     end
   end
   object GroupBox4: TGroupBox
     Left = 8
     Top = 176
     Width = 313
-    Height = 145
+    Height = 113
     Caption = '  flam3 parameters  '
     TabOrder = 5
-    object Label6: TLabel
-      Left = 10
-      Top = 23
-      Width = 42
-      Height = 13
-      Caption = 'Batches:'
-    end
     object Label7: TLabel
-      Left = 152
+      Left = 8
       Top = 23
-      Width = 61
-      Height = 13
+      Width = 31
+      Height = 26
       Caption = 'Buffer depth:'
+      WordWrap = True
     end
     object Label8: TLabel
-      Left = 10
+      Left = 8
       Top = 55
       Width = 29
       Height = 13
@@ -268,14 +265,14 @@ object ExportDialog: TExportDialog
     object Label9: TLabel
       Left = 8
       Top = 80
-      Width = 49
-      Height = 25
+      Width = 46
+      Height = 26
       Caption = 'Estimator radius'
       WordWrap = True
     end
     object Label11: TLabel
-      Left = 8
-      Top = 112
+      Left = 160
+      Top = 80
       Width = 46
       Height = 26
       Caption = 'Estimator min.'
@@ -283,68 +280,41 @@ object ExportDialog: TExportDialog
     end
     object Label12: TLabel
       Left = 160
-      Top = 80
+      Top = 48
       Width = 46
       Height = 26
       Caption = 'Estimator curve'
       WordWrap = True
     end
-    object Label13: TLabel
-      Left = 160
-      Top = 112
-      Width = 47
-      Height = 26
-      Caption = 'Temporal samples'
-      WordWrap = True
-    end
     object Label14: TLabel
       Left = 160
-      Top = 48
-      Width = 57
+      Top = 16
+      Width = 39
       Height = 26
-      Caption = 'Gamma tresholds'
+      Caption = 'Gamma treshold'
       WordWrap = True
     end
-    object txtBatches: TEdit
-      Left = 64
-      Top = 20
-      Width = 57
-      Height = 21
-      TabOrder = 0
-      Text = '1'
-      OnChange = txtBatchesChange
-    end
-    object udBatches: TUpDown
-      Left = 121
-      Top = 20
-      Width = 12
-      Height = 21
-      Associate = txtBatches
-      Min = 1
-      Max = 10000
-      Position = 1
-      TabOrder = 1
-    end
     object cmbDepth: TComboBox
-      Left = 224
+      Left = 64
       Top = 20
       Width = 73
       Height = 21
       Style = csDropDownList
       ItemHeight = 13
-      TabOrder = 2
+      TabOrder = 0
       OnChange = cmbDepthChange
       Items.Strings = (
-        '16 bits'
-        '32 bits'
-        '64 bits')
+        '16-bit'
+        '32-bit'
+        '32-bit float'
+        '64-bit')
     end
     object txtStrips: TEdit
       Left = 64
       Top = 52
       Width = 57
       Height = 21
-      TabOrder = 3
+      TabOrder = 1
       Text = '1'
       OnChange = txtBatchesChange
     end
@@ -357,57 +327,48 @@ object ExportDialog: TExportDialog
       Min = 1
       Max = 512
       Position = 1
-      TabOrder = 4
-    end
-    object txtJitters: TEdit
-      Left = 224
-      Top = 116
-      Width = 57
-      Height = 21
-      TabOrder = 5
-      Text = '1'
-      OnChange = txtJittersChange
+      TabOrder = 2
     end
     object txtEstimator: TEdit
       Left = 64
       Top = 84
       Width = 57
       Height = 21
-      TabOrder = 6
+      TabOrder = 3
       Text = '5'
       OnChange = txtEstimatorChange
     end
     object txtEstimatorMin: TEdit
-      Left = 64
-      Top = 116
+      Left = 224
+      Top = 84
       Width = 57
       Height = 21
-      TabOrder = 7
+      TabOrder = 4
       Text = '0'
       OnChange = txtEstimatorMinChange
     end
     object txtEstimatorCurve: TEdit
       Left = 224
-      Top = 84
-      Width = 57
-      Height = 21
-      TabOrder = 8
-      Text = '0.6'
-      OnChange = txtEstimatorCurveChange
-    end
-    object txtGammaTresholds: TEdit
-      Left = 224
       Top = 52
       Width = 57
       Height = 21
-      TabOrder = 9
+      TabOrder = 5
+      Text = '0.6'
+      OnChange = txtEstimatorCurveChange
+    end
+    object txtGammaTreshold: TEdit
+      Left = 224
+      Top = 20
+      Width = 57
+      Height = 21
+      TabOrder = 6
       Text = '0.01'
-      OnChange = txtGammaTresholdsChange
+      OnChange = txtGammaTresholdChange
     end
   end
   object chkRender: TCheckBox
     Left = 328
-    Top = 302
+    Top = 270
     Width = 65
     Height = 17
     Caption = 'Render'
@@ -420,7 +381,7 @@ object ExportDialog: TExportDialog
     Filter = 
       'JPEG Image (*.jpg)|*.jpg|PPM Image (*.ppm)|*.ppm|PNG Images (*.p' +
       'ng)|*.png'
-    Left = 392
-    Top = 24
+    Left = 376
+    Top = 48
   end
 end

@@ -1,5 +1,6 @@
 {
      Apophysis Copyright (C) 2001-2004 Mark Townsend
+     Apophysis Copyright (C) 2005-2006 Ronald Hordijk, Piotr Borys, Peter Sdobnov     
 
      This program is free software; you can redistribute it and/or modify
      it under the terms of the GNU General Public License as published by
@@ -47,9 +48,6 @@ type
     cbWidth: TComboBox;
     cbHeight: TComboBox;
     GroupBox4: TGroupBox;
-    Label6: TLabel;
-    txtBatches: TEdit;
-    udBatches: TUpDown;
     Label7: TLabel;
     cmbDepth: TComboBox;
     chkRender: TCheckBox;
@@ -59,13 +57,11 @@ type
     Label9: TLabel;
     Label11: TLabel;
     Label12: TLabel;
-    Label13: TLabel;
-    txtJitters: TEdit;
     txtEstimator: TEdit;
     txtEstimatorMin: TEdit;
     txtEstimatorCurve: TEdit;
     Label14: TLabel;
-    txtGammaTresholds: TEdit;
+    txtGammaTreshold: TEdit;
     procedure btnBrowseClick(Sender: TObject);
     procedure FormShow(Sender: TObject);
     procedure btnOKClick(Sender: TObject);
@@ -81,7 +77,7 @@ type
     procedure txtEstimatorMinChange(Sender: TObject);
     procedure txtEstimatorCurveChange(Sender: TObject);
     procedure txtJittersChange(Sender: TObject);
-    procedure txtGammaTresholdsChange(Sender: TObject);
+    procedure txtGammaTresholdChange(Sender: TObject);
   private
     FloatFormatSettings: TFormatSettings;
   public
@@ -89,7 +85,7 @@ type
     ImageWidth, ImageHeight, Oversample, Batches, Strips: Integer;
     Sample_Density, Filter_Radius: double;
     Estimator, EstimatorMin, EstimatorCurve: double;
-    GammaTresholds: double;
+    GammaTreshold: double;
     Jitters: integer;
   end;
 
@@ -133,23 +129,24 @@ begin
   ImageWidth := MainCp.Width;
   ImageHeight := MainCp.Height;
   txtDensity.text := FloatToStr(Sample_density);
-  if cmbDepth.ItemIndex <> 2 then
-    txtBatches.text := IntToStr(Round(Sample_density / 4));
+//  if cmbDepth.ItemIndex <> 2 then
+//    txtBatches.text := IntToStr(Round(Sample_density / 4));
   txtFilterRadius.text := FloatToStr(Filter_Radius);
   txtOversample.text := IntToSTr(Oversample);
   udOversample.Position := Oversample;
   Ratio := ImageWidth / ImageHeight;
+  Batches := 1;
   Estimator := 5.0;
   EstimatorMin := 0.0;
   EstimatorCurve := 0.6;
   Jitters := 1;
-  GammaTresholds := 0.01;
+  GammaTreshold := 0.01;
   GetLocaleFormatSettings(LOCALE_SYSTEM_DEFAULT, FloatFormatSettings);
   txtEstimator.Text := FloatToStr(Estimator, FloatFormatSettings);
   txtEstimatorMin.Text := FloatToStr(EstimatorMin, FloatFormatSettings);
   txtEstimatorCurve.Text := FloatToStr(EstimatorCurve, FloatFormatSettings);
-  txtJitters.Text := IntToStr(Jitters);
-  txtGammaTresholds.Text := FloatToStr(GammaTresholds, FloatFormatSettings);
+//  txtJitters.Text := IntToStr(Jitters);
+  txtGammaTreshold.Text := FloatToStr(GammaTreshold, FloatFormatSettings);
 end;
 
 procedure TExportDialog.btnOKClick(Sender: TObject);
@@ -194,8 +191,8 @@ procedure TExportDialog.txtDensityChange(Sender: TObject);
 begin
   try
     Sample_Density := StrToFloat(txtDensity.Text);
-    if cmbDepth.ItemIndex <> 2 then
-      txtBatches.text := IntToStr(Round(Sample_density / 4));
+//    if cmbDepth.ItemIndex <> 2 then
+//      txtBatches.text := IntToStr(Round(Sample_density / 4));
   except
   end;
 end;
@@ -222,6 +219,7 @@ end;
 
 procedure TExportDialog.txtBatchesChange(Sender: TObject);
 begin
+{
   if StrToInt(txtBatches.Text) > udBatches.Max then
     txtBatches.Text := IntToStr(udBatches.Max);
   if StrToInt(txtBatches.Text) < udBatches.Min then
@@ -230,14 +228,17 @@ begin
     Batches := StrToInt(txtBatches.Text);
   except
   end;
+}  
 end;
 
 procedure TExportDialog.cmbDepthChange(Sender: TObject);
 begin
+{
   if cmbDepth.ItemIndex <> 2 then
     txtBatches.text := IntToStr(Round(Sample_density / 4))
   else
     txtBatches.text := IntToStr(1);
+}    
 end;
 
 procedure TExportDialog.txtEstimatorChange(Sender: TObject);
@@ -269,18 +270,20 @@ end;
 
 procedure TExportDialog.txtJittersChange(Sender: TObject);
 begin
+{
   Jitters := 0;
   try
     Jitters := StrToInt(txtJitters.Text);
   except
   end;
+}  
 end;
 
-procedure TExportDialog.txtGammaTresholdsChange(Sender: TObject);
+procedure TExportDialog.txtGammaTresholdChange(Sender: TObject);
 begin
-  GammaTresholds := 0.01;
+  GammaTreshold := 0.01;
   try
-    GammaTresholds := StrToFloat(txtGammaTresholds.Text, FloatFormatSettings);
+    GammaTreshold := StrToFloat(txtGammaTreshold.Text, FloatFormatSettings);
   except
   end;
 end;
