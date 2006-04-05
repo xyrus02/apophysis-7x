@@ -126,7 +126,7 @@ type
 
     estimator, estimator_min, estimator_curve: double; // density estimator.
     jitters: integer;
-    gamma_tresholds: double;
+    gamma_treshold: double;
 
     PropTable: array of TXForm;//Integer;
     FAngle: Double;
@@ -149,7 +149,7 @@ type
     procedure SetVariation(vari: TVariation);
     procedure Clear;
 
-    class function interpolate(cp1, cp2: TControlPoint; Time: double): TControlPoint; /// just for now
+//    class function interpolate(cp1, cp2: TControlPoint; Time: double): TControlPoint; /// just for now
     procedure InterpolateX(cp1, cp2: TControlPoint; Tm: double);
 //    procedure Iterate_Old(NrPoints: integer; var Points: TPointsArray);
     procedure IterateXY(NrPoints: integer; var Points: TPointsXYArray);
@@ -259,8 +259,8 @@ begin
   estimator := 5.0;
   estimator_min := 0.0;
   estimator_curve := 0.6;
-  jitters = 1;
-  gamma_tresholds := 0.01;
+  jitters := 1;
+  gamma_treshold := 0.01;
 
   FTwoColorDimensions := False;
 
@@ -312,240 +312,6 @@ begin
   end;
 
 end;
-
-(*
-procedure TControlPoint.Iterate_Old(NrPoints: integer; var Points: TPointsArray);
-var
-  i: Integer;
-  px, py, pc: double;
-  dx, dy, tx, ty: double;
-  nx, ny: double;
-  r: double;
-  s, v, a: double;
-  n0, n1, m0, m1: double;
-begin
-  px := 2 * random - 1;
-  py := 2 * random - 1;
-  pc := random;
-
-  PreparePropTable;
-
-  for i := -FUSE to NrPoints - 1 do begin
-    //with xform[PropTable[Random(1024)]] do begin
-    with PropTable[Random(PROP_TABLE_SIZE)]^ do begin
-
-      // first compute the color coord
-      s := symmetry;
-      pc := (pc + color) * 0.5 * (1 - s) + s * pc;
-
-      try
-        // then apply the affine part of the function
-        tx := c[0][0] * px + c[1][0] * py + c[2][0];
-        ty := c[0][1] * px + c[1][1] * py + c[2][1];
-
-        px := 0;
-        py := 0;
-
-        // then add in proportional amounts of each of the variations
-        if vars[0] > 0 then begin // linear
-          px := px + vars[0] * tx;
-          py := py + vars[0] * ty;
-        end;
-
-        if vars[1] > 0 then begin // sinusoidal
-          px := px + vars[1] * sin(tx);
-          py := py + vars[1] * sin(ty);
-        end;
-
-        if vars[2] > 0 then begin // complex
-          r := tx * tx + ty * ty + 1E-6;
-          px := px + vars[2] * tx / r;
-          py := py + vars[2] * ty / r;
-        end;
-
-        if vars[3] > 0 then begin // swirl
-          r := tx * tx + ty * ty;
-          px := px + vars[3] * (sin(r) * tx - cos(r) * ty);
-          py := py + vars[3] * (cos(r) * tx + sin(r) * ty);
-        end;
-
-        if vars[4] > 0 then begin // swirl
-          if (tx < -EPS) or (tx > EPS) or (ty < -EPS) or (ty > EPS) then
-            a := arctan2(tx, ty)
-          else
-            a := 0;
-          px := px + vars[4] * (sin(a) * tx - cos(a) * ty);
-          py := py + vars[4] * (cos(a) * tx + sin(a) * ty);
-        end;
-
-        if vars[5] > 0 then begin // polar
-          if (tx < -EPS) or (tx > EPS) or (ty < -EPS) or (ty > EPS) then
-            a := arctan2(tx, ty) / PI
-          else
-            a := 0;
-          r := sqrt(tx * tx + ty * ty) - 1;
-          px := px + vars[5] * a;
-          py := py + vars[5] * r;
-        end;
-
-        if vars[6] > 0 then begin // bent
-        {Draves' latest code 1.7 seems to have dropped "Bent" in
-        favour of "Folded Handkerchief" but I'll keep it for
-        "classic" flames and compatibility with old parameters }
-          nx := tx;
-          ny := ty;
-          if (nx < 0) and (nx > -1E100) then nx := nx * 2;
-          if ny < 0 then ny := ny / 2;
-          px := px + vars[6] * nx;
-          py := py + vars[6] * ny;
-        end;
-
-        if vars[7] > 0 then begin // Hart shaped box
-        // Heart
-          if (tx < -EPS) or (tx > EPS) or (ty < -EPS) or (ty > EPS) then
-            a := arctan2(tx, ty)
-          else
-            a := 0;
-          r := sqrt(tx * tx + ty * ty);
-
-          px := px + vars[7] * (sin(a * r) * r);
-          py := py - vars[7] * (cos(a * r) * r);
-        end;
-
-        if vars[8] > 0 then begin // The world in a sphere
-        // Disc
-          if (tx < -EPS) or (tx > EPS) or (ty < -EPS) or (ty > EPS) then
-            a := arctan2(tx, ty)
-          else
-            a := 0;
-          r := sqrt(tx * tx + ty * ty);
-          px := px + vars[8] * (sin(r) * (a));
-          py := py + vars[8] * (cos(r) * (a));
-        end;
-
-        if vars[9] > 0 then begin // Test
-        // Spiral
-          if (tx < -EPS) or (tx > EPS) or (ty < -EPS) or (ty > EPS) then
-            a := arctan2(tx, ty)
-          else
-            a := 0;
-          r := power(tx * tx + ty * ty, 0.5) + 1E-6;
-
-          px := px + vars[9] * ((cos(a) + sin(r)) / r);
-          py := py + vars[9] * ((sin(a) - cos(r)) / r);
-        end;
-
-        if vars[10] > 0 then begin // Test
-       //* hyperbolic */
-          if (tx < -EPS) or (tx > EPS) or (ty < -EPS) or (ty > EPS) then
-            a := arctan2(tx, ty)
-          else
-            a := 0;
-          r := power(tx * tx + ty * ty, 0.25) + 1E-6;
-          px := px + vars[10] * (sin(a) / r);
-          py := py - vars[10] * (cos(a) * r);
-        end;
-
-        v := vars[11];
-        if (v > 0.0) then
-        begin
-         //* square */ Draves' version
-          if (tx < -EPS) or (tx > EPS) or (ty < -EPS) or (ty > EPS) then
-            a := arctan2(tx, ty)
-          else
-            a := 0.0;
-          r := sqrt(tx * tx + ty * ty);
-          px := px + v * sin(a) * cos(r);
-          py := py + v * cos(a) * sin(r);
-        end;
-
-        v := vars[12];
-        if (v > 0.0) then
-        begin
-         //* ex */
-          if (tx < -EPS) or (tx > EPS) or (ty < -EPS) or (ty > EPS) then
-            a := arctan2(tx, ty)
-          else
-            a := 0.0;
-          r := sqrt(tx * tx + ty * ty);
-          n0 := sin(a + r);
-          n1 := cos(a - r);
-          m0 := n0 * n0 * n0 * r;
-          m1 := n1 * n1 * n1 * r;
-          px := px + v * (m0 + m1);
-          py := py + v * (m0 - m1);
-        end;
-
-        if vars[13] > 0 then begin // Folded hankercief
-          if (tx < -EPS) or (tx > EPS) or (ty < -EPS) or (ty > EPS) then
-            a := arctan2(tx, ty)
-          else
-            a := 0;
-          r := sqrt(tx * tx + ty * ty);
-          px := px + vars[13] * (sin(a + r) * r);
-          py := py - vars[13] * (cos(a - r) * r);
-        end;
-
-        if vars[14] > 0 then begin // bent
-        { repeat bent, just so there's something here }
-          nx := tx;
-          ny := ty;
-          if (nx < 0) and (nx > -1E100) then nx := nx * 2;
-          if ny < 0 then ny := ny / 2;
-          px := px + vars[14] * nx;
-          py := py + vars[14] * ny;
-        end;
-
-        if vars[15] <> 0 then
-        begin
-        { Waves }
-          dx := c[2][0];
-          dy := c[2][1];
-          nx := tx + c[1][0] * sin(ty / ((dx * dx) + EPS));
-          ny := ty + c[1][1] * sin(tx / ((dy * dy) + EPS));
-          px := px + vars[15] * nx;
-          py := py + vars[15] * ny;
-        end;
-
-        if vars[16] <> 0 then
-        begin
-          { fisheye }
-          r := sqrt(tx * tx + ty * ty);
-          a := arctan2(tx, ty);
-          r := 2 * r / (r + 1);
-          nx := r * cos(a);
-          ny := r * sin(a);
-          px := px + vars[16] * nx;
-          py := py + vars[16] * ny;
-        end;
-
-        if vars[17] <> 0 then
-        begin
-        { Popcorn - mine from Apophysis 2.0 beta 17}
-          nx := tx + c[1][0] * sin(ty + tan(3 * ty) + EPS);
-          ny := ty + c[1][1] * sin(tx + tan(3 * tx) + EPS);
-          px := px + vars[17] * nx;
-          py := py + vars[17] * ny;
-        end;
-
-
-      except
-        on EMathError do begin
-//          raise Exception.Create('Iteration blows up');
-          exit;
-        end;
-      end;
-    end;
-
-    // store points
-    if i >= 0 then begin
-      Points[i].x := px;
-      Points[i].y := py;
-      Points[i].c := pc;
-    end
-  end;
-end;
-*)
 
 procedure TControlPoint.IterateXY(NrPoints: integer; var Points: TPointsXYArray);
 var
@@ -1353,7 +1119,7 @@ begin
   end;
 end;
 
-
+(*
 class function TControlPoint.Interpolate(cp1, cp2: TControlPoint; Time: double): TControlPoint;
 var
   c0, c1: double;
@@ -1436,7 +1202,7 @@ begin
       Result.xform[i].SetVariable(GetVariableNameAt(j), v1);
     end;
 
-(*
+{
     totvar := 0;
     for j := 0 to NVARS - 1 do begin
       totvar := totvar + Result.xform[i].vars[j];
@@ -1444,7 +1210,7 @@ begin
     for j := 0 to NVARS - 1 do begin
       if totVar <> 0 then Result.xform[i].vars[j] := Result.xform[i].vars[j] / totvar;
     end;
-   *)
+}
 
     // interpol matrix
     for j := 0 to 2 do begin
@@ -1477,6 +1243,7 @@ begin
 }
   end;
 end;
+*)
 
 procedure TControlPoint.InterpolateX(cp1, cp2: TControlPoint; Tm: double);
 var
@@ -1487,6 +1254,8 @@ var
   v1, v2: double;
 //  totvar: double;
   {z,rhtime: double;}
+
+  nXforms1, nXforms2: integer;
 begin
   if (cp2.time - cp1.time) > 1E-6 then begin
     c0 := (cp2.time - tm) / (cp2.time - cp1.time);
@@ -1544,7 +1313,36 @@ begin
     Result.wiggle[i div 2][i mod 2] := c0 * cp1.wiggle[i div 2][i mod 2] + c1 * cp2.wiggle[i div 2][i mod 2];
   end;
 
-  for i := 0 to NXFORMS - 1 do begin
+  // save finalxform from mut(il)ation ;)
+  nXforms1 := cp1.NumXForms;
+  if cp1.HasFinalXForm then
+  begin
+    if nXforms1 < NXFORMS then
+    begin
+      cp1.xform[NXFORMS].Assign(cp1.xform[nXforms1]);
+      cp1.xform[nXforms1].Clear;
+    end;
+  end
+  else begin
+    cp1.xform[NXFORMS].Clear;
+    cp1.xform[NXFORMS].symmetry := 1;
+  end;
+
+  nXforms2 := cp2.NumXForms;
+  if cp2.HasFinalXForm then
+  begin
+    if nXforms2 < NXFORMS then
+    begin
+      cp2.xform[NXFORMS].Assign(cp2.xform[nXforms2]);
+      cp2.xform[nXforms2].Clear;
+    end;
+  end
+  else begin
+    cp2.xform[NXFORMS].Clear;
+    cp2.xform[NXFORMS].symmetry := 1;
+  end;
+
+  for i := 0 to NXFORMS do begin
     Result.xform[i].density := c0 * cp1.xform[i].density + c1 * cp2.xform[i].density;
     Result.xform[i].color := c0 * cp1.xform[i].color + c1 * cp2.xform[i].color;
     Result.xform[i].symmetry := c0 * cp1.xform[i].symmetry + c1 * cp2.xform[i].symmetry;
@@ -1574,6 +1372,28 @@ begin
       Result.xform[i].c[j, 1] := c0 * cp1.xform[i].c[j, 1] + c1 * cp2.xform[i].c[j, 1];
     end;
   end;
+
+  // finalxform was supposed to be mutate-able too, but somehow it's always
+  // getting confused by random-generated mutatns :-\
+  if Result.NumXForms < NXFORMS then
+  begin
+    Result.xform[Result.NumXForms].Assign(cp1.xform[NXFORMS]); //result.xform[NXFORMS]);
+    Result.xform[NXFORMS].Clear;
+  end;
+  Result.finalXformEnabled := cp1.finalXformEnabled;
+
+  // restore finalxforms in source CPs
+  if nXforms1 < NXFORMS then
+  begin
+    cp1.xform[nXforms1].Assign(cp1.xform[NXFORMS]);
+    cp1.xform[NXFORMS].Clear;
+  end;
+  if nXforms2 < NXFORMS then
+  begin
+    cp2.xform[nXforms2].Assign(cp2.xform[NXFORMS]);
+    cp2.xform[NXFORMS].Clear;
+  end;
+
   Copy(Result);
   cmap := Result.cmap;
   result.free;
@@ -1706,19 +1526,10 @@ var
   i, j: Integer;
 begin
   symmetry := 0;
-  for i := 0 to NXFORMS do begin
-    xform[i].Clear;
-{
-    xform[i].density := 0;
-    xform[i].symmetry := 0;
-    xform[i].color := 0;
-    xform[i].vars[0] := 1;
-    for j := 1 to NRVAR - 1 do begin
-      xform[i].vars[j] := 0;
-    end;
-}
-  end;
+  cmapindex := -1;
   zoom := 0;
+  for i := 0 to NXFORMS do xform[i].Clear;
+  FinalXformEnabled := false;
 end;
 
 function TControlPoint.HasFinalXForm: boolean;
@@ -1727,8 +1538,8 @@ var
 begin
   with xform[NumXForms] do
   begin
-    Result := (c[0,0]<>1) or (c[0,1]<>0) or(c[1,0]<>0) or (c[1,1]<>1) or (c[2,0]<>0) or (c[2,1]<>0) or
-              (p[0,0]<>1) or (p[0,1]<>0) or(p[1,0]<>0) or (p[1,1]<>1) or (p[2,0]<>0) or (p[2,1]<>0) or
+    Result := (c[0,0]<>1) or (c[0,1]<>0) or (c[1,0]<>0) or (c[1,1]<>1) or (c[2,0]<>0) or (c[2,1]<>0) or
+              (p[0,0]<>1) or (p[0,1]<>0) or (p[1,0]<>0) or (p[1,1]<>1) or (p[2,0]<>0) or (p[2,1]<>0) or
               (symmetry <> 1) or (vars[0] <> 1);
     if Result = false then
       for i := 1 to NRVAR-1 do Result := Result or (vars[i] <> 0);

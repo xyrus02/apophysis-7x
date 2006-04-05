@@ -1550,7 +1550,7 @@ var
   r, sinr, cosr: double;
 begin
   SinCos(random * 2*pi, sinr, cosr);
-  r := vars[28] * random * (sqr(FTx) + sqr(FTy));
+  r := vars[28] * random * sqrt(sqr(FTx) + sqr(FTy));
   FPx := FPx + r * cosr;
   FPy := FPy + r * sinr;
 {$else}
@@ -1564,7 +1564,7 @@ asm
     fld     qword ptr [ebx + FTy]
     fmul    st, st
     faddp
-    //fsqrt
+    fsqrt
     fmulp
     call    System.@RandExt
     fadd    st, st

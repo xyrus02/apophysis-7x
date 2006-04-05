@@ -37,7 +37,7 @@ const
   RS_XO = 2;
   RS_VO = 3;
 
-  AppVersionString = 'Apophysis 2.03d pre-release 4';
+  AppVersionString = 'Apophysis 2.03d pre-release 7';
 
 type
   TMouseMoveState = (msUsual, msZoomWindow, msZoomOutWindow, msZoomWindowMove, msZoomOutWindowMove, msDrag, msDragMove, msRotate, msRotateMove);
@@ -1333,7 +1333,7 @@ begin
       format('estimator_minimum="%g" ', [cp1.estimator_min]) +
       format('estimator_curve="%g" ', [cp1.estimator_curve]) +
       format('temporal_samples="%d" ', [cp1.jitters]) +
-      format('gamma_thresholds="%g" ', [cp1.gamma_tresholds]) +
+      format('gamma_threshold="%g" ', [cp1.gamma_treshold]) +
       hue + url + nick + '>');
 
    { Write transform parameters }
@@ -1822,7 +1822,7 @@ begin
     AssignFile(F, AppPath + 'apophysis.rand');
     OpenFile := AppPath + 'apophysis.rand';
     ReWrite(F);
-    WriteLn(F, '<random batch>');
+    WriteLn(F, '<random_batch>');
     for i := 0 to BatchSize - 1 do
     begin
       inc(RandomIndex);
@@ -1843,7 +1843,7 @@ begin
 //      Write(F, FlameToString(Title));
 //      WriteLn(F, ' ');
     end;
-    Write(F, '</random batch>');
+    Write(F, '</random_batch>');
     CloseFile(F);
   except
     on EInOutError do Application.MessageBox('Error creating batch', PChar(APP_NAME), 16);
@@ -2486,7 +2486,7 @@ begin
   AdjustForm.cmbPalette.ItemIndex := 0;
 //  AdjustForm.cmbPalette.Items.clear;
 
-  ExportDialog.cmbDepth.ItemIndex := 2;
+  ExportDialog.cmbDepth.ItemIndex := 3;
 end;
 
 procedure TMainForm.FormClose(Sender: TObject; var Action: TCloseAction);
@@ -2605,6 +2605,9 @@ begin
       inc(i);
       ParamStrings.Add(FileStrings[i]);
     until pos('</flame>', Lowercase(FileStrings[i])) <> 0;
+
+    ScriptEditor.Stopped := True;
+    StopThread;
     ParseXML(MainCp, PCHAR(PAramStrings.Text));
 
     mnuSaveUndo.Enabled := false;
@@ -3521,16 +3524,20 @@ var
   i: integer;
   h, s, v: real;
 begin
-  ScriptEditor.Stopped := True;
-  StopThread;
   nxform := 0;
   FinalXformLoaded := false;
-  activeXformSet:=0;
-  Parsecp.cmapindex := -2; // generate palette from cmapindex and hue (apo 1 and earlier)
-  ParseCp.symmetry := 0;
-  ParseCP.finalXformEnabled := false;
+  ActiveXformSet := 0;
+//  Parsecp.cmapindex := -2; // generate palette from cmapindex and hue (apo 1 and earlier)
+//  ParseCp.symmetry := 0;
+//  ParseCP.finalXformEnabled := false;
+  //ParseCP.Clear;
+
+  ParseCp.Free;                    // we're creating this CP from the scratch
+  ParseCp := TControlPoint.create; // to reset variables properly (randomize)
+
   XMLScanner.LoadFromBuffer(params);
   XMLScanner.Execute;
+
   cp1.copy(ParseCp);
   if Parsecp.cmapindex = -2 then
   begin
@@ -3557,7 +3564,6 @@ begin
   if nxform < NXFORMS then
     for i := nxform to NXFORMS - 1 do
       cp1.xform[i].density := 0;
-//  cp1.NormalizeWeights;
   // Check for symmetry parameter
   if ParseCp.symmetry <> 0 then
   begin
@@ -3570,6 +3576,8 @@ procedure TMainForm.mnuPasteClick(Sender: TObject);
 begin
   if Clipboard.HasFormat(CF_TEXT) then begin
     UpdateUndo;
+    ScriptEditor.Stopped := True;
+    StopThread;
     ParseXML(MainCP, PCHAR(Clipboard.AsText));
     Transforms := MainCp.TrianglesFromCP(MainTriangles);
     Statusbar.Panels[2].Text := MainCp.name;
@@ -3673,7 +3681,7 @@ begin
       ExportEstimatorMin := ExportDialog.EstimatorMin;
       ExportEstimatorCurve := ExportDialog.EstimatorCurve;
       ExportJitters := ExportDialog.Jitters;
-      ExportGammaTresholds := ExportDialog.GammaTresholds;
+      ExportGammaTreshold := ExportDialog.GammaTreshold;
       cp1.sample_density := ExportDensity;
       cp1.spatial_oversample := ExportOversample;
       cp1.spatial_filter_radius := ExportFilter;
@@ -3684,7 +3692,7 @@ begin
       cp1.estimator_min := ExportEstimatorMin;
       cp1.estimator_curve := ExportEstimatorCurve;
       cp1.jitters := ExportJitters;
-      cp1.gamma_tresholds := ExportGammaTresholds;
+      cp1.gamma_treshold := ExportGammaTreshold;
       FileList.Text := FlameToXML(cp1, false);
       FileList.SaveToFile(ChangeFileExt(ExportDialog.Filename, '.flame'));
       FileList.Clear;
@@ -3696,7 +3704,8 @@ begin
       case ExportDialog.cmbDepth.ItemIndex of
         0: FileList.Add('set bits=16');
         1: FileList.Add('set bits=32');
-        2: FileList.Add('set bits=64');
+        2: FileList.Add('set bits=33');
+        3: FileList.Add('set bits=64');
       end;
       if ExportDialog.udStrips.Position > 1 then
         FileList.Add('set nstrips=' + IntToStr(ExportDialog.udStrips.Position));
