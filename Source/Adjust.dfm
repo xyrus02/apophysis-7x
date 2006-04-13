@@ -972,7 +972,6 @@ object AdjustForm: TAdjustForm
         Width = 73
         Height = 21
         ItemHeight = 13
-        ItemIndex = 0
         TabOrder = 8
         Text = '512'
         OnChange = txtWidthChange
@@ -990,13 +989,13 @@ object AdjustForm: TAdjustForm
         Width = 73
         Height = 21
         ItemHeight = 13
-        ItemIndex = 0
         TabOrder = 9
         Text = '384'
         OnChange = txtHeightChange
         OnKeyPress = txtSizeKeyPress
         Items.Strings = (
           '384'
+          '400'
           '480'
           '512'
           '600'

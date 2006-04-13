@@ -37,7 +37,7 @@ const
   RS_XO = 2;
   RS_VO = 3;
 
-  AppVersionString = 'Apophysis 2.03d pre-release 7';
+  AppVersionString = 'Apophysis 2.03d rc1';
 
 type
   TMouseMoveState = (msUsual, msZoomWindow, msZoomOutWindow, msZoomWindowMove, msZoomOutWindowMove, msDrag, msDragMove, msRotate, msRotateMove);
@@ -1292,50 +1292,68 @@ begin
 end;
 
 
-function FlameToXML(const cp1: TControlPoint; sheep: boolean; compact: boolean = false): string;
+function FlameToXML(const cp1: TControlPoint; sheep: boolean; exporting: boolean = false): string;
 var
   t, i{, j}: integer;
   FileList: TStringList;
   x, y: double;
-  {varlist,} nick, url, pal, hue: string;
+  parameters: string;
 begin
   FileList := TStringList.create;
   x := cp1.center[0];
   y := cp1.center[1];
+
+{ // not supported by flam3 any more
   pal := ''; hue := '';
   if sheep then begin
     if cp1.cmapindex >= 0 then pal := 'palette="' + IntToStr(cp1.cmapindex) + '" ';
     hue := 'hue="' + format('%g', [cp1.hue_rotation]) + '" ';
   end;
+}
+//  if cp1.cmapindex >= 0 then pal := pal + 'gradient="' + IntToStr(cp1.cmapindex) + '" ';
 
-  if cp1.cmapindex >= 0 then
-    pal := pal + 'gradient="' + IntToStr(cp1.cmapindex) + '" ';
-
+{ // not supported by flam3 any more
   if Trim(SheepNick) <> '' then nick := 'nick="' + Trim(SheepNick) + '"';
   if Trim(SheepURL) <> '' then url := 'url="' + Trim(SheepURL) + '" ';
+}
   try
-    FileList.Add('<flame name="' + CleanXMLName(cp1.name) + format('" time="%g" ', [cp1.time]) +
-      pal + 'size="' + IntToStr(cp1.width) + ' ' + IntToStr(cp1.height) +
+    parameters := '';
+    if cp1.time <> 0 then
+      parameters := parameters + format('time="%g" ', [cp1.time]);
+
+    parameters := parameters +
+      'size="' + IntToStr(cp1.width) + ' ' + IntToStr(cp1.height) +
       format('" center="%g %g" ', [x, y]) +
-      format('scale="%g" ', [cp1.pixels_per_unit]) +
-      format('angle="%g" ', [cp1.FAngle]) +
-      format('rotate="%g" ', [-180 * cp1.FAngle/Pi]) +
-      format('zoom="%g" ', [cp1.zoom]) +
+      format('scale="%g" ', [cp1.pixels_per_unit]);
+
+    if cp1.FAngle <> 0 then
+      parameters := parameters + format('angle="%g" ', [cp1.FAngle]) +
+                                 format('rotate="%g" ', [-180 * cp1.FAngle/Pi]);
+    if cp1.zoom <> 0 then
+      parameters := parameters + format('zoom="%g" ', [cp1.zoom]);
+
+    parameters := parameters +
       'oversample="' + IntToStr(cp1.spatial_oversample) +
       format('" filter="%g" ', [cp1.spatial_filter_radius]) +
-      format('quality="%g" ', [cp1.sample_density]) +
-      'batches="' + IntToStr(cp1.nbatches) +
-      format('" background="%g %g %g" ', [cp1.background[0] / 255, cp1.background[1] / 255, cp1.background[2] / 255]) +
+      format('quality="%g" ', [cp1.sample_density]);
+    if cp1.nbatches <> 1 then parameters := parameters + 'batches="' + IntToStr(cp1.nbatches) + '" ';
+
+    parameters := parameters +
+      format('background="%g %g %g" ', [cp1.background[0] / 255, cp1.background[1] / 255, cp1.background[2] / 255]) +
       format('brightness="%g" ', [cp1.brightness]) +
-      format('gamma="%g" ', [cp1.gamma]) +
-      format('vibrancy="%g" ', [cp1.vibrancy]) +
+      format('gamma="%g" ', [cp1.gamma]);
+
+    if cp1.vibrancy <> 1 then
+      parameters := parameters + format('vibrancy="%g" ', [cp1.vibrancy]);
+
+    if exporting then parameters := parameters +
       format('estimator_radius="%g" ', [cp1.estimator]) +
       format('estimator_minimum="%g" ', [cp1.estimator_min]) +
       format('estimator_curve="%g" ', [cp1.estimator_curve]) +
       format('temporal_samples="%d" ', [cp1.jitters]) +
-      format('gamma_threshold="%g" ', [cp1.gamma_treshold]) +
-      hue + url + nick + '>');
+      format('gamma_threshold="%g" ', [cp1.gamma_treshold]);
 
+    FileList.Add('<flame name="' + CleanXMLName(cp1.name) + '" ' + parameters + '>');
    { Write transform parameters }
     t := cp1.NumXForms;
     for i := 0 to t - 1 do
@@ -1355,9 +1373,10 @@ begin
 
    { Write palette data }
     if not sheep then begin
-      if compact then // say no to duplicated data! (?)
-        FileList.Add(ColorToXmlCompact(cp1))
-      else FileList.Add(ColorToXml(cp1));
+      if exporting then
+        FileList.Add(ColorToXml(cp1))
+      else
+        FileList.Add(ColorToXmlCompact(cp1));
    end;
 
     FileList.Add('</flame>');
@@ -1366,66 +1385,6 @@ begin
     FileList.free
   end;
 end;
-
-//function FlameToXMLSheep(const cp1: TControlPoint): string;
-//var
-//  t, i, j: integer;
-//  FileList: TStringList;
-//  x, y, a, b, cc, d, e, f: double;
-//  varlist, pal, hue: string;
-//begin
-//  FileList := TStringList.create;
-//  x := cp1.center[0];
-//  y := cp1.center[1];
-//  pal := ''; hue := '';
-//  pal := 'palette="' + IntToStr(cp1.cmapindex) + '" ';
-////  if cp1.hue_rotation = 0 then cp1.hue_rotation := 1;
-//  hue := ' hue="' + format('%g', [cp1.hue_rotation]) + '"';
-//  try
-//    FileList.Add('<flame' + format(' time="%g" ', [cp1.time]) +
-//      pal + 'size="' + IntToStr(cp1.width) + ' ' + IntToStr(cp1.height) +
-//      format('" center="%g %g" ', [x, y]) +
-//      format('scale="%g" ', [cp1.pixels_per_unit]) +
-//      format('zoom="%g" ', [cp1.zoom]) +
-//      'oversample="' + IntToStr(cp1.spatial_oversample) +
-//      format('" filter="%g" ', [cp1.spatial_filter_radius]) +
-//      format('quality="%g" ', [cp1.sample_density]) +
-//      'batches="' + IntToStr(cp1.nbatches) +
-//      format('" background="%g %g %g" ', [cp1.background[0] / 255, cp1.background[1] / 255, cp1.background[2] / 255]) +
-//      format('brightness="%g" ', [cp1.brightness]) +
-//      format('gamma="%g" ', [cp1.gamma]) +
-//      format('vibrancy="%g"', [cp1.vibrancy]) + hue + '>');
-//   { Write transform parameters }
-//    t := NumXForms(cp1);
-//    for i := 0 to t - 1 do
-//    begin
-//      with cp1.xform[i] do
-//      begin
-//        a := c[0][0];
-//        b := c[1][0];
-//        cc := c[0][1];
-//        d := c[1][1];
-//        e := c[2][0];
-//        f := c[2][1];
-//        varlist := '';
-//        for j := 0 to NRVAR - 1 do
-//        begin
-//          if vars[j] <> 0 then
-//          begin
-//            varlist := varlist + varnames(j) + format('="%f" ', [vars[j]]);
-//          end;
-//        end;
-//        FileList.Add(Format('   <xform weight="%g" color="%g" symmetry="%g" ', [density, color, symmetry]) +
-//          varlist + Format('coefs="%g %g %g %g %g %g"/>', [a, cc, b, d, e, f]));
-//      end;
-//    end;
-//    FileList.Add('</flame>');
-//    result := FileList.text;
-//  finally
-//    FileList.free
-//  end;
-//end;
-
 
 function RemoveExt(filename: string): string;
 var
@@ -1518,7 +1477,7 @@ begin
           until (Pos('<' + Tag + '>', FileList[FileList.count - 1]) <> 0) or
                 (Pos('</Flames>', FileList[FileList.count - 1]) <> 0);
 
-        FileList.Add(Trim(FlameToXML(cp1, false, true)));
+        FileList.Add(Trim(FlameToXML(cp1, false)));
         FileList.Add('</Flames>');
         FileList.SaveToFile(filename);
 
@@ -1532,7 +1491,7 @@ begin
       AssignFile(IFile, filename);
       ReWrite(IFile);
       Writeln(IFile, '<Flames name="' + Tag + '">');
-      Write(IFile, FlameToXML(cp1, false, true));
+      Write(IFile, FlameToXML(cp1, false));
       Writeln(IFile, '</Flames>');
       CloseFile(IFile);
     end;
@@ -1839,7 +1798,7 @@ begin
   *)
       MainCp.name := RandomPrefix + RandomDate + '-' +
         IntToStr(RandomIndex);
-      Write(F, FlameToXML(MainCp, False, true));
+      Write(F, FlameToXML(MainCp, False));
 //      Write(F, FlameToString(Title));
 //      WriteLn(F, ' ');
     end;
@@ -2486,7 +2445,7 @@ begin
   AdjustForm.cmbPalette.ItemIndex := 0;
 //  AdjustForm.cmbPalette.Items.clear;
 
-  ExportDialog.cmbDepth.ItemIndex := 3;
+  ExportDialog.cmbDepth.ItemIndex := 2;
 end;
 
 procedure TMainForm.FormClose(Sender: TObject; var Action: TCloseAction);
@@ -3592,7 +3551,7 @@ procedure TMainForm.mnuCopyClick(Sender: TObject);
 var
   txt: string;
 begin
-  txt := Trim(FlameToXML(Maincp, false, true));
+  txt := Trim(FlameToXML(Maincp, false));
   Clipboard.SetTextBuf(PChar(txt));
   mnuPaste.enabled := true;
 
@@ -3693,7 +3652,7 @@ begin
       cp1.estimator_curve := ExportEstimatorCurve;
       cp1.jitters := ExportJitters;
       cp1.gamma_treshold := ExportGammaTreshold;
-      FileList.Text := FlameToXML(cp1, false);
+      FileList.Text := FlameToXML(cp1, false, true);
       FileList.SaveToFile(ChangeFileExt(ExportDialog.Filename, '.flame'));
       FileList.Clear;
       FileList.Add('@echo off');

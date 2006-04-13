@@ -22,8 +22,8 @@ unit RenderThread;
 interface
 
 uses
-  Classes, windows, Messages, Graphics,
-   controlPoint, Render, Render64, Render64MT, RenderMM, RenderMM_MT;
+  Classes, Windows, Messages, Graphics,
+   ControlPoint, Render, Render64, Render64MT, RenderMM, RenderMM_MT;
 
 const
   WM_THREAD_COMPLETE = WM_APP + 5437;

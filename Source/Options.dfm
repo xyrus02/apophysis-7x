@@ -358,10 +358,10 @@ object OptionsForm: TOptionsForm
       end
       object chkAutoEditMode: TCheckBox
         Left = 160
-        Top = 84
-        Width = 145
+        Top = 80
+        Width = 161
         Height = 17
-        Caption = 'Prefer "Auto" edit mode'
+        Caption = 'Prefer "Extended" edit mode'
         Checked = True
         State = cbChecked
         TabOrder = 2

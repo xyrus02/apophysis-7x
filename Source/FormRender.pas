@@ -175,7 +175,10 @@ begin
   Renderer.SaveImage(FileName);
 
   if PlaySoundOnRenderComplete then
-    sndPlaySound(PChar(RenderCompleteSoundFile), SND_FILENAME or SND_NOSTOP or SND_ASYNC);
+    if RenderCompleteSoundFile <> '' then
+      sndPlaySound(PChar(RenderCompleteSoundFile), SND_FILENAME or SND_NOSTOP or SND_ASYNC)
+    else
+      sndPlaySound(pchar(SND_ALIAS_SYSTEMASTERISK), SND_ALIAS_ID or SND_NOSTOP or SND_ASYNC);
 
   Renderer.Free;
   Renderer := nil;

@@ -97,7 +97,7 @@ type
     procedure Cylinder;            // var[25]
     procedure Noise;               // var[26]
     procedure Blur;                // var[27]
-    procedure Focus;               // var[28]
+//    procedure Focus;               // var[28]
 
     function Mul33(const M1, M2: TMatrix): TMatrix;
     function Identity: TMatrix;
@@ -1543,6 +1543,7 @@ asm
 {$endif}
 end;
 
+(*
 //--28--///////////////////////////////////////////////////////////////////////
 procedure TXForm.Focus;
 {$ifndef _ASM_}
@@ -1580,6 +1581,7 @@ asm
     fwait
 {$endif}
 end;
+*)
 
 //***************************************************************************//
 
@@ -1948,7 +1950,7 @@ begin
   FFunctionList[25] := Cylinder;
   FFunctionList[26] := Noise;
   FFunctionList[27] := Blur;
-  FFunctionList[28] := Focus;
+//  FFunctionList[28] := Focus;
 
   //registered
 //  for i := 0 to High(FRegVariations) do
@@ -2003,7 +2005,9 @@ var
   Name: string;
   Value: double;
 begin
-  result := Format('   <xform weight="%g" color="%g" symmetry="%g" ', [density, color, symmetry]);
+  result := Format('   <xform weight="%g" color="%g" ', [density, color]);
+  if symmetry <> 0 then result := result + format('symmetry="%g"', [symmetry]);
+  
   for i := 0 to nrvar - 1 do begin
     if vars[i] <> 0 then
       Result := Result + varnames(i) + format('="%g" ', [vars[i]]);

@@ -717,7 +717,8 @@ end;
 
 procedure TOptionsForm.btnBrowseSoundClick(Sender: TObject);
 begin
-  OpenDialog.Filter := 'Waveform files (*.wav)|*.wav|MIDI files (*.mid)|*.mid';
+  OpenDialog.InitialDir := ExtractFilePath(RenderCompleteSoundFile);
+  OpenDialog.Filter := 'Waveform files (*.wav)|*.wav';
   OpenDialog.FileName := '';
   if OpenDialog.Execute then
   begin
@@ -728,7 +729,9 @@ end;
 procedure TOptionsForm.btnPlayClick(Sender: TObject);
 begin
   if txtSoundFile.text <> '' then
-    sndPlaySound(PChar(txtSoundFile.text), SND_FILENAME or SND_ASYNC);
+    sndPlaySound(PChar(txtSoundFile.text), SND_FILENAME or SND_ASYNC)
+  else
+    sndPlaySound(pchar(SND_ALIAS_SYSTEMASTERISK), SND_ALIAS_ID or SND_NOSTOP or SND_ASYNC);
 end;
 
 end.
