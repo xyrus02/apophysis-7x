@@ -34,7 +34,11 @@ type
     procedure ImageDblClick(Sender: TObject);
   private
     Remainder, StartTime, t: double;
+    imgLeft, imgTop,
+    imgWidth, imgHeight: integer;
+
     Renderer: TRenderThread;
+
     procedure showTaskbar;
     procedure hideTaskbar;
     procedure DrawFlame;
@@ -61,8 +65,26 @@ uses Main, Math, Global;
 
 
 procedure TFullscreenForm.DrawFlame;
+var
+  r: double;
 begin
-  cp.AdjustScale(Image.Width, Image.Height);
+  if (cp.width / cp.height) > (ClientWidth / ClientHeight) then
+  begin
+    imgWidth := ClientWidth;
+    r := cp.width / imgWidth;
+    imgHeight := round(cp.height / r);
+    imgLeft := 1;
+    imgTop := (ClientHeight - imgHeight) div 2;
+  end
+  else begin
+    imgHeight := ClientHeight;
+    r := cp.height / imgHeight;
+    imgWidth := round(cp.Width / r);
+    imgTop := 1;
+    imgLeft := (ClientWidth - ImgWidth) div 2;
+  end;
+  cp.AdjustScale(imgWidth, imgHeight);
+
 //  cp.Zoom := MainForm.Zoom;
 //  cp.center[0] := MainForm.center[0];
 //  cp.center[1] := MainForm.center[1];
@@ -70,21 +92,26 @@ begin
   StartTime := Now;
   t := now;
   Remainder := 1;
+
   if Assigned(Renderer) then begin
+    // Hmm... but how can it be assigned & running here, anyway? :-\
     Renderer.Terminate;
     Renderer.WaitFor;
-    Application.ProcessMessages;//Renderer.Free;
+
+    Application.ProcessMessages; // HandleThreadTermination kinda should be called here...(?)
+
+    Renderer.Free;
+    Renderer := nil;
   end;
+
   assert(not assigned(renderer), 'Render thread is still running!?');
-  if not Assigned(Renderer) then
-  begin
-    Renderer := TRenderThread.Create;
-    Renderer.TargetHandle := Handle;
-    Renderer.OnProgress := OnProgress;
-    Renderer.Compatibility := Compatibility;
-    Renderer.SetCP(cp);
-    Renderer.Resume;
-  end;
+
+  Renderer := TRenderThread.Create;
+  Renderer.TargetHandle := Handle;
+  Renderer.OnProgress := OnProgress;
+  Renderer.Compatibility := Compatibility;
+  Renderer.SetCP(cp);
+  Renderer.Resume;
 end;
 
 procedure TFullscreenForm.HandleThreadCompletion(var Message: TMessage);
@@ -95,6 +122,7 @@ begin
   begin
     bm := TBitmap.Create;
     bm.assign(Renderer.GetImage);
+    Image.SetBounds(imgLeft, imgTop, imgWidth, imgHeight);
     Image.Picture.Graphic := bm;
 
 //    Canvas.StretchDraw(Rect(0, 0, ClientWidth, ClientHeight), bm);
@@ -123,12 +151,19 @@ end;
 procedure TFullscreenForm.OnProgress(prog: double);
 begin
   prog := (Renderer.Slice + Prog) / Renderer.NrSlices;
-  Canvas.Brush.Color := clTeal;
-  Canvas.FrameRect(Rect(5, ClientHeight - 15, ClientWidth - 5, ClientHeight - 5));
-  Canvas.Brush.Color := clTeal;
-  Canvas.Fillrect(Rect(7, ClientHeight - 13, 7 + Round(prog * (ClientWidth - 14)), ClientHeight - 7));
-  Canvas.Brush.Color := clBlack;
-  Canvas.Fillrect(Rect(7 + Round(prog * (ClientWidth - 14)), ClientHeight - 13, ClientWidth - 7, ClientHeight - 7));
+  if prog = 1 then
+  begin
+    Canvas.Brush.Color := clBlack;
+    Canvas.FillRect(Rect(5, ClientHeight - 15, ClientWidth - 5, ClientHeight - 5));
+  end
+  else begin
+    Canvas.Brush.Color := clTeal;
+    Canvas.FrameRect(Rect(5, ClientHeight - 15, ClientWidth - 5, ClientHeight - 5));
+    Canvas.Brush.Color := clTeal;
+    Canvas.Fillrect(Rect(7, ClientHeight - 13, 7 + Round(prog * (ClientWidth - 14)), ClientHeight - 7));
+    Canvas.Brush.Color := clBlack;
+    Canvas.Fillrect(Rect(7 + Round(prog * (ClientWidth - 14)), ClientHeight - 13, ClientWidth - 7, ClientHeight - 7));
+  end;
   Application.ProcessMessages;
 end;
 
@@ -152,6 +187,11 @@ end;
 
 procedure TFullscreenForm.FormShow(Sender: TObject);
 begin
+  if Image.Width < ClientWidth then
+    Image.Left := (ClientWidth - Image.Width) div 2;
+  if Image.Height < ClientHeight then
+    Image.Top := (ClientHeight - Image.Height) div 2;
+
   MainForm.mnuFullScreen.enabled := true;
   HideTaskbar;
   if calculate then

@@ -24,7 +24,6 @@ object FullscreenForm: TFullscreenForm
     Top = 0
     Width = 186
     Height = 131
-    Align = alClient
     OnDblClick = ImageDblClick
   end
 end
