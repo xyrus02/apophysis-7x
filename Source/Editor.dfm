@@ -255,6 +255,8 @@ object EditForm: TEditForm
         Hint = 'Toggle world pivot mode'
         Caption = 'tbPivotMode'
         ImageIndex = 15
+        ParentShowHint = False
+        ShowHint = True
         Style = tbsCheck
         OnClick = btnPivotModeClick
       end
@@ -273,6 +275,8 @@ object EditForm: TEditForm
         Hint = 'Rotate triangle 90'#176' counter-clockwise'
         Caption = 'tbRotate90CCW'
         ImageIndex = 17
+        ParentShowHint = False
+        ShowHint = True
         OnClick = btTrgRotateLeft90Click
       end
       object tbRotate90CW: TToolButton
@@ -281,6 +285,8 @@ object EditForm: TEditForm
         Hint = 'Rotate triangle 90'#176' clockwise'
         Caption = 'tbRotate90CW'
         ImageIndex = 18
+        ParentShowHint = False
+        ShowHint = True
         OnClick = btTrgRotateRight90Click
       end
       object tbFlipHorz: TToolButton
@@ -991,9 +997,11 @@ object EditForm: TEditForm
                   Top = 162
                   Width = 113
                   Height = 17
-                  Hint = 'Lock transform axis rotation'
+                  Hint = 'Lock axis rotation'
                   Caption = 'Lock transform axis'
                   Checked = True
+                  ParentShowHint = False
+                  ShowHint = True
                   State = cbChecked
                   TabOrder = 9
                   OnClick = tbAxisLockClick
