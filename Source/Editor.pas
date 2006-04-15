@@ -28,13 +28,14 @@ uses
   Types, XForm;
 
 const
-//  PixelCountMax = 32768;
-//  WM_PTHREAD_COMPLETE = WM_APP + 5438;
-
-  crEditArrow = 20;
-  crEditMove = 21;
+  crEditArrow  = 20;
+  crEditMove   = 21;
   crEditRotate = 22;
-  crEditScale = 23;
+  crEditScale  = 23;
+
+  imgExtMove   = 24;
+  imgExtRotate = 25;
+  imgExtScale  = 26;
 
 type
   TEditForm = class(TForm)
@@ -120,10 +121,6 @@ type
     tbFlipHorz: TToolButton;
     tbFlipVert: TToolButton;
     tbSelect: TToolButton;
-    btTrgMoveLU: TSpeedButton;
-    btTrgMoveLD: TSpeedButton;
-    btTrgMoveRU: TSpeedButton;
-    btTrgMoveRD: TSpeedButton;
     EditorTB: TImageList;
     TabSheet4: TTabSheet;
     vleVariables: TValueListEditor;
@@ -174,11 +171,27 @@ type
     txtSymmetry: TEdit;
     pnlWeight: TPanel;
     pnlSymmetry: TPanel;
-    tbAutoEditMode: TToolButton;
+    tbExtendedEdit: TToolButton;
     mnuResetTrgRotation: TMenuItem;
     mnuResetTrgPosition: TMenuItem;
     mnuResetTrgScale: TMenuItem;
     N7: TMenuItem;
+    mnuExtendedEdit: TMenuItem;
+    N8: TMenuItem;
+    mnuAxisLock: TMenuItem;
+    tbAxisLock: TToolButton;
+    mnuSelectmode: TMenuItem;
+    ToolButton6: TToolButton;
+    ExtendedEditPopup: TPopupMenu;
+    mnuExtEditOff: TMenuItem;
+    mnuExtEditMove: TMenuItem;
+    mnuExtEditRotate: TMenuItem;
+    mnuExtEditScale: TMenuItem;
+    N9: TMenuItem;
+    tbPivotMode: TToolButton;
+    tbRotate90CCW: TToolButton;
+    tbRotate90CW: TToolButton;
+    chkAxisLock: TCheckBox;
     procedure ValidateVariable;
     procedure vleVariablesValidate(Sender: TObject; ACol, ARow: Integer; const KeyName, KeyValue: string);
     procedure vleVariablesKeyPress(Sender: TObject; var Key: Char);
@@ -317,8 +330,10 @@ type
     procedure DragPanelDblClick(Sender: TObject);
     procedure mnuResetTrgRotationClick(Sender: TObject);
     procedure mnuResetTrgScaleClick(Sender: TObject);
-    procedure ResetEdgeRotation(n: integer);
-    procedure ResetEdgeScale(n: integer);
+    procedure ResetAxisRotation(n: integer);
+    procedure ResetAxisScale(n: integer);
+    procedure tbExtendedEditClick(Sender: TObject);
+    procedure tbAxisLockClick(Sender: TObject);
 
   private
     TriangleView: TCustomDrawControl;
@@ -326,7 +341,7 @@ type
     PreviewDensity: double;
 
     viewDragMode, viewDragged: boolean;
-    editMode, oldMode: (modeNone, modeMove, modeRotate, modeScale, modePick);
+    editMode, oldMode, widgetMode: (modeNone, modeMove, modeRotate, modeScale, modePick);
     modeHack: boolean; // for mouseOverEdge...
     modeKey: word;
     key_handled: boolean;
@@ -345,6 +360,7 @@ type
     varDragPos, varDragOld: integer;
     varMM: boolean; //hack?
 
+    SelectMode, ExtendedEdit, AxisLock: boolean;
     showVarPreview: boolean;
 
     // --Z-- variables moved from outside
@@ -354,12 +370,11 @@ type
 //    SelectedTriangle: integer; // outside only for scripting (??)
     oldSelected: integer;
     SelectedCorner: integer;
-    SelectMode: boolean;
     HasChanged: boolean;
 
     oldx, oldy, olddist: double;
     Pivot, LocalPivot, WorldPivot: TSPoint;
-    PivotMode: (pivotLocal, pivotWorld); 
+    PivotMode: (pivotLocal, pivotWorld);
     VarsCache: array[0..64] of double; // hack: to prevent slow valuelist redraw
 
     pnlDragMode: boolean;
@@ -1191,7 +1206,7 @@ end;
       end;
 
       UpdateWidgets;
-      if AutoEditMode then begin
+      if ExtendedEdit then begin
         n := GetTriangleColor(SelectedTriangle);// shr 1 and $7f7f7f;
         if mouseOverTriangle <> SelectedTriangle then n := n shr 1 and $7f7f7f;
         Pen.Color := n;
@@ -1410,7 +1425,6 @@ end;
             end;
           end;
         end;
-      end;
 
 //      if EdgeCaught then
         if (mouseOverEdge >= 0) then // highlight edge under cursor
@@ -1428,6 +1442,7 @@ end;
           pen.Mode:=pmCopy;
           pen.Width:=1;
         end;
+      end;
 
       // draw pivot point
       a := ToScreen(GetPivot.x, GetPivot.y);
@@ -1528,6 +1543,12 @@ begin
 
   SelectMode := true;
   editMode := modeMove;
+  AxisLock := TransformAxisLock;
+  tbAxisLock.Down := AxisLock;
+  ExtendedEdit := ExtEditEnabled;
+//  tbExtendedEdit.Down := ExtendedEdit;
+  widgetMode := modeRotate;
+//  tbExtendedEdit.ImageIndex := imgExtMove;
 
   EdgeCaught := false;
   CornerCaught := false;
@@ -1605,7 +1626,7 @@ begin
 
 // -- from MouseDown -- for highlighting:
 // TODO: optimize...
-          if (j = 1) then //and ((rgPivot.ItemIndex = 1) or (rgPivot.ItemIndex = 4)) then
+          if (j = 1) then 
           begin
             if PivotMode = pivotLocal then begin
               Pivot.x := 0;
@@ -1636,7 +1657,7 @@ begin
       end;
     end;
 
-    if AutoEditMode then //and (oldMode = modeNone) then
+    if ExtendedEdit then //and (oldMode = modeNone) then
     begin
       for i := 0 to 3 do // -- detect 'widget' hit
         for j := 0 to 1 do begin
@@ -1813,6 +1834,13 @@ Skip1:
         vx := fx;
         vy := fy;
       end;
+      if (SelectedCorner = 1) and AxisLock then with MainTriangles[SelectedTriangle] do
+      begin
+        x[0] := OldTriangle.x[0] + (vx - OldTriangle.x[1]);
+        y[0] := OldTriangle.y[0] + (vy - OldTriangle.y[1]);
+        x[2] := OldTriangle.x[2] + (vx - OldTriangle.x[1]);
+        y[2] := OldTriangle.y[2] + (vy - OldTriangle.y[1]);
+      end;
       MainTriangles[SelectedTriangle].x[SelectedCorner] := vx;
       MainTriangles[SelectedTriangle].y[SelectedCorner] := vy;
       StatusBar.Panels[2].Text := Format('Move: %3.3f ; %3.3f', [vx-(Pivot.X+oldx), vy-(Pivot.Y+oldy)]);
@@ -1857,7 +1885,7 @@ Skip2:
     else if (editMode = modeScale) then // scale
     begin
       if olddist<>0 then begin
-        vy := (oldx*(fx-Pivot.X) + oldy*(fy-Pivot.Y))/(olddist*olddist);
+        vy := (oldx*(fx-Pivot.X) + oldy*(fy-Pivot.Y))/sqr(olddist);
 
         if ssShift in Shift then // 'snapped' scale
         begin
@@ -2014,14 +2042,14 @@ begin
       end;
     end;
 
-    if AutoEditMode then //and (oldMode = modeNone) then
+    if ExtendedEdit then //and (oldMode = modeNone) then
     begin
       for i := 0 to 3 do // -- detect 'widget' hit
         for j := 0 to 1 do
         begin
           if abs(line_dist(fx, fy, Widgets[i][j].x, Widgets[i][j].y,
                                    Widgets[i][j+1].x, Widgets[i][j+1].y)
-                      ) * GraphZoom * 50 < 3 then
+                 ) * GraphZoom * 50 < 3 then
           begin
 //            modeHack := true;
             if (oldMode = modeNone) then
@@ -2052,7 +2080,8 @@ begin
               if j = 2 then
                 editMode := modeScale
               else
-//                editMode := modeRotate;
+                if AxisLock then editMode := modeRotate
+                else
 begin
           // hacky...
           CornerCaught := True;
@@ -2225,7 +2254,7 @@ begin
     Registry.Free;
   end;
   chkUseXFormColor.checked := UseTransformColors;
-  if AutoEditMode then tbAutoEditMode.Down := true
+  if ExtendedEdit then tbExtendedEdit.Down := true
   else tbMove.Down := true;
   UpdateDisplay;
 end;
@@ -3534,20 +3563,30 @@ begin
   begin
     if mouseOverCorner >= 0 then begin
       case mouseOverCorner of
-        0: ResetEdgeScale(0); //btnXcoefsClick(Sender);
-        1: btnOcoefsClick(Sender);
-        2: ResetEdgeScale(2); //btnYcoefsClick(Sender);
+        0: if editMode = modeRotate then ResetAxisRotation(0) else ResetAxisScale(0);
+        1: if editMode = modeRotate then ResetAxisRotation(1)
+           else if editMode = modeScale then ResetAxisScale(1) else btnOcoefsClick(Sender);
+        2: if editMode = modeRotate then ResetAxisRotation(2) else ResetAxisScale(2);
       end;
     end
     else if mouseOverEdge >= 0 then begin
-      case mouseOverEdge of
-        0: if editMode = modeScale then ResetEdgeScale(0) else ResetEdgeRotation(0);
-        1: if editMode = modeScale then ResetEdgeScale(2) else ResetEdgeRotation(2);
+      if AxisLock then begin
+        if (editMode = modeScale) or (mouseOverEdge = 2)then
+          mnuResetTrgScaleClick(Sender)
+        else
+          mnuResetTrgRotationClick(Sender);
+      end
+      else case mouseOverEdge of
+        0: if editMode = modeScale then ResetAxisScale(0) else ResetAxisRotation(0);
+        1: if editMode = modeScale then ResetAxisScale(2) else ResetAxisRotation(2);
         2: mnuResetTrgScaleClick(Sender);
       end;
     end
     else if mouseOverWidget >= 0 then begin
-      mnuResetTrgRotationClick(Sender);
+      case editMode of
+        modeScale: mnuResetTrgScaleClick(Sender);
+        else mnuResetTrgRotationClick(Sender);
+      end;
     end
     else case editMode of
       //modeMove: Do Nothing
@@ -3565,7 +3604,7 @@ end;
 
 procedure TEditForm.tbEditModeClick(Sender: TObject);
 begin
-  AutoEditMode := (Sender = tbAutoEditMode);
+//  ExtendedEdit := (Sender = tbExtendedEdit);
   if Sender = tbRotate then
   begin
     editMode := modeRotate;
@@ -3582,6 +3621,21 @@ begin
   end;
   TToolButton(Sender).Down := true;
   TriangleView.Invalidate;
+end;
+
+procedure TEditForm.tbExtendedEditClick(Sender: TObject);
+begin
+  ExtendedEdit := not ExtendedEdit;
+  tbExtendedEdit.Down := ExtendedEdit;
+  TriangleView.Invalidate;
+end;
+
+procedure TEditForm.tbAxisLockClick(Sender: TObject);
+begin
+  if Sender = chkAxisLock then AxisLock := chkAxisLock.Checked
+  else AxisLock := not AxisLock;
+  tbAxisLock.Down := AxisLock;
+  chkAxisLock.Checked := AxisLock;
 end;
 
 procedure TEditForm.tbFullViewClick(Sender: TObject);
@@ -3903,11 +3957,13 @@ begin
   with MainTriangles[SelectedTriangle] do begin
     PivotMode := pivotLocal;
     btnPivotMode.Caption := 'Local Pivot';
+    tbPivotMode.Down := false;
   end
   else
   with MainTriangles[SelectedTriangle] do begin
     PivotMode := pivotWorld;
     btnPivotMode.Caption := 'World Pivot';
+    tbPivotMode.Down := true;
   end;
 
   TriangleView.Invalidate;
@@ -4270,7 +4326,7 @@ begin
   end;
 end;
 
-procedure TEditForm.ResetEdgeRotation(n: integer);
+procedure TEditForm.ResetAxisRotation(n: integer);
 var
   dx, dy, d: double;
   a: integer;
@@ -4278,47 +4334,80 @@ var
 begin
   with MainTriangles[SelectedTriangle] do
   begin
-    dx := x[n] - x[1];
-    dy := y[n] - y[1];
-    a := round( arctan2(dy, dx) / (pi/2) );
-    d := Hypot(dx, dy);
-//    if xx*yy - yx*xy >= 0 then da := 1 else da := -1;
-//    if ax = ay then ay := ay + da
-//    else if abs(ax-ay) = 2 then ay := ay - da;
-
-    nx := x[1] + d*cos(a*pi/2);
-    ny := y[1] + d*sin(a*pi/2);
-    if (x[n] = nx) and (y[n] = ny) then exit;
-    MainForm.UpdateUndo;
-    x[n] := nx;
-    y[n] := ny;
-    UpdateFlame(True);
+    if n = 1 then
+    begin
+      d := Hypot(x[1], y[1]);
+      if d = 0 then exit;
+      a := round( arctan2(y[1], x[1]) / (pi/2) );
+      nx := d*cos(a*pi/2);
+      ny := d*sin(a*pi/2);
+      if (x[1] = nx) and (y[1] = ny) then exit;
+      MainForm.UpdateUndo;
+      x[1] := nx;
+      y[1] := ny;
+      x[0] := x[1] + xx;
+      y[0] := y[1] + xy;
+      x[2] := x[1] + yx;
+      y[2] := y[1] + yy;
+      UpdateFlame(True);
+    end
+    else begin
+      dx := x[n] - x[1];
+      dy := y[n] - y[1];
+      a := round( arctan2(dy, dx) / (pi/2) );
+      d := Hypot(dx, dy);
+      nx := x[1] + d*cos(a*pi/2);
+      ny := y[1] + d*sin(a*pi/2);
+      if (x[n] = nx) and (y[n] = ny) then exit;
+      MainForm.UpdateUndo;
+      x[n] := nx;
+      y[n] := ny;
+      UpdateFlame(True);
+    end;
   end;
 end;
 
-procedure TEditForm.ResetEdgeScale(n: integer);
+procedure TEditForm.ResetAxisScale(n: integer);
 var
   dx, dy, d: double;
   nx, ny: double;
 begin
   with MainTriangles[SelectedTriangle] do
   begin
-    dx := x[n] - x[1];
-    dy := y[n] - y[1];
-    d := Hypot(dx, dy);
-    if d <> 0 then begin
-      nx := x[1] + dx / d;
-      ny := y[1] + dy / d;
+    if n = 1 then
+    begin
+      d := Hypot(x[1], y[1]);
+      if d = 0 then exit;
+      nx := x[1]/d;
+      ny := y[1]/d;
+      if (x[1] = nx) and (y[1] = ny) then exit;
+      MainForm.UpdateUndo;
+      x[1] := nx;
+      y[1] := ny;
+      x[0] := x[1] + xx;
+      y[0] := y[1] + xy;
+      x[2] := x[1] + yx;
+      y[2] := y[1] + yy;
+      UpdateFlame(True);
     end
     else begin
-      nx := x[1] + ifthen(n=0, 1, 0);
-      ny := y[1] + ifthen(n=2, 1, 0);
+      dx := x[n] - x[1];
+      dy := y[n] - y[1];
+      d := Hypot(dx, dy);
+      if d <> 0 then begin
+        nx := x[1] + dx / d;
+        ny := y[1] + dy / d;
+      end
+      else begin
+        nx := x[1] + ifthen(n=0, 1, 0);
+        ny := y[1] + ifthen(n=2, 1, 0);
+      end;
+      if (x[n] = nx) and (y[n] = ny) then exit;
+      MainForm.UpdateUndo;
+      x[n] := nx;
+      y[n] := ny;
+      UpdateFlame(True);
     end;
-    if (x[n] = nx) and (y[n] = ny) then exit;
-    MainForm.UpdateUndo;
-    x[n] := nx;
-    y[n] := ny;
-    UpdateFlame(True);
   end;
 end;
 

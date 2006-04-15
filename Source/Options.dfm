@@ -356,15 +356,25 @@ object OptionsForm: TOptionsForm
           'Wandering (old-style)')
         TabOrder = 1
       end
-      object chkAutoEditMode: TCheckBox
+      object chkExtendedEdit: TCheckBox
         Left = 160
         Top = 80
-        Width = 161
+        Width = 145
         Height = 17
-        Caption = 'Prefer "Extended" edit mode'
+        Caption = 'Extended edit mode'
         Checked = True
         State = cbChecked
         TabOrder = 2
+      end
+      object chkAxisLock: TCheckBox
+        Left = 160
+        Top = 100
+        Width = 145
+        Height = 17
+        Caption = 'Lock transform axis'
+        Checked = True
+        State = cbChecked
+        TabOrder = 3
       end
     end
     object DisplayPage: TTabSheet

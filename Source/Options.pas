@@ -201,10 +201,11 @@ type
     pnlGridColor2: TPanel;
     pnlHelpersColor: TPanel;
     rgReferenceMode: TRadioGroup;
-    chkAutoEditMode: TCheckBox;
+    chkExtendedEdit: TCheckBox;
     chkPlaysound: TCheckBox;
     btnPlay: TSpeedButton;
     Label44: TLabel;
+    chkAxisLock: TCheckBox;
     procedure btnCancelClick(Sender: TObject);
     procedure FormShow(Sender: TObject);
     procedure btnOKClick(Sender: TObject);
@@ -295,7 +296,8 @@ begin
     cbNrTheads.ItemIndex := 0
   else
     cbNrTheads.text := intTostr(NrTreads);
-  chkAutoEditMode.Checked := AutoEditMode;
+  chkExtendedEdit.Checked := ExtEditEnabled;
+  chkAxisLock.Checked := TransformAxisLock;
 
   chkPlaySound.Checked := PlaySoundOnRenderComplete;
   txtSoundFile.Text := RenderCompleteSoundFile;
@@ -413,7 +415,8 @@ begin
 
   // Editor
   ReferenceMode := rgReferenceMode.ItemIndex;
-  AutoEditMode := chkAutoEditMode.Checked;
+  ExtEditEnabled := chkExtendedEdit.Checked;
+  TransformAxisLock := chkAxisLock.Checked;
 
   { Display tab }
   defSampleDensity := StrToFloat(txtSampleDensity.Text);

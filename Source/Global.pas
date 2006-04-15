@@ -85,7 +85,7 @@ var
   UseFlameBackground, UseTransformColors: boolean;
   EditorBkgColor, ReferenceTriangleColor: integer;
   GridColor1, GridColor2, HelpersColor: integer;
-  AutoEditMode: boolean;
+  ExtEditEnabled, TransformAxisLock: boolean;
 { Display }
   defSampleDensity, defPreviewDensity: Double;
   defGamma, defBrightness, defVibrancy, defFilterRadius: Double;

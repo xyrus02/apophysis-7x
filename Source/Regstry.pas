@@ -285,14 +285,6 @@ begin
         SymmetryNVars := 12;
       end;
 
-// --- tmp fix for pre-d4 problem ---
-
-if Registry.ValueExists('VariationOptions') then
-  if Registry.GetDataType('VariationOptions') <> rdInteger then
-    Registry.WriteInteger('VariationOptions', 262143);
-
-// --- tmp fix for pre-d4 problem ---
-
       if Registry.ValueExists('VariationOptions') then
       begin
         VariationOptions := Registry.ReadInteger('VariationOptions');
@@ -638,10 +630,12 @@ if Registry.ValueExists('VariationOptions') then
         ReferenceTriangleColor := Registry.ReadInteger('ReferenceTriangleColor')
       else
         ReferenceTriangleColor := $7f7f7f;
-      if Registry.ValueExists('AutoEditMode') then
-        AutoEditMode := Registry.ReadBool('AutoEditMode')
-      else AutoEditMode := true;
-
+      if Registry.ValueExists('ExtendedEdit') then
+        ExtEditEnabled := Registry.ReadBool('ExtendedEdit')
+      else ExtEditEnabled := true;
+      if Registry.ValueExists('LockTransformAxis') then
+        TransformAxisLock := Registry.ReadBool('LockTransformAxis')
+      else TransformAxisLock := true;
     end
     else begin
       EditorBkgColor := $000000;
@@ -1007,7 +1001,8 @@ begin
       Registry.WriteInteger('GridColor2', GridColor2);
       Registry.WriteInteger('HelpersColor', HelpersColor);
       Registry.WriteInteger('ReferenceTriangleColor', ReferenceTriangleColor);
-      Registry.WriteBool('AutoEditMode', AutoEditMode);
+      Registry.WriteBool('ExtendedEdit', ExtEditEnabled);
+      Registry.WriteBool('LockTransformAxis', TransformAxisLock);
     end;
     { Display }
     if Registry.OpenKey('\Software\' + APP_NAME + '\Display', True) then
