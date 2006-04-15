@@ -3,7 +3,7 @@ object ExportDialog: TExportDialog
   Top = 276
   BorderStyle = bsDialog
   Caption = 'Export Flame'
-  ClientHeight = 292
+  ClientHeight = 382
   ClientWidth = 419
   Color = clBtnFace
   Font.Charset = DEFAULT_CHARSET
@@ -375,6 +375,85 @@ object ExportDialog: TExportDialog
     Checked = True
     State = cbChecked
     TabOrder = 6
+  end
+  object Panel1: TPanel
+    Left = 8
+    Top = 296
+    Width = 409
+    Height = 81
+    BevelInner = bvLowered
+    Color = clBackground
+    TabOrder = 7
+    DesignSize = (
+      409
+      81)
+    object Label6: TLabel
+      Left = 152
+      Top = 4
+      Width = 104
+      Height = 24
+      Alignment = taCenter
+      Anchors = [akLeft, akTop, akRight]
+      Caption = 'WARNING!'
+      Font.Charset = DEFAULT_CHARSET
+      Font.Color = clRed
+      Font.Height = -19
+      Font.Name = 'MS Sans Serif'
+      Font.Style = [fsBold]
+      ParentFont = False
+    end
+    object Label15: TLabel
+      Left = 34
+      Top = 28
+      Width = 340
+      Height = 13
+      Alignment = taCenter
+      Anchors = [akLeft, akRight]
+      Caption = 'To render your fractals properly using the "export" function,'
+      Color = clBackground
+      Font.Charset = DEFAULT_CHARSET
+      Font.Color = clYellow
+      Font.Height = -11
+      Font.Name = 'MS Sans Serif'
+      Font.Style = [fsBold]
+      ParentColor = False
+      ParentFont = False
+    end
+    object Label13: TLabel
+      Left = 46
+      Top = 44
+      Width = 316
+      Height = 13
+      Alignment = taCenter
+      Anchors = [akLeft, akRight]
+      Caption = 'You need to download the latest version of FLAM3 from'
+      Font.Charset = DEFAULT_CHARSET
+      Font.Color = clYellow
+      Font.Height = -11
+      Font.Name = 'MS Sans Serif'
+      Font.Style = [fsBold]
+      ParentFont = False
+    end
+    object lblFlam3Link: TLabel
+      Left = 141
+      Top = 60
+      Width = 127
+      Height = 13
+      Cursor = crHandPoint
+      Hint = 'http://www.flam3.com'
+      Alignment = taCenter
+      Anchors = [akLeft, akRight]
+      Caption = 'http://www.flam3.com'
+      Font.Charset = DEFAULT_CHARSET
+      Font.Color = clBlue
+      Font.Height = -11
+      Font.Name = 'MS Sans Serif'
+      Font.Style = [fsBold, fsUnderline]
+      ParentFont = False
+      ParentShowHint = False
+      ShowHint = True
+      OnClick = lblFlam3LinkClick
+    end
   end
   object SaveDialog: TSaveDialog
     DefaultExt = 'jpg'

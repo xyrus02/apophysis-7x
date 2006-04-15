@@ -22,7 +22,7 @@ interface
 
 uses
   Windows, Messages, SysUtils, Classes, Graphics, Controls, Forms, Dialogs,
-  StdCtrls, Buttons, ComCtrls;
+  StdCtrls, Buttons, ComCtrls, ExtCtrls;
 
 type
   TExportDialog = class(TForm)
@@ -62,6 +62,11 @@ type
     txtEstimatorCurve: TEdit;
     Label14: TLabel;
     txtGammaTreshold: TEdit;
+    Panel1: TPanel;
+    Label6: TLabel;
+    Label15: TLabel;
+    Label13: TLabel;
+    lblFlam3Link: TLabel;
     procedure btnBrowseClick(Sender: TObject);
     procedure FormShow(Sender: TObject);
     procedure btnOKClick(Sender: TObject);
@@ -78,6 +83,7 @@ type
     procedure txtEstimatorCurveChange(Sender: TObject);
     procedure txtJittersChange(Sender: TObject);
     procedure txtGammaTresholdChange(Sender: TObject);
+    procedure lblFlam3LinkClick(Sender: TObject);
   private
     FloatFormatSettings: TFormatSettings;
   public
@@ -94,7 +100,7 @@ var
   Ratio: double;
 
 implementation
-uses Global, Main;
+uses Global, Main, ShellAPI;
 
 {$R *.DFM}
 
@@ -286,6 +292,12 @@ begin
     GammaTreshold := StrToFloat(txtGammaTreshold.Text, FloatFormatSettings);
   except
   end;
+end;
+
+procedure TExportDialog.lblFlam3LinkClick(Sender: TObject);
+begin
+  ShellExecute(ValidParentForm(Self).Handle, 'open', PChar(TLabel(Sender).Hint),
+    nil, nil, SW_SHOWNORMAL);
 end;
 
 end.
