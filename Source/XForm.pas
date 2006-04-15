@@ -2034,8 +2034,10 @@ var
   Name: string;
   Value: double;
 begin
-  result := Format('   <finalxform enabled="%d" color="%g" symmetry="%g" ',
-                   [ifthen(IsEnabled, 1, 0), color, symmetry]);
+//  result := Format('   <finalxform enabled="%d" color="%g" symmetry="%g" ',
+//                   [ifthen(IsEnabled, 1, 0), color, symmetry]);
+  result := Format('   <finalxform color="%g" ', [color]);
+  if symmetry <> 0 then result := result + format('symmetry="%g"', [symmetry]);
   for i := 0 to nrvar - 1 do begin
     if vars[i] <> 0 then
       Result := Result + varnames(i) + format('="%g" ', [vars[i]]);
