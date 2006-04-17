@@ -192,6 +192,8 @@ type
     tbRotate90CCW: TToolButton;
     tbRotate90CW: TToolButton;
     chkAxisLock: TCheckBox;
+    tbZoomOut: TToolButton;
+    tbZoomIn: TToolButton;
     procedure ValidateVariable;
     procedure vleVariablesValidate(Sender: TObject; ACol, ARow: Integer; const KeyName, KeyValue: string);
     procedure vleVariablesKeyPress(Sender: TObject; var Key: Char);
@@ -334,6 +336,8 @@ type
     procedure ResetAxisScale(n: integer);
     procedure tbExtendedEditClick(Sender: TObject);
     procedure tbAxisLockClick(Sender: TObject);
+    procedure tbZoomOutClick(Sender: TObject);
+    procedure tbZoomInClick(Sender: TObject);
 
   private
     TriangleView: TCustomDrawControl;
@@ -4409,6 +4413,20 @@ begin
       UpdateFlame(True);
     end;
   end;
+end;
+
+procedure TEditForm.tbZoomOutClick(Sender: TObject);
+begin
+  GraphZoom := GraphZoom * 0.8;
+  EditForm.StatusBar.Panels[2].Text := Format('Zoom: %f', [GraphZoom]);
+  TriangleView.Invalidate;
+end;
+
+procedure TEditForm.tbZoomInClick(Sender: TObject);
+begin
+  GraphZoom := GraphZoom * 1.2;
+  EditForm.StatusBar.Panels[2].Text := Format('Zoom: %f', [GraphZoom]);
+  TriangleView.Invalidate;
 end;
 
 end.
