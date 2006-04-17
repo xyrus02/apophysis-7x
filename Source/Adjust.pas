@@ -253,6 +253,7 @@ type
     procedure DragPanelMouseUp(Sender: TObject; Button: TMouseButton;
       Shift: TShiftState; X, Y: Integer);
     procedure DragPanelDblClick(Sender: TObject);
+    procedure FormActivate(Sender: TObject);
 
   private
     Resetting: boolean;
@@ -916,7 +917,7 @@ begin
   if ColorDialog.Execute then
   begin
     ColorPanel.Color := ColorDialog.Color;
-    //cbColor.text := IntToHex(integer(ColorDialog.Color), 6);   
+    //cbColor.text := IntToHex(integer(ColorDialog.Color), 6);
     col := ColorToRGB(ColorDialog.Color);
     cp.background[0] := col and 255;
     cp.background[1] := col shr 8 and 255;
@@ -2039,6 +2040,17 @@ begin
   else assert(false);
 
   UpdateFlame;
+end;
+
+procedure TAdjustForm.FormActivate(Sender: TObject);
+begin
+  txtVibrancy.text := FloatToStr(cp.Vibrancy);
+  txtGamma.text := FloatToStr(cp.Gamma);
+  txtBrightness.text := FloatToStr(cp.Brightness);
+  txtZoom.text := FloatToStr(cp.zoom);
+  txtCenterX.text := FloatToStr(cp.center[0]);
+  txtCentery.text := FloatToStr(cp.center[1]);
+  txtAngle.text := FloatToStr(cp.FAngle * 180 / PI);
 end;
 
 end.

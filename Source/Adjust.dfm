@@ -43,6 +43,7 @@ object AdjustForm: TAdjustForm
     0000000100000001000000010000000100000001000000010000FFFF0000}
   OldCreateOrder = False
   Position = poDefault
+  OnActivate = FormActivate
   OnClose = FormClose
   OnCreate = FormCreate
   OnDestroy = FormDestroy
