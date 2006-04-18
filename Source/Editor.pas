@@ -192,8 +192,6 @@ type
     tbRotate90CCW: TToolButton;
     tbRotate90CW: TToolButton;
     chkAxisLock: TCheckBox;
-    tbZoomOut: TToolButton;
-    tbZoomIn: TToolButton;
     procedure ValidateVariable;
     procedure vleVariablesValidate(Sender: TObject; ACol, ARow: Integer; const KeyName, KeyValue: string);
     procedure vleVariablesKeyPress(Sender: TObject; var Key: Char);
@@ -264,10 +262,6 @@ type
     procedure btTrgMoveRightClick(Sender: TObject);
     procedure btTrgMoveUpClick(Sender: TObject);
     procedure btTrgMoveDownClick(Sender: TObject);
-    procedure btTrgMoveLUClick(Sender: TObject);
-    procedure btTrgMoveLDClick(Sender: TObject);
-    procedure btTrgMoveRUClick(Sender: TObject);
-    procedure btTrgMoveRDClick(Sender: TObject);
     procedure btTrgScaleUpClick(Sender: TObject);
     procedure btTrgScaleDownClick(Sender: TObject);
     procedure splitterMoved(Sender: TObject);
@@ -336,8 +330,6 @@ type
     procedure ResetAxisScale(n: integer);
     procedure tbExtendedEditClick(Sender: TObject);
     procedure tbAxisLockClick(Sender: TObject);
-    procedure tbZoomOutClick(Sender: TObject);
-    procedure tbZoomInClick(Sender: TObject);
 
   private
     TriangleView: TCustomDrawControl;
@@ -1430,7 +1422,6 @@ end;
           end;
         end;
 
-//      if EdgeCaught then
         if (mouseOverEdge >= 0) then // highlight edge under cursor
         begin
           i := (mouseOverEdge + 1) mod 3;
@@ -1453,7 +1444,7 @@ end;
       Pen.Style := psSolid;
       pen.Color := clWhite;
       brush.Color := clSilver;
-      if pivotMode = pivotLocal then i := 2
+      if (pivotMode = pivotLocal) or EdgeCaught then i := 2
       else i := 3;
       Ellipse(a.x - i, a.y - i, a.x + i, a.y + i);
 
@@ -3174,7 +3165,7 @@ end;
 
 function TEditForm.GetPivot(n: integer): TSPoint;
 begin
-  if (PivotMode = pivotLocal) or EdgeCaught then // hmm... should be always local for edges
+  if (PivotMode = pivotLocal) or {EdgeCaught} (mouseOverEdge >= 0) then // should be always local for edges (hmm...?)
     with MainTriangles[n] do begin
       Result.x := x[1] + (x[0] - x[1])*LocalPivot.x + (x[2] - x[1])*LocalPivot.y;
       Result.y := y[1] + (y[0] - y[1])*LocalPivot.x + (y[2] - y[1])*LocalPivot.y;
@@ -3294,6 +3285,7 @@ begin
   TrgMove(0,-1);
 end;
 
+{
 procedure TEditForm.btTrgMoveLUClick(Sender: TObject);
 begin
   TrgMove(-1,1);
@@ -3313,6 +3305,7 @@ procedure TEditForm.btTrgMoveRDClick(Sender: TObject);
 begin
   TrgMove(1,-1);
 end;
+}
 
 procedure TEditForm.btTrgScaleUpClick(Sender: TObject);
 var
@@ -3346,7 +3339,7 @@ begin
     txtTrgScaleValue.ItemIndex := 1;
     exit;
   end;
-  assert(scale <> 0);
+  if scale = 0 then scale := 1e-6; //assert(scale <> 0);
 
   if GetKeyState(VK_CONTROL) < 0 then scale := sqrt(scale)
   else if GetKeyState(VK_SHIFT) < 0 then scale := scale*scale;
@@ -3389,29 +3382,6 @@ begin
         TriangleView.Cursor := crEditMove;
       end
     end;
-{
-    case key of
-      VK_MENU:
-        begin
-          editMode := modeRotate;
-//          tbRotate.Down := true;
-          TriangleView.Cursor := crEditRotate;
-        end;
-      VK_CONTROL:
-        begin
-          editMode := modeScale;
-//          tbScale.Down := true;
-          TriangleView.Cursor := crEditScale;
-        end;
-      else //VK_SHIFT:
-        begin
-          editMode := modeMove;
-//          tbMove.Down := true;
-          TriangleView.Cursor := crEditMove;
-        end;
-    end;
-//    EditorToolBar.Refresh;
-}
   end
   else
   case key of
@@ -3437,6 +3407,19 @@ begin
     // can be changed in the future...
     Ord('R'): btnResetPivotClick(Sender);
     Ord('P'): btnPickPivotClick(Sender);
+
+    189: // "-"
+      begin
+        GraphZoom := GraphZoom * 0.8;
+        EditForm.StatusBar.Panels[2].Text := Format('Zoom: %f', [GraphZoom]);
+        TriangleView.Invalidate;
+      end;
+    187: // "+"
+      begin
+        GraphZoom := GraphZoom * 1.25;
+        EditForm.StatusBar.Panels[2].Text := Format('Zoom: %f', [GraphZoom]);
+        TriangleView.Invalidate;
+      end;
   end;
 end;
 
@@ -3648,12 +3631,6 @@ begin
 end;
 
 //-- Variable List -------------------------------------------------------------
-
-// --Z-- hmmmm!
-// this procedure is EXACT copy of ValidateVariation,
-// the only difference is Set/Get-Variable instead of array access,
-// which kinda is not good! :-\
-// I think we should make an array of variables, maybe just for the editor...
 
 procedure TEditForm.ValidateVariable;
 var
@@ -4413,20 +4390,6 @@ begin
       UpdateFlame(True);
     end;
   end;
-end;
-
-procedure TEditForm.tbZoomOutClick(Sender: TObject);
-begin
-  GraphZoom := GraphZoom * 0.8;
-  EditForm.StatusBar.Panels[2].Text := Format('Zoom: %f', [GraphZoom]);
-  TriangleView.Invalidate;
-end;
-
-procedure TEditForm.tbZoomInClick(Sender: TObject);
-begin
-  GraphZoom := GraphZoom * 1.2;
-  EditForm.StatusBar.Panels[2].Text := Format('Zoom: %f', [GraphZoom]);
-  TriangleView.Invalidate;
 end;
 
 end.
