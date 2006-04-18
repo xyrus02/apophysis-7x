@@ -1467,15 +1467,21 @@ begin
           FileList[0] := '<Flames name="' + Tag + '">';
         end;
 
-        if pos('<flame ', FileList.text) <> 0 then
-          repeat
-            FileList.Delete(FileList.Count - 1);
-          until (Pos('</flame>', FileList[FileList.count - 1]) <> 0)
-        else
-          repeat
-            FileList.Delete(FileList.Count - 1);
-          until (Pos('<' + Tag + '>', FileList[FileList.count - 1]) <> 0) or
-                (Pos('</Flames>', FileList[FileList.count - 1]) <> 0);
+        if FileList.Count > 2 then
+        begin
+          if pos('<flame ', FileList.text) <> 0 then
+            repeat
+              FileList.Delete(FileList.Count - 1);
+            until (Pos('</flame>', FileList[FileList.count - 1]) <> 0)
+          else
+            repeat
+              FileList.Delete(FileList.Count - 1);
+            until (Pos('<' + Tag + '>', FileList[FileList.count - 1]) <> 0) or
+                  (Pos('</Flames>', FileList[FileList.count - 1]) <> 0);
+        end else
+        begin
+          FileList.Delete(FileList.Count - 1);
+        end;
 
         FileList.Add(Trim(FlameToXML(cp1, false)));
         FileList.Add('</Flames>');
