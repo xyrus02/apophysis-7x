@@ -2527,7 +2527,9 @@ object MainForm: TMainForm
       end
       object mnuSaveUPR: TMenuItem
         Caption = 'Export &UPR...'
-        Hint = 'Save the flame in UltraFractal parameter format'
+        Hint = 
+          'Save the flame in UltraFractal parameter format *** OUTDATED ***' +
+          ' USE AT YOUR OWN RISK!'
         OnClick = mnuSaveUPRClick
       end
       object mnuExportFLame: TMenuItem

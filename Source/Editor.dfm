@@ -239,7 +239,7 @@ object EditForm: TEditForm
       object tbAxisLock: TToolButton
         Left = 299
         Top = 0
-        Hint = 'Lock transform axis'
+        Hint = 'Lock transform axes'
         Caption = 'tbAxisLock'
         Down = True
         ImageIndex = 16
@@ -994,11 +994,11 @@ object EditForm: TEditForm
                 end
                 object chkAxisLock: TCheckBox
                   Left = 24
-                  Top = 162
-                  Width = 113
+                  Top = 163
+                  Width = 121
                   Height = 17
-                  Hint = 'Lock axis rotation'
-                  Caption = 'Lock transform axis'
+                  Hint = 'Lock axes rotation'
+                  Caption = 'Lock transform axes'
                   Checked = True
                   ParentShowHint = False
                   ShowHint = True
@@ -1664,7 +1664,7 @@ object EditForm: TEditForm
       OnClick = tbExtendedEditClick
     end
     object mnuAxisLock: TMenuItem
-      Caption = 'Lock transform axis'
+      Caption = 'Lock transform axes'
       ImageIndex = 16
       OnClick = tbAxisLockClick
     end
@@ -2863,27 +2863,6 @@ object EditForm: TEditForm
       Caption = 'Reset scale'
       ImageIndex = 23
       OnClick = mnuResetTrgScaleClick
-    end
-  end
-  object ExtendedEditPopup: TPopupMenu
-    Images = EditorTB
-    Left = 217
-    Top = 33
-    object mnuExtEditMove: TMenuItem
-      Caption = 'Move'
-    end
-    object mnuExtEditRotate: TMenuItem
-      Caption = 'Rotate'
-    end
-    object mnuExtEditScale: TMenuItem
-      Caption = 'Scale'
-    end
-    object N9: TMenuItem
-      Caption = '-'
-    end
-    object mnuExtEditOff: TMenuItem
-      Caption = 'Off'
-      RadioItem = True
     end
   end
 end

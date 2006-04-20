@@ -37,7 +37,7 @@ const
   RS_XO = 2;
   RS_VO = 3;
 
-  AppVersionString = 'Apophysis 2.03d rc1';
+  AppVersionString = 'Apophysis 2.04 beta';
 
 type
   TMouseMoveState = (msUsual, msZoomWindow, msZoomOutWindow, msZoomWindowMove, msZoomOutWindowMove, msDrag, msDragMove, msRotate, msRotateMove);
@@ -1366,6 +1366,7 @@ begin
       FileList.Add('   ' + cp1.xform[t].ToXMLString);
       Filelist.Add('   </xformset>');
 {$else}
+      // 'enabled' flag disabled in this release
       FileList.Add(cp1.xform[t].FinalToXMLString(cp1.finalXformEnabled));
 {$ifend}
 
@@ -3594,6 +3595,7 @@ var
   Ext, ex, Path: string;
   cp1: TControlPoint;
 begin
+{
   if (MainCp.NumXForms > 12) or
      (MainCP.HasNewVariants) then begin
     showMessage('WARNING: This flame will not be correctly rendered '#10#13+
@@ -3601,7 +3603,7 @@ begin
                 'Please use the 2.7b4 version or newer '#10#13+
                 'or use the internal renderer.');
   end;
-
+}
   if not FileExists(HqiPath) then
   begin
     Application.MessageBox('Renderer does not exist.', 'Apophysis', 16);
@@ -3675,11 +3677,17 @@ begin
       if ExportDialog.udStrips.Position > 1 then
         FileList.Add('set nstrips=' + IntToStr(ExportDialog.udStrips.Position));
       FileList.Add('set out=' + ExportDialog.Filename);
-      FileList.Add('@echo Rendering ' + ExportDialog.Filename);
-
+      FileList.Add('@echo Rendering "' + ExportDialog.Filename + '"');
+{
       FileList.Add(ExtractShortPathName(hqiPath) + ' < ' + ExtractShortPathName(ChangeFileExt(ExportDialog.Filename, '.flame')));
-
       Path := ExtractShortPathName(ExtractFileDir(ExportDialog.Filename) + '\');
+}
+      // short path names are confusing (for both user AND system)
+      // (and they're quite ugly after all! :)
+
+      FileList.Add(hqiPath + ' < "' + ChangeFileExt(ExportDialog.Filename, '.flame') + '"');
+      Path := ExtractFilePath(ExtractFileDir(ExportDialog.Filename) + '\');
+
       FileList.SaveToFile(Path + 'render.bat');
       if ExportDialog.chkRender.Checked then
       begin
@@ -3730,7 +3738,7 @@ begin
   begin
     v := Attributes.Value('enabled');
     if v <> '' then ParseCP.finalXformEnabled := (StrToInt(v) <> 0)
-    else ParseCP.finalXformEnabled := false;
+    else ParseCP.finalXformEnabled := true;
 
     inc(activeXformSet);
   end
@@ -3872,7 +3880,7 @@ begin
       begin
         v := Attributes.Value('enabled');
         if v <> '' then ParseCP.finalXformEnabled := (StrToInt(v) <> 0)
-        else ParseCP.finalXformEnabled := false;
+        else ParseCP.finalXformEnabled := true;
       end;
 
       if activexformset > 0 then density := 0; // tmp...

@@ -148,6 +148,8 @@ begin
   FRenderer.compatibility := compatibility;
   FRenderer.OnProgress := FOnProgress;
   Frenderer.Render;
+
+  if FRenderer.Failed then Terminate; // hmm
 end;
 
 ///////////////////////////////////////////////////////////////////////////////

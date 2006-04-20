@@ -90,6 +90,8 @@ type
         read GetNrSlices;
     property Slice: integer
         read GetSlice;
+    property Failed: boolean // hmm...
+        read FStop;
   end;
 
 type

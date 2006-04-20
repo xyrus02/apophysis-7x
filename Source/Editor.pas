@@ -33,10 +33,6 @@ const
   crEditRotate = 22;
   crEditScale  = 23;
 
-  imgExtMove   = 24;
-  imgExtRotate = 25;
-  imgExtScale  = 26;
-
 type
   TEditForm = class(TForm)
     GrphPnl: TPanel;
@@ -182,12 +178,6 @@ type
     tbAxisLock: TToolButton;
     mnuSelectmode: TMenuItem;
     ToolButton6: TToolButton;
-    ExtendedEditPopup: TPopupMenu;
-    mnuExtEditOff: TMenuItem;
-    mnuExtEditMove: TMenuItem;
-    mnuExtEditRotate: TMenuItem;
-    mnuExtEditScale: TMenuItem;
-    N9: TMenuItem;
     tbPivotMode: TToolButton;
     tbRotate90CCW: TToolButton;
     tbRotate90CW: TToolButton;
@@ -877,8 +867,6 @@ procedure TEditForm.UpdateWidgets;
     Result.x := x;
     Result.y := y;
   end;
-//var
-//  xx, xy, yx, yy: double;
 begin
   with mainTriangles[Selectedtriangle] do
   begin
@@ -1940,7 +1928,6 @@ procedure TEditForm.TriangleViewMouseDown(Sender: TObject; Button: TMouseButton;
 var
   a, d, fx, fy: double;
   dx, dy, x1, y1: double;
-//  xx, xy, yx, yy: double;
   i, j: integer;
   i0, i1: integer;
 label
@@ -4234,7 +4221,6 @@ end;
 
 procedure TEditForm.mnuResetTrgRotationClick(Sender: TObject);
 var
-//  xx, xy, yx, yy: double;
   dx, dy: double;
   ax, ay, da: integer;
   nx0, ny0, nx2, ny2: double;
@@ -4269,7 +4255,6 @@ end;
 
 procedure TEditForm.mnuResetTrgScaleClick(Sender: TObject);
 var
-//  xx, xy, yx, yy: double;
   dx, dy: double;
   nx0, ny0, nx2, ny2: double;
 begin
