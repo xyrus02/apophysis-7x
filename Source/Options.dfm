@@ -44,7 +44,7 @@ object OptionsForm: TOptionsForm
     Top = 8
     Width = 451
     Height = 265
-    ActivePage = GeneralPage
+    ActivePage = RandomPage
     TabOrder = 0
     TabStop = False
     object GeneralPage: TTabSheet
@@ -618,15 +618,6 @@ object OptionsForm: TOptionsForm
           TabOrder = 3
         end
       end
-      object chkKeepBackground: TCheckBox
-        Left = 208
-        Top = 170
-        Width = 161
-        Height = 17
-        HelpContext = 1023
-        Caption = 'Keep background color'
-        TabOrder = 4
-      end
       object gpFlameTitlePrefix: TGroupBox
         Left = 208
         Top = 88
@@ -833,6 +824,15 @@ object OptionsForm: TOptionsForm
           TabOrder = 4
           Thousands = False
         end
+      end
+      object chkKeepBackground: TCheckBox
+        Left = 216
+        Top = 160
+        Width = 137
+        Height = 22
+        HelpContext = 1023
+        Caption = 'Keep background color'
+        TabOrder = 4
       end
     end
     object VariationsPage: TTabSheet
