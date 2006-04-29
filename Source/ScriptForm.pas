@@ -51,6 +51,9 @@ type
     y: byte;
     Gradient: byte;
     Background: byte;
+    estimator_radius: byte;
+    estimator_min: byte;
+    estimator_curve: byte;
   end;
   TScriptRender = class
   public
@@ -154,6 +157,12 @@ type
     procedure GetFlameURLProc(AMachine: TatVirtualMachine);
     procedure SetFlameBatchesProc(AMachine: TatVirtualMachine);
     procedure GetFlameBatchesProc(AMachine: TatVirtualMachine);
+    procedure GetFlameEstimatorRadius(AMachine: TatVirtualMachine);
+    procedure SetFlameEstimatorRadius(AMachine: TatVirtualMachine);
+    procedure GetFlameEstimatorMin(AMachine: TatVirtualMachine);
+    procedure SetFlameEstimatorMin(AMachine: TatVirtualMachine);
+    procedure GetFlameEstimatorCurve(AMachine: TatVirtualMachine);
+    procedure SetFlameEstimatorCurve(AMachine: TatVirtualMachine);
 
     { Transform interface }
     procedure GetTransformAProc(AMachine: TatVirtualMachine);
@@ -2389,6 +2398,36 @@ begin
     cp.nbatches := GetInputArgAsInteger(0);
 end;
 
+procedure TScriptEditor.GetFlameEstimatorRadius(AMachine: TatVirtualMachine);
+begin
+  AMachine.ReturnOutputArg(cp.estimator);
+end;
+
+procedure TScriptEditor.SetFlameEstimatorRadius(AMachine: TatVirtualMachine);
+begin
+  cp.estimator := AMachine.GetInputArgAsFloat(0);
+end;
+
+procedure TScriptEditor.GetFlameEstimatorMin(AMachine: TatVirtualMachine);
+begin
+  AMachine.ReturnOutputArg(cp.estimator_min);
+end;
+
+procedure TScriptEditor.SetFlameEstimatorMin(AMachine: TatVirtualMachine);
+begin
+  cp.estimator_min := AMachine.GetInputArgAsFloat(0);
+end;
+
+procedure TScriptEditor.GetFlameEstimatorCurve(AMachine: TatVirtualMachine);
+begin
+  AMachine.ReturnOutputArg(cp.estimator_curve);
+end;
+
+procedure TScriptEditor.SetFlameEstimatorCurve(AMachine: TatVirtualMachine);
+begin
+  cp.estimator_curve := AMachine.GetInputArgAsFloat(0);
+end;
+
 
 { *************************** Transform interface **************************** }
 
@@ -2632,6 +2671,9 @@ begin
     DefineProp('URL', tkString, GetFlameURLProc, SetFlameURLProc);
     DefineProp('Hue', tkFloat, GetFlameHueProc, SetFlameHueProc);
     DefineProp('Batches', tkInteger, GetFlameBatchesProc, SetFlameBatchesProc);
+    DefineProp('estimator_radius', tkFloat, GetFlameEstimatorRadius, SetFlameEstimatorRadius);
+    DefineProp('estimator_min', tkFloat, GetFlameEstimatorMin, SetFlameEstimatorMin);
+    DefineProp('estimator_curve', tkFloat, GetFlameEstimatorCurve, SetFlameEstimatorCurve);
   end;
   Scripter.AddObject('Flame', Flame);
   { Transform interface }
