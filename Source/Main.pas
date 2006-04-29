@@ -3685,7 +3685,7 @@ begin
       // short path names are confusing (for both user AND system)
       // (and they're quite ugly after all! :)
 
-      FileList.Add(hqiPath + ' < "' + ChangeFileExt(ExportDialog.Filename, '.flame') + '"');
+      FileList.Add('"' + hqiPath + '" < "' + ChangeFileExt(ExportDialog.Filename, '.flame') + '"');
       Path := ExtractFilePath(ExtractFileDir(ExportDialog.Filename) + '\');
 
       FileList.SaveToFile(Path + 'render.bat');
