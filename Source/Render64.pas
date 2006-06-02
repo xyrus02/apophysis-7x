@@ -251,7 +251,7 @@ begin
       IterateBatchProc := IterateBatchAngle;
   end;
 
-  nsamples := Round(sample_density * bucketSize / (oversample * oversample));
+  nsamples := Round(sample_density * NrSlices * bucketSize / (oversample * oversample));
   nrbatches := Round(nsamples / (fcp.nbatches * SUB_BATCH_SIZE));
 
   for i := 0 to nrbatches do begin
