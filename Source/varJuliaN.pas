@@ -66,10 +66,13 @@ end;
 ///////////////////////////////////////////////////////////////////////////////
 procedure TVariationJulian.GetCalcFunction(var f: TCalcFunction);
 begin
-  if cn = 1/4 then f := CalcPower2
-  else if cn = -1/4 then f := CalcPowerMinus2
-  else if cn = 1/2 then f := CalcPower1
-  else if cn = -1/2 then f := CalcPowerMinus1
+  if c = 1 then begin
+    if N = 2 then f := CalcPower2
+    else if N = -2 then f := CalcPowerMinus2
+    else if N = 1 then f := CalcPower1
+    else if N = -1 then f := CalcPowerMinus1
+    else f := CalcFunction;
+  end
   else f := CalcFunction;
 end;
 
