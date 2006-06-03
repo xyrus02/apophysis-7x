@@ -135,8 +135,6 @@ object ScriptEditor: TScriptEditor
       BlockLineColor = clGray
       BkColor = clWindow
       BorderStyle = bsNone
-      CodeFolding.Enabled = False
-      CodeFolding.LineColor = clGray
       Ctl3D = False
       DelErase = True
       EnhancedHomeKey = False

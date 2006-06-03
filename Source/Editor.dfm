@@ -1660,7 +1660,7 @@ object EditForm: TEditForm
     object mnuExtendedEdit: TMenuItem
       Caption = 'Extended edit mode'
       Hint = 'Toggle extended edit mode'
-      ImageIndex = 24
+      ImageIndex = 25
       OnClick = tbExtendedEditClick
     end
     object mnuAxisLock: TMenuItem

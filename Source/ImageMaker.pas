@@ -21,6 +21,8 @@ type
     FBuckets: TBucketArray;
     FOnProgress: TOnProgress;
 
+    MaxA: int64; // for reuse in following slices
+
     procedure CreateFilter;
     procedure NormalizeFilter;
     procedure SetOnProgress(const Value: TOnProgress);
@@ -49,6 +51,7 @@ type
     property OnProgress: TOnProgress
         read FOnProgress
        write SetOnProgress;
+    property MaxCount: int64 read MaxA;
   end;
 
 implementation
@@ -365,10 +368,6 @@ begin
 
   Progress(1);
 end;
-
-// global variable for reuse in follong slices
-var
-  MaxA: int64;
 
 ///////////////////////////////////////////////////////////////////////////////
 // michael baranov transparancy code from flamesong

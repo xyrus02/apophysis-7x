@@ -44,7 +44,7 @@ object OptionsForm: TOptionsForm
     Top = 8
     Width = 451
     Height = 265
-    ActivePage = RandomPage
+    ActivePage = GeneralPage
     TabOrder = 0
     TabStop = False
     object GeneralPage: TTabSheet
