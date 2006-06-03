@@ -237,7 +237,7 @@ var
   nsamples: Int64;
   bc : integer;
 begin
-  nsamples := Round(sample_density * bucketSize / (oversample * oversample));
+  nsamples := Round(sample_density * NrSlices * bucketSize / (oversample * oversample));
   FNrBatches := Round(nsamples / (fcp.nbatches * SUB_BATCH_SIZE));
   batchcounter := 0;
   Randomize;

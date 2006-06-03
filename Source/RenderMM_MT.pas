@@ -97,8 +97,8 @@ begin
   begin
     cosa := cos(FCP.FAngle);
     sina := sin(FCP.FAngle);
-    rcX := image_Center_X*(1 - cosa) - image_Center_X*sina - camX0;
-    rcY := image_Center_Y*(1 - cosa) + image_Center_Y*sina - camY0;
+    rcX := image_Center_X*(1 - cosa) - image_Center_Y*sina - camX0;
+    rcY := image_Center_Y*(1 - cosa) + image_Center_X*sina - camY0;
   end;
 end;
 
@@ -207,7 +207,7 @@ begin
   FImageMaker.SetCP(FCP);
   FImageMaker.Init;
 
-  fcp.sample_density := fcp.sample_density * nrslices;
+  //fcp.sample_density := fcp.sample_density * nrslices;
   fcp.height := fcp.height div nrslices;
   center_y := fcp.center[1];
   zoom_scale := power(2.0, fcp.zoom);
@@ -236,7 +236,7 @@ begin
     end;
   end;
 
-  fcp.sample_density := fcp.sample_density / nrslices;
+  //fcp.sample_density := fcp.sample_density / nrslices;
   fcp.height := fcp.height * nrslices;
 end;
 
