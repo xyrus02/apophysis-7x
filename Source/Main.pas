@@ -37,7 +37,7 @@ const
   RS_XO = 2;
   RS_VO = 3;
 
-  AppVersionString = 'Apophysis 2.04 beta';
+  AppVersionString = 'Apophysis 2.04 beta 1.5';
 
 type
   TMouseMoveState = (msUsual, msZoomWindow, msZoomOutWindow, msZoomWindowMove, msZoomOutWindowMove, msDrag, msDragMove, msRotate, msRotateMove);
@@ -2026,8 +2026,8 @@ function TMainForm.UPRString(cp1: TControlPoint; Entry: string): string;
 { Returns a string containing an Ultra Fractal parameter set for copying
   or saving to file }
 var
-  IterDensity, m, i: integer;
-  scale, a, b, c, d, e, f, p: double;
+  IterDensity, m, i, j: integer;
+  scale, a, b, c, d, e, f, p, v: double;
   GradStrings, Strings: TStringList;
   rept, cby, smap, sol: string;
   uprcenter: array[0..1] of double; // camera center
@@ -2091,9 +2091,13 @@ begin
         'p_xf' + inttostr(m) + '_cfd=' + Format('%.6g ', [d]));
       Strings.Add('  p_xf' + inttostr(m) + '_cfe=' + Format('%.6g ', [e]) +
         ' p_xf' + inttostr(m) + '_cff=' + Format('%.6g ', [f]));
-      for i := 0 to NRVAR - 1 do
-        Strings.Add('  p_xf' + inttostr(m) + '_var' + inttostr(i) + '=' +
+      for i := 0 to NRVAR-1 do
+        Strings.Add('  p_xf' + inttostr(m) + '_var_' + VarNames(i) + '=' +
           floatToStr(cp1.xform[m].vars[i]));
+      for j:= 0 to GetNrVariableNames - 1 do begin
+        cp1.xform[m].GetVariable(GetVariableNameAt(j), v);
+        Strings.Add('  p_xf' + inttostr(m) + '_par_' + GetVariableNameAt(j) + '=' + floatToStr(v));
+      end;
     end;
     Strings.Add('gradient:');
     Strings.Add(GradientString(cp1.cmap));
