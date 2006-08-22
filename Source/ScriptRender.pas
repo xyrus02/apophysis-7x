@@ -91,7 +91,7 @@ begin
   cp.AdjustScale(ScriptEditor.Renderer.Width, ScriptEditor.Renderer.Height);
 
   Renderer.OnProgress := OnProgress;
-  Renderer.Compatibility := Compatibility;
+//  Renderer.Compatibility := Compatibility;
   Renderer.SetCP(cp);
   if (ScriptEditor.Renderer.MaxMemory > 0) then Renderer.MaxMem := ScriptEditor.Renderer.MaxMemory;
   Renderer.TargetHandle := Handle;

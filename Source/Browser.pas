@@ -21,8 +21,9 @@ interface
 
 uses
   Windows, Messages, SysUtils, Classes, Graphics, Controls, Forms, Dialogs,
-  ExtCtrls, ComCtrls, ControlPoint, ToolWin, ImgList, Render, StdCtrls,
-  Cmap, Menus, Global, Buttons;
+  ExtCtrls, ComCtrls, ControlPoint, ToolWin, ImgList, StdCtrls,
+  Cmap, Menus, Global, Buttons,
+  Render;
 
 const
   PixelCountMax = 32768;

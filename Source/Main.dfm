@@ -1,6 +1,6 @@
 object MainForm: TMainForm
-  Left = 401
-  Top = 158
+  Left = 501
+  Top = 211
   Width = 729
   Height = 530
   Caption = 'Apophysis'

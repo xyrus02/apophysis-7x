@@ -24,8 +24,9 @@ interface
 uses
   Windows, Messages, SysUtils, Classes, Graphics, Controls, Forms, Dialogs,
   ExtCtrls, StdCtrls, ComCtrls, Math, Menus, ToolWin, Registry,
-  ControlPoint, Render, cmap, Grids, ValEdit, Buttons, ImgList, CustomDrawControl,
-  Types, XForm;
+  Grids, ValEdit, Buttons, ImgList, Types,
+  ControlPoint, XForm, cmap, CustomDrawControl,
+  Render;
 
 const
   crEditArrow  = 20;
@@ -272,6 +273,9 @@ type
     procedure VEVarsMouseUp(Sender: TObject; Button: TMouseButton;
       Shift: TShiftState; X, Y: Integer);
     procedure VEVarsDblClick(Sender: TObject);
+
+//    procedure vleVariablesGetPickList(Sender: TObject; const KeyName: String; Values: TStrings);
+//    procedure vleVariablesStringsChange(Sender: TObject);
 
     procedure cbTransformsDrawItem(Control: TWinControl; Index: Integer;
       Rect: TRect; State: TOwnerDrawState);
@@ -613,13 +617,7 @@ var
 begin
   // currently EditForm does not really know if we select another
   // flame in the Main Window - which is not good...
-  {
-  if NumXForms(cp) <> NumXForms(MainCp) then
-  begin
-    SelectedTriangle := 0;
-    mouseOverTriangle := -1;
-  end;
-  }
+
   cp.copy(MainCp);
 
   if SelectedTriangle > LastTriangle{???} then
@@ -675,7 +673,7 @@ begin
     cp.center[1] := MainCp.Center[1];
   end;
   cp.cmap := MainCp.cmap;
-  Render.Compatibility := compatibility;
+//  Render.Compatibility := compatibility;
   Render.SetCP(cp);
   Render.Render;
   PreviewImage.Picture.Bitmap.Assign(Render.GetImage);
@@ -765,6 +763,7 @@ begin
     for i:= 0 to GetNrVariableNames - 1 do begin
       GetVariable(GetVariableNameAt(i), v);
       strval := Format('%.6g', [v]);
+      //strval := GetVariableStr(GetVariableNameAt(i));
        // kinda funny, but it really helped...
       if vleVariables.Values[GetVariableNameAt(i)] <> strval then
         vleVariables.Values[GetVariableNameAt(i)] := strval;
@@ -1505,6 +1504,16 @@ begin
     vleVariables.InsertRow(GetVariableNameAt(i), '0', True);
   end;
 
+{
+  with vleVariables.ItemProps['blur2_type'] do begin // temporary hack?
+    ReadOnly := true;
+    PickList.Add('gaussian');
+    PickList.Add('zoom');
+    PickList.Add('radial');
+    PickList.Add('defocus');
+  end;
+}
+
   GraphZoom := 1;
 
   case EditPrevQual of
@@ -1544,6 +1553,14 @@ begin
 
   for i := 0 to NRVAR-1 do
     VarsCache[i] := MinDouble;
+end;
+
+procedure TEditForm.FormDestroy(Sender: TObject);
+begin
+  cp.free;
+  Render.free;
+
+//  vleVariables.ItemProps['blur2_type'].Destroy; // :-/
 end;
 
 procedure TEditForm.TriangleViewMouseMove(Sender: TObject; Shift: TShiftState;
@@ -2553,12 +2570,6 @@ begin
   MainForm.Redo;
 end;
 
-procedure TEditForm.FormDestroy(Sender: TObject);
-begin
-  cp.free;
-  Render.free;
-end;
-
 procedure TEditForm.mnuLowQualityClick(Sender: TObject);
 begin
   mnuLowQuality.Checked := True;
@@ -3032,6 +3043,8 @@ begin
 
     TValueListEditor(Sender).Row := cell.Y;
 
+//    if ((Sender = vleVariables) and vleVariables.ItemProps[varDragIndex].ReadOnly) then exit;
+
     Screen.Cursor := crHSplit;
 
     GetCursorPos(mousepos); // hmmm
@@ -3089,7 +3102,8 @@ begin
     end
     else begin
       cp.xform[SelectedTriangle].SetVariable(vleVariables.Keys[varDragIndex+1], v);
-      vleVariables.Values[vleVariables.Keys[varDragIndex+1]] := FloatToStr(v); //Format('%.6g', [v]);
+      vleVariables.Values[vleVariables.Keys[varDragIndex+1]] := FloatToStr(v);
+//        cp.xform[SelectedTriangle].GetVariableStr(vleVariables.Keys[varDragIndex+1]);
     end;
 
     HasChanged := True;
@@ -3623,8 +3637,14 @@ procedure TEditForm.ValidateVariable;
 var
   i: integer;
   NewVal, OldVal: double;
+  str, oldstr: string;
 begin
   i := vleVariables.Row;
+
+{  oldstr := cp.xform[SelectedTriangle].GetVariableStr(vleVariables.Keys[i]);
+  str := vleVariables.Values[vleVariables.Keys[i]];
+  cp.xform[SelectedTriangle].SetVariableStr(vleVariables.Keys[i], str);
+}
 
   cp.xform[SelectedTriangle].GetVariable(vleVariables.Keys[i], OldVal);
   { Test that it's a valid floating point number }
@@ -3633,14 +3653,17 @@ begin
   except
     { It's not, so we restore the old value }
     vleVariables.Values[vleVariables.Keys[i]] := Format('%.6g', [OldVal]);
+//      cp.xform[SelectedTriangle].GetVariableStr(vleVariables.Keys[i]);
     exit;
   end;
   { If it's not the same as the old value and it was valid }
   if (NewVal <> OldVal) then
+//  if str <> oldstr then
   begin
     MainForm.UpdateUndo;
     cp.xform[SelectedTriangle].SetVariable(vleVariables.Keys[i], NewVal);
     vleVariables.Values[vleVariables.Keys[i]] := Format('%.6g', [NewVal]);
+    //vleVariables.Values[vleVariables.Keys[i]] := str; //Format('%.6g', [NewVal]);
     ShowSelectedInfo;
     UpdateFlame(True);
   end;
@@ -3663,6 +3686,27 @@ procedure TEditForm.vleVariablesValidate(Sender: TObject; ACol, ARow: Integer; c
 begin
   ValidateVariable;
 end;
+
+(*
+procedure TEditForm.vleVariablesGetPickList(Sender: TObject;
+  const KeyName: String; Values: TStrings);
+begin
+  if KeyName ='blur2_type' then
+  begin
+    Values.Add('gaussian');
+    Values.Add('zoom');
+    Values.Add('radial');
+    Values.Add('defocus');
+  end;
+end;
+
+procedure TEditForm.vleVariablesStringsChange(Sender: TObject);
+begin
+  if (vleVariables.ItemProps[vleVariables.Row - 1].ReadOnly) then ValidateVariable;
+end;
+*)
+
+// -----------------------------------------------------------------------------
 
 procedure TEditForm.txtValidateValue(Sender: TObject);
 var

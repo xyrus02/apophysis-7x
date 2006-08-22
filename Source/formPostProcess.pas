@@ -184,8 +184,10 @@ end;
 ///////////////////////////////////////////////////////////////////////////////
 procedure TfrmPostProcess.UpdateFlame;
 begin
+  Screen.Cursor := crHourGlass;
   FRenderer.UpdateImage(FCP);
   Image.Picture.Graphic := FRenderer.GetImage;
+  Screen.Cursor := crDefault;
 end;
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -425,7 +427,7 @@ begin
   if pValue^ = pDefaultValue^ then exit;
   pValue^ := pDefaultValue^;
   pEdit^.Text := FloatToStr(pValue^);
-  UpdateFlame;
+  //UpdateFlame;
 end;
 
 end.

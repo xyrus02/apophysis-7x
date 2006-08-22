@@ -22,8 +22,8 @@ interface
 
 uses
   Windows, Messages, SysUtils, Classes, Graphics, Controls, Forms, Dialogs,
-  StdCtrls, ExtCtrls, ComCtrls, ControlPoint, Render, Buttons, Menus, cmap,
-  AppEvnts;
+  StdCtrls, ExtCtrls, ComCtrls, Buttons, Menus, AppEvnts,
+  ControlPoint, Cmap, Render;
 
 const
   WM_UPDATE_PARAMS = WM_APP + 5439;
@@ -420,7 +420,7 @@ begin
 //  cp.Zoom := Zoom;
 //  cp.center[0] := Center[0];
 //  cp.center[1] := Center[1];
-  Render.Compatibility := compatibility;
+//  Render.Compatibility := compatibility;
   Render.SetCP(cp);
   Render.Render;
   BM.Assign(Render.GetImage);

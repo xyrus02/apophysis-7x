@@ -1,7 +1,7 @@
 {
      Flame screensaver Copyright (C) 2002 Ronald Hordijk
      Apophysis Copyright (C) 2001-2004 Mark Townsend
-     Apophysis Copyright (C) 2005-2006 Ronald Hordijk, Piotr Borys, Peter Sdobnov     
+     Apophysis Copyright (C) 2005-2006 Ronald Hordijk, Piotr Borys, Peter Sdobnov
 
      This program is free software; you can redistribute it and/or modify
      it under the terms of the GNU General Public License as published by
@@ -22,61 +22,43 @@ unit Render64;
 interface
 
 uses
-  Windows, Forms, Graphics, ImageMaker,
-  Render, xform, Controlpoint;
+  Windows, Classes, Forms, Graphics, ImageMaker,
+  RenderST, RenderTypes, Xform, ControlPoint;
 
 type
-  TRenderer64 = class(TBaseRenderer)
+  TRenderer64 = class(TBaseSTRenderer)
 
   protected
-    camX0, camX1, camY0, camY1, // camera bounds
-    camW, camH,                 // camera sizes
-    bws, bhs, cosa, sina, rcX, rcY: double;
-    ppux, ppuy: extended;
-
-    BucketWidth, BucketHeight: int64;
-    BucketSize: int64;
-
-    sample_density: extended;
-    oversample: integer;
-    gutter_width: Integer;
-    max_gutter_width: Integer;
-
-    Buckets: TBucketArray;
+    Buckets: TBucket64Array;
     ColorMap: TColorMapArray;
 
-    FImageMaker: TImageMaker;
+    function GetBits: integer; override;
+    function GetBucketsPtr: pointer; override;
+    procedure AllocateBuckets; override;
 
-    procedure InitBuffers;
-
-    procedure ClearBuffers;
-    procedure ClearBuckets;
-    procedure CreateColorMap;
-    procedure CreateCamera;
-
-    procedure SetPixels;
+    procedure ClearBuckets; override;
+    procedure CreateColorMap; override;
 
   protected
-    PropTable: array[0..SUB_BATCH_SIZE] of TXform;
-    finalXform: TXform;
-    UseFinalXform: boolean;
+    procedure IterateBatch; override;
+    procedure IterateBatchAngle; override;
+    procedure IterateBatchFX; override;
+    procedure IterateBatchAngleFX; override;
 
-    procedure Prepare;
-    procedure IterateBatch;
-    procedure IterateBatchAngle;
-    procedure IterateBatchFX;
-    procedure IterateBatchAngleFX;
+end;
+
+// ----------------------------------------------------------------------------
+
+type
+  TRenderer64MM = class(TRenderer64)
+
+  protected
+    procedure CalcBufferSize; override;
 
   public
-    constructor Create; override;
-    destructor Destroy; override;
-
     procedure Render; override;
 
-    function  GetImage: TBitmap; override;
-//    procedure UpdateImage(CP: TControlPoint); override;
-    procedure SaveImage(const FileName: String); override;
-  end;
+end;
 
 implementation
 
@@ -88,87 +70,18 @@ uses
 { TRenderer64 }
 
 ///////////////////////////////////////////////////////////////////////////////
-constructor TRenderer64.Create;
-begin
-  inherited Create;
-
-  FImageMaker  := TImageMaker.Create;
-end;
-
-///////////////////////////////////////////////////////////////////////////////
-destructor TRenderer64.Destroy;
-begin
-  FImageMaker.Free;
-
-  inherited;
-end;
-
-
-///////////////////////////////////////////////////////////////////////////////
 procedure TRenderer64.ClearBuckets;
 var
-  i: integer;
+  i, j: integer;
 begin
-  for i := 0 to BucketSize - 1 do begin
-    buckets[i].Red   := 0;
-    buckets[i].Green := 0;
-    buckets[i].Blue  := 0;
-    buckets[i].Count := 0;
-  end;
-end;
-
-///////////////////////////////////////////////////////////////////////////////
-procedure TRenderer64.ClearBuffers;
-begin
-  ClearBuckets;
-end;
-
-///////////////////////////////////////////////////////////////////////////////
-procedure TRenderer64.CreateCamera;
-var
-  scale: double;
-  t0, t1: double;
-  t2, t3: double;
-  corner_x, corner_y, Xsize, Ysize: double;
-  shift: Integer;
-begin
-  scale := power(2, fcp.zoom);
-  sample_density := fcp.sample_density * scale * scale;
-  ppux := fcp.pixels_per_unit * scale;
-  ppuy := fcp.pixels_per_unit * scale;
-  // todo field stuff
-  shift := 0;
-
-  t0 := (gutter_width) / (oversample * ppux);
-  t1 := (gutter_width) / (oversample * ppuy);
-  t2 := (2 * max_gutter_width - gutter_width) / (oversample * ppux);
-  t3 := (2 * max_gutter_width - gutter_width) / (oversample * ppuy);
-  corner_x := fcp.center[0] - fcp.Width / ppux / 2.0;
-  corner_y := fcp.center[1] - fcp.Height / ppuy / 2.0;
-  camX0 := corner_x - t0;
-  camY0 := corner_y - t1 + shift;
-  camX1 := corner_x + fcp.Width / ppux + t2;
-  camY1 := corner_y + fcp.Height / ppuy + t3; //+ shift;
-  camW := camX1 - camX0;
-  if abs(camW) > 0.01 then
-    Xsize := 1.0 / camW
-  else
-    Xsize := 1;
-  camH := camY1 - camY0;
-  if abs(camH) > 0.01 then
-    Ysize := 1.0 / camH
-  else
-    Ysize := 1;
-  bws := (BucketWidth - 0.5)  * Xsize;
-  bhs := (BucketHeight - 0.5) * Ysize;
-
-  if FCP.FAngle <> 0 then
-  begin
-    cosa := cos(FCP.FAngle);
-    sina := sin(FCP.FAngle);
-    rcX := FCP.Center[0]*(1 - cosa) - FCP.Center[1]*sina - camX0;
-    rcY := FCP.Center[1]*(1 - cosa) + FCP.Center[0]*sina - camY0;
-  end;
+  for j := 0 to BucketHeight - 1 do
+    for i := 0 to BucketWidth - 1 do
+    with Buckets[j][i] do begin
+      Red   := 0;
+      Green := 0;
+      Blue  := 0;
+      Count := 0;
+    end;
 end;
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -194,175 +107,27 @@ begin
 end;
 
 ///////////////////////////////////////////////////////////////////////////////
-function TRenderer64.GetImage: TBitmap;
+function TRenderer64.GetBits: integer;
 begin
-  Result := FImageMaker.GetImage;
+  Result := BITS_64;
+end;
+
+function TRenderer64.GetBucketsPtr: pointer;
+begin
+  Result := Buckets;
+end;
+
+procedure TRenderer64.AllocateBuckets;
+begin
+  SetLength(buckets, BucketHeight, BucketWidth);
 end;
 
 ///////////////////////////////////////////////////////////////////////////////
-procedure TRenderer64.InitBuffers;
-const
-  MaxFilterWidth = 25;
-begin
-  oversample := fcp.spatial_oversample;
-  max_gutter_width := (MaxFilterWidth - oversample) div 2;
-  gutter_width := (FImageMaker.GetFilterSize - oversample) div 2;
-  BucketHeight := oversample * fcp.Height + 2 * max_gutter_width;
-  Bucketwidth := oversample * fcp.Width + 2 * max_gutter_width;
-  BucketSize := BucketWidth * BucketHeight;
-
-  assert(BucketSize > 0); // who knows ;)
-
-  if high(buckets) <> (BucketSize - 1) then
-  try
-    SetLength(buckets, BucketSize);
-  except
-    on EOutOfMemory do begin
-      Application.MessageBox('Error: not enough memory for this render!', 'Apophysis', 48);
-      FStop := true;
-      exit;
-    end;
-  end;
-
-  // share the buffer with imagemaker
-  FImageMaker.SetBucketData(Buckets, BucketWidth);
-end;
-
-///////////////////////////////////////////////////////////////////////////////
-procedure TRenderer64.SetPixels;
-var
-  i: integer;
-  nsamples: Int64;
-  nrbatches: Integer;
-  IterateBatchProc: procedure of object;
-begin
-  Randomize;
-
-  if FCP.FAngle = 0 then begin
-    if UseFinalXform then
-      IterateBatchProc := IterateBatchFX
-    else
-      IterateBatchProc := IterateBatch;
-  end
-  else begin
-    if UseFinalXform then
-      IterateBatchProc := IterateBatchAngleFX
-    else
-      IterateBatchProc := IterateBatchAngle;
-  end;
-
-  nsamples := Round(sample_density * NrSlices * bucketSize / (oversample * oversample));
-  nrbatches := Round(nsamples / (fcp.nbatches * SUB_BATCH_SIZE));
-
-  for i := 0 to nrbatches do begin
-    if FStop then
-      Exit;
-
-    if ((i and $1F) = 0) then
-      if nrbatches > 0 then
-        Progress(i / nrbatches)
-      else
-        Progress(0);
-
-    IterateBatchProc;
-  end;
-
-  Progress(1);
-end;
-
-///////////////////////////////////////////////////////////////////////////////
-procedure TRenderer64.Render;
-begin
-  if fcp.NumXForms <= 0 then exit;
-
-  FStop := False;
-
-  FImageMaker.SetCP(FCP);
-  FImageMaker.Init;
-
-  InitBuffers;
-  if FStop then exit; // memory allocation error
-
-  CreateColorMap;
-  Prepare;
-
-  CreateCamera;
-
-  ClearBuffers;
-  SetPixels;
-
-  if not FStop then begin
-    FImageMaker.OnProgress := OnProgress;
-    FImageMaker.CreateImage;
-  end;
-end;
-
-///////////////////////////////////////////////////////////////////////////////
-{
-procedure TRenderer64.UpdateImage(CP: TControlPoint);
-begin
-  FCP.background := cp.background;
-  FCP.spatial_filter_radius := cp.spatial_filter_radius;
-  FCP.gamma := cp.Gamma;
-  FCP.vibrancy := cp.vibrancy;
-  FCP.contrast := cp.contrast;
-  FCP.brightness := cp.brightness;
-
-  FImageMaker.SetCP(FCP);
-  FImageMaker.Init;
-
-  FImageMaker.OnProgress := OnProgress;
-  FImageMaker.CreateImage;
-end;
-}
-
-///////////////////////////////////////////////////////////////////////////////
-procedure TRenderer64.SaveImage(const FileName: String);
-begin
-  FImageMaker.SaveImage(FileName);
-end;
-
-//******************************************************************************
-
-procedure TRenderer64.Prepare;
-var
-  i, n: Integer;
-  propsum: double;
-  LoopValue: double;
-  j: integer;
-  TotValue: double;
-begin
-  totValue := 0;
-  n := fcp.NumXforms;
-  assert(n > 0);
-
-  finalXform := fcp.xform[n];
-  finalXform.Prepare;
-  useFinalXform := fcp.FinalXformEnabled and fcp.HasFinalXform;
-
-  for i := 0 to n - 1 do begin
-    fcp.xform[i].Prepare;
-    totValue := totValue + fcp.xform[i].density;
-  end;
-
-  LoopValue := 0;
-  for i := 0 to PROP_TABLE_SIZE-1 do begin
-    propsum := 0;
-    j := -1;
-    repeat
-      inc(j);
-      propsum := propsum + fcp.xform[j].density;
-    until (propsum > LoopValue) or (j = n - 1);
-    PropTable[i] := fcp.xform[j];
-    LoopValue := LoopValue + TotValue / PROP_TABLE_SIZE;
-  end;
-end;
-
 procedure TRenderer64.IterateBatch;
 var
   i: integer;
   px, py: double;
-  Bucket: PBucket;
+  Bucket: PBucket64;
   MapColor: PColorMapColor;
 
   p: TCPPoint;
@@ -399,7 +164,7 @@ end;
       py := p.y - camY0;
       if (py < 0) or (py > camH) then continue;
 
-      Bucket := @buckets[Round(bws * px) + Round(bhs * py) * BucketWidth];
+      Bucket := @buckets[Round(bhs * py)][Round(bws * px)];
       MapColor := @ColorMap[Round(p.c * 255)];
 
       Inc(Bucket.Red,   MapColor.Red);
@@ -419,7 +184,7 @@ procedure TRenderer64.IterateBatchAngle;
 var
   i: integer;
   px, py: double;
-  Bucket: PBucket;
+  Bucket: PBucket64;
   MapColor: PColorMapColor;
 
   p: TCPPoint;
@@ -456,7 +221,7 @@ end;
       py := p.y * cosa - p.x * sina + rcY;
       if (py < 0) or (py > camH) then continue;
 
-      Bucket := @buckets[Round(bws * px) + Round(bhs * py) * BucketWidth];
+      Bucket := @buckets[Round(bhs * py)][Round(bws * px)];
       MapColor := @ColorMap[Round(p.c * 255)];
 
       Inc(Bucket.Red,   MapColor.Red);
@@ -477,7 +242,7 @@ procedure TRenderer64.IterateBatchFX;
 var
   i: integer;
   px, py: double;
-  Bucket: PBucket;
+  Bucket: PBucket64;
   MapColor: PColorMapColor;
 
   p, q: TCPPoint;
@@ -515,7 +280,7 @@ end;
       py := q.y - camY0;
       if (py < 0) or (py > camH) then continue;
 
-      Bucket := @buckets[Round(bws * px) + Round(bhs * py) * BucketWidth];
+      Bucket := @buckets[Round(bhs * py)][Round(bws * px)];
       MapColor := @ColorMap[Round(q.c * 255)];
 
       Inc(Bucket.Red,   MapColor.Red);
@@ -535,7 +300,7 @@ procedure TRenderer64.IterateBatchAngleFX;
 var
   i: integer;
   px, py: double;
-  Bucket: PBucket;
+  Bucket: PBucket64;
   MapColor: PColorMapColor;
 
   p, q: TCPPoint;
@@ -573,7 +338,7 @@ end;
       py := q.y * cosa - q.x * sina + rcY;
       if (py < 0) or (py > camH) then continue;
 
-      Bucket := @buckets[Round(bws * px) + Round(bhs * py) * BucketWidth];
+      Bucket := @buckets[Round(bhs * py)][Round(bws * px)];
       MapColor := @ColorMap[Round(q.c * 255)];
 
       Inc(Bucket.Red,   MapColor.Red);
@@ -587,6 +352,18 @@ end;
       exit;
     end;
   end;
+end;
+
+// -- { TRenderer32MM } -------------------------------------------------------
+
+procedure TRenderer64MM.CalcBufferSize;
+begin
+  CalcBufferSizeMM;
+end;
+
+procedure TRenderer64MM.Render;
+begin
+  RenderMM;
 end;
 
 end.

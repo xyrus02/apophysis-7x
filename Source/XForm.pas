@@ -34,8 +34,8 @@ type
     color: double;                       // color coord for this function. 0 - 1
     color2: double;                      // Second color coord for this function. 0 - 1
     symmetry: double;
-    c00, c01, c10, c11, c20, c21: double;
-    p00, p01, p10, p11, p20, p21: double;
+    c00, c01, c10, c11, c20, c21: double;// unnecessary duplicated variables
+    p00, p01, p10, p11, p20, p21: double;// :-)
 
 //    nx,ny,x,y: double;
 //    script: TatPascalScripter;
@@ -61,6 +61,9 @@ type
     fan_dx, fan_dx2,
     cosine_var2,
     polar_vpi: double;
+
+    gauss_rnd: array [0..3] of double;
+    gauss_N: integer;
 
     FRegVariations: array of TBaseVariation;
 
@@ -97,7 +100,7 @@ type
     procedure Cylinder;            // var[25]
     procedure Noise;               // var[26]
     procedure Blur;                // var[27]
-//    procedure Focus;               // var[28]
+    procedure Gaussian;            // var[28]
 
     function Mul33(const M1, M2: TMatrix): TMatrix;
     function Identity: TMatrix;
@@ -125,8 +128,8 @@ type
     procedure Multiply(const a, b, c, d: double);
     procedure Scale(const s: double);
 
-    procedure SetVariable(const name: string; var Value: double);
     procedure GetVariable(const name: string; var Value: double);
+    procedure SetVariable(const name: string; var Value: double);
     procedure ResetVariable(const name: string);
 
     function ToXMLString: string;
@@ -252,6 +255,12 @@ begin
   cosine_var2 := vars[20]/2;
 
   polar_vpi := vars[5]/pi;
+
+  gauss_rnd[0] := random;
+  gauss_rnd[1] := random;
+  gauss_rnd[2] := random;
+  gauss_rnd[3] := random;
+  gauss_N := 0;
 
   if (p[0,0]<>1) or (p[0,1]<>0) or(p[1,0]<>0) or (p[1,1]<>1) or (p[2,0]<>0) or (p[2,1]<>0) then
   begin
@@ -1543,31 +1552,34 @@ asm
 {$endif}
 end;
 
-(*
 //--28--///////////////////////////////////////////////////////////////////////
-procedure TXForm.Focus;
+procedure TXForm.Gaussian;
 {$ifndef _ASM_}
 var
-  r, sinr, cosr: double;
+  r, sina, cosa: double;
 begin
-  SinCos(random * 2*pi, sinr, cosr);
-  r := vars[28] * random * sqrt(sqr(FTx) + sqr(FTy));
-  FPx := FPx + r * cosr;
-  FPy := FPy + r * sinr;
+  SinCos(random * 2*pi, sina, cosa);
+  r := vars[28] * (random + random + random + random - 2);
+  FPx := FPx + r * cosa;
+  FPy := FPy + r * sina;
 {$else}
 asm
+    fld     qword ptr [ebx + gauss_rnd]
+    fadd    qword ptr [ebx + gauss_rnd+8]
+    fadd    qword ptr [ebx + gauss_rnd+16]
+    fadd    qword ptr [ebx + gauss_rnd+24]
+    fld1
+    fadd    st,st
+    fsubp   st(1),st
     mov     edx, [ebx + vars]
-    fld     qword ptr [edx + 28*8]
+    fmul    qword ptr [edx + 28*8]
     call    System.@RandExt
-    fmulp
-    fld     qword ptr [ebx + FTx]
-    fmul    st, st
-    fld     qword ptr [ebx + FTy]
-    fmul    st, st
-    faddp
-    fsqrt
-    fmulp
-    call    System.@RandExt
+    mov     edx, [ebx + gauss_N]
+    fst     qword ptr [ebx + gauss_rnd + edx*8]
+    inc     edx
+    and     edx,$03
+    mov     [eax + gauss_N], edx
+
     fadd    st, st
     fldpi
     fmulp
@@ -1581,7 +1593,6 @@ asm
     fwait
 {$endif}
 end;
-*)
 
 //***************************************************************************//
 
@@ -1916,8 +1927,6 @@ end;
 
 ///////////////////////////////////////////////////////////////////////////////
 procedure TXForm.BuildFunctionlist;
-var
-  i: integer;
 begin
   SetLength(FFunctionList, NrVar + Length(FRegVariations));
 
@@ -1950,7 +1959,7 @@ begin
   FFunctionList[25] := Cylinder;
   FFunctionList[26] := Noise;
   FFunctionList[27] := Blur;
-//  FFunctionList[28] := Focus;
+  FFunctionList[28] := Gaussian;
 
   //registered
 //  for i := 0 to High(FRegVariations) do
@@ -2059,21 +2068,21 @@ begin
 end;
 
 ///////////////////////////////////////////////////////////////////////////////
-procedure TXForm.SetVariable(const name: string; var Value: double);
-var
-  i: integer;
-begin
-  for i := 0 to High(FRegVariations) do
-    if FRegVariations[i].SetVariable(name, value) then
-      break;
-end;
-
 procedure TXForm.GetVariable(const name: string; var Value: double);
 var
   i: integer;
 begin
   for i := 0 to High(FRegVariations) do
     if FRegVariations[i].GetVariable(name, value) then
+      break;
+end;
+
+procedure TXForm.SetVariable(const name: string; var Value: double);
+var
+  i: integer;
+begin
+  for i := 0 to High(FRegVariations) do
+    if FRegVariations[i].SetVariable(name, value) then
       break;
 end;
 
@@ -2087,4 +2096,5 @@ begin
 end;
 
 ///////////////////////////////////////////////////////////////////////////////
+
 end.

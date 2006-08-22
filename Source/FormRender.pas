@@ -1,5 +1,6 @@
 {
      Apophysis Copyright (C) 2001-2004 Mark Townsend
+     Apophysis Copyright (C) 2005-2006 Ronald Hordijk, Piotr Boris, Peter Sdobnov
 
      This program is free software; you can redistribute it and/or modify
      it under the terms of the GNU General Public License as published by
@@ -21,15 +22,28 @@ interface
 
 uses
   Windows, Messages, SysUtils, Classes, Graphics, Controls, Forms, Dialogs,
-  StdCtrls, ControlPoint, RenderThread, ComCtrls, Math, Buttons, Registry, cmap,
-  ExtCtrls, MMSystem,
-  Render; // 'use'd only for SizeOf()
+  StdCtrls, ComCtrls, Math, Buttons, Registry, ExtCtrls, MMSystem,
+  ControlPoint, RenderThread, cmap, RenderTypes;
 
 type
   TRenderForm = class(TForm)
     ProgressBar: TProgressBar;
     btnRender: TButton;
     btnCancel: TButton;
+    SaveDialog: TSaveDialog;
+    btnPause: TButton;
+    chkSave: TCheckBox;
+    StatusBar: TStatusBar;
+    chkShutdown: TCheckBox;
+    cbPostProcess: TCheckBox;
+    chkSaveIncompleteRenders: TCheckBox;
+    PageCtrl: TPageControl;
+    TabSettings: TTabSheet;
+    TabOutput: TTabSheet;
+    GroupBox5: TGroupBox;
+    btnSavePreset: TSpeedButton;
+    btnDeletePreset: TSpeedButton;
+    cmbPreset: TComboBox;
     GroupBox1: TGroupBox;
     btnBrowse: TSpeedButton;
     Label10: TLabel;
@@ -37,34 +51,29 @@ type
     GroupBox2: TGroupBox;
     Label1: TLabel;
     Label2: TLabel;
+    chkMaintain: TCheckBox;
+    cbWidth: TComboBox;
+    cbHeight: TComboBox;
     GroupBox3: TGroupBox;
     Label3: TLabel;
     Label5: TLabel;
     Label4: TLabel;
     txtOversample: TEdit;
     txtFilterRadius: TEdit;
+    udOversample: TUpDown;
+    txtDensity: TComboBox;
     GroupBox4: TGroupBox;
     lblApproxMem: TLabel;
     lblPhysical: TLabel;
+    Label6: TLabel;
+    Label7: TLabel;
+    Label8: TLabel;
+    lblMaxbits: TLabel;
     Label9: TLabel;
     cbMaxMemory: TComboBox;
     chkLimitMem: TCheckBox;
-    SaveDialog: TSaveDialog;
-    btnPause: TButton;
-    chkSave: TCheckBox;
-    GroupBox5: TGroupBox;
-    btnSavePreset: TSpeedButton;
-    cmbPreset: TComboBox;
-    btnDeletePreset: TSpeedButton;
-    udOversample: TUpDown;
-    chkMaintain: TCheckBox;
-    cbWidth: TComboBox;
-    cbHeight: TComboBox;
-    StatusBar: TStatusBar;
-    chkShutdown: TCheckBox;
-    cbPostProcess: TCheckBox;
-    txtDensity: TComboBox;
-    chkSaveIncompleteRenders: TCheckBox;
+    cbBitsPerSample: TComboBox;
+    Output: TMemo;
     procedure FormCreate(Sender: TObject);
     procedure FormDestroy(Sender: TObject);
     procedure btnRenderClick(Sender: TObject);
@@ -86,9 +95,12 @@ type
     procedure cmbPresetChange(Sender: TObject);
     procedure chkMaintainClick(Sender: TObject);
     procedure chkSaveIncompleteRendersClick(Sender: TObject);
+    procedure cbBitsPerSampleSelect(Sender: TObject);
   private
-    StartTime, oldElapsed, edt: TDateTime;
+    StartTime, EndTime, oldElapsed, edt: TDateTime;
     oldProg: double;
+
+    ApproxSamples: int64;
     SaveIncompleteRenders: boolean;
 
     procedure DoPostProcess;
@@ -99,6 +111,7 @@ type
       message WM_THREAD_TERMINATE;
     procedure ListPresets;
     function WindowsExit(RebootParam: Longword = EWX_POWEROFF or EWX_FORCE): Boolean;
+
   public
     Renderer: TRenderThread;
     PhysicalMemory, ApproxMemory: int64;
@@ -106,13 +119,18 @@ type
     cp: TControlPoint;
     Filename: string;
     ImageWidth, ImageHeight, Oversample: Integer;
+    BitsPerSample: integer;
     zoom, Sample_Density, Brightness, Gamma, Vibrancy, Filter_Radius: double;
     center: array[0..1] of double;
+    MaxMemory: integer;
 
     procedure OnProgress(prog: double);
     procedure ShowMemoryStatus;
     procedure ResetControls;
   end;
+
+const
+  ShowRenderStats = true;
 
 var
   RenderForm: TRenderForm;
@@ -136,6 +154,7 @@ begin
   txtOversample.Enabled := true;
   chkLimitMem.Enabled := true;
   cbMaxMemory.enabled := chkLimitMem.Checked;
+  cbBitsPerSample.Enabled := true;
   cbPostProcess.Enabled := not chkLimitMem.Checked;
   btnRender.Enabled := true;
   cmbPreset.enabled := true;
@@ -157,28 +176,89 @@ begin
   GlobalMemoryInfo.dwLength := SizeOf(GlobalMemoryInfo);
   GlobalMemoryStatus(GlobalMemoryInfo);
   PhysicalMemory := GlobalMemoryInfo.dwAvailPhys div 1048576;
-  ApproxMemory := int64(ImageHeight) * int64(ImageWidth) * int64(Oversample * Oversample
-                  * SizeOf(TBucket)) div 1048576;
+  ApproxMemory := int64(ImageHeight) * int64(ImageWidth) * sqr(Oversample) * SizeOfBucket[BitsPerSample] div 1048576;
 
-  lblPhysical.Caption := 'Physical memory available: ' + Format('%u', [PhysicalMemory]) + ' Mb';
-  lblApproxMem.Caption := 'Approximate memory required: ' + Format('%u', [ApproxMemory]) + ' Mb';
+  lblPhysical.Caption := Format('%u', [PhysicalMemory]) + ' Mb';
+  lblApproxMem.Caption := Format('%u', [ApproxMemory]) + ' Mb';
 
   if ApproxMemory > PhysicalMemory then lblPhysical.Font.Color := clRed
   else lblPhysical.Font.Color := clWindowText;
+
+
+  if  ApproxMemory > 0 then
+    lblMaxbits.caption := format('%2.3f', [8 + log2(
+      sample_density * sqr(power(2, cp.zoom)) * int64(ImageHeight) * int64(ImageWidth) / sqr(oversample)
+    )]);
+end;
+
+function TimeToString(t: TDateTime): string;
+var
+  n: integer;
+begin
+  n := Trunc(t);
+  Result := '';
+  if n>0 then begin
+    Result := Result + Format(' %d day', [n]);
+    if (n mod 10) <> 1 then Result := Result + 's';
+  end;
+  t := t * 24;
+  n := Trunc(t) mod 24;
+  if n>0 then begin
+    Result := Result + Format(' %d hour', [n]);
+    if (n mod 10) <> 1 then Result := Result + 's';
+  end;
+  t := t * 60;
+  n := Trunc(t) mod 60;
+  if n>0 then begin
+    Result := Result + Format(' %d minute', [n]);
+    if (n mod 10) <> 1 then Result := Result + 's';
+  end;
+  t := t * 60;
+  t := t - (Trunc(t) div 60) * 60;
+  Result := Result + Format(' %.2f seconds', [t]);
 end;
 
 procedure TRenderForm.HandleThreadCompletion(var Message: TMessage);
+var
+  Stats: TBucketStats;
 begin
-  if not chkLimitMem.Checked and cbPostProcess.checked then
-    DoPostProcess;
-
-  Renderer.SaveImage(FileName);
+  EndTime := Now;
+//  Output.Lines.Add(TimeToStr(EndTime) + ' : Saving image');
+  try
+    Renderer.SaveImage(FileName);
+  except
+    Output.Lines.Add(TimeToStr(Now) + ' : Error saving image!');
+  end;
 
   if PlaySoundOnRenderComplete then
     if RenderCompleteSoundFile <> '' then
       sndPlaySound(PChar(RenderCompleteSoundFile), SND_FILENAME or SND_NOSTOP or SND_ASYNC)
     else
       sndPlaySound(pchar(SND_ALIAS_SYSTEMASTERISK), SND_ALIAS_ID or SND_NOSTOP or SND_ASYNC);
+
+  if ShowRenderStats then with Stats do
+    with Output.Lines do
+    begin
+      Add('');
+      Add('Render Statistics:');
+      Add(Format('  Max possible bits: %2.3f', [8 + log2(ApproxSamples)]));
+      Renderer.GetBucketStats(Stats);
+      Add(Format('  Max Red:   %2.3f bits  (%u)', [log2(MaxR), MaxR]));
+      Add(Format('  Max Green: %2.3f bits  (%u)', [log2(MaxG), MaxG]));
+      Add(Format('  Max Blue:  %2.3f bits  (%u)', [log2(MaxB), MaxB]));
+      Add(Format('  Max Count: %2.3f bits  (%u)', [log2(MaxA), MaxA]));
+      Add(Format('  Point hit ratio: %2.2f%%', [100.0*(TotalA/TotalSamples)]));
+      if RenderTime > 0 then // hmm
+        Add(Format('  Average speed: %n points per second', [TotalSamples / (RenderTime * 24 * 60 * 60)]));
+      Add('  Rendering time:' + TimeToString(RenderTime));
+      Add('  Total time:' + TimeToString(EndTime - StartTime));
+    end;
+
+  Output.Lines.Add('');
+  PageCtrl.TabIndex := 1;
+
+  if not chkLimitMem.Checked and cbPostProcess.checked then
+    DoPostProcess;
 
   Renderer.Free;
   Renderer := nil;
@@ -191,8 +271,15 @@ procedure TRenderForm.HandleThreadTermination(var Message: TMessage);
 begin
   if Assigned(Renderer) then
   begin
-    if SaveIncompleteRenders then Renderer.SaveImage(FileName);
-
+    Output.Lines.Add(TimeToStr(Now) + ' : Rendering terminated!');
+    sndPlaySound(pchar(SND_ALIAS_SYSTEMEXCLAMATION), SND_ALIAS_ID or SND_NOSTOP or SND_ASYNC);
+(*
+    if SaveIncompleteRenders and not chkLimitMem.Checked then begin
+      Output.Lines.Add('Saving incomplete image...');
+      Renderer.SaveImage(FileName);
+    end;
+    Output.Lines.Add('');
+*)
     Renderer.Free;
     Renderer := nil;
     ResetControls;
@@ -251,6 +338,8 @@ procedure TRenderForm.FormCreate(Sender: TObject);
 begin
   cp := TControlPoint.Create;
   cbMaxMemory.ItemIndex := 1;
+  cbBitsPerSample.ItemIndex := 0;
+  BitsPerSample := 0;
   MainForm.Buttons.GetBitmap(2, btnSavePreset.Glyph);
   MainForm.Buttons.GetBitmap(9, btnDeletePreset.Glyph);
   ListPresets;
@@ -323,6 +412,16 @@ begin
     Application.MessageBox('Invalid image height', 'Apophysis', 16);
     exit;
   end;
+  if chkLimitMem.checked then
+  begin
+    try
+      MaxMemory := StrToInt(cbMaxMemory.text);
+      if MaxMemory <= 0 then raise Exception.Create('');
+    except
+      Application.MessageBox('Invalid maximum memory value', 'Apophysis', 16);
+      exit;
+    end;
+  end;
   txtFilename.Enabled := false;
   btnBrowse.Enabled := false;
   cbWidth.Enabled := False;
@@ -332,6 +431,7 @@ begin
   txtOversample.Enabled := false;
   chkLimitMem.Enabled := false;
   cbMaxMemory.Enabled := false;
+  cbBitsPerSample.Enabled := false;
   cmbPreset.enabled := false;
   chkSave.enabled := false;
 //  cbPostProcess.enabled := false;
@@ -343,7 +443,26 @@ begin
   btnCancel.Caption := 'Stop';
   StartTime := Now;
 //  Remaining := 365;
+
+  PageCtrl.TabIndex := 1;
+
+  Output.Lines.Add('--- Rendering "' + ExtractFileName(FileName) + '" ---');
+  Output.Lines.Add(Format('  Size: %dx%d', [ImageWidth, ImageHeight]));
+  Output.Lines.Add(Format('  Quality: %g', [sample_density]));
+  Output.Lines.Add(Format('  Oversample: %d, Filter: %g', [oversample, filter_radius]));
+  Output.Lines.Add(Format('  Buffer depth: %s', [cbBitsPerSample.Items[BitsPerSample]]));
+  if chkLimitMem.checked then
+    Output.Lines.Add(Format('  Memory limit: %d Mb', [MaxMemory]))
+  else
+    if (UpperCase(ExtractFileExt(FileName)) = '.PNG') and
+       (ImageWidth * ImageHeight >= 20000000) then
+    begin
+      Output.Lines.Add('*** WARNING *** Using PNG format with extreme high-resolution images is not recommended!');
+      Output.Lines.Add('To avoid slowdown (and possible memory problems) use BMP file format instead.');
+    end;
+
   if Assigned(Renderer) then begin
+    Output.Lines.Add(TimeToStr(Now) + 'Shutting down previous render...'); // hmm
     Renderer.Terminate;
     Renderer.WaitFor;
     Renderer.Free;
@@ -357,6 +476,7 @@ begin
     cp.spatial_oversample := Oversample;
     cp.spatial_filter_radius := Filter_Radius;
     cp.AdjustScale(ImageWidth, ImageHeight);
+    cp.Transparency := (PNGTransparency <> 0) and (UpperCase(ExtractFileExt(FileName)) = '.PNG');
     renderPath := ExtractFilePath(Filename);
     if chkSave.checked then
       MainForm.SaveXMLFlame(cp, ExtractFileName(FileName), renderPath + 'renders.flame');
@@ -364,23 +484,28 @@ begin
     oldProg:=0;
     oldElapsed:=0;
     edt:=0;
+    ApproxSamples := Round(sample_density * sqr(power(2, cp.zoom)) * int64(ImageHeight) * int64(ImageWidth) / sqr(oversample) );
 
    try
 
     Renderer := TRenderThread.Create;
     assert(Renderer <> nil);
+    Renderer.BitsPerSample := BitsPerSample;
     if chkLimitMem.checked then
-      Renderer.MaxMem := StrToInt(cbMaxMemory.text);
+      Renderer.MaxMem := MaxMemory;//StrToInt(cbMaxMemory.text);
     Renderer.OnProgress := OnProgress;
     Renderer.TargetHandle := self.Handle;
-    Renderer.Compatibility := compatibility;
+//    Renderer.Output := Output.Lines;
+//    Renderer.Compatibility := compatibility;
     Renderer.SetCP(cp);
     Renderer.Priority := tpLower;
     Renderer.NrThreads := NrTreads;
-    Renderer.Resume;
 
+    Renderer.Output := Output.Lines;
+    Renderer.Resume;
    except
-     Application.MessageBox('Error while rendering!', 'Apophysis', 48)
+    Output.Lines.Add(TimeToStr(Now) + ' : Rendering failed!');
+    Application.MessageBox('Error while rendering!', 'Apophysis', 48)
    end;
 
     // enable screensaver
@@ -421,6 +546,8 @@ begin
   ImageHeight := StrToInt(cbHeight.Text);
   sample_density := renderDensity;
   txtDensity.Text := FloatToStr(sample_density);
+  BitsPerSample := renderBitsPerSample;
+  cbBitsPerSample.ItemIndex := BitsPerSample;
   ShowMemoryStatus;
   Ratio := ImageWidth / ImageHeight;
 end;
@@ -496,8 +623,17 @@ begin
       Renderer.Resume;
       btnPause.caption := 'Pause';
     end;
-    Renderer.Terminate;
-    Renderer.WaitFor; // --?--
+
+    if SaveIncompleteRenders and not ChkLimitMem.Checked then begin
+      Renderer.Break;
+      Renderer.WaitFor; //?
+    end
+    else begin
+      Renderer.Terminate;
+      Renderer.WaitFor; //?
+
+      PageCtrl.TabIndex := 0;
+    end;
   end
   else close;
 end;
@@ -508,6 +644,7 @@ begin
     Sample_Density := StrToFloat(txtDensity.Text);
   except
   end;
+  ShowMemoryStatus;
 end;
 
 procedure TRenderForm.txtFilterRadiusChange(Sender: TObject);
@@ -532,6 +669,7 @@ begin
   renderHeight := ImageHeight;
   renderDensity := Sample_density;
   renderOversample := Oversample;
+  renderBitsPerSample := BitsPerSample;
   { Write position to registry }
   Registry := TRegistry.Create;
   try
@@ -789,6 +927,13 @@ end;
 procedure TRenderForm.chkSaveIncompleteRendersClick(Sender: TObject);
 begin
   SaveIncompleteRenders := chkSaveIncompleteRenders.Checked;
+end;
+
+procedure TRenderForm.cbBitsPerSampleSelect(Sender: TObject);
+begin
+  BitsPerSample := cbBitsPerSample.ItemIndex;
+
+  ShowMemoryStatus;
 end;
 
 end.

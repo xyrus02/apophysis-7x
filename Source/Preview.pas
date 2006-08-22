@@ -53,7 +53,7 @@ begin
 //  ScriptEditor.GetCpFromFlame(cp);
   cp.width := Image.width;
   cp.Height := Image.Height;
-  Render.Compatibility := Compatibility;
+//  Render.Compatibility := Compatibility;
   Render.SetCP(cp);
   Render.Render;
   Image.Picture.Bitmap.Assign(Render.GetImage);

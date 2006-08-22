@@ -93,9 +93,11 @@ var
 { Render }
   renderDensity, renderFilterRadius: double;
   renderOversample, renderWidth, renderHeight: integer;
+  renderBitsPerSample: integer;
   renderPath: string;
   JPEGQuality: integer;
   renderFileFormat: integer;
+  InternalBitsPerSample: integer;
 { Defaults }
   SavePath, SmoothPalettePath: string;
   RandomPrefix, RandomDate: string;
@@ -129,7 +131,7 @@ var
   Favorites: TStringList;
   Script: string;
   ScriptPath: string;
-  SheepServer, SheepNick, SheepURL, SheepPW, HqiPath: string;
+  SheepServer, SheepNick, SheepURL, SheepPW, flam3Path: string;
   ExportBatches, ExportOversample, ExportWidth, ExportHeight, ExportFileFormat: Integer;
   ExportFilter, ExportDensity: Double;
   ExportEstimator, ExportEstimatorMin, ExportEstimatorCurve: double;
@@ -145,6 +147,9 @@ var
   ShowTransparency: boolean;
   NrTreads: Integer;
   UseNrThreads: integer;
+
+  PreviewTimeLimit, FullscreenTimeLimit: integer;
+  PreviewMinDensity: double;
 
 function Round6(x: double): double;
 

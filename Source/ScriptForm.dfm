@@ -20,7 +20,7 @@ object ScriptEditor: TScriptEditor
   TextHeight = 13
   object Splitter1: TSplitter
     Left = 0
-    Top = 244
+    Top = 250
     Width = 531
     Height = 4
     Cursor = crVSplit
@@ -30,7 +30,7 @@ object ScriptEditor: TScriptEditor
     Left = 508
     Top = 0
     Width = 23
-    Height = 244
+    Height = 250
     Align = alRight
     AutoSize = True
     Caption = 'ToolBar'
@@ -96,7 +96,7 @@ object ScriptEditor: TScriptEditor
   end
   object StatusBar: TStatusBar
     Left = 0
-    Top = 337
+    Top = 343
     Width = 531
     Height = 19
     Anchors = [akLeft, akRight]
@@ -106,7 +106,7 @@ object ScriptEditor: TScriptEditor
     Left = 0
     Top = 0
     Width = 508
-    Height = 244
+    Height = 250
     Align = alClient
     BevelInner = bvLowered
     BevelOuter = bvLowered
@@ -116,7 +116,7 @@ object ScriptEditor: TScriptEditor
       Left = 2
       Top = 2
       Width = 504
-      Height = 240
+      Height = 246
       Cursor = crIBeam
       PopupMenu = PopupMenu
       ActiveLineSettings.ShowActiveLine = False
@@ -144,6 +144,11 @@ object ScriptEditor: TScriptEditor
       Gutter.Font.Height = -13
       Gutter.Font.Name = 'Courier New'
       Gutter.Font.Style = []
+      Gutter.LineNumberStart = 1
+      Gutter.LineNumberTextColor = clBlack
+      Gutter.ShowLineNumbers = True
+      Gutter.Visible = True
+      Gutter.ShowLeadingZeros = False
       Font.Charset = DEFAULT_CHARSET
       Font.Color = clBlack
       Font.Height = -13
@@ -185,14 +190,14 @@ object ScriptEditor: TScriptEditor
       UrlStyle.BkColor = clWhite
       UrlStyle.Style = [fsUnderline]
       UseStyler = True
-      Version = '2.0.0.1'
+      Version = '1.6.0.17'
       WordWrap = wwNone
       OnChange = EditorChange
     end
   end
   object Console: TMemo
     Left = 0
-    Top = 248
+    Top = 254
     Width = 531
     Height = 89
     Align = alBottom
@@ -356,9 +361,7 @@ object ScriptEditor: TScriptEditor
       end>
     AutoCompletion.Strings = (
       'ShowMessage'
-      'MessageDlg'
-      'Flame'
-      'Transform')
+      'MessageDlg')
     HintParameter.TextColor = clBlack
     HintParameter.BkColor = clInfoBk
     HintParameter.HintCharStart = '('
@@ -376,53 +379,6 @@ object ScriptEditor: TScriptEditor
     DefaultExtension = '.pas'
     StylerName = 'Pascal'
     Extensions = 'pas;dpr;dpk;inc'
-    RegionDefinitions = <
-      item
-        Identifier = 'procedure'
-        RegionStart = 'begin'
-        RegionEnd = 'end'
-        RegionType = rtClosed
-        ShowComments = False
-      end
-      item
-        Identifier = 'interface'
-        RegionStart = 'interface'
-        RegionType = rtOpen
-        ShowComments = False
-      end
-      item
-        Identifier = 'unit'
-        RegionStart = 'unit'
-        RegionType = rtFile
-        ShowComments = False
-      end
-      item
-        Identifier = 'implementation'
-        RegionStart = 'implementation'
-        RegionType = rtOpen
-        ShowComments = False
-      end
-      item
-        Identifier = 'case'
-        RegionStart = 'case'
-        RegionEnd = 'end'
-        RegionType = rtIgnore
-        ShowComments = False
-      end
-      item
-        Identifier = 'function'
-        RegionStart = 'begin'
-        RegionEnd = 'end'
-        RegionType = rtClosed
-        ShowComments = False
-      end
-      item
-        Identifier = '{$region'
-        RegionStart = '{$region'
-        RegionEnd = '{$endregion'
-        RegionType = rtClosed
-        ShowComments = False
-      end>
     Left = 328
     Top = 32
   end

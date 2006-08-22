@@ -202,10 +202,19 @@ type
     pnlHelpersColor: TPanel;
     rgReferenceMode: TRadioGroup;
     chkExtendedEdit: TCheckBox;
+    chkAxisLock: TCheckBox;
     chkPlaysound: TCheckBox;
     btnPlay: TSpeedButton;
     Label44: TLabel;
-    chkAxisLock: TCheckBox;
+    GroupBox18: TGroupBox;
+    cbInternalBitsPerSample: TComboBox;
+    GroupBox19: TGroupBox;
+    Label45: TLabel;
+    Label46: TLabel;
+    txtPreviewMinQ: TEdit;
+    Label47: TLabel;
+    cbPreviewTime: TComboBox;
+    cbFullscrTime: TComboBox;
     procedure btnCancelClick(Sender: TObject);
     procedure FormShow(Sender: TObject);
     procedure btnOKClick(Sender: TObject);
@@ -302,6 +311,14 @@ begin
   chkPlaySound.Checked := PlaySoundOnRenderComplete;
   txtSoundFile.Text := RenderCompleteSoundFile;
 
+  cbInternalBitsPerSample.ItemIndex := InternalBitsPerSample;
+
+  if PreviewTimeLimit = 0 then cbPreviewTime.ItemIndex := 0
+  else cbPreviewTime.Text := IntToStr(PreviewTimeLimit);
+  if FullscreenTimeLimit = 0 then cbFullscrTime.ItemIndex := 0
+  else cbFullscrTime.Text := IntToStr(FullscreenTimeLimit);
+  txtPreviewMinQ.Text := FloatToStr(PreviewMinDensity);
+
   { Display tab }
   txtSampleDensity.Text := FloatToStr(defSampleDensity);
   txtGamma.Text := FloatToStr(defGamma);
@@ -366,7 +383,7 @@ begin
   txtNick.Text := SheepNick;
   txtURL.Text := SheepURL;
   txtPassword.Text := SheepPW;
-  txtRenderer.Text := HqiPath;
+  txtRenderer.Text := flam3Path;
   txtServer.Text := SheepServer;
 
   txtLibrary.text := defLibrary;
@@ -412,6 +429,12 @@ begin
 
   MainForm_RotationMode := rgRotationMode.ItemIndex;
   ResizeOnLoad := chkResize.checked;
+
+  InternalBitsPerSample := cbInternalBitsPerSample.ItemIndex;
+
+  PreviewTimeLimit := StrToIntDef(cbPreviewTime.Text, 0);
+  FullscreenTimeLimit := StrToIntDef(cbFullscrTime.Text, 0);
+  PreviewMinDensity := StrToFloatDef(txtPreviewMinQ.Text, 0.2);
 
   // Editor
   ReferenceMode := rgReferenceMode.ItemIndex;
@@ -481,7 +504,7 @@ begin
   SheepNick := txtNick.Text;
   SheepURL := txtURL.Text;
   SheepPW := txtPassword.text;
-  HqiPath := txtRenderer.text;
+  flam3Path := txtRenderer.text;
   SheepServer := txtServer.text;
 
   {Paths}
@@ -639,7 +662,7 @@ end;
 procedure TOptionsForm.btnRendererClick(Sender: TObject);
 begin
   OpenDialog.Filter := 'Executables (*.exe)|*.exe';
-  OpenDialog.InitialDir := ExtractFilePath(HqiPath);
+  OpenDialog.InitialDir := ExtractFilePath(flam3Path);
   OpenDialog.FileName := '';
   if OpenDialog.Execute then
   begin

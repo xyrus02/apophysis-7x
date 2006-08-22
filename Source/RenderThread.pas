@@ -1,7 +1,7 @@
 {
      Flame screensaver Copyright (C) 2002 Ronald Hordijk
      Apophysis Copyright (C) 2001-2004 Mark Townsend
-     Apophysis Copyright (C) 2005-2006 Ronald Hordijk, Piotr Boris, Peter Sdobnov     
+     Apophysis Copyright (C) 2005-2006 Ronald Hordijk, Piotr Boris, Peter Sdobnov
 
      This program is free software; you can redistribute it and/or modify
      it under the terms of the GNU General Public License as published by
@@ -23,7 +23,12 @@ interface
 
 uses
   Classes, Windows, Messages, Graphics,
-   ControlPoint, Render, Render64, Render64MT, RenderMM, RenderMM_MT;
+  ControlPoint, Render,
+  Global, RenderTypes,
+  Render64, Render64MT,
+  Render48, Render48MT,
+  Render32, Render32MT, 
+  Render32f, Render32fMT;
 
 const
   WM_THREAD_COMPLETE = WM_APP + 5437;
@@ -36,18 +41,24 @@ type
 
     FOnProgress: TOnProgress;
     FCP: TControlPoint;
-    Fcompatibility: Integer;
+//    Fcompatibility: Integer;
     FMaxMem: int64;
     FNrThreads: Integer;
+    FBitsPerSample: integer;
+    FMinDensity: double;
+    FOutput: TStrings;
 
-    procedure Render;
+    procedure CreateRenderer;
     function GetNrSlices: integer;
     function GetSlice: integer;
-    procedure Setcompatibility(const Value: Integer);
-    procedure SetMaxMem(const Value: int64);
-    procedure SetNrThreads(const Value: Integer);
+//    procedure Setcompatibility(const Value: Integer);
+//    procedure SetMaxMem(const Value: int64);
+//    procedure SetNrThreads(const Value: Integer);
+    procedure SetBitsPerSample(const bits: Integer);
+
   public
     TargetHandle: HWND;
+    WaitForMore, More: boolean;
 
     constructor Create;
     destructor Destroy; override;
@@ -62,6 +73,9 @@ type
     procedure Terminate;
     procedure Suspend;
     procedure Resume;
+    procedure Break;
+
+    procedure GetBucketStats(var Stats: TBucketStats);
 
     property OnProgress: TOnProgress
         read FOnProgress
@@ -73,13 +87,18 @@ type
         read GetNrSlices;
     property MaxMem: int64
         read FMaxMem
-       write SetMaxMem;
-    property compatibility: Integer
-        read Fcompatibility
-       write Setcompatibility;
+       write FMaxMem;
+//    property compatibility: Integer read Fcompatibility write Fcompatibility;
     property NrThreads: Integer
         read FNrThreads
-       write SetNrThreads;
+       write FNrThreads;
+    property BitsPerSample: Integer
+        read FBitsPerSample
+       write SetBitsPerSample;
+    property Output: TStrings
+       write FOutput;
+    property MinDensity: double
+       write FMinDensity;
   end;
 
 implementation
@@ -117,50 +136,89 @@ end;
 constructor TRenderThread.Create;
 begin
   MaxMem := 0;
-  FreeOnTerminate := False;
+  BitsPerSample := InternalBitsPerSample;
+  FreeOnTerminate := false;
+  WaitForMore := false;
+
   inherited Create(True);               // Create Suspended;
 end;
 
 ///////////////////////////////////////////////////////////////////////////////
-procedure TRenderThread.Render;
+procedure TRenderThread.CreateRenderer;
 begin
   if assigned(FRenderer) then
     FRenderer.Free;
 
-  if MaxMem = 0 then begin
-    if NrThreads <= 1 then begin
-      FRenderer := TRenderer64.Create;
+  if NrThreads <= 1 then begin
+    if MaxMem = 0 then begin
+      case FBitsPerSample of
+        0: FRenderer := TRenderer32.Create;
+        1: FRenderer := TRenderer32f.Create;
+        2: FRenderer := TRenderer48.Create;
+        3: FRenderer := TRenderer64.Create;
+      end;
     end else begin
-      FRenderer := TRenderer64MT.Create;
-      TRenderer64MT(FRenderer).NrOfTreads := NrThreads;
+      case FBitsPerSample of
+        0: FRenderer := TRenderer32MM.Create;
+        1: FRenderer := TRenderer32fMM.Create;
+        2: FRenderer := TRenderer48MM.Create;
+        3: FRenderer := TRenderer64MM.Create;
+      end;
+      FRenderer.MaxMem := MaxMem;
     end;
-  end else begin
-    if NrThreads <= 1 then begin
-      FRenderer := TRendererMM64.Create;
+  end
+  else begin
+    if MaxMem = 0 then begin
+      case FBitsPerSample of
+        0: FRenderer := TRenderer32MT.Create;
+        1: FRenderer := TRenderer32fMT.Create;
+        2: FRenderer := TRenderer48MT.Create;
+        3: FRenderer := TRenderer64MT.Create;
+      end;
     end else begin
-      FRenderer := TRendererMM64_MT.Create;
-      TRendererMM64_MT(FRenderer).NrOfTreads := NrThreads;
+      case FBitsPerSample of
+        0: FRenderer := TRenderer32MT_MM.Create;
+        1: FRenderer := TRenderer32fMT_MM.Create;
+        2: FRenderer := TRenderer48MT_MM.Create;
+        3: FRenderer := TRenderer64MT_MM.Create;
+      end;
+      FRenderer.MaxMem := MaxMem;
     end;
-    FRenderer.MaxMem := MaxMem
+    FRenderer.NumThreads := NrThreads;
   end;
 
   FRenderer.SetCP(FCP);
-  FRenderer.compatibility := compatibility;
+//  FRenderer.compatibility := compatibility;
+  FRenderer.MinDensity := FMinDensity;
   FRenderer.OnProgress := FOnProgress;
-  Frenderer.Render;
+  FRenderer.Output := FOutput;
 
-  if FRenderer.Failed then Terminate; // hmm
+//  FRenderer.Render;
+  //?... if FRenderer.Failed then Terminate; // hmm
 end;
 
 ///////////////////////////////////////////////////////////////////////////////
 procedure TRenderThread.Execute;
+label RenderMore;
 begin
-  Render;
+  CreateRenderer;
 
-  if Terminated then
-    PostMessage(TargetHandle, WM_THREAD_TERMINATE, 0, 0)
-  else
-    PostMessage(TargetHandle, WM_THREAD_COMPLETE, 0, 0);
+RenderMore:
+  FRenderer.Render;
+
+  if Terminated then begin
+    PostMessage(TargetHandle, WM_THREAD_TERMINATE, 0, 0);
+    exit;
+  end
+  else PostMessage(TargetHandle, WM_THREAD_COMPLETE, 0, 0);
+
+  if WaitForMore and (FRenderer <> nil) then begin
+    FRenderer.RenderMore := true;
+
+    inherited Suspend;
+
+    if WaitForMore then goto RenderMore;
+  end;
 end;
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -169,13 +227,15 @@ begin
   if assigned(FRenderer) then
     FRenderer.Stop;
 
+  WaitForMore := false;
+
   inherited Terminate;
 end;
 
 procedure TRenderThread.Suspend;
 begin
   if NrThreads > 1 then
-    if assigned(FRenderer) then FRenderer.Pause(true);
+    if assigned(FRenderer) then FRenderer.Pause;
 
   inherited;
 end;
@@ -183,16 +243,22 @@ end;
 procedure TRenderThread.Resume;
 begin
   if NrThreads > 1 then
-    if assigned(FRenderer) then FRenderer.Pause(false);
+    if assigned(FRenderer) then FRenderer.UnPause;
 
   inherited;
+end;
+
+procedure TRenderThread.Break;
+begin
+  if assigned(FRenderer) then
+    FRenderer.Break;
 end;
 
 ///////////////////////////////////////////////////////////////////////////////
 function TRenderThread.GetNrSlices: integer;
 begin
   if assigned(FRenderer) then
-    Result := FRenderer.Nrslices
+    Result := FRenderer.NrSlices
   else
     Result := 1;
 end;
@@ -206,18 +272,6 @@ begin
     Result := 1;
 end;
 
-///////////////////////////////////////////////////////////////////////////////
-procedure TRenderThread.Setcompatibility(const Value: Integer);
-begin
-  Fcompatibility := Value;
-end;
-
-///////////////////////////////////////////////////////////////////////////////
-procedure TRenderThread.SetMaxMem(const Value: int64);
-begin
-  FMaxMem := Value;
-end;
-
 //////////////////////////////////////////////////////////////////////////////
 function TRenderThread.GetRenderer: TBaseRenderer;
 begin
@@ -226,9 +280,10 @@ begin
 end;
 
 ///////////////////////////////////////////////////////////////////////////////
-procedure TRenderThread.SetNrThreads(const Value: Integer);
+procedure TRenderThread.SetBitsPerSample(const bits: Integer);
 begin
-  FNrThreads := Value;
+  if FRenderer = nil then FBitsPerSample := bits
+  else assert(false);
 end;
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -239,4 +294,10 @@ begin
 end;
 
 ///////////////////////////////////////////////////////////////////////////////
+procedure TRenderThread.GetBucketStats(var Stats: TBucketStats);
+begin
+  if assigned(FRenderer) then
+    FRenderer.GetBucketStats(Stats);
+end;
+
 end.

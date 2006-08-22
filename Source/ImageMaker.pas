@@ -3,7 +3,12 @@ unit ImageMaker;
 interface
 
 uses
-  Windows, Graphics, ControlPoint, Render;
+  Windows, Graphics, ControlPoint, RenderTypes;
+
+type TPalette = record
+    logpal : TLogPalette;
+    colors: array[0..255] of TPaletteEntry;
+  end;
 
 type
   TImageMaker = class
@@ -14,14 +19,27 @@ type
 
     FBitmap: TBitmap;
     FAlphaBitmap: TBitmap;
+    AlphaPalette: TPalette;
     FTransparentImage: TBitmap;
-    Fcp: Tcontrolpoint;
 
+    FCP: TControlPoint;
+
+    FBucketHeight: integer;
     FBucketWidth: integer;
-    FBuckets: TBucketArray;
+
+    FBuckets64: TBucket64Array;
+    FBuckets48: TBucket48Array;
+    FBuckets32: TBucket32Array;
+    FBuckets32f: TBucket32fArray;
+
     FOnProgress: TOnProgress;
 
-    MaxA: int64; // for reuse in following slices
+    FGetBucket: function(x, y: integer): TBucket64 of object;
+    function GetBucket64(x, y: integer): TBucket64;
+    function GetBucket48(x, y: integer): TBucket64;
+    function GetBucket32(x, y: integer): TBucket64;
+    function GetBucket32f(x, y: integer): TBucket64;
+    function SafeGetBucket(x, y: integer): TBucket64;
 
     procedure CreateFilter;
     procedure NormalizeFilter;
@@ -31,27 +49,26 @@ type
 
     function GetTransparentImage: TBitmap;
 
-    procedure CreateImage_MB(YOffset: integer = 0);
-    procedure CreateImage_Flame3(YOffset: integer = 0);
-
   public
+    constructor Create;
     destructor Destroy; override;
 
     function GetImage: TBitmap;
 
     procedure SetCP(CP: TControlPoint);
     procedure Init;
-    procedure SetBucketData(const Buckets: TBucketArray; const BucketWidth: integer);
+    procedure SetBucketData(const Buckets: pointer; BucketWidth, BucketHeight: integer; bits: integer);
 
     function GetFilterSize: Integer;
 
     procedure CreateImage(YOffset: integer = 0);
-    procedure SaveImage(const FileName: String);
+    procedure SaveImage(FileName: String);
+
+    procedure GetBucketStats(var Stats: TBucketStats);
 
     property OnProgress: TOnProgress
         read FOnProgress
        write SetOnProgress;
-    property MaxCount: int64 read MaxA;
   end;
 
 implementation
@@ -74,6 +91,21 @@ type
 //  TLongintArray = array[0..0] of Longint;
   PRGBArray = ^TRGBArray;
   TRGBArray = array[0..0] of TRGB;
+
+///////////////////////////////////////////////////////////////////////////////
+constructor TImageMaker.Create;
+var
+  i: integer;
+begin
+  AlphaPalette.logpal.palVersion := $300;
+  AlphaPalette.logpal.palNumEntries := 256;
+  for i := 0 to 255 do
+    with AlphaPalette.logpal.palPalEntry[i] do begin
+      peRed := i;
+      peGreen := i;
+      peBlue := i;
+    end;
+end;
 
 ///////////////////////////////////////////////////////////////////////////////
 destructor TImageMaker.Destroy;
@@ -177,10 +209,23 @@ begin
 end;
 
 ///////////////////////////////////////////////////////////////////////////////
-procedure TImageMaker.SetBucketData(const Buckets: TBucketArray; const BucketWidth: integer);
+procedure TImageMaker.SetBucketData(const Buckets: pointer; BucketWidth, BucketHeight: integer; bits: integer);
 begin
-  FBuckets := Buckets;
+  FBuckets64 := TBucket64Array(Buckets);
+  FBuckets48 := TBucket48Array(Buckets);
+  FBuckets32f := TBucket32fArray(Buckets);
+  FBuckets32 := TBucket32Array(Buckets);
+
   FBucketWidth := BucketWidth;
+  FBucketHeight := BucketHeight;
+
+  case bits of
+    BITS_32:  FGetBucket := GetBucket32;
+    BITS_32f: FGetBucket := GetBucket32f;
+    BITS_48:  FGetBucket := GetBucket48;
+    BITS_64:  FGetBucket := GetBucket64;
+    else assert(false);
+  end;
 end;
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -197,25 +242,13 @@ end;
 
 ///////////////////////////////////////////////////////////////////////////////
 procedure TImageMaker.CreateImage(YOffset: integer);
-begin
-  Case PNGTransparency of
-  0,1:
-    CreateImage_Flame3(YOffset);
-  2:
-    CreateImage_MB(YOffset);
-  else
-    Exception.CreateFmt('Unexpected value of PNGTransparency [%d]', [PNGTransparency]);
-  end;
-end;
-
-///////////////////////////////////////////////////////////////////////////////
-procedure TImageMaker.CreateImage_Flame3(YOffset: integer);
 var
   gamma: double;
   i, j: integer;
   alpha: double;
-  ai, ri, gi, bi: Integer;
-  bgtot: TRGB;
+  ri, gi, bi: Integer;
+  ai, ia: integer;
+  bgtot, zero_BG: TRGB;
   ls: double;
   ii, jj: integer;
   fp: array[0..3] of double;
@@ -223,14 +256,19 @@ var
   AlphaRow: PbyteArray;
   vib, notvib: Integer;
   bgi: array[0..2] of Integer;
-  bucketpos: Integer;
+//  bucketpos: Integer;
   filterValue: double;
-  filterpos: Integer;
+//  filterpos: Integer;
   lsa: array[0..1024] of double;
-  sample_density: double;
+  sample_density: extended;
   gutter_width: integer;
   k1, k2: double;
   area: double;
+
+  GetBucket: function(x, y: integer): TBucket64 of object;
+  bucket: TBucket64;
+  bx, by: integer;
+  label zero_alpha;
 begin
   if fcp.gamma = 0 then
     gamma := fcp.gamma
@@ -245,181 +283,21 @@ begin
   bgtot.red := bgi[0];
   bgtot.green := bgi[1];
   bgtot.blue := bgi[2];
+  zero_BG.red := 0;
+  zero_BG.green := 0;
+  zero_BG.blue := 0;
 
   gutter_width := FBucketwidth - FOversample * fcp.Width;
 //  gutter_width := 2 * ((25 - Foversample) div 2);
-
-  FBitmap.PixelFormat := pf24bit;
-
-  sample_density := fcp.sample_density * power(2, fcp.zoom) * power(2, fcp.zoom);
-  k1 := (fcp.Contrast * BRIGHT_ADJUST * fcp.brightness * 268 * PREFILTER_WHITE) / 256.0;
-  area := FBitmap.Width * FBitmap.Height / (fcp.ppux * fcp.ppuy);
-  k2 := (FOversample * FOversample) / (fcp.Contrast * area * fcp.White_level * sample_density);
-
-  lsa[0] := 0;
-  for i := 1 to 1024 do begin
-    lsa[i] := (k1 * log10(1 + fcp.White_level * i * k2)) / (fcp.White_level * i);
-  end;
-
-  ls := 0;
-  ai := 0;
-  bucketpos := 0;
-  for i := 0 to fcp.Height - 1 do begin
-//    if FStop then
-//      Break;
-
-    Progress(i / fcp.Height);
-    AlphaRow := PByteArray(FAlphaBitmap.scanline[YOffset + i]);
-    Row := PRGBArray(FBitmap.scanline[YOffset + i]);
-    for j := 0 to fcp.Width - 1 do begin
-      if FFilterSize > 1 then begin
-        fp[0] := 0;
-        fp[1] := 0;
-        fp[2] := 0;
-        fp[3] := 0;
-
-        for ii := 0 to FFilterSize - 1 do begin
-          for jj := 0 to FFilterSize - 1 do begin
-            filterValue := FFilter[ii, jj];
-            filterpos := bucketpos + ii * FBucketWidth + jj;
-
-            ls := lsa[Min(1023, FBuckets[filterpos].Count)];
-
-            fp[0] := fp[0] + filterValue * ls * FBuckets[filterpos].Red;
-            fp[1] := fp[1] + filterValue * ls * FBuckets[filterpos].Green;
-            fp[2] := fp[2] + filterValue * ls * FBuckets[filterpos].Blue;
-            fp[3] := fp[3] + filterValue * ls * FBuckets[filterpos].Count;
-          end;
-        end;
-
-        fp[0] := fp[0] / PREFILTER_WHITE;
-        fp[1] := fp[1] / PREFILTER_WHITE;
-        fp[2] := fp[2] / PREFILTER_WHITE;
-        fp[3] := fcp.white_level * fp[3] / PREFILTER_WHITE;
-      end else begin
-        ls := lsa[Min(1023, FBuckets[bucketpos].count)] / PREFILTER_WHITE;
-
-        fp[0] := ls * FBuckets[bucketpos].Red;
-        fp[1] := ls * FBuckets[bucketpos].Green;
-        fp[2] := ls * FBuckets[bucketpos].Blue;
-        fp[3] := ls * FBuckets[bucketpos].Count * fcp.white_level;
-      end;
-
-      Inc(bucketpos, FOversample);
-
-      if (fp[3] > 0.0) then begin
-        alpha := power(fp[3], gamma);
-        ls := vib * alpha / fp[3];
-        ai := round(alpha * 256);
-        if (ai < 0) then
-          ai := 0
-        else if (ai > 255) then
-          ai := 255;
-        ai := 255 - ai;
-      end else begin
-        // no intensity so simply set the BG;
-        Row[j] := bgtot;
-        AlphaRow[j] := 0;
-        continue;
-      end;
-
-      if (notvib > 0) then
-        ri := Round(ls * fp[0] + notvib * power(fp[0], gamma))
-      else
-        ri := Round(ls * fp[0]);
-      ri := ri + (ai * bgi[0]) shr 8;
-      if (ri < 0) then
-        ri := 0
-      else if (ri > 255) then
-        ri := 255;
-
-      if (notvib > 0) then
-        gi := Round(ls * fp[1] + notvib * power(fp[1], gamma))
-      else
-        gi := Round(ls * fp[1]);
-      gi := gi + (ai * bgi[1]) shr 8;
-      if (gi < 0) then
-        gi := 0
-      else if (gi > 255) then
-        gi := 255;
-
-      if (notvib > 0) then
-        bi := Round(ls * fp[2] + notvib * power(fp[2], gamma))
-      else
-        bi := Round(ls * fp[2]);
-      bi := bi + (ai * bgi[2]) shr 8;
-      if (bi < 0) then
-        bi := 0
-      else if (bi > 255) then
-        bi := 255;
-
-      Row[j].red := ri;
-      Row[j].green := gi;
-      Row[j].blue := bi;
-
-      AlphaRow[j] := 255 - ai;
-    end;
-
-    Inc(bucketpos, gutter_width);
-    Inc(bucketpos, (FOversample - 1) * FBucketWidth);
-  end;
-
-  FBitmap.PixelFormat := pf24bit;
-
-  Progress(1);
-end;
-
-///////////////////////////////////////////////////////////////////////////////
-// michael baranov transparancy code from flamesong
-procedure TImageMaker.CreateImage_MB(YOffset: integer);
-var
-  gamma: double;
-  i, j: integer;
-  alpha: double;
-  ai, ri, gi, bi: Integer;
-  bgtot: TRGB;
-  ls: double;
-  ii, jj: integer;
-  fp: array[0..3] of double;
-  Row: PRGBArray;
-  AlphaRow: PbyteArray;
-  vib, notvib: Integer;
-  bgi: array[0..2] of Integer;
-  bucketpos: Integer;
-  filterValue: double;
-  filterpos: Integer;
-  lsa: array[0..1024] of double;
-  sample_density: double;
-  gutter_width: integer;
-  k1, k2: double;
-  area: double;
-  ACount: double;
-  RCount: double;
-  GCount: double;
-  BCount: double;
-  offsetLow: double;
-  offsetHigh: double;
-  densLow: double;
-  densHigh: double;
-  divisor: double;
-begin
-  if fcp.gamma = 0 then
-    gamma := fcp.gamma
+  if(FFilterSize <= gutter_width div 2) then // filter too big when 'post-processing' ?
+    GetBucket := FGetBucket
   else
-    gamma := 1 / (2* fcp.gamma);
-  vib := round(fcp.vibrancy * 256.0);
-  notvib := 256 - vib;
+    GetBucket := SafeGetBucket;
 
-  bgi[0] := round(fcp.background[0]);
-  bgi[1] := round(fcp.background[1]);
-  bgi[2] := round(fcp.background[2]);
-  bgtot.red := bgi[0];
-  bgtot.green := bgi[1];
-  bgtot.blue := bgi[2];
+  FBitmap.PixelFormat := pf24bit;
 
-  gutter_width := FBucketwidth - FOversample * fcp.Width;
-
-  sample_density := fcp.sample_density * power(2, fcp.zoom) * power(2, fcp.zoom);
+  sample_density := fcp.actual_density * sqr( power(2, fcp.zoom) );
+  if sample_density = 0 then sample_density := 0.001;
   k1 := (fcp.Contrast * BRIGHT_ADJUST * fcp.brightness * 268 * PREFILTER_WHITE) / 256.0;
   area := FBitmap.Width * FBitmap.Height / (fcp.ppux * fcp.ppuy);
   k2 := (FOversample * FOversample) / (fcp.Contrast * area * fcp.White_level * sample_density);
@@ -429,34 +307,14 @@ begin
     lsa[i] := (k1 * log10(1 + fcp.White_level * i * k2)) / (fcp.White_level * i);
   end;
 
-  // only do this for the first slice
-  // TODO: should be nicer always using a image wide value 
-  if YOffset = 0 then begin
-    MaxA := 0;
-    bucketpos := 0;
-    for i := 0 to fcp.Height - 1 do begin
-      for j := 0 to fcp.Width - 1 do begin
-        MaxA := Max(MaxA, FBuckets[bucketpos].Count);
-        Inc(bucketpos, FOversample);
-      end;
-      Inc(bucketpos, gutter_width);
-      Inc(bucketpos, (FOversample - 1) * FBucketWidth);
-    end;
-  end;
-
-  offsetLow := 0;
-  offsetHigh := 0.02;
-  densLow := MaxA * offsetLow;
-  densHigh := MaxA * offsetHigh;
-  divisor := power(MaxA * (1 - offsethigh), Gamma);
-
   ls := 0;
   ai := 0;
-  bucketpos := 0;
+  //bucketpos := 0;
+  by := 0;
   for i := 0 to fcp.Height - 1 do begin
 //    if FStop then
 //      Break;
-
+    bx := 0;
     Progress(i / fcp.Height);
     AlphaRow := PByteArray(FAlphaBitmap.scanline[YOffset + i]);
     Row := PRGBArray(FBitmap.scanline[YOffset + i]);
@@ -466,23 +324,18 @@ begin
         fp[1] := 0;
         fp[2] := 0;
         fp[3] := 0;
-        ACount := 0;
 
         for ii := 0 to FFilterSize - 1 do begin
           for jj := 0 to FFilterSize - 1 do begin
             filterValue := FFilter[ii, jj];
-            filterpos := bucketpos + ii * FBucketWidth + jj;
 
-            ls := lsa[Min(1023, FBuckets[filterpos].Count)];
+            bucket := GetBucket(bx + jj, by + ii);
+            ls := lsa[Min(1023, bucket.Count)];
 
-            fp[0] := fp[0] + filterValue * ls * FBuckets[filterpos].Red;
-            fp[1] := fp[1] + filterValue * ls * FBuckets[filterpos].Green;
-            fp[2] := fp[2] + filterValue * ls * FBuckets[filterpos].Blue;
-            fp[3] := fp[3] + filterValue * ls * FBuckets[filterpos].Count;
-            ACount := ACount + filterValue * FBuckets[filterpos].Count;
-//            RCount := RCount + filterValue * FBuckets[bucketpos].Red;
-//            GCount := GCount + filterValue * FBuckets[bucketpos].Green;
-//            BCount := BCount + filterValue * FBuckets[bucketpos].Blue;
+            fp[0] := fp[0] + filterValue * ls * bucket.Red;
+            fp[1] := fp[1] + filterValue * ls * bucket.Green;
+            fp[2] := fp[2] + filterValue * ls * bucket.Blue;
+            fp[3] := fp[3] + filterValue * ls * bucket.Count;
           end;
         end;
 
@@ -491,119 +344,136 @@ begin
         fp[2] := fp[2] / PREFILTER_WHITE;
         fp[3] := fcp.white_level * fp[3] / PREFILTER_WHITE;
       end else begin
-        ls := lsa[Min(1023, FBuckets[bucketpos].count)] / PREFILTER_WHITE;
+        bucket := GetBucket(bx, by);
+        ls := lsa[Min(1023, bucket.count)] / PREFILTER_WHITE;
 
-        fp[0] := ls * FBuckets[bucketpos].Red;
-        fp[1] := ls * FBuckets[bucketpos].Green;
-        fp[2] := ls * FBuckets[bucketpos].Blue;
-        fp[3] := ls * FBuckets[bucketpos].Count * fcp.white_level;
-        ACount := FBuckets[bucketpos].Count;
-        RCount := FBuckets[bucketpos].Red;
-        GCount := FBuckets[bucketpos].Green;
-        BCount := FBuckets[bucketpos].Blue;
+        fp[0] := ls * bucket.Red;
+        fp[1] := ls * bucket.Green;
+        fp[2] := ls * bucket.Blue;
+        fp[3] := ls * bucket.Count * fcp.white_level;
       end;
 
-      Inc(bucketpos, FOversample);
+      Inc(bx, FOversample);
 
-      if (fp[3] > 0.0) then begin
-        if(divisor > 1E-12) then
-          alpha := power(ACount - densLow, Gamma) / divisor
-        else
-          alpha := 1;
+      if fcp.Transparency then begin // -------------------------- Transparency
+        if (fp[3] > 0.0) then begin
+          alpha := power(fp[3], gamma);
+          ls := vib * alpha / fp[3];
+          ai := round(alpha * 256);
+          if (ai <= 0) then goto zero_alpha // ignore all if alpha = 0
+          else if (ai > 255) then ai := 255;
+          //ia := 255 - ai;
+        end
+        else begin
+zero_alpha:
+          Row[j] := zero_BG;
+          AlphaRow[j] := 0;
+          continue;
+        end;
 
-//        ls := vib * alpha;
-        ls := vib * power(fp[3], gamma) / fp[3];
-        ai := round(alpha * 256);
-        if (ai < 0) then
-          ai := 0
-        else if (ai > 255) then
-          ai := 255;
-        ai := 255 - ai;
-      end else begin
-        // no intensity so simply set the BG;
-        Row[j] := bgtot;
-        AlphaRow[j] := 0;
-        continue;
-      end;
+        if (notvib > 0) then begin
+          ri := Round(ls * fp[0] + notvib * power(fp[0], gamma));
+          gi := Round(ls * fp[1] + notvib * power(fp[1], gamma));
+          bi := Round(ls * fp[2] + notvib * power(fp[2], gamma));
+        end
+        else begin
+          ri := Round(ls * fp[0]);
+          gi := Round(ls * fp[1]);
+          bi := Round(ls * fp[2]);
+        end;
 
-      if (notvib > 0) then
-        ri := Round(ls * fp[0] + notvib * power(fp[0], gamma))
-      else
-        ri := Round(ls * fp[0]);
-      ri := ri + (ai * bgi[0]) shr 8;
-      if (ri < 0) then
-        ri := 0
-      else if (ri > 255) then
-        ri := 255;
+        // ignoring BG color in transparent renders...
 
-      if (notvib > 0) then
-        gi := Round(ls * fp[1] + notvib * power(fp[1], gamma))
-      else
-        gi := Round(ls * fp[1]);
-      gi := gi + (ai * bgi[1]) shr 8;
-      if (gi < 0) then
-        gi := 0
-      else if (gi > 255) then
-        gi := 255;
+        ri := (ri * 255) div ai; // ai > 0 !
+        if (ri < 0) then ri := 0
+        else if (ri > 255) then ri := 255;
 
-      if (notvib > 0) then
-        bi := Round(ls * fp[2] + notvib * power(fp[2], gamma))
-      else
-        bi := Round(ls * fp[2]);
-      bi := bi + (ai * bgi[2]) shr 8;
-      if (bi < 0) then
-        bi := 0
-      else if (bi > 255) then
-        bi := 255;
-(*
+        gi := (gi * 255) div ai;
+        if (gi < 0) then gi := 0
+        else if (gi > 255) then gi := 255;
 
-      ri := Round(RCount/ACount) + (ai * bgi[0]) shr 8;
-      if (ri < 0) then
-        ri := 0
-      else if (ri > 255) then
-        ri := 255;
+        bi := (bi * 255) div ai;
+        if (bi < 0) then bi := 0
+        else if (bi > 255) then bi := 255;
 
-      gi := Round(GCount/ACount) + (ai * bgi[1]) shr 8;
-      if (gi < 0) then
-        gi := 0
-      else if (gi > 255) then
-        gi := 255;
+        Row[j].red := ri;
+        Row[j].green := gi;
+        Row[j].blue := bi;
+        AlphaRow[j] := ai;
+      end
+      else begin // ------------------------------------------- No transparency
+        if (fp[3] > 0.0) then begin
+          alpha := power(fp[3], gamma);
+          ls := vib * alpha / fp[3];
+          ai := round(alpha * 256);
+          if (ai < 0) then ai := 0
+          else if (ai > 255) then ai := 255;
+          ia := 255 - ai;
+        end
+        else begin
+          // no intensity so simply set the BG;
+          Row[j] := bgtot;
+          continue;
+        end;
 
-      bi := Round(BCount/ACount) + (ai * bgi[2]) shr 8;
-      if (bi < 0) then
-        bi := 0
-      else if (bi > 255) then
-        bi := 255;
-*)
-      Row[j].red := ri;
-      Row[j].green := gi;
-      Row[j].blue := bi;
+        if (notvib > 0) then begin
+          ri := Round(ls * fp[0] + notvib * power(fp[0], gamma));
+          gi := Round(ls * fp[1] + notvib * power(fp[1], gamma));
+          bi := Round(ls * fp[2] + notvib * power(fp[2], gamma));
+        end
+        else begin
+          ri := Round(ls * fp[0]);
+          gi := Round(ls * fp[1]);
+          bi := Round(ls * fp[2]);
+        end;
 
-      AlphaRow[j] := 255 - ai;
+        ri := ri + (ia * bgi[0]) shr 8;
+        if (ri < 0) then ri := 0
+        else if (ri > 255) then ri := 255;
+
+        gi := gi + (ia * bgi[1]) shr 8;
+        if (gi < 0) then gi := 0
+        else if (gi > 255) then gi := 255;
+
+        bi := bi + (ia * bgi[2]) shr 8;
+        if (bi < 0) then bi := 0
+        else if (bi > 255) then bi := 255;
+
+        Row[j].red := ri;
+        Row[j].green := gi;
+        Row[j].blue := bi;
+
+        AlphaRow[j] := ai; //?
+      end
     end;
 
-    Inc(bucketpos, gutter_width);
-    Inc(bucketpos, (FOversample - 1) * FBucketWidth);
+    //Inc(bucketpos, gutter_width);
+    //Inc(bucketpos, (FOversample - 1) * FBucketWidth);
+    Inc(by, FOversample);
   end;
+
+  FBitmap.PixelFormat := pf24bit;
 
   Progress(1);
 end;
 
 ///////////////////////////////////////////////////////////////////////////////
-procedure TImageMaker.SaveImage(const FileName: String);
+procedure TImageMaker.SaveImage(FileName: String);
 var
   i,row: integer;
   PngObject: TPngObject;
   rowbm, rowpng: PByteArray;
   JPEGImage: TJPEGImage;
+  PNGerror: boolean;
+  label BMPhack;
 begin
   if UpperCase(ExtractFileExt(FileName)) = '.PNG' then begin
+    pngError := false;
+
     PngObject := TPngObject.Create;
-    PngObject.Assign(FBitmap);
-    Case PNGTransparency of
-    0:
-      ; // do nothing
-    1,2:
+    try
+      PngObject.Assign(FBitmap);
+      if fcp.Transparency then // PNGTransparency <> 0
       begin
         PngObject.CreateAlpha;
         for i:= 0 to FAlphaBitmap.Height - 1 do begin
@@ -614,12 +484,19 @@ begin
           end;
         end;
       end;
-    else
-      Exception.CreateFmt('Unexpected value of PNGTransparency [%d]', [PNGTransparency]);
+      //else Exception.CreateFmt('Unexpected value of PNGTransparency [%d]', [PNGTransparency]);
+
+      PngObject.SaveToFile(FileName);
+    except
+      pngError := true;
+    end;
+    PngObject.Free;
+
+    if pngError then begin
+      FileName := ChangeFileExt(FileName, '.bmp');
+      goto BMPHack;
     end;
 
-    PngObject.SaveToFile(FileName);
-    PngObject.Free;
   end else if UpperCase(ExtractFileExt(FileName)) = '.JPG' then begin
     JPEGImage := TJPEGImage.Create;
     JPEGImage.Assign(FBitmap);
@@ -636,9 +513,14 @@ begin
 //      Free;
 //    end;
   end else begin // bitmap
+BMPHack:
     FBitmap.SaveToFile(FileName);
+    if fcp.Transparency then begin
+      FAlphaBitmap.Palette := CreatePalette(AlphaPalette.logpal);
+      FileName := ChangeFileExt(FileName, '_alpha.bmp');
+      FAlphaBitmap.SaveToFile(FileName);
+    end;
   end;
-
 end;
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -656,41 +538,115 @@ var
   PngObject: TPngObject;
   rowbm, rowpng: PByteArray;
 begin
-  if assigned(FTransparentImage) then
-    FTransparentImage.Free;
+  if assigned(FTransparentImage) then FTransparentImage.Free;
 
   FTransparentImage := TBitmap.Create;
 
   FTransparentImage.Width := Fcp.Width;
   FTransparentImage.Height := Fcp.Height;
 
-  FTransparentImage.Canvas.Brush.Color := ClSilver;
-  FTransparentImage.Canvas.FillRect(Rect(0,0,Fcp.Width, Fcp.Height));
+  FTransparentImage.Canvas.Brush.Color := $CCCCCC;
+  FTransparentImage.Canvas.FillRect(Rect(0, 0, Fcp.Width, Fcp.Height));
 
-  FTransparentImage.Canvas.Brush.Color := ClWhite;
-  for x := 0 to ((Fcp.Width - 1) div 20) do begin
-    for y := 0 to ((Fcp.Height - 1) div 20) do begin
+  FTransparentImage.Canvas.Brush.Color := $FFFFFF;
+  for x := 0 to ((Fcp.Width - 1) div 8) do begin
+    for y := 0 to ((Fcp.Height - 1) div 8) do begin
       if odd(x + y) then
-        FTransparentImage.Canvas.FillRect(Rect(x * 20, y * 20, x * 20 + 20, y * 20 + 20));
+        FTransparentImage.Canvas.FillRect(Rect(x * 8, y * 8, x * 8 + 8, y * 8 + 8));
     end;
   end;
 
   PngObject := TPngObject.Create;
   PngObject.Assign(FBitmap);
-  PngObject.CreateAlpha;
-  for i:= 0 to FAlphaBitmap.Height - 1 do begin
-    rowbm := PByteArray(FAlphaBitmap.scanline[i]);
-    rowpng := PByteArray(PngObject.AlphaScanline[i]);
-    for row := 0 to FAlphaBitmap.Width -1 do begin
-      rowpng[row] := rowbm[row];
+
+  if fcp.Transparency then begin
+    PngObject.CreateAlpha;
+    for i:= 0 to FAlphaBitmap.Height - 1 do begin
+      rowbm := PByteArray(FAlphaBitmap.scanline[i]);
+      rowpng := PByteArray(PngObject.AlphaScanline[i]);
+      for row := 0 to FAlphaBitmap.Width - 1 do begin
+        rowpng[row] := rowbm[row];
+      end;
     end;
   end;
-
-  PngObject.Draw(FTransparentImage.Canvas, Rect(0,0,Fcp.Width, Fcp.Height));
+  
+  PngObject.Draw(FTransparentImage.Canvas, FTransparentImage.Canvas.ClipRect);
   PngObject.Free;
 
   Result := FTransparentImage;
 end;
 
 ///////////////////////////////////////////////////////////////////////////////
+
+function TImageMaker.GetBucket64(x, y: integer): TBucket64;
+begin
+  Result := FBuckets64[y][x];
+end;
+
+function TImageMaker.GetBucket32(x, y: integer): TBucket64;
+begin
+  with FBuckets32[y][x] do begin
+    Result.Red   := Red;
+    Result.Green := Green;
+    Result.Blue  := Blue;
+    Result.Count := Count;
+  end;
+end;
+
+function TImageMaker.GetBucket32f(x, y: integer): TBucket64;
+begin
+  with FBuckets32f[y][x] do begin
+    Result.Red   := round(Red);
+    Result.Green := round(Green);
+    Result.Blue  := round(Blue);
+    Result.Count := round(Count);
+  end;
+end;
+
+function TImageMaker.GetBucket48(x, y: integer): TBucket64;
+begin
+  with FBuckets48[y][x] do begin
+    Result.Red   := int64(rl) or ( int64(rh) shl 32 );
+    Result.Green := int64(gl) or ( int64(gh) shl 32 );
+    Result.Blue  := int64(bl) or ( int64(bh) shl 32 );
+    Result.Count := int64(cl) or ( int64(ch) shl 32 );
+  end;
+end;
+
+function TImageMaker.SafeGetBucket(x, y: integer): TBucket64;
+begin
+  if x < 0 then x := 0
+  else if x >= FBucketWidth then x := FBucketWidth-1;
+  if y < 0 then y := 0
+  else if y >= FBucketHeight then y := FBucketHeight-1;
+  Result := FGetBucket(x, y);
+end;
+
+///////////////////////////////////////////////////////////////////////////////
+
+procedure TImageMaker.GetBucketStats(var Stats: TBucketStats);
+var
+  bucketpos: integer;
+  x, y: integer;
+  b: TBucket64;
+begin
+  with Stats do begin
+    MaxR := 0;
+    MaxG := 0;
+    MaxB := 0;
+    MaxA := 0;
+    TotalA := 0;
+
+    for y := 0 to FBucketHeight - 1 do
+      for x := 0 to FBucketWidth - 1 do begin
+        b := FGetBucket(x, y);
+        MaxR := max(MaxR, b.Red);
+        MaxG := max(MaxG, b.Green);
+        MaxB := max(MaxB, b.Blue);
+        MaxA := max(MaxA, b.Count);
+        Inc(TotalA, b.Count);
+      end;
+  end;
+end;
+
 end.

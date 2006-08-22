@@ -1,6 +1,6 @@
 object frmPostProcess: TfrmPostProcess
-  Left = 61
-  Top = 77
+  Left = 76
+  Top = 103
   Width = 640
   Height = 534
   Caption = 'Post Render'

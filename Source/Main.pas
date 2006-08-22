@@ -37,7 +37,7 @@ const
   RS_XO = 2;
   RS_VO = 3;
 
-  AppVersionString = 'Apophysis 2.04 beta 1.5';
+  AppVersionString = 'Apophysis 2.05 pre-release 11';
 
 type
   TMouseMoveState = (msUsual, msZoomWindow, msZoomOutWindow, msZoomWindowMove, msZoomOutWindowMove, msDrag, msDragMove, msRotate, msRotateMove);
@@ -1729,13 +1729,16 @@ begin
     MainCp.sample_density := defSampleDensity;
     Maincp.spatial_oversample := defOversample;
     Maincp.spatial_filter_radius := defFilterRadius;
+
+    MainCP.Transparency := (PNGTransparency <> 0) and ShowTransparency;
+
     StartTime := Now;
     Remainder := 1;
     try
       Renderer := TRenderThread.Create;
       Renderer.TargetHandle := MainForm.Handle;
       Renderer.OnProgress := OnProgress;
-      Renderer.Compatibility := Compatibility;
+//      Renderer.Compatibility := Compatibility;
       Renderer.SetCP(Maincp);
       Renderer.Resume;
     except
@@ -1744,8 +1747,6 @@ begin
 end;
 
 { ************************** IFS and triangle stuff ************************* }
-
-                   { ---Z--- moved to ControlPoint ---Z--- }
 
 function FlameToString(Title: string): string;
 { Creates a string containing the formated flame parameter set }
@@ -2032,7 +2033,9 @@ var
   rept, cby, smap, sol: string;
   uprcenter: array[0..1] of double; // camera center
   Backcolor: longint;
+  xf_str: string;
 begin
+  cp1.Prepare;
   uprcenter[0] := cp1.Center[0];
   uprcenter[1] := cp1.Center[1];
   cp1.Width := UPRWidth;
@@ -2057,7 +2060,7 @@ begin
     Strings.Add('  center=' + floatToStr(cp1.center[0]) + '/' + floatToStr(-cp1.center[1]) +
       ' magn=' + FloatToStr(scale));
     Strings.Add('formula:');
-    Strings.Add('  maxiter=100 filename="' + UPRFormulaFile + '" entry="' + UPRFormulaIdent + '"');
+    Strings.Add('  maxiter=1 filename="' + UPRFormulaFile + '" entry="' + UPRFormulaIdent + '"');
     Strings.Add('inside:');
     Strings.Add('  transfer=none');
     Strings.Add('outside:');
@@ -2073,7 +2076,7 @@ begin
     Strings.Add('  p_bk_color=' + IntToStr(Backcolor) + ' p_contrast=1' +
       ' p_brightness=' + FloatToStr(cp1.Brightness) + ' p_gamma=' + FloatToStr(cp1.Gamma));
     Strings.Add('  p_white_level=200 p_xforms=' + inttostr(Transforms));
-    for m := 0 to Transforms - 1 do
+    for m := 0 to Transforms do
     begin
       a := cp1.xform[m].c[0][0];
       c := cp1.xform[m].c[0][1];
@@ -2082,21 +2085,28 @@ begin
       e := cp1.xform[m].c[2][0];
       f := cp1.xform[m].c[2][1];
       p := cp1.xform[m].Density;
-      Strings.Add('  p_xf' + inttostr(m) + '_p=' + Format('%.6g ', [p]));
-      Strings.Add('  p_xf' + inttostr(m) + '_c=' + floatTostr(cp1.xform[m].color));
-      Strings.Add('  p_xf' + inttostr(m) + '_sym=' + floatTostr(cp1.xform[m].symmetry));
-      Strings.Add('  p_xf' + inttostr(m) + '_cfa=' + Format('%.6g ', [a]) +
-        'p_xf' + inttostr(m) + '_cfb=' + Format('%.6g ', [b]) +
-        'p_xf' + inttostr(m) + '_cfc=' + Format('%.6g ', [c]) +
-        'p_xf' + inttostr(m) + '_cfd=' + Format('%.6g ', [d]));
-      Strings.Add('  p_xf' + inttostr(m) + '_cfe=' + Format('%.6g ', [e]) +
-        ' p_xf' + inttostr(m) + '_cff=' + Format('%.6g ', [f]));
+      if m < Transforms then xf_str := 'p_xf' + inttostr(m)
+      else begin
+        if cp1.HasFinalXForm = false then break;
+        xf_str := 'p_finalxf';
+      end;
+      Strings.Add('  ' + xf_str + '_p=' + Format('%.6g ', [p]));
+      Strings.Add('  ' + xf_str + '_c=' + floatTostr(cp1.xform[m].color));
+      Strings.Add('  ' + xf_str + '_sym=' + floatTostr(cp1.xform[m].symmetry));
+      Strings.Add('  ' + xf_str + '_cfa=' + Format('%.6g ', [a]) +
+        xf_str + '_cfb=' + Format('%.6g ', [b]) +
+        xf_str + '_cfc=' + Format('%.6g ', [c]) +
+        xf_str + '_cfd=' + Format('%.6g ', [d]));
+      Strings.Add('  ' + xf_str + '_cfe=' + Format('%.6g ', [e]) +
+        ' ' + xf_str + '_cff=' + Format('%.6g ', [f]));
       for i := 0 to NRVAR-1 do
-        Strings.Add('  p_xf' + inttostr(m) + '_var_' + VarNames(i) + '=' +
-          floatToStr(cp1.xform[m].vars[i]));
-      for j:= 0 to GetNrVariableNames - 1 do begin
-        cp1.xform[m].GetVariable(GetVariableNameAt(j), v);
-        Strings.Add('  p_xf' + inttostr(m) + '_par_' + GetVariableNameAt(j) + '=' + floatToStr(v));
+        if cp1.xform[m].vars[i] <> 0 then begin
+          Strings.Add('  ' + xf_str + '_var_' + VarNames(i) + '=' +
+            floatToStr(cp1.xform[m].vars[i]));
+        for j:= 0 to GetNrVariableNames - 1 do begin
+          cp1.xform[m].GetVariable(GetVariableNameAt(j), v);
+          Strings.Add('  ' + xf_str + '_par_' + GetVariableNameAt(j) + '=' + floatToStr(v));
+        end;
       end;
     end;
     Strings.Add('gradient:');
@@ -3208,8 +3218,9 @@ begin
   begin
 
     if Assigned(RenderForm.Renderer) then RenderForm.Renderer.Terminate;
-    if Assigned(RenderForm.Renderer) then RenderForm.Renderer.WaitFor; ;
+    if Assigned(RenderForm.Renderer) then RenderForm.Renderer.WaitFor; // hmm #1
     RenderForm.ResetControls;
+    RenderForm.PageCtrl.TabIndex := 0;
 
     case renderFileFormat of
       1: Ext := '.bmp';
@@ -3227,7 +3238,7 @@ begin
     RenderForm.zoom := maincp.zoom;
     RenderForm.Center[0] := center[0];
     RenderForm.Center[1] := center[1];
-    if Assigned(RenderForm.Renderer) then RenderForm.Renderer.WaitFor;
+    if Assigned(RenderForm.Renderer) then RenderForm.Renderer.WaitFor; // hmm #2
   end;
   RenderForm.Show;
 end;
@@ -3608,7 +3619,7 @@ begin
                 'or use the internal renderer.');
   end;
 }
-  if not FileExists(HqiPath) then
+  if not FileExists(flam3Path) then
   begin
     Application.MessageBox('Renderer does not exist.', 'Apophysis', 16);
     exit
@@ -3686,10 +3697,7 @@ begin
       FileList.Add(ExtractShortPathName(hqiPath) + ' < ' + ExtractShortPathName(ChangeFileExt(ExportDialog.Filename, '.flame')));
       Path := ExtractShortPathName(ExtractFileDir(ExportDialog.Filename) + '\');
 }
-      // short path names are confusing (for both user AND system)
-      // (and they're quite ugly after all! :)
-
-      FileList.Add('"' + hqiPath + '" < "' + ChangeFileExt(ExportDialog.Filename, '.flame') + '"');
+      FileList.Add('"' + flam3Path + '" < "' + ChangeFileExt(ExportDialog.Filename, '.flame') + '"');
       Path := ExtractFilePath(ExtractFileDir(ExportDialog.Filename) + '\');
 
       FileList.SaveToFile(Path + 'render.bat');

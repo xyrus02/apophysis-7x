@@ -21,21 +21,31 @@ interface
 
 uses
   Windows, Messages, SysUtils, Classes, Graphics, Controls, Forms, Dialogs,
-  Menus, ControlPoint, RenderThread, ExtCtrls;
+  Menus, ExtCtrls, ControlPoint, RenderThread;
 
 type
   TFullscreenForm = class(TForm)
     Image: TImage;
+    Timelimiter: TTimer;
+    FullscreenPopup: TPopupMenu;
+    RenderStop: TMenuItem;
+    N1: TMenuItem;
+    Exit1: TMenuItem;
+    RenderMore: TMenuItem;
     procedure FormShow(Sender: TObject);
     procedure FormClose(Sender: TObject; var Action: TCloseAction);
     procedure FormCreate(Sender: TObject);
     procedure FormDestroy(Sender: TObject);
     procedure FormKeyPress(Sender: TObject; var Key: Char);
     procedure ImageDblClick(Sender: TObject);
+    procedure TimelimiterOnTimer(Sender: TObject);
+    procedure RenderStopClick(Sender: TObject);
+    procedure RenderMoreClick(Sender: TObject);
   private
     Remainder, StartTime, t: double;
     imgLeft, imgTop,
     imgWidth, imgHeight: integer;
+    Closing: boolean;
 
     Renderer: TRenderThread;
 
@@ -93,24 +103,34 @@ begin
   t := now;
   Remainder := 1;
 
-  if Assigned(Renderer) then begin
-    // Hmm... but how can it be assigned & running here, anyway? :-\
+  if Assigned(Renderer) then begin // hmm...
     Renderer.Terminate;
     Renderer.WaitFor;
 
-    Application.ProcessMessages; // HandleThreadTermination kinda should be called here...(?)
+    while Renderer <> nil do
+      Application.ProcessMessages; // HandleThreadTermination kinda should be called here...(?)
 
-    Renderer.Free;
-    Renderer := nil;
+//  Renderer.Free;
+//  Renderer := nil;
   end;
 
   assert(not assigned(renderer), 'Render thread is still running!?');
 
-  Renderer := TRenderThread.Create;
+  Renderer := TRenderThread.Create; // Hmm... Why do we use RenderThread here, anyway? :-\
   Renderer.TargetHandle := Handle;
   Renderer.OnProgress := OnProgress;
-  Renderer.Compatibility := Compatibility;
+  Renderer.NrThreads := NrTreads;
   Renderer.SetCP(cp);
+
+  if FullscreenTimeLimit > 0 then begin
+    TimeLimiter.Interval := FullscreenTimeLimit;
+    TimeLimiter.Enabled := FALSE;//true;
+  end;
+
+  Renderer.WaitForMore := true;
+  RenderStop.Enabled := true;
+  RenderMore.Enabled := false;
+
   Renderer.Resume;
 end;
 
@@ -126,26 +146,37 @@ begin
     Image.Picture.Graphic := bm;
 
 //    Canvas.StretchDraw(Rect(0, 0, ClientWidth, ClientHeight), bm);
-    Renderer.Free;
-    Renderer := nil;
+    //Renderer.Free;
+    //Renderer := nil;
     bm.Free;
   end;
+  RenderStop.Enabled := false;
+  RenderMore.Enabled := true;
+
+  TimeLimiter.Enabled := false;
 end;
 
 procedure TFullscreenForm.HandleThreadTermination(var Message: TMessage);
-//var
-//  bm: TBitmap;
+var
+  bm: TBitmap;
 begin
-  if Assigned(Renderer) then
-  begin
-//    bm := TBitmap.Create;
-//    bm.assign(Renderer.GetImage);
-//    Image.Picture.Graphic := bm;
-
-    Renderer.Free;
-    Renderer := nil;
-//    bm.Free;
+  if Assigned(Renderer) then begin
+(*
+    if not Closing then begin
+      bm := TBitmap.Create;
+      bm.assign(Renderer.GetImage);
+      Image.SetBounds(imgLeft, imgTop, imgWidth, imgHeight);
+      Image.Picture.Graphic := bm;
+      bm.Free;
+    end;
+*)
+    //Renderer.Free;
+    //Renderer := nil;
   end;
+  RenderStop.Enabled := false;
+  RenderMore.Enabled := false;
+
+  TimeLimiter.Enabled := false;
 end;
 
 procedure TFullscreenForm.OnProgress(prog: double);
@@ -192,8 +223,15 @@ begin
   if Image.Height < ClientHeight then
     Image.Top := (ClientHeight - Image.Height) div 2;
 
+  Closing := false;
+  TimeLimiter.Enabled := false;
+
+  RenderStop.Enabled := false;
+  RenderMore.Enabled := false;
+
   MainForm.mnuFullScreen.enabled := true;
   HideTaskbar;
+
   if calculate then
     DrawFlame;
 end;
@@ -201,7 +239,18 @@ end;
 procedure TFullscreenForm.FormClose(Sender: TObject;
   var Action: TCloseAction);
 begin
-  if Assigned(Renderer) then Renderer.Terminate;
+  Closing := true;
+  if Assigned(Renderer) then begin
+    if Renderer.Suspended then begin
+      Renderer.WaitForMore := false;
+      Renderer.Resume;
+    end;
+    Renderer.Terminate;
+    Renderer.WaitFor;
+
+    Renderer.Free;
+    Renderer := nil;
+  end;
   ShowTaskbar;
 end;
 
@@ -212,20 +261,46 @@ end;
 
 procedure TFullscreenForm.FormDestroy(Sender: TObject);
 begin
-  if assigned(Renderer) then Renderer.Terminate;
-  if assigned(Renderer) then Renderer.WaitFor;
-  if assigned(Renderer) then Renderer.Free;
+  if assigned(Renderer) then begin
+    Renderer.Terminate;
+    Renderer.WaitFor;
+    Renderer.Free;
+  end;
   cp.Free;
 end;
 
 procedure TFullscreenForm.FormKeyPress(Sender: TObject; var Key: Char);
 begin
-  close;
+  if key = ' ' then begin
+    if RenderStop.Enabled then RenderStop.Click
+    else if RenderMore.Enabled then RenderMore.Click;
+  end
+  else Close;
 end;
 
 procedure TFullscreenForm.ImageDblClick(Sender: TObject);
 begin
-  close;
+  Close;
+end;
+
+procedure TFullscreenForm.TimelimiterOnTimer(Sender: TObject);
+begin
+  //if assigned(Renderer) then Renderer.Break;
+  TimeLimiter.Enabled := false;
+end;
+
+procedure TFullscreenForm.RenderStopClick(Sender: TObject);
+begin
+  if assigned(Renderer) then Renderer.Break;
+end;
+
+procedure TFullscreenForm.RenderMoreClick(Sender: TObject);
+begin
+  if assigned(Renderer) and Renderer.Suspended then begin
+    Renderer.Resume;
+    RenderStop.Enabled := true;
+    RenderMore.Enabled := false;
+  end;
 end;
 
 end.

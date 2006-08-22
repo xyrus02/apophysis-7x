@@ -1,6 +1,6 @@
 object OptionsForm: TOptionsForm
-  Left = 540
-  Top = 274
+  Left = 675
+  Top = 365
   BorderIcons = [biSystemMenu, biMinimize, biMaximize, biHelp]
   BorderStyle = bsDialog
   Caption = 'Options'
@@ -126,7 +126,7 @@ object OptionsForm: TOptionsForm
       end
       object GroupBox15: TGroupBox
         Left = 136
-        Top = 96
+        Top = 158
         Width = 297
         Height = 75
         Caption = 'When render is finished'
@@ -228,6 +228,102 @@ object OptionsForm: TOptionsForm
           Height = 17
           Caption = 'Play sound'
           TabOrder = 1
+        end
+      end
+      object GroupBox18: TGroupBox
+        Left = 8
+        Top = 176
+        Width = 121
+        Height = 57
+        Caption = 'Internal buffer depth'
+        TabOrder = 6
+        object cbInternalBitsPerSample: TComboBox
+          Left = 16
+          Top = 20
+          Width = 89
+          Height = 21
+          Style = csDropDownList
+          ItemHeight = 13
+          TabOrder = 0
+          Items.Strings = (
+            '32-bit integer'
+            '32-bit float'
+            '48-bit integer'
+            '64-bit integer')
+        end
+      end
+      object GroupBox19: TGroupBox
+        Left = 136
+        Top = 56
+        Width = 201
+        Height = 97
+        Caption = 'Time limited previews'
+        TabOrder = 7
+        Visible = False
+        object Label45: TLabel
+          Left = 8
+          Top = 19
+          Width = 116
+          Height = 13
+          Caption = 'Fullscreen time limit (ms)'
+        end
+        object Label46: TLabel
+          Left = 8
+          Top = 43
+          Width = 106
+          Height = 13
+          Caption = 'Preview time limit (ms)'
+        end
+        object Label47: TLabel
+          Left = 8
+          Top = 67
+          Width = 116
+          Height = 13
+          Caption = 'Preview minimum quality'
+        end
+        object txtPreviewMinQ: TEdit
+          Left = 128
+          Top = 64
+          Width = 65
+          Height = 21
+          TabOrder = 0
+          Text = '0.2'
+        end
+        object cbPreviewTime: TComboBox
+          Left = 128
+          Top = 40
+          Width = 65
+          Height = 21
+          ItemHeight = 13
+          ItemIndex = 0
+          TabOrder = 1
+          Text = 'off'
+          Items.Strings = (
+            'off'
+            '25'
+            '50'
+            '100'
+            '200'
+            '500'
+            '1000')
+        end
+        object cbFullscrTime: TComboBox
+          Left = 128
+          Top = 16
+          Width = 65
+          Height = 21
+          ItemHeight = 13
+          TabOrder = 2
+          Text = 'off'
+          Items.Strings = (
+            'off'
+            '100'
+            '250'
+            '500'
+            '1000'
+            '2000'
+            '3000'
+            '5000')
         end
       end
     end
@@ -532,7 +628,7 @@ object OptionsForm: TOptionsForm
       end
       object chkShowTransparency: TCheckBox
         Left = 192
-        Top = 179
+        Top = 155
         Width = 129
         Height = 17
         Caption = 'Show Transparency'
@@ -542,13 +638,12 @@ object OptionsForm: TOptionsForm
         Left = 184
         Top = 104
         Width = 193
-        Height = 69
+        Height = 49
         Caption = 'PNG Transparency'
         ItemIndex = 0
         Items.Strings = (
-          'No transparency'
-          'Flam3-style'
-          'Flamesong-style')
+          'Disabled'
+          'Enabled')
         TabOrder = 3
       end
     end
@@ -618,11 +713,20 @@ object OptionsForm: TOptionsForm
           TabOrder = 3
         end
       end
+      object chkKeepBackground: TCheckBox
+        Left = 208
+        Top = 170
+        Width = 161
+        Height = 17
+        HelpContext = 1023
+        Caption = 'Keep background color'
+        TabOrder = 4
+      end
       object gpFlameTitlePrefix: TGroupBox
         Left = 208
         Top = 88
         Width = 193
-        Height = 97
+        Height = 81
         Caption = 'Random batch'
         TabOrder = 1
         object Label38: TLabel
@@ -824,15 +928,6 @@ object OptionsForm: TOptionsForm
           TabOrder = 4
           Thousands = False
         end
-      end
-      object chkKeepBackground: TCheckBox
-        Left = 216
-        Top = 160
-        Width = 137
-        Height = 22
-        HelpContext = 1023
-        Caption = 'Keep background color'
-        TabOrder = 4
       end
     end
     object VariationsPage: TTabSheet

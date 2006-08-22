@@ -90,10 +90,10 @@ begin
   FPy^ := FPy^ + r * sina;
 {$else}
 asm
-    mov     edx, [eax + FTy]
-    fld     qword ptr [edx]
-    fld     qword ptr [eax + cn]
     mov     edx, [eax + FTx]
+    fld     qword ptr [edx + 8]
+    fld     qword ptr [eax + cn]
+//    mov     edx, [eax + FTx]
     fld     qword ptr [edx]
     fld     st(2)
     fld     st(1)
@@ -136,9 +136,9 @@ asm
     fadd    qword ptr [edx]
     fstp    qword ptr [edx]
     fmulp
-    mov     edx, [ecx + FPy]
-    fadd    qword ptr [edx]
-    fstp    qword ptr [edx]
+//    mov     edx, [ecx + FPy]
+    fadd    qword ptr [edx + 8]
+    fstp    qword ptr [edx + 8]
     fwait
 {$endif}
 end;
@@ -156,9 +156,9 @@ begin
   FPy^ := FPy^ + r * sina;
 {$else}
 asm
-    mov     edx, [eax + FTy]
-    fld     qword ptr [edx]
     mov     edx, [eax + FTx]
+    fld     qword ptr [edx + 8]
+//    mov     edx, [eax + FTx]
     fld     qword ptr [edx]
     fld     st(1)
     fld     st(1)
@@ -192,9 +192,9 @@ asm
     fadd    qword ptr [edx]
     fstp    qword ptr [edx]
     fmulp
-    mov     edx, [ecx + FPy]
-    fadd    qword ptr [edx]
-    fstp    qword ptr [edx]
+//    mov     edx, [ecx + FPy]
+    fadd    qword ptr [edx + 8]
+    fstp    qword ptr [edx + 8]
     fwait
 {$endif}
 end;
@@ -212,9 +212,9 @@ begin
   FPy^ := FPy^ - r * sina;
 {$else}
 asm
-    mov     edx, [eax + FTy]
-    fld     qword ptr [edx]
     mov     edx, [eax + FTx]
+    fld     qword ptr [edx + 8]
+//    mov     edx, [eax + FTx]
     fld     qword ptr [edx]
     fld     st(1)
     fld     st(1)
@@ -248,9 +248,9 @@ asm
     fadd    qword ptr [edx]
     fstp    qword ptr [edx]
     fmulp
-    mov     edx, [ecx + FPy]
-    fsubr   qword ptr [edx]
-    fstp    qword ptr [edx]
+//    mov     edx, [ecx + FPy]
+    fsubr   qword ptr [edx + 8]
+    fstp    qword ptr [edx + 8]
     fwait
 {$endif}
 end;
@@ -262,19 +262,19 @@ begin
   FPy^ := FPy^ + vvar * FTy^;
 {$else}
 asm
-    mov     edx, [eax + FTy]
+    mov     edx, [eax + FTx] //[eax + FTy]
     fld     qword ptr [edx]
-    mov     edx, [eax + FTx]
-    fld     qword ptr [edx]
+//    mov     edx, [eax + FTx]
+    fld     qword ptr [edx + 8]
     fld     qword ptr [eax + vvar]
     fmul    st(2), st
     fmulp
-    mov     edx, [eax + FPx]
-    fadd    qword ptr [edx]
-    fstp    qword ptr [edx]
-    mov     edx, [eax + FPy]
-    fadd    qword ptr [edx]
-    fstp    qword ptr [edx]
+//    mov     edx, [eax + FPx]
+    fadd    qword ptr [edx + 16]
+    fstp    qword ptr [edx + 16]
+//    mov     edx, [eax + FPy]
+    fadd    qword ptr [edx + 24]
+    fstp    qword ptr [edx + 24]
     fwait
 {$endif}
 end;
@@ -290,10 +290,10 @@ begin
   FPy^ := FPy^ - r * FTy^;
 {$else}
 asm
-    mov     edx, [eax + FTy]
-    fld     qword ptr [edx]
     mov     edx, [eax + FTx]
-    fld     qword ptr [edx]
+    fld     qword ptr [edx + 8] // FTy
+//    mov     edx, [eax + FTx]
+    fld     qword ptr [edx]     // FTx
     fld     st(1)
     fmul    st, st
     fld     st(1)
@@ -302,12 +302,12 @@ asm
     fdivr   qword ptr [eax + vvar]
     fmul    st(2), st
     fmulp
-    mov     edx, [eax + FPx]
-    fadd    qword ptr [edx]
-    fstp    qword ptr [edx]
-    mov     edx, [eax + FPy]
-    fsubr   qword ptr [edx]
-    fstp    qword ptr [edx]
+//    mov     edx, [eax + FPx]
+    fadd    qword ptr [edx + 16] // FPx
+    fstp    qword ptr [edx + 16] // FPx
+//    mov     edx, [eax + FPy]
+    fsubr   qword ptr [edx + 24] // FPy
+    fstp    qword ptr [edx + 24] // FPy
     fwait
 {$endif}
 end;

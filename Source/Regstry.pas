@@ -476,11 +476,11 @@ begin
       end;
       if Registry.ValueExists('Renderer') then
       begin
-        HQIPath := Registry.ReadString('Renderer');
+        flam3Path := Registry.ReadString('Renderer');
       end
       else
       begin
-        HQIPath := DefaultPath + 'flam3.exe';
+        flam3Path := DefaultPath + 'flam3.exe';
       end;
       if Registry.ValueExists('Server') then
       begin
@@ -506,6 +506,9 @@ begin
       end;
       if Registry.ValueExists('PNGTransparency') then begin
         PNGTransparency := Registry.ReadInteger('PNGTransparency');
+
+        if PNGTransparency > 1 then PNGTransparency := 1;
+
       end else begin
         PNGTransparency := 1
       end;
@@ -524,6 +527,25 @@ begin
       end else begin
         UseNrThreads := 1;
       end;
+      if Registry.ValueExists('InternalBitsPerSample') then begin
+        InternalBitsPerSample := Registry.ReadInteger('InternalBitsPerSample');
+      end else begin
+        InternalBitsPerSample := 0;
+      end;
+
+
+//      if Registry.ValueExists('PreviewTimeLimit') then
+//        PreviewTimeLimit := Registry.ReadInteger('PreviewTimeLimit')
+//      else
+        PreviewTimeLimit := 0;
+//      if Registry.ValueExists('FullscreenTimeLimit') then
+//        FullscreenTimeLimit := Registry.ReadInteger('FullscreenTimeLimit')
+//      else
+        FullscreenTimeLimit := 0;
+//      if Registry.ValueExists('PreviewMinDensity') then
+//        PreviewMinDensity := Registry.ReadFloat('PreviewMinDensity')
+//      else
+        PreviewMinDensity := 0.0;
     end
     else
     begin
@@ -579,14 +601,18 @@ begin
       SheepNick := '';
       SheepURL := '';
       SheepPW := '';
-      HQIPath := DefaultPath + 'flam3.exe';
+      flam3Path := DefaultPath + 'flam3.exe';
       SheepServer := 'http://v2d5.sheepserver.net/';
       ResizeOnLoad := False;
       ShowProgress := true;
-      PNGTransparency := 2;
+      PNGTransparency := 1;
       ShowTransparency := False;
       NrTreads := 1;
       UseNrThreads := 1;
+      InternalBitsPerSample := 0;
+      PreviewTimeLimit := 0;
+      FullscreenTimeLimit := 0;
+      PreviewMinDensity := 0.2;
     end;
     Registry.CloseKey;
 
@@ -643,6 +669,8 @@ begin
       GridColor2 := $333333;
       HelpersColor := $808080;
       ReferenceTriangleColor := integer(clGray);
+      ExtEditEnabled := true;
+      TransformAxisLock := true;
     end;
     Registry.CloseKey;
 
@@ -713,6 +741,14 @@ begin
       begin
         renderFileFormat := 3;
       end;
+      if Registry.ValueExists('BitsPerSample') then
+      begin
+        renderBitsPerSample := Registry.ReadInteger('BitsPerSample');
+      end
+      else
+      begin
+        renderBitsPerSample := 0;
+      end;
     end
     else
     begin
@@ -724,6 +760,7 @@ begin
       renderFilterRadius := 0.4;
       renderWidth := 1024;
       renderHeight := 768;
+      renderBitsPerSample := 0;
     end;
     Registry.CloseKey;
 
@@ -979,7 +1016,7 @@ begin
       Registry.WriteInteger('ExportBatches', ExportBatches);
       Registry.WriteString('Nick', SheepNick);
       Registry.WriteString('URL', SheepURL);
-      Registry.WriteString('Renderer', HqiPath);
+      Registry.WriteString('Renderer', flam3Path);
       Registry.WriteString('Server', SheepServer);
       Registry.WriteString('Pass', SheepPW);
       Registry.WriteBool('ResizeOnLoad', ResizeOnLoad);
@@ -991,6 +1028,11 @@ begin
       Registry.WriteInteger('PNGTransparency', PNGTransparency);
       Registry.WriteInteger('NrTreads', NrTreads);
       Registry.WriteInteger('UseNrThreads', UseNrThreads);
+
+      Registry.WriteInteger('InternalBitsPerSample', InternalBitsPerSample);
+      Registry.WriteInteger('PreviewTimeLimit', PreviewTimeLimit);
+      Registry.WriteInteger('FullscreenTimeLimit', FullscreenTimeLimit);
+      Registry.WriteFloat('PreviewMinDensity', PreviewMinDensity);
     end;
     { Editor }
     if Registry.OpenKey('\Software\' + APP_NAME + '\Forms\Editor', True) then
@@ -1040,6 +1082,7 @@ begin
       Registry.WriteInteger('Height', renderHeight);
       Registry.WriteInteger('JPEGQuality', JPEGQuality);
       Registry.WriteInteger('FileFormat', renderFileFormat);
+      Registry.WriteInteger('BitsPerSample', renderBitsPerSample);
     end;
   finally
     Registry.Free;

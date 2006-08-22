@@ -22,8 +22,8 @@ type
     class function GetNrVariables: integer; virtual;
     class function GetVariableNameAt(const Index: integer): string; virtual;
 
-    function SetVariable(const Name: string; var value: double): boolean; virtual;
-    function GetVariable(const Name: string; var value: double): boolean; virtual;
+    function GetVariable(const Name: string; var Value: double): boolean; virtual;
+    function SetVariable(const Name: string; var Value: double): boolean; virtual;
     function ResetVariable(const Name: string): boolean; virtual;
 
     procedure Prepare; virtual;
@@ -35,6 +35,8 @@ type
 
 
 implementation
+
+uses SysUtils;
 
 { TBaseVariation }
 
@@ -50,15 +52,9 @@ begin
   Result := False;
 end;
 
-///////////////////////////////////////////////////////////////////////////////
 function TBaseVariation.SetVariable(const Name: string; var value: double): boolean;
 begin
   Result := False;
-end;
-
-class function TBaseVariation.GetVariableNameAt(const Index: integer): string;
-begin
-  Result := ''
 end;
 
 function TBaseVariation.ResetVariable(const Name: string): boolean;
@@ -67,6 +63,12 @@ var
 begin
   zero := 0;
   Result := SetVariable(Name, zero);
+end;
+
+///////////////////////////////////////////////////////////////////////////////
+class function TBaseVariation.GetVariableNameAt(const Index: integer): string;
+begin
+  Result := ''
 end;
 
 ///////////////////////////////////////////////////////////////////////////////

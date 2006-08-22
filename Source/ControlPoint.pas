@@ -87,12 +87,14 @@ type
   T2CPointsArray = array of T2Cpoint;
 
   TControlPoint = class
-  public
-    xform: array[0..NXFORMS] of TXForm;
 
+  public
     finalXform: TXForm;
     finalXformEnabled: boolean;
     useFinalXform: boolean;
+    Transparency: boolean;
+
+    xform: array[0..NXFORMS] of TXForm;
 
     variation: TVariation;
     cmap: TColorMap;
@@ -116,6 +118,7 @@ type
     (* in order to motion blur more accurately we compute the logs of the
       sample density many times and average the results.  we interplate
       only this many times. *)
+    actual_density: extended; // for incomplete renders  
     nbatches: integer; // this much color resolution.  but making it too high induces clipping
     white_level: integer;
     cmap_inter: integer; // if this is true, then color map interpolates one entry
@@ -131,6 +134,7 @@ type
     PropTable: array of TXForm;//Integer;
     FAngle: Double;
     FTwoColorDimensions: Boolean;
+
   private
     function getppux: double;
     function getppuy: double;
@@ -265,6 +269,7 @@ begin
   FTwoColorDimensions := False;
 
   finalXformEnabled := false;
+  Transparency := false;
 end;
 
 destructor TControlPoint.Destroy;
@@ -1114,7 +1119,7 @@ begin
       cp.center[0] := 0;
       cp.center[1] := 0;
       cp.pixels_per_unit := 10;
-      raise Exception.Create('CalcUPRMagn: ' +e.Message);
+      raise Exception.Create('CalcUPRMagn: ' + e.Message);
     end;
   end;
 end;
@@ -1430,7 +1435,7 @@ begin
     [Width, Height, center[0], center[1], pixels_per_unit]));
   sl.add(format('spatial_oversample %d spatial_filter_radius %f',
     [spatial_oversample, spatial_filter_radius]));
-  sl.add(format('sample_density %f', [sample_density]));
+  sl.add(format('sample_density %g', [sample_density]));
 //  sl.add(format('nbatches %d white_level %d background %f %f %f', - changed to integers - mt
   sl.add(format('nbatches %d white_level %d background %d %d %d',
     [nbatches, white_level, background[0], background[1], background[2]]));
@@ -1477,6 +1482,7 @@ begin
   Result.name := name;
   Result.nick := nick;
   Result.url := url;
+  Result.Transparency := Transparency;
 
   for i := 0 to NXFORMS - 1 do
     Result.xform[i].assign(xform[i]);

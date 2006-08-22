@@ -21,7 +21,8 @@ interface
 
 uses
   Windows, Messages, SysUtils, Classes, Graphics, Controls, Forms, Dialogs,
-  ExtCtrls, StdCtrls, ControlPoint, Render, ComCtrls, Menus, Buttons, Cmap;
+  ExtCtrls, StdCtrls, ControlPoint, ComCtrls, Menus, Buttons, Cmap,
+  Render;
 
 type
   TMutateForm = class(TForm)
@@ -178,7 +179,7 @@ begin
   cps[0].zoom := zoom;
   cps[0].center[0] := center[0];
   cps[0].center[1] := center[1];
-  Render.Compatibility := compatibility;
+//  Render.Compatibility := compatibility;
   Render.SetCP(cps[0]);
   Render.Render;
   BM.Assign(Render.GetImage);
@@ -230,7 +231,7 @@ begin
       mutants[i].center[1] := center[1];
     end;
 
-    Render.Compatibility := compatibility;
+//    Render.Compatibility := compatibility;
     Render.SetCP(mutants[i]);
     Render.Render;
     BM.Assign(Render.GetImage);

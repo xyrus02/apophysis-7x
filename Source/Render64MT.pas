@@ -23,66 +23,39 @@ interface
 
 uses
   Windows, Forms, Classes, Graphics,
-  Render, Controlpoint, ImageMaker, BucketFillerthread;
+  Render, RenderMT, ControlPoint, ImageMaker, RenderTypes;
 
 type
-  TRenderer64MT = class(TBaseRenderer)
+  TRenderer64MT = class(TBaseMTRenderer)
 
   protected
-    camX0, camX1, camY0, camY1, // camera bounds
-    camW, camH,                 // camera sizes
-    bws, bhs, cosa, sina, rcX, rcY: double;
-    ppux, ppuy: extended;
+    Buckets: TBucket64Array;
+//    ColorMap: TColorMapArray;
 
-    BucketWidth, BucketHeight: Int64;
-    BucketSize: Int64;
+    function GetBits: integer; override;
+    function GetBucketsPtr: pointer; override;
+    procedure AllocateBuckets; override;
 
-    sample_density: extended;
-    oversample: integer;
-    gutter_width: Integer;
-    max_gutter_width: Integer;
+    procedure ClearBuckets; override;
+//    procedure CreateColorMap; override;
 
-    batchcounter: Integer;
-    FNrBatches: Int64;
+    procedure AddPointsToBuckets(const points: TPointsArray); override;
+    procedure AddPointsToBucketsAngle(const points: TPointsArray); override;
 
-    Buckets: TBucketArray;
-    ColorMap: TColorMapArray;
+end;
 
-    FNrOfTreads: integer;
-    WorkingThreads: array of TBucketFillerThread;
-    CriticalSection: TRTLCriticalSection;
+// ----------------------------------------------------------------------------
 
-    FImageMaker: TImageMaker;
+type
+  TRenderer64MT_MM = class(TRenderer64MT)
 
-    procedure InitBuffers;
+  protected
+    procedure CalcBufferSize; override;
 
-    procedure ClearBuffers;
-    procedure ClearBuckets;
-    procedure CreateColorMap;
-    procedure CreateCamera;
-
-    procedure SetPixelsMT;
-    procedure SetNrOfTreads(const Value: integer);
-
-    function NewThread: TBucketFillerThread;
   public
-    constructor Create; override;
-    destructor Destroy; override;
-
-    function  GetImage: TBitmap; override;
-
     procedure Render; override;
-    procedure Stop; override;
 
-    procedure Pause(paused: boolean); override;
-
-    procedure UpdateImage(CP: TControlPoint); override;
-    procedure SaveImage(const FileName: String); override;
-
-    property NrOfTreads: integer
-        read FNrOfTreads
-       write SetNrOfTreads;
-  end;
+end;
 
 implementation
 
@@ -92,297 +65,102 @@ uses
 { TRenderer64MT }
 
 ///////////////////////////////////////////////////////////////////////////////
+function TRenderer64MT.GetBits: integer;
+begin
+  Result := BITS_64;
+end;
+
+function TRenderer64MT.GetBucketsPtr: pointer;
+begin
+  Result := Buckets;
+end;
+
+procedure TRenderer64MT.AllocateBuckets;
+begin
+  SetLength(buckets, BucketHeight, BucketWidth);
+end;
+
+///////////////////////////////////////////////////////////////////////////////
 procedure TRenderer64MT.ClearBuckets;
 var
-  i: integer;
+  i, j: integer;
 begin
-  for i := 0 to BucketSize - 1 do begin
-    buckets[i].Red   := 0;
-    buckets[i].Green := 0;
-    buckets[i].Blue  := 0;
-    buckets[i].Count := 0;
-  end;
-end;
-
-///////////////////////////////////////////////////////////////////////////////
-procedure TRenderer64MT.ClearBuffers;
-begin
-  ClearBuckets;
-end;
-
-///////////////////////////////////////////////////////////////////////////////
-procedure TRenderer64MT.CreateCamera;
-var
-  scale: double;
-  t0, t1: double;
-  t2, t3: double;
-  corner_x, corner_y, Xsize, Ysize: double;
-  shift: Integer;
-begin
-  scale := power(2, fcp.zoom);
-  sample_density := fcp.sample_density * scale * scale;
-  ppux := fcp.pixels_per_unit * scale;
-  ppuy := fcp.pixels_per_unit * scale;
-  // todo field stuff
-  shift := 0;
-
-  t0 := (gutter_width) / (oversample * ppux);
-  t1 := (gutter_width) / (oversample * ppuy);
-  t2 := (2 * max_gutter_width - gutter_width) / (oversample * ppux);
-  t3 := (2 * max_gutter_width - gutter_width) / (oversample * ppuy);
-  corner_x := fcp.center[0] - fcp.Width / ppux / 2.0;
-  corner_y := fcp.center[1] - fcp.Height / ppuy / 2.0;
-
-  camX0 := corner_x - t0;
-  camY0 := corner_y - t1 + shift;
-  camX1 := corner_x + fcp.Width / ppux + t2;
-  camY1 := corner_y + fcp.Height / ppuy + t3; //+ shift;
-  camW := camX1 - camX0;
-  if abs(camW) > 0.01 then
-    Xsize := 1.0 / camW
-  else
-    Xsize := 1;
-  camH := camY1 - camY0;
-  if abs(camH) > 0.01 then
-    Ysize := 1.0 / camH
-  else
-    Ysize := 1;
-  bws := (BucketWidth - 0.5)  * Xsize;
-  bhs := (BucketHeight - 0.5) * Ysize;
-
-  if FCP.FAngle <> 0 then
-  begin
-    cosa := cos(FCP.FAngle);
-    sina := sin(FCP.FAngle);
-    rcX := FCP.Center[0]*(1 - cosa) - FCP.Center[1]*sina - camX0;
-    rcY := FCP.Center[1]*(1 - cosa) + FCP.Center[0]*sina - camY0;
-  end;
-end;
-
-///////////////////////////////////////////////////////////////////////////////
-procedure TRenderer64MT.CreateColorMap;
-var
-  i: integer;
-begin
-{$IFDEF TESTVARIANT}
-  for i := 0 to 255 do begin
-    ColorMap[i].Red   := i;
-    ColorMap[i].Green := i;
-    ColorMap[i].Blue  := i;
-//    cmap[i][3] := fcp.white_level;
-  end;
-{$ELSE}
-  for i := 0 to 255 do begin
-    ColorMap[i].Red   := (fcp.CMap[i][0] * fcp.white_level) div 256;
-    ColorMap[i].Green := (fcp.CMap[i][1] * fcp.white_level) div 256;
-    ColorMap[i].Blue  := (fcp.CMap[i][2] * fcp.white_level) div 256;
-//    cmap[i][3] := fcp.white_level;
-  end;
-{$ENDIF}
-end;
-
-///////////////////////////////////////////////////////////////////////////////
-constructor TRenderer64MT.Create;
-begin
-  inherited Create;
-
-  FImageMaker := TImageMaker.Create;
-end;
-
-///////////////////////////////////////////////////////////////////////////////
-destructor TRenderer64MT.Destroy;
-begin
-  FImageMaker.Free;
-
-  inherited;
-end;
-
-///////////////////////////////////////////////////////////////////////////////
-function TRenderer64MT.GetImage: TBitmap;
-begin
-  Result := FImageMaker.GetImage;
-end;
-
-///////////////////////////////////////////////////////////////////////////////
-procedure TRenderer64MT.InitBuffers;
-const
-  MaxFilterWidth = 25;
-begin
-  oversample := fcp.spatial_oversample;
-  max_gutter_width := (MaxFilterWidth - oversample) div 2;
-  gutter_width := (FImageMaker.GetFilterSize - oversample) div 2;
-  BucketHeight := oversample * fcp.Height + 2 * max_gutter_width;
-  Bucketwidth := oversample * fcp.width + 2 * max_gutter_width;
-  BucketSize := BucketWidth * BucketHeight;
-
-  if high(buckets) <> (BucketSize - 1) then
-  try
-    SetLength(buckets, BucketSize);
-  except
-    on EOutOfMemory do begin
-      Application.MessageBox('Error: not enough memory for this render!', 'Apophysis', 48);
-      FStop := true;
-      exit;
+  for j := 0 to BucketHeight - 1 do
+    for i := 0 to BucketWidth - 1 do
+    with Buckets[j][i] do begin
+      Red   := 0;
+      Green := 0;
+      Blue  := 0;
+      Count := 0;
     end;
-  end;
 
-  // share the buffer with imagemaker
-  FImageMaker.SetBucketData(Buckets, BucketWidth);
 end;
 
 ///////////////////////////////////////////////////////////////////////////////
-procedure TRenderer64MT.SetPixelsMT;
+procedure TRenderer64MT.AddPointsToBuckets(const points: TPointsArray);
 var
   i: integer;
-  nsamples: Int64;
-  bc : integer;
+  px, py: double;
+//  R: double;
+//  V1, v2, v3: integer;
+  Bucket: PBucket64;
+  MapColor: PColorMapColor;
 begin
-  nsamples := Round(sample_density * NrSlices * bucketSize / (oversample * oversample));
-  FNrBatches := Round(nsamples / (fcp.nbatches * SUB_BATCH_SIZE));
-  batchcounter := 0;
-  Randomize;
+  for i := SUB_BATCH_SIZE - 1 downto 0 do begin
+//    if FStop then Exit;
 
-  InitializeCriticalSection(CriticalSection);
+    px := points[i].x - camX0;
+    if (px < 0) or (px > camW) then continue;
+    py := points[i].y - camY0;
+    if (py < 0) or (py > camH) then continue;
 
-  SetLength(WorkingThreads, NrOfTreads);
-  for i := 0 to NrOfTreads - 1 do
-    WorkingThreads[i] := NewThread;
+    Bucket := @Buckets[Round(bhs * py)][Round(bws * px)];
+    MapColor := @ColorMap[Round(points[i].c * 255)];
 
-  for i := 0 to NrOfTreads - 1 do
-    WorkingThreads[i].Resume;
-
-  bc := 0;
-  while (Not FStop) and (bc < FNrBatches) do begin
-    sleep(200);
-    try
-      EnterCriticalSection(CriticalSection);
-      if batchcounter > 0 then
-        Progress(batchcounter / FNrBatches)
-      else
-        Progress(0);
-
-       bc := batchcounter;
-     finally
-       LeaveCriticalSection(CriticalSection);
-     end;
+    Inc(Bucket.Red,   MapColor.Red);
+    Inc(Bucket.Green, MapColor.Green);
+    Inc(Bucket.Blue,  MapColor.Blue);
+    Inc(Bucket.Count);
   end;
-
-{  for i := 0 to NrOfTreads - 1 do
-  begin
-    WorkingThreads[i].Terminate;
-    WorkingThreads[i].Free;
-  end;}
-
-  DeleteCriticalSection(CriticalSection);
-  Progress(1);
 end;
 
 ///////////////////////////////////////////////////////////////////////////////
-procedure TRenderer64MT.Stop;
+procedure TRenderer64MT.AddPointsToBucketsAngle(const points: TPointsArray);
 var
   i: integer;
+  px, py: double;
+  Bucket: PBucket64;
+  MapColor: PColorMapColor;
 begin
-  for i := 0 to NrOfTreads - 1 do
-    WorkingThreads[i].Terminate;
+  for i := SUB_BATCH_SIZE - 1 downto 0 do begin
+//    if FStop then Exit;
 
-  inherited;
-end;
+    px := points[i].x * cosa + points[i].y * sina + rcX;
+    if (px < 0) or (px > camW) then continue;
+    py := points[i].y * cosa - points[i].x * sina + rcY;
+    if (py < 0) or (py > camH) then continue;
 
-procedure TRenderer64MT.Pause(paused: boolean);
-var
-  i: integer;
-begin
-  if paused then begin
-    for i := 0 to NrOfTreads - 1 do
-      WorkingThreads[i].Suspend;
-  end
-  else begin
-    for i := 0 to NrOfTreads - 1 do
-      WorkingThreads[i].Resume;
+    Bucket := @Buckets[Round(bhs * py)][Round(bws * px)];
+    MapColor := @ColorMap[Round(points[i].c * 255)];
+
+    Inc(Bucket.Red,   MapColor.Red);
+    Inc(Bucket.Green, MapColor.Green);
+    Inc(Bucket.Blue,  MapColor.Blue);
+    Inc(Bucket.Count);
   end;
 end;
 
-///////////////////////////////////////////////////////////////////////////////
-procedure TRenderer64MT.Render;
+// -- { TRenderer64MT_MM } ----------------------------------------------------
+
+procedure TRenderer64MT_MM.CalcBufferSize;
 begin
-  FStop := False;
-
-  FImageMaker.SetCP(FCP);
-  FImageMaker.Init;
-
-  InitBuffers;
-  if FStop then exit; // memory allocation error
-
-  CreateColorMap;
-  fcp.Prepare;
-
-  CreateCamera;
-
-  ClearBuffers;
-  SetPixelsMT;
-
-  if not FStop then begin
-    FImageMaker.OnProgress := OnProgress;
-    FImageMaker.CreateImage;
-  end;
+  CalcBufferSizeMM;
 end;
 
-///////////////////////////////////////////////////////////////////////////////
-procedure TRenderer64MT.UpdateImage(CP: TControlPoint);
+procedure TRenderer64MT_MM.Render;
 begin
-  FCP.background := cp.background;
-  FCP.spatial_filter_radius := cp.spatial_filter_radius;
-  FCP.gamma := cp.Gamma;
-  FCP.vibrancy := cp.vibrancy;
-  FCP.contrast := cp.contrast;
-  FCP.brightness := cp.brightness;
-
-  FImageMaker.SetCP(FCP);
-  FImageMaker.Init;
-
-  FImageMaker.OnProgress := OnProgress;
-  FImageMaker.CreateImage;
+  RenderMM;
 end;
 
-///////////////////////////////////////////////////////////////////////////////
-procedure TRenderer64MT.SetNrOfTreads(const Value: integer);
-begin
-  FNrOfTreads := Value;
-end;
-
-///////////////////////////////////////////////////////////////////////////////
-function TRenderer64MT.NewThread: TBucketFillerThread;
-begin
-  Result := TBucketFillerThread.Create(fcp);
-  assert(Result<>nil);
-  Result.BucketWidth := BucketWidth;
-  Result.BucketHeight := BucketHeight;
-  Result.Buckets := @Buckets;
-
-  Result.camX0 := camX0;
-  Result.camY0 := camY0;
-  Result.camW := camW;
-  Result.camH := camH;
-  Result.bws := bws;
-  Result.bhs := bhs;
-  Result.cosa := cosa;
-  Result.sina := sina;
-  Result.rcX := rcX;
-  Result.rcY := rcY;
-
-  Result.ColorMap := colorMap;
-  Result.CriticalSection := CriticalSection;
-  Result.Nrbatches := FNrBatches;
-  Result.batchcounter := @batchcounter;
-//  Result.Resume;
-end;
-
-///////////////////////////////////////////////////////////////////////////////
-procedure TRenderer64MT.SaveImage(const FileName: String);
-begin
-  FImageMaker.SaveImage(FileName);
-end;
-
-///////////////////////////////////////////////////////////////////////////////
 end.
 
