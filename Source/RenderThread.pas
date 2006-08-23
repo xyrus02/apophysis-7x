@@ -24,7 +24,7 @@ interface
 uses
   Classes, Windows, Messages, Graphics,
   ControlPoint, Render,
-  Global, RenderTypes,
+  Global, RenderTypes, PngImage,
   Render64, Render64MT,
   Render48, Render48MT,
   Render32, Render32MT, 
@@ -65,6 +65,7 @@ type
 
     procedure SetCP(CP: TControlPoint);
     function  GetImage: TBitmap;
+    function  GetTransparentImage: TPngObject;
     procedure SaveImage(const FileName: String);
 
     procedure Execute; override;
@@ -124,6 +125,14 @@ begin
   Result := nil;
   if assigned(FRenderer) then
     Result := FRenderer.GetImage;
+end;
+
+///////////////////////////////////////////////////////////////////////////////
+function TRenderThread.GetTransparentImage: TPngObject;
+begin
+  Result := nil;
+  if assigned(FRenderer) then
+    Result := FRenderer.GetTransparentImage;
 end;
 
 ///////////////////////////////////////////////////////////////////////////////

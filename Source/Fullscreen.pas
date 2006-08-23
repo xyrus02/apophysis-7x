@@ -109,9 +109,6 @@ begin
 
     while Renderer <> nil do
       Application.ProcessMessages; // HandleThreadTermination kinda should be called here...(?)
-
-//  Renderer.Free;
-//  Renderer := nil;
   end;
 
   assert(not assigned(renderer), 'Render thread is still running!?');
@@ -160,19 +157,6 @@ procedure TFullscreenForm.HandleThreadTermination(var Message: TMessage);
 var
   bm: TBitmap;
 begin
-  if Assigned(Renderer) then begin
-(*
-    if not Closing then begin
-      bm := TBitmap.Create;
-      bm.assign(Renderer.GetImage);
-      Image.SetBounds(imgLeft, imgTop, imgWidth, imgHeight);
-      Image.Picture.Graphic := bm;
-      bm.Free;
-    end;
-*)
-    //Renderer.Free;
-    //Renderer := nil;
-  end;
   RenderStop.Enabled := false;
   RenderMore.Enabled := false;
 

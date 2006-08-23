@@ -23,7 +23,7 @@ interface
 
 uses
   Windows, Graphics, Classes,
-  Controlpoint, RenderTypes, ImageMaker;
+  Controlpoint, RenderTypes, ImageMaker, PngImage;
 
 ///////////////////////////////////////////////////////////////////////////////
 //
@@ -102,6 +102,7 @@ type
     procedure Render; virtual;
 
     function  GetImage: TBitmap; virtual;
+    function  GetTransparentImage: TPngObject;
     procedure UpdateImage(CP: TControlPoint);
     procedure SaveImage(const FileName: String);
 
@@ -251,11 +252,23 @@ end;
 ///////////////////////////////////////////////////////////////////////////////
 function TBaseRenderer.GetImage: TBitmap;
 begin
-  if FStop <> 0 then begin
+  if FStop > 0 then begin
+    assert(false);
     FImageMaker.OnProgress := OnProgress;
     FImageMaker.CreateImage;
   end;
   Result := FImageMaker.GetImage;
+end;
+
+///////////////////////////////////////////////////////////////////////////////
+function TBaseRenderer.GetTransparentImage: TPngObject;
+begin
+  if FStop > 0 then begin
+    assert(false);
+    FImageMaker.OnProgress := OnProgress;
+    FImageMaker.CreateImage;
+  end;
+  Result := FImageMaker.GetTransparentImage;
 end;
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -278,7 +291,7 @@ end;
 ///////////////////////////////////////////////////////////////////////////////
 procedure TBaseRenderer.SaveImage(const FileName: String);
 begin
-  if FStop <> 0 then begin
+  if FStop > 0 then begin
     if Assigned(strOutput) then
       strOutput.Add(TimeToStr(Now) + Format(' : Creating image with quality = %f', [fcp.actual_density]));
     FImageMaker.OnProgress := OnProgress;
@@ -476,7 +489,7 @@ begin
   SetPixels;
   RenderTime := Now - RenderTime;
 
-  if FStop >= 0 then begin
+  if FStop <= 0 then begin
     if Assigned(strOutput) then begin
       if fcp.sample_density = fcp.actual_density then
         strOutput.Add(TimeToStr(Now) + ' : Creating image')

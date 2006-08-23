@@ -30,7 +30,6 @@ type
 
   protected
     Buckets: TBucket32Array;
-//    ColorMap: TColorMapArray;
 
     function GetBits: integer; override;
     function GetBucketsPtr: pointer; override;
@@ -100,8 +99,6 @@ procedure TRenderer32MT.AddPointsToBuckets(const points: TPointsArray);
 var
   i: integer;
   px, py: double;
-//  R: double;
-//  V1, v2, v3: integer;
   Bucket: PBucket32;
   MapColor: PColorMapColor;
 begin

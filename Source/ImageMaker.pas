@@ -3,7 +3,7 @@ unit ImageMaker;
 interface
 
 uses
-  Windows, Graphics, ControlPoint, RenderTypes;
+  Windows, Graphics, ControlPoint, RenderTypes, PngImage;
 
 type TPalette = record
     logpal : TLogPalette;
@@ -47,13 +47,13 @@ type
 
     procedure Progress(value: double);
 
-    function GetTransparentImage: TBitmap;
 
   public
     constructor Create;
     destructor Destroy; override;
 
     function GetImage: TBitmap;
+    function GetTransparentImage: TPNGObject;
 
     procedure SetCP(CP: TControlPoint);
     procedure Init;
@@ -74,7 +74,7 @@ type
 implementation
 
 uses
-  Math, SysUtils, PngImage, JPEG, Global, Types;
+  Math, SysUtils, JPEG, Global, Types;
 
 { TImageMaker }
 
@@ -181,9 +181,9 @@ end;
 ///////////////////////////////////////////////////////////////////////////////
 function TImageMaker.GetImage: TBitmap;
 begin
-  if ShowTransparency then
-    Result := GetTransparentImage
-  else
+//  if ShowTransparency then
+//    Result := GetTransparentImage
+//  else
     Result := FBitmap;
 end;
 
@@ -312,8 +312,6 @@ begin
   //bucketpos := 0;
   by := 0;
   for i := 0 to fcp.Height - 1 do begin
-//    if FStop then
-//      Break;
     bx := 0;
     Progress(i / fcp.Height);
     AlphaRow := PByteArray(FAlphaBitmap.scanline[YOffset + i]);
@@ -442,8 +440,7 @@ zero_alpha:
         Row[j].red := ri;
         Row[j].green := gi;
         Row[j].blue := bi;
-
-        AlphaRow[j] := ai; //?
+        AlphaRow[j] := ai;//?
       end
     end;
 
@@ -531,49 +528,25 @@ begin
 end;
 
 ///////////////////////////////////////////////////////////////////////////////
-function TImageMaker.GetTransparentImage: TBitmap;
+function TImageMaker.GetTransparentImage: TPngObject;
 var
-  x,y: integer;
-  i,row: integer;
-  PngObject: TPngObject;
+  x, y: integer;
+  i, row: integer;
   rowbm, rowpng: PByteArray;
 begin
-  if assigned(FTransparentImage) then FTransparentImage.Free;
-
-  FTransparentImage := TBitmap.Create;
-
-  FTransparentImage.Width := Fcp.Width;
-  FTransparentImage.Height := Fcp.Height;
-
-  FTransparentImage.Canvas.Brush.Color := $CCCCCC;
-  FTransparentImage.Canvas.FillRect(Rect(0, 0, Fcp.Width, Fcp.Height));
-
-  FTransparentImage.Canvas.Brush.Color := $FFFFFF;
-  for x := 0 to ((Fcp.Width - 1) div 8) do begin
-    for y := 0 to ((Fcp.Height - 1) div 8) do begin
-      if odd(x + y) then
-        FTransparentImage.Canvas.FillRect(Rect(x * 8, y * 8, x * 8 + 8, y * 8 + 8));
-    end;
-  end;
-
-  PngObject := TPngObject.Create;
-  PngObject.Assign(FBitmap);
+  Result := TPngObject.Create;
+  Result.Assign(FBitmap);
 
   if fcp.Transparency then begin
-    PngObject.CreateAlpha;
+    Result.CreateAlpha;
     for i:= 0 to FAlphaBitmap.Height - 1 do begin
       rowbm := PByteArray(FAlphaBitmap.scanline[i]);
-      rowpng := PByteArray(PngObject.AlphaScanline[i]);
+      rowpng := PByteArray(Result.AlphaScanline[i]);
       for row := 0 to FAlphaBitmap.Width - 1 do begin
         rowpng[row] := rowbm[row];
       end;
     end;
   end;
-  
-  PngObject.Draw(FTransparentImage.Canvas, FTransparentImage.Canvas.ClipRect);
-  PngObject.Free;
-
-  Result := FTransparentImage;
 end;
 
 ///////////////////////////////////////////////////////////////////////////////

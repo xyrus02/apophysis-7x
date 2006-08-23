@@ -307,7 +307,8 @@ function TVariationRadialBlur.ResetVariable(const Name: string): boolean;
 begin
   Result := False;
   if Name = var_a_name then begin
-    angle := 0;
+    if angle <> 0 then angle := 0
+    else if angle = 0 then angle := 1;
     Result := True;
   end;
 end;

@@ -28,7 +28,7 @@ uses
   ToolWin, StdCtrls, Classes, Messages, ExtCtrls, ImgList, controlpoint,
   Jpeg, SyncObjs, SysUtils, ClipBrd, Graphics, Math, Global,
   Registry, RenderThread, Cmap, ExtDlgs, AppEvnts, ShellAPI,
-  LibXmlParser, LibXmlComps, Xform, XFormMan;
+  LibXmlParser, LibXmlComps, Xform, XFormMan, PngImage;
 
 const
   PixelCountMax = 32768;
@@ -37,7 +37,7 @@ const
   RS_XO = 2;
   RS_VO = 3;
 
-  AppVersionString = 'Apophysis 2.05 pre-release 11';
+  AppVersionString = 'Apophysis 2.05 pre-release 12';
 
 type
   TMouseMoveState = (msUsual, msZoomWindow, msZoomOutWindow, msZoomWindowMove, msZoomOutWindowMove, msDrag, msDragMove, msRotate, msRotateMove);
@@ -174,6 +174,7 @@ type
     ToolButton6: TToolButton;
     tbQualityBox: TComboBox;
     View1: TMenuItem;
+    tbShowAlpha: TToolButton;
     procedure tbzoomoutwindowClick(Sender: TObject);
     procedure mnuimageClick(Sender: TObject);
     procedure mnuExitClick(Sender: TObject);
@@ -268,15 +269,20 @@ type
     procedure tbQualityBoxKeyPress(Sender: TObject; var Key: Char);
     procedure tbQualityBoxSet(Sender: TObject);
     procedure ImageDblClick(Sender: TObject);
+    procedure tbShowAlphaClick(Sender: TObject);
+  
   private
     Renderer: TRenderThread;
 
     FMouseMoveState: TMouseMoveState;
     FSelectRect: TRect;
     FRotateAngle: double;
-    FClickAngle: double; // --Z--
-    FViewBMP: Graphics.TBitmap;
+    FClickAngle: double;
+    FViewImage: TPngObject;
+    FViewPos: TPoint;
+    FViewScale: double;
 
+    procedure DrawImageView;
     procedure DrawZoomWindow(ARect: TRect);
     procedure DrawRotatelines(Angle: double);
 
@@ -1679,17 +1685,18 @@ end;
 { ****************************** Display ************************************ }
 
 procedure TMainForm.HandleThreadCompletion(var Message: TMessage);
-var
-  bm: TBitmap;
 begin
-  if Assigned(Renderer) then begin
-    bm := TBitmap.Create;
-    bm.assign(Renderer.GetImage);
-    Image.Picture.Graphic := bm;
-    Renderer.Free;
-    Renderer := nil;
-    bm.Free;
-  end;
+  if not Assigned(Renderer) then exit;
+
+  if assigned(FViewImage) then FViewImage.Free;
+  FViewPos.X := 0;
+  FViewPos.Y := 0;
+  FViewScale := 1;
+  FViewImage := Renderer.GetTransparentImage;
+  DrawImageView;
+
+  Renderer.Free;
+  Renderer := nil;
 end;
 
 procedure TMainForm.HandleThreadTermination(var Message: TMessage);
@@ -1729,9 +1736,7 @@ begin
     MainCp.sample_density := defSampleDensity;
     Maincp.spatial_oversample := defOversample;
     Maincp.spatial_filter_radius := defFilterRadius;
-
-    MainCP.Transparency := (PNGTransparency <> 0) and ShowTransparency;
-
+    MainCP.Transparency := true; // always generate transparency data
     StartTime := Now;
     Remainder := 1;
     try
@@ -1964,6 +1969,7 @@ begin
   StopThread;
   RedrawTimer.Enabled := True;
   tbQualityBox.Text := FloatToStr(defSampleDensity);
+  tbShowAlpha.Down := ShowTransparency;
   UpdateWindows;
 end;
 
@@ -2369,6 +2375,7 @@ begin
   FillVariantMenu;
 
   tbQualityBox.Text := FloatToStr(defSampleDensity);
+  tbShowAlpha.Down := ShowTransparency;
 end;
 
 procedure TMainForm.FormShow(Sender: TObject);
@@ -2514,7 +2521,8 @@ begin
   if assigned(Renderer) then Renderer.Terminate;
   if assigned(Renderer) then Renderer.WaitFor;
   if assigned(Renderer) then Renderer.Free;
-  maincp.free;
+  if assigned(FViewImage) then FViewImage.Free;
+  MainCP.free;
   ParseCp.free;
   Favorites.Free;
 end;
@@ -2531,6 +2539,7 @@ begin
   StopThread;
   if CanDrawOnResize then
     reDrawTimer.Enabled := True;
+  DrawImageView;
 end;
 
 procedure TMainForm.LoadXMLFlame(filename, name: string);
@@ -4017,6 +4026,8 @@ begin
       end;
     msDrag:
       begin
+        if not assigned(FViewImage) then exit;
+{
         if not assigned(FViewBMP) then
         FViewBMP := TBitmap.Create;
         FViewBMP.Width := ClientWidth + 100;
@@ -4040,7 +4051,7 @@ begin
         DestRect.BottomRight.Y := DestRect.BottomRight.Y + 50;
 
         FViewBMP.Canvas.CopyRect(DestRect, Image.Canvas, SourceRect);
-
+}
         FSelectRect.TopLeft := Point(x, y);
         FSelectRect.BottomRight := Point(x, y);
         FMouseMoveState := msDragMove;
@@ -4058,11 +4069,10 @@ begin
 end;
 
 ///////////////////////////////////////////////////////////////////////////////
-procedure TMainForm.ImageMouseMove(Sender: TObject; Shift: TShiftState; X,
-  Y: Integer);
+procedure TMainForm.ImageMouseMove(Sender: TObject; Shift: TShiftState; X, Y: Integer);
 var
-  DestRect, SrcRect: TRect;
-  FOffs : TPoint;
+  DestRect: TRect;
+  dx, dy: integer;
 begin
   case FMouseMoveState of
     msZoomWindowMove,
@@ -4074,18 +4084,14 @@ begin
       end;
     msDragMove:
       begin
-        FOffs.X := x - FSelectRect.TopLeft.x;
-        FOffs.Y := y - FSelectRect.TopLeft.Y;
+        assert(assigned(FviewImage));
+
+        assert(FViewScale <> 0);
+        FViewPos.X := FViewPos.X + round( (x - FSelectRect.Right) / FViewScale);
+        FViewPos.Y := FViewPos.Y + round( (y - FSelectRect.Bottom) / FViewScale);
         FSelectRect.BottomRight := Point(x, y);
 
-        DestRect := ClientRect;
-
-        SrcRect.Left := -FOffs.X + 50;
-        SrcRect.Right := ClientRect.Right - FOffs.X + 50;;
-        SrcRect.Top := - FOffs.Y + 50;
-        SrcRect.Bottom := ClientRect.Bottom - FOffs.Y + 50;
-
-        Image.Canvas.CopyRect(DestRect, FViewBMP.Canvas, SrcRect);
+		DrawImageView;
       end;
     msRotateMove:
       begin
@@ -4149,9 +4155,6 @@ begin
       end;
     msDragMove:
       begin
-        FViewBMP.Free;
-        FViewBMP := nil;
-
         FSelectRect.BottomRight := Point(x, y);
         FMouseMoveState := msDrag;
 
@@ -4183,6 +4186,48 @@ begin
         UpdateWindows;
       end;
   end;
+end;
+
+///////////////////////////////////////////////////////////////////////////////
+procedure TMainForm.DrawImageView;
+var
+  i, j: integer;
+  bm: TBitmap;
+  r: TRect;
+begin
+  bm := TBitmap.Create;
+  bm.Width := Image.Width;
+  bm.Height := Image.Height;
+  with bm.Canvas do begin
+    if ShowTransparency then begin
+      Brush.Color := $F0F0F0;
+      FillRect(Rect(0, 0, bm.Width, bm.Height));
+      Brush.Color := $C0C0C0;
+      for i := 0 to ((bm.Width - 1) shr 3) do begin
+        for j := 0 to ((bm.Height - 1) shr 3) do begin
+          if odd(i + j) then
+            FillRect(Rect(i shl 3, j shl 3, (i+1) shl 3, (j+1) shl 3));
+        end;
+      end;
+    end
+    else begin
+      Brush.Color := MainCP.background[0] or (MainCP.background[1] shl 8) or (MainCP.background[2] shl 16);
+      FillRect(Rect(0, 0, bm.Width, bm.Height));
+    end;
+  end;
+  if assigned(FViewImage) then begin
+    FViewScale := Image.Width / FViewImage.Width;
+
+    r.Left := round(FViewScale * FViewPos.X);
+    r.Right := round(FViewScale * (FViewPos.X + FViewImage.Width));
+    r.Top := Image.Height div 2 + round(FViewScale * (FViewPos.Y - FViewImage.Height/2));
+    r.Bottom := Image.Height div 2 + round(FViewScale * (FViewPos.Y + FViewImage.Height/2));
+
+    FViewImage.Draw(bm.Canvas, r);
+  end;
+  Image.Picture.Graphic := bm;
+  Image.Refresh;
+  bm.Free;
 end;
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -4364,5 +4409,14 @@ end;
 {$ENDIF}
 
 ///////////////////////////////////////////////////////////////////////////////
+procedure TMainForm.tbShowAlphaClick(Sender: TObject);
+var
+  DestRect: TRect;
+  bm: TBitmap;
+begin
+  ShowTransparency := tbShowAlpha.Down;
+
+  DrawImageView;
+end;
 
 end.
