@@ -1995,7 +1995,7 @@ object AboutForm: TAboutForm
     Width = 96
     Height = 13
     Cursor = crHandPoint
-    Hint = 'http://utak3r.deviantart.com'
+    Hint = 'http://utak3r.pl'
     Caption = 'Piotr "utak3r" Borys '
     Font.Charset = DEFAULT_CHARSET
     Font.Color = clBlue
