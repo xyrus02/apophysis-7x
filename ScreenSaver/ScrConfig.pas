@@ -58,7 +58,7 @@ begin
   Registry := TRegistry.Create;
   try
     Registry.RootKey := HKEY_CURRENT_USER;
-    if Registry.OpenKey('\Software\BobsFreubels\FlameSS', False) then begin
+    if Registry.OpenKey('\Software\Apophysis 2.0\ScreenSaver', False) then begin
       if Registry.ValueExists('SaveImage') then begin
         chkSave.Checked := Registry.ReadBool('SaveImage');
       end else begin
@@ -93,7 +93,7 @@ begin
                                           FloatFormatSettings
                                           );
       end else begin
-        edtFiltersize.Text := '0.1';
+        edtFiltersize.Text := FloatToStr(0.1);
       end;
       if Registry.ValueExists('Density') then begin
         edtDensity.Text := FloatToStrF(Registry.ReadFloat('Density'),
@@ -110,7 +110,7 @@ begin
       chkShowRndInfo.Checked := True;
       rgQuality.itemindex := 1;
       edtOversample.Text := '1';
-      edtFiltersize.Text := '0.1';
+      edtFiltersize.Text := FloatToStr(0.1);
       edtDensity.Text := '100';
     end;
   finally
@@ -137,7 +137,7 @@ begin
     locale := GetSystemDefaultLCID;
     GetLocaleFormatSettings(locale, FloatFormatSettings);
     Registry.RootKey := HKEY_CURRENT_USER;
-    if Registry.OpenKey('\Software\BobsFreubels\FlameSS', True) then begin
+    if Registry.OpenKey('\Software\Apophysis 2.0\ScreenSaver', True) then begin
       Registry.WriteBool('SaveImage', chkSave.Checked);
       Registry.WriteBool('ShowOtherImages', chkShowOtherImages.Checked);
       Registry.WriteBool('ShowRenderInfo', chkShowRndInfo.Checked);
@@ -169,7 +169,7 @@ begin
   try
     StrToFloat(edtFiltersize.Text);
   except
-    edtFiltersize.Text := '0.1';
+    edtFiltersize.Text := FloatToStr(0.1);
   end;
 
   SetFilterPixels

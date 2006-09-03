@@ -298,7 +298,7 @@ begin
     if prog > 0 then
     Remainder := Min(Remainder, Elapsed * (power(1/prog, 1.2) - 1));
 
-    Canvas.TextOut(5, ClientHeight - 20 - Canvas.TextHeight('X'), Format('Remainder %2.2d:%2.2d:%2.2d.%2.2d',
+    Canvas.TextOut(5, ClientHeight - 20 - Canvas.TextHeight('X'), Format('Remaining %2.2d:%2.2d:%2.2d.%2.2d',
                        [Trunc(Remainder * 24),
                          Trunc((Remainder * 24 - Trunc(Remainder * 24)) * 60),
                           Trunc((Remainder * 24 * 60 - Trunc(Remainder * 24 * 60)) * 60),
@@ -347,7 +347,7 @@ begin
   Registry := TRegistry.Create;
   try
     Registry.RootKey := HKEY_CURRENT_USER;
-    if Registry.OpenKey('\Software\BobsFreubels\FlameSS', False) then begin
+    if Registry.OpenKey('\Software\Apophysis 2.0\ScreenSaver', False) then begin
       if Registry.ValueExists('SaveImage') then begin
         bSave := Registry.ReadBool('SaveImage');
       end else begin
