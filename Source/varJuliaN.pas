@@ -355,7 +355,8 @@ function TVariationJulian.ResetVariable(const Name: string): boolean;
 begin
   Result := False;
   if Name = var_n_name then begin
-    N := 2;
+    if N = 2 then N := -2
+    else N := 2;
     Result := True;
   end
   else if Name = var_c_name then begin
