@@ -1,5 +1,6 @@
 {
      Apophysis Copyright (C) 2001-2004 Mark Townsend
+     Apophysis Copyright (C) 2005-2006 Ronald Hordijk, Piotr Borys, Peter Sdobnov
 
      This program is free software; you can redistribute it and/or modify
      it under the terms of the GNU General Public License as published by
@@ -41,6 +42,7 @@ type
     procedure TimelimiterOnTimer(Sender: TObject);
     procedure RenderStopClick(Sender: TObject);
     procedure RenderMoreClick(Sender: TObject);
+
   private
     Remainder, StartTime, t: double;
     imgLeft, imgTop,
@@ -57,11 +59,14 @@ type
       message WM_THREAD_COMPLETE;
     procedure HandleThreadTermination(var Message: TMessage);
       message WM_THREAD_TERMINATE;
+
   public
     Calculate : boolean;
     cp: TControlPoint;
     Zoom: double;
     center: array[0..1] of double;
+
+    ActiveForm: TForm;
   end;
 
 var
@@ -69,10 +74,23 @@ var
 
 implementation
 
-uses Main, Math, Global;
+uses
+  Main, Math, Global,
+  Tracer;
 
 {$R *.DFM}
 
+procedure Trace1(const str: string);
+begin
+  if TraceLevel >= 1 then
+    TraceForm.FullscreenTrace.Lines.Add('. ' + str);
+end;
+
+procedure Trace2(const str: string);
+begin
+  if TraceLevel >= 2 then
+    TraceForm.FullscreenTrace.Lines.Add('. . ' + str);
+end;
 
 procedure TFullscreenForm.DrawFlame;
 var
@@ -104,6 +122,7 @@ begin
   Remainder := 1;
 
   if Assigned(Renderer) then begin // hmm...
+    Trace2('Killing previous RenderThread #' + inttostr(Renderer.ThreadID));
     Renderer.Terminate;
     Renderer.WaitFor;
 
@@ -117,6 +136,7 @@ begin
   Renderer.TargetHandle := Handle;
   Renderer.OnProgress := OnProgress;
   Renderer.NrThreads := NrTreads;
+  if TraceLevel > 0 then Renderer.Output := TraceForm.FullscreenTrace.Lines;
   Renderer.SetCP(cp);
 
   if FullscreenTimeLimit > 0 then begin
@@ -135,18 +155,25 @@ procedure TFullscreenForm.HandleThreadCompletion(var Message: TMessage);
 var
   bm: TBitmap;
 begin
+  Trace2(MsgComplete + IntToStr(message.LParam));
+  if not Assigned(Renderer) then begin
+    Trace2(MsgNotAssigned);
+    exit;
+  end;
+  if Renderer.ThreadID <> message.LParam then begin
+    Trace2(MsgAnotherRunning);
+    exit;
+  end;
+
   if Assigned(Renderer) then
   begin
     bm := TBitmap.Create;
     bm.assign(Renderer.GetImage);
     Image.SetBounds(imgLeft, imgTop, imgWidth, imgHeight);
     Image.Picture.Graphic := bm;
-
-//    Canvas.StretchDraw(Rect(0, 0, ClientWidth, ClientHeight), bm);
-    //Renderer.Free;
-    //Renderer := nil;
     bm.Free;
   end;
+
   RenderStop.Enabled := false;
   RenderMore.Enabled := true;
 
@@ -157,6 +184,16 @@ procedure TFullscreenForm.HandleThreadTermination(var Message: TMessage);
 var
   bm: TBitmap;
 begin
+  Trace2(MsgTerminated + IntToStr(message.LParam));
+  if not Assigned(Renderer) then begin
+    Trace2(MsgNotAssigned);
+    exit;
+  end;
+  if Renderer.ThreadID <> message.LParam then begin
+    Trace2(MsgAnotherRunning);
+    exit;
+  end;
+
   RenderStop.Enabled := false;
   RenderMore.Enabled := false;
 
@@ -202,6 +239,8 @@ end;
 
 procedure TFullscreenForm.FormShow(Sender: TObject);
 begin
+  Trace1('--- Opening Fullscreen View ---');
+
   if Image.Width < ClientWidth then
     Image.Left := (ClientWidth - Image.Width) div 2;
   if Image.Height < ClientHeight then
@@ -229,13 +268,19 @@ begin
       Renderer.WaitForMore := false;
       Renderer.Resume;
     end;
+    Trace2('Form closing: killing RenderThread #' + inttostr(Renderer.ThreadID));
     Renderer.Terminate;
     Renderer.WaitFor;
 
+    Trace2('Destroying RenderThread #' + IntToStr(Renderer.ThreadID));
     Renderer.Free;
     Renderer := nil;
   end;
+  Trace1('--- Closing Fullscreen View ---');
+  Trace1('');
   ShowTaskbar;
+
+  ActiveForm.SetFocus;
 end;
 
 procedure TFullscreenForm.FormCreate(Sender: TObject);
@@ -275,7 +320,7 @@ end;
 
 procedure TFullscreenForm.RenderStopClick(Sender: TObject);
 begin
-  if assigned(Renderer) then Renderer.Break;
+  if assigned(Renderer) then Renderer.BreakRender;
 end;
 
 procedure TFullscreenForm.RenderMoreClick(Sender: TObject);
