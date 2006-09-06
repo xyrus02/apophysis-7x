@@ -45,7 +45,7 @@ type
 
   public
     procedure Stop; override;
-    procedure Break; override;
+    procedure BreakRender; override;
 
     procedure Pause; override;
     procedure UnPause; override;
@@ -66,12 +66,10 @@ var
   nSamples: Int64;
   bc : integer;
 begin
-  if strOutput <> nil then begin
-    if FNumSlices > 1 then
-      strOutput.Add(TimeToStr(Now) + Format(' : Rendering slice #%d...', [FSlice + 1]))
-    else
-      strOutput.Add(TimeToStr(Now) + ' : Rendering...');
-  end;
+  if FNumSlices > 1 then
+    TimeTrace(Format('Rendering slice #%d of %d...', [FSlice + 1, FNumSlices]))
+  else
+    TimeTrace('Rendering...');
 
   nSamples := Round(sample_density * NrSlices * BucketSize / (oversample * oversample));
   FNumBatches := Round(nSamples / (fcp.nbatches * SUB_BATCH_SIZE));
@@ -134,7 +132,7 @@ begin
   inherited; //  FStop := 1;
 end;
 
-procedure TBaseMTRenderer.Break;
+procedure TBaseMTRenderer.BreakRender;
 var
   i: integer;
 begin
@@ -151,6 +149,8 @@ procedure TBaseMTRenderer.Pause;
 var
   i: integer;
 begin
+  inherited;
+
   for i := 0 to High(WorkingThreads) do
     WorkingThreads[i].Suspend;
 end;
@@ -159,6 +159,8 @@ procedure TBaseMTRenderer.UnPause;
 var
   i: integer;
 begin
+  inherited;
+
   for i := 0 to High(WorkingThreads) do
     WorkingThreads[i].Resume;
 end;

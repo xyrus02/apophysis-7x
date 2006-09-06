@@ -75,12 +75,10 @@ var
   nsamples: int64;
   IterateBatchProc: procedure of object;
 begin
-  if Assigned(strOutput) then begin
-    if FNumSlices > 1 then
-      strOutput.Add(TimeToStr(Now) + Format(' : Rendering slice #%d...', [FSlice + 1]))
-    else
-      strOutput.Add(TimeToStr(Now) + ' : Rendering...');
-  end;
+  if FNumSlices > 1 then
+    TimeTrace(Format('Rendering slice #%d of %d...', [FSlice + 1, FNumSlices]))
+  else
+    TimeTrace('Rendering...');
 
   Randomize;
 
@@ -105,7 +103,7 @@ begin
 
   for i := 0 to FNumBatches-1 do begin
     if FStop <> 0 then begin
-//      if (FStop < 0) or (i >= FMinBatches) then begin //?
+//      if (FStop <> 0) or (i >= FMinBatches) then begin //?
       fcp.actual_density := fcp.actual_density +
                             fcp.sample_density * i / FNumBatches; // actual quality of incomplete render
       FNumBatches := i;

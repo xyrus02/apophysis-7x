@@ -27,7 +27,7 @@ uses
   Global, RenderTypes, PngImage,
   Render64, Render64MT,
   Render48, Render48MT,
-  Render32, Render32MT, 
+  Render32, Render32MT,
   Render32f, Render32fMT;
 
 const
@@ -41,7 +41,6 @@ type
 
     FOnProgress: TOnProgress;
     FCP: TControlPoint;
-//    Fcompatibility: Integer;
     FMaxMem: int64;
     FNrThreads: Integer;
     FBitsPerSample: integer;
@@ -51,10 +50,9 @@ type
     procedure CreateRenderer;
     function GetNrSlices: integer;
     function GetSlice: integer;
-//    procedure Setcompatibility(const Value: Integer);
-//    procedure SetMaxMem(const Value: int64);
-//    procedure SetNrThreads(const Value: Integer);
     procedure SetBitsPerSample(const bits: Integer);
+
+    procedure Trace(const str: string);
 
   public
     TargetHandle: HWND;
@@ -74,9 +72,11 @@ type
     procedure Terminate;
     procedure Suspend;
     procedure Resume;
-    procedure Break;
+    procedure BreakRender;
 
-    procedure GetBucketStats(var Stats: TBucketStats);
+//    procedure GetBucketStats(var Stats: TBucketStats);
+    procedure ShowBigStats;
+    procedure ShowSmallStats;
 
     property OnProgress: TOnProgress
         read FOnProgress
@@ -105,7 +105,8 @@ type
 implementation
 
 uses
-  Math, Sysutils;
+  Math, SysUtils,
+  Tracer;
 
 { TRenderThread }
 
@@ -115,6 +116,8 @@ begin
   if assigned(FRenderer) then
     FRenderer.Free;
   FRenderer := nil;
+
+  if assigned(FCP) then FCP.Free;
 
   inherited;
 end;
@@ -138,7 +141,7 @@ end;
 ///////////////////////////////////////////////////////////////////////////////
 procedure TRenderThread.SetCP(CP: TControlPoint);
 begin
-  FCP := CP;
+  FCP := CP.Clone;
 end;
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -155,8 +158,11 @@ end;
 ///////////////////////////////////////////////////////////////////////////////
 procedure TRenderThread.CreateRenderer;
 begin
-  if assigned(FRenderer) then
+  if assigned(FRenderer) then begin
+    Trace('Destroying previous renderer (?)');
     FRenderer.Free;
+  end;
+  Trace('Creating renderer');
 
   if NrThreads <= 1 then begin
     if MaxMem = 0 then begin
@@ -201,9 +207,6 @@ begin
   FRenderer.MinDensity := FMinDensity;
   FRenderer.OnProgress := FOnProgress;
   FRenderer.Output := FOutput;
-
-//  FRenderer.Render;
-  //?... if FRenderer.Failed then Terminate; // hmm
 end;
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -213,21 +216,32 @@ begin
   CreateRenderer;
 
 RenderMore:
+  assert(assigned(FRenderer));
+
+  Trace('Rendering');
   FRenderer.Render;
 
-  if Terminated then begin
-    PostMessage(TargetHandle, WM_THREAD_TERMINATE, 0, 0);
+  if Terminated or FRenderer.Failed then begin
+    Trace('Sending WM_THREAD_TERMINATE');
+    PostMessage(TargetHandle, WM_THREAD_TERMINATE, 0, ThreadID);
+    Trace('Terminated');
     exit;
   end
-  else PostMessage(TargetHandle, WM_THREAD_COMPLETE, 0, 0);
+  else begin
+    Trace('Sending WM_THREAD_COMPLETE');
+    PostMessage(TargetHandle, WM_THREAD_COMPLETE, 0, ThreadID);
+  end;
 
   if WaitForMore and (FRenderer <> nil) then begin
     FRenderer.RenderMore := true;
 
+    Trace('Waiting for more');
     inherited Suspend;
 
     if WaitForMore then goto RenderMore;
   end;
+
+  Trace('Finished');
 end;
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -243,24 +257,22 @@ end;
 
 procedure TRenderThread.Suspend;
 begin
-  if NrThreads > 1 then
-    if assigned(FRenderer) then FRenderer.Pause;
+  if assigned(FRenderer) then FRenderer.Pause;
 
   inherited;
 end;
 
 procedure TRenderThread.Resume;
 begin
-  if NrThreads > 1 then
-    if assigned(FRenderer) then FRenderer.UnPause;
+  if assigned(FRenderer) then FRenderer.UnPause;
 
   inherited;
 end;
 
-procedure TRenderThread.Break;
+procedure TRenderThread.BreakRender;
 begin
   if assigned(FRenderer) then
-    FRenderer.Break;
+    FRenderer.BreakRender;
 end;
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -303,10 +315,24 @@ begin
 end;
 
 ///////////////////////////////////////////////////////////////////////////////
-procedure TRenderThread.GetBucketStats(var Stats: TBucketStats);
+procedure TRenderThread.Trace(const str: string);
+begin
+  if assigned(FOutput) and (TraceLevel >= 2) then
+    FOutput.Add('. . > RenderThread #' + IntToStr(ThreadID) + ': ' + str);
+end;
+
+///////////////////////////////////////////////////////////////////////////////
+procedure TRenderThread.ShowBigStats;
 begin
   if assigned(FRenderer) then
-    FRenderer.GetBucketStats(Stats);
+    FRenderer.ShowBigStats;
 end;
+
+procedure TRenderThread.ShowSmallStats;
+begin
+  if assigned(FRenderer) then
+    FRenderer.ShowSmallStats;
+end;
+///////////////////////////////////////////////////////////////////////////////
 
 end.

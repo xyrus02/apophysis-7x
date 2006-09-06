@@ -35,6 +35,7 @@ type
   TBaseRenderer = class
   private
     FOnProgress: TOnProgress;
+    strOutput: TStrings;
 
   protected
     camX0, camX1, camY0, camY1, // camera bounds
@@ -54,7 +55,6 @@ type
     FStop: integer;//boolean;
 
     FImageMaker: TImageMaker;
-    strOutput: TStrings;
 
     ColorMap: TColorMapArray;
 
@@ -71,11 +71,10 @@ type
     FMinBatches: integer;
     FRenderOver: boolean;
 
-    RenderTime: TDateTime;
+    RenderTime, PauseTime: TDateTime;
 
     procedure Progress(value: double);
 
-    procedure SetNumThreads(const n: integer);
     procedure SetMinDensity(const q: double);
 
     procedure CreateColorMap; virtual;
@@ -94,6 +93,9 @@ type
     procedure ClearBuckets; virtual; abstract;
     procedure RenderMM;
 
+    procedure Trace(const str: string);
+    procedure TimeTrace(const str: string);
+
   public
     constructor Create; virtual;
     destructor Destroy; override;
@@ -107,11 +109,14 @@ type
     procedure SaveImage(const FileName: String);
 
     procedure Stop; virtual;
-    procedure Break; virtual;
-    procedure Pause; virtual; abstract;
-    procedure UnPause; virtual; abstract;
+    procedure BreakRender; virtual;
+    procedure Pause; virtual;
+    procedure UnPause; virtual;
 
-    procedure GetBucketStats(var Stats: TBucketStats);
+    function Failed: boolean;
+
+    procedure ShowBigStats;
+    procedure ShowSmallStats;
 
     property OnProgress: TOnProgress
         read FOnProgress
@@ -125,7 +130,7 @@ type
         read FSlice;
     property NumThreads: integer
         read FNumThreads
-       write SetNumThreads;
+       write FNumThreads;
     property Output: TStrings
        write strOutput;
     property MinDensity: double
@@ -133,7 +138,6 @@ type
     property RenderMore: boolean
        write FRenderOver;
   end;
-
 
 ///////////////////////////////////////////////////////////////////////////////
 
@@ -149,7 +153,6 @@ type
     FOnProgress: TOnProgress;
     FCP: TControlPoint;
     FMaxMem: int64;
-
 
   public
     destructor Destroy; override;
@@ -211,13 +214,48 @@ begin
 end;
 
 ///////////////////////////////////////////////////////////////////////////////
+procedure TBaseRenderer.Trace(const str: string);
+begin
+  if assigned(strOutput) then
+    strOutput.Add(str);
+end;
+
+procedure TBaseRenderer.TimeTrace(const str: string);
+begin
+  if assigned(strOutput) then
+    strOutput.Add(TimeToStr(Now) + ' : ' + str);
+end;
+
+///////////////////////////////////////////////////////////////////////////////
+procedure TBaseRenderer.Pause;
+begin
+  PauseTime := Now;
+
+  TimeTrace('Pausing render');
+end;
+
+procedure TBaseRenderer.UnPause;
+var
+  tNow: TDateTime;
+begin
+  tNow := Now;
+  RenderTime := RenderTime + (tNow - PauseTime);
+
+  TimeTrace('Resuming render');
+end;
+
+///////////////////////////////////////////////////////////////////////////////
 procedure TBaseRenderer.Stop;
 begin
+  TimeTrace('Terminating render');
+
   FStop := 1; //True;
 end;
 
-procedure TBaseRenderer.Break;
+procedure TBaseRenderer.BreakRender;
 begin
+  TimeTrace('Stopping render');
+
   FStop := -1;
 end;
 
@@ -229,12 +267,6 @@ begin
 end;
 
 ///////////////////////////////////////////////////////////////////////////////
-procedure TBaseRenderer.SetNumThreads(const n: integer);
-begin
-  FNumThreads := n;
-end;
-
-///////////////////////////////////////////////////////////////////////////////
 procedure TBaseRenderer.SetMinDensity(const q: double);
 begin
   if q < fcp.sample_density then FMinDensity := q
@@ -242,11 +274,54 @@ begin
 end;
 
 ///////////////////////////////////////////////////////////////////////////////
-procedure TBaseRenderer.GetBucketStats(var Stats: TBucketStats);
+function TBaseRenderer.Failed: boolean;
 begin
+  Result := (FStop > 0);
+end;
+
+///////////////////////////////////////////////////////////////////////////////
+procedure TBaseRenderer.ShowBigStats;
+var
+  Stats: TBucketStats;
+  TotalSamples: int64;
+begin
+  if not assigned(strOutput) then exit;
+
+  strOutput.Add('');
+  if NrSlices = 1 then
+    strOutput.Add('Render Statistics:')
+  else
+    strOutput.Add('Render Statistics for the last slice:'); // not really useful :-\
+
+  TotalSamples := int64(FNumBatches) * SUB_BATCH_SIZE; // * fcp.nbatches ?
+  if TotalSamples <= 0 then begin
+    strOutput.Add('  Nothing to talk about!'); // normally shouldn't happen
+    exit;
+  end;
+  strOutput.Add(Format('  Max possible bits: %2.3f', [8 + log2(TotalSamples)]));
   FImageMaker.GetBucketStats(Stats);
-  Stats.TotalSamples := int64(FNumBatches) * SUB_BATCH_SIZE; // * fcp.nbatches ?
-  Stats.RenderTime := RenderTime;
+  with Stats do begin
+    strOutput.Add(Format('  Max Red:   %2.3f bits', [log2(MaxR)]));
+    strOutput.Add(Format('  Max Green: %2.3f bits', [log2(MaxG)]));
+    strOutput.Add(Format('  Max Blue:  %2.3f bits', [log2(MaxB)]));
+    strOutput.Add(Format('  Max Count: %2.3f bits', [log2(MaxA)]));
+    strOutput.Add(Format('  Point hit ratio: %2.2f%%', [100.0*(TotalA/TotalSamples)]));
+    if RenderTime > 0 then // hmm
+      strOutput.Add(Format('  Average speed: %n points per second', [TotalSamples / (RenderTime * 24 * 60 * 60)]));
+    strOutput.Add('  Pure rendering time:' + TimeToString(RenderTime));
+  end;
+end;
+
+procedure TBaseRenderer.ShowSmallStats;
+var
+  TotalSamples: int64;
+begin
+  if not assigned(strOutput) then exit;
+
+  TotalSamples := int64(FNumBatches) * SUB_BATCH_SIZE; // * fcp.nbatches ?
+  if RenderTime > 0 then // hmm
+    strOutput.Add(Format('  Average speed: %n points per second', [TotalSamples / (RenderTime * 24 * 60 * 60)]));
+  strOutput.Add('  Pure rendering time:' + TimeToString(RenderTime));
 end;
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -264,11 +339,13 @@ end;
 function TBaseRenderer.GetTransparentImage: TPngObject;
 begin
   if FStop > 0 then begin
-    assert(false);
-    FImageMaker.OnProgress := OnProgress;
-    FImageMaker.CreateImage;
-  end;
-  Result := FImageMaker.GetTransparentImage;
+    Trace('WARNING: Trying to get unprepared image!?');
+    Result := nil;
+//    FImageMaker.OnProgress := OnProgress;
+//    FImageMaker.CreateImage;
+  end
+  else
+    Result := FImageMaker.GetTransparentImage;
 end;
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -292,13 +369,11 @@ end;
 procedure TBaseRenderer.SaveImage(const FileName: String);
 begin
   if FStop > 0 then begin
-    if Assigned(strOutput) then
-      strOutput.Add(TimeToStr(Now) + Format(' : Creating image with quality = %f', [fcp.actual_density]));
+    TimeTrace(Format('Creating image with quality = %f', [fcp.actual_density]));
     FImageMaker.OnProgress := OnProgress;
     FImageMaker.CreateImage;
   end;
-  if Assigned(strOutput) then
-    strOutput.Add(TimeToStr(Now) + ' : Saving image');
+  TimeTrace('Saving image');
   FImageMaker.SaveImage(FileName);
 end;
 
@@ -433,31 +508,28 @@ end;
 
 ///////////////////////////////////////////////////////////////////////////////
 procedure TBaseRenderer.InitBuffers;
+const
+  error_string = 'ERROR: Not enough memory for this render!';
 var
-  w, h, bits: integer;
+  bits: integer;
 begin
   bits := GetBits;
-  w := BucketWidth;
-  h := BucketHeight;
-
   CalcBufferSize;
 
   try
-    if Assigned(strOutput) then
-      strOutput.Add(TimeToStr(Now) +
-             Format(' : Allocating %n Mb of memory', [BucketSize * SizeOfBucket[bits] / 1048576]));
+    TimeTrace(Format('Allocating %n Mb of memory', [BucketSize * SizeOfBucket[bits] / 1048576]));
 
-    AllocateBuckets; // SetLength(buckets, BucketHeight, BucketWidth); // hmm :-/
+    AllocateBuckets; // SetLength(buckets, BucketHeight, BucketWidth);
 
   except
     on EOutOfMemory do begin
       if Assigned(strOutput) then
-        strOutput.Add('Error: not enough memory for this render!')
+        strOutput.Add(error_string)
       else
-        Application.MessageBox('Error: not enough memory for this render!', 'Apophysis', 48);
+        Application.MessageBox(error_string, 'Apophysis', 48);
       BucketWidth := 0;
       BucketHeight := 0;
-      FStop := 1; //true;
+      FStop := 1; 
       exit;
     end;
   end;
@@ -475,7 +547,6 @@ begin
   FImageMaker.SetCP(FCP);
   FImageMaker.Init;
 
-  
   InitBuffers;
   if FStop <> 0 then exit; // memory allocation error?
 
@@ -490,12 +561,11 @@ begin
   RenderTime := Now - RenderTime;
 
   if FStop <= 0 then begin
-    if Assigned(strOutput) then begin
-      if fcp.sample_density = fcp.actual_density then
-        strOutput.Add(TimeToStr(Now) + ' : Creating image')
-      else
-        strOutput.Add(TimeToStr(Now) + Format(' : Creating image with quality = %f', [fcp.actual_density]));
-    end;
+    if fcp.sample_density = fcp.actual_density then
+      TimeTrace('Creating image')
+    else
+      TimeTrace(Format('Creating image with quality = %f', [fcp.actual_density]));
+
     FImageMaker.OnProgress := OnProgress;
     FImageMaker.CreateImage;
   end;
@@ -577,7 +647,7 @@ begin
     RenderTime := RenderTime + (Now - t);
 
     if FStop = 0 then begin
-      if Assigned(strOutput) then strOutput.Add(TimeToStr(Now) + ' : Creating image');
+      TimeTrace('Creating image');
       FImageMaker.OnProgress := OnProgress;
       FImageMaker.CreateImage(Slice * fcp.height);
     end;
@@ -614,13 +684,6 @@ begin
   FCP := CP;
 end;
 
-{
-///////////////////////////////////////////////////////////////////////////////
-constructor TRenderer.Create;
-begin
-end;
-}
-
 ///////////////////////////////////////////////////////////////////////////////
 procedure TRenderer.Render;
 begin
@@ -628,15 +691,14 @@ begin
     FRenderer.Free;
 
   assert(Fmaxmem=0);
-  if FMaxMem = 0 then begin
+//  if FMaxMem = 0 then begin
     FRenderer := TRenderer32.Create;
-  end else begin
-    FRenderer := TRenderer32MM.Create;
-    FRenderer.MaxMem := FMaxMem
-  end;
+//  end else begin
+//    FRenderer := TRenderer32MM.Create;
+//    FRenderer.MaxMem := FMaxMem
+//  end;
 
   FRenderer.SetCP(FCP);
-//  FRenderer.compatibility := compatibility;
   FRenderer.OnProgress := FOnProgress;
   FRenderer.Render;
 end;
@@ -647,25 +709,6 @@ begin
   if assigned(FRenderer) then
     FRenderer.Stop;
 end;
-
-{
-procedure TRenderer.UpdateImage(CP: TControlPoint);
-begin
-
-end;
-
-procedure TRenderer.SaveImage(const FileName: String);
-begin
-  if assigned(FRenderer) then
-    FRenderer.SaveImage(FileName);
-end;
-
-procedure TRenderer.GetBucketStats(var Stats: TBucketStats);
-begin
-  if assigned(FRenderer) then
-    FRenderer.GetBucketStats(Stats);
-end;
-}
 
 end.
 

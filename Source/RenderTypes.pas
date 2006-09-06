@@ -11,7 +11,6 @@ type
     Red,
     Green,
     Blue: integer; //Int64;
-//    Count: Int64;
   end;
   PColorMapColor = ^TColorMapColor;
   TColorMapArray = array[0..255] of TColorMapColor;
@@ -81,10 +80,40 @@ const
 type
   TBucketStats = record
     MaxR, MaxG, MaxB, MaxA,
-    TotalA, TotalSamples: int64;
-    RenderTime: TDateTime;
+    TotalA: int64;
   end;
 
+function TimeToString(t: TDateTime): string;
+
 implementation
+
+uses SysUtils;
+
+function TimeToString(t: TDateTime): string;
+var
+  n: integer;
+begin
+  n := Trunc(t);
+  Result := '';
+  if n>0 then begin
+    Result := Result + Format(' %d day', [n]);
+    if (n mod 10) <> 1 then Result := Result + 's';
+  end;
+  t := t * 24;
+  n := Trunc(t) mod 24;
+  if n>0 then begin
+    Result := Result + Format(' %d hour', [n]);
+    if (n mod 10) <> 1 then Result := Result + 's';
+  end;
+  t := t * 60;
+  n := Trunc(t) mod 60;
+  if n>0 then begin
+    Result := Result + Format(' %d minute', [n]);
+    if (n mod 10) <> 1 then Result := Result + 's';
+  end;
+  t := t * 60;
+  t := t - (Trunc(t) div 60) * 60;
+  Result := Result + Format(' %.2f seconds', [t]);
+end;
 
 end.
