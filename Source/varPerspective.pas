@@ -9,11 +9,15 @@ const
   var_a_name = 'perspective_angle';
   var_f_name = 'perspective_dist';
 
+{$define _ASM_}
+
 type
   TVariationPerspective = class(TBaseVariation)
   private
     angle, focus: double;
     vsin, vf, vfcos: double;
+
+    procedure CalcLinear;
 
   public
     constructor Create;
@@ -28,8 +32,9 @@ type
     function GetVariable(const Name: string; var value: double): boolean; override;
     function ResetVariable(const Name: string): boolean; override;
 
-    procedure CalcFunction; override;
     procedure Prepare; override;
+    procedure CalcFunction; override;
+    procedure GetCalcFunction(var f: TCalcFunction); override;
   end;
 
 implementation
@@ -47,14 +52,22 @@ begin
   vfcos := vf * cos(angle*pi/2);
 end;
 
+///////////////////////////////////////////////////////////////////////////////
+procedure TVariationPerspective.GetCalcFunction(var f: TCalcFunction);
+begin
+  if IsZero(angle) then f := CalcLinear
+  else f := CalcFunction;
+end;
+
+///////////////////////////////////////////////////////////////////////////////
 procedure TVariationPerspective.CalcFunction;
 {$if false}
 var
   t: double;
 begin
-  t := (focus - fty^*vsin);
-  FPx^ := FPx^ + vf * ftx^ / t;
-  FPy^ := FPy^ + vfcos * fty^ / t;
+  t := (focus - vsin * FTy^);
+  FPx^ := FPx^ + vf * FTx^ / t;
+  FPy^ := FPy^ + vfcos * FTy^ / t;
 {$else}
 asm
     mov     ecx, [eax + FTy]
@@ -74,6 +87,27 @@ asm
     mov     ecx, [eax+FPy]
     fadd    qword ptr [ecx]
     fstp    qword ptr [ecx]
+    fwait
+{$ifend}
+end;
+
+procedure TVariationPerspective.CalcLinear;
+{$if false}
+begin
+  FPx^ := FPx^ + vvar * FTx^;
+  FPy^ := FPy^ + vvar * FTy^;
+{$else}
+asm
+    fld     qword ptr [eax + vvar]
+    mov     edx, [eax + FTx]
+    fld     qword ptr [edx]
+    fmul    st, st(1)
+    fadd    qword ptr [edx + 16]
+    fstp    qword ptr [edx + 16]
+    fld     qword ptr [edx + 8]
+    fmulp
+    fadd    qword ptr [edx + 24]
+    fstp    qword ptr [edx + 24]
     fwait
 {$ifend}
 end;
