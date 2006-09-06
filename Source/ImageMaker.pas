@@ -43,10 +43,6 @@ type
 
     procedure CreateFilter;
     procedure NormalizeFilter;
-    procedure SetOnProgress(const Value: TOnProgress);
-
-    procedure Progress(value: double);
-
 
   public
     constructor Create;
@@ -68,7 +64,7 @@ type
 
     property OnProgress: TOnProgress
         read FOnProgress
-       write SetOnProgress;
+       write FOnProgress;
   end;
 
 implementation
@@ -235,12 +231,6 @@ begin
 end;
 
 ///////////////////////////////////////////////////////////////////////////////
-procedure TImageMaker.SetOnProgress(const Value: TOnProgress);
-begin
-  FOnProgress := Value;
-end;
-
-///////////////////////////////////////////////////////////////////////////////
 procedure TImageMaker.CreateImage(YOffset: integer);
 var
   gamma: double;
@@ -313,7 +303,9 @@ begin
   by := 0;
   for i := 0 to fcp.Height - 1 do begin
     bx := 0;
-    Progress(i / fcp.Height);
+
+    if (i and $7 = 0) and assigned(FOnProgress) then FOnProgress(i / fcp.Height);
+
     AlphaRow := PByteArray(FAlphaBitmap.scanline[YOffset + i]);
     Row := PRGBArray(FBitmap.scanline[YOffset + i]);
     for j := 0 to fcp.Width - 1 do begin
@@ -451,7 +443,7 @@ zero_alpha:
 
   FBitmap.PixelFormat := pf24bit;
 
-  Progress(1);
+  if assigned(FOnProgress) then FOnProgress(1);
 end;
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -518,13 +510,6 @@ BMPHack:
       FAlphaBitmap.SaveToFile(FileName);
     end;
   end;
-end;
-
-///////////////////////////////////////////////////////////////////////////////
-procedure TImageMaker.Progress(value: double);
-begin
-  if assigned(FOnprogress) then
-    FOnprogress(Value);
 end;
 
 ///////////////////////////////////////////////////////////////////////////////

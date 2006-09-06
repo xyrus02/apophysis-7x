@@ -1,6 +1,6 @@
 {
      Apophysis Copyright (C) 2001-2004 Mark Townsend
-     Apophysis Copyright (C) 2005-2006 Ronald Hordijk, Piotr Borys, Peter Sdobnov     
+     Apophysis Copyright (C) 2005-2006 Ronald Hordijk, Piotr Borys, Peter Sdobnov
 
      This program is free software; you can redistribute it and/or modify
      it under the terms of the GNU General Public License as published by
@@ -25,10 +25,12 @@ interface
 
 uses
   Windows, Forms, Dialogs, Menus, Controls, ComCtrls,
-  ToolWin, StdCtrls, Classes, Messages, ExtCtrls, ImgList, controlpoint,
-  Jpeg, SyncObjs, SysUtils, ClipBrd, Graphics, Math, Global,
-  Registry, RenderThread, Cmap, ExtDlgs, AppEvnts, ShellAPI,
-  LibXmlParser, LibXmlComps, Xform, XFormMan, PngImage;
+  ToolWin, StdCtrls, Classes, Messages, ExtCtrls, ImgList,
+  Jpeg, SyncObjs, SysUtils, ClipBrd, Graphics, Math,
+  ExtDlgs, AppEvnts, ShellAPI, Registry,
+  Global, Xform, XFormMan, ControlPoint, CMap,
+  RenderThread, RenderTypes,
+  LibXmlParser, LibXmlComps, PngImage;
 
 const
   PixelCountMax = 32768;
@@ -37,10 +39,11 @@ const
   RS_XO = 2;
   RS_VO = 3;
 
-  AppVersionString = 'Apophysis 2.05 pre-release 12';
+  AppVersionString = 'Apophysis 2.05 pre-release 15';
 
 type
-  TMouseMoveState = (msUsual, msZoomWindow, msZoomOutWindow, msZoomWindowMove, msZoomOutWindowMove, msDrag, msDragMove, msRotate, msRotateMove);
+  TMouseMoveState = (msUsual, msZoomWindow, msZoomOutWindow, msZoomWindowMove,
+                     msZoomOutWindowMove, msDrag, msDragMove, msRotate, msRotateMove);
 
 type
   TWin32Version = (wvUnknown, wvWin95, wvWin98, wvWinNT, wvWin2000, wvWinXP);
@@ -75,7 +78,7 @@ type
     mnuItemDelete: TMenuItem;
     mnuListRename: TMenuItem;
     DisplayPopup: TPopupMenu;
-    mnuPopCopyUPR: TMenuItem;
+    mnuPopFullscreen: TMenuItem;
     RedrawTimer: TTimer;
     mnuVar: TMenuItem;
     mnuVRandom: TMenuItem;
@@ -175,6 +178,8 @@ type
     tbQualityBox: TComboBox;
     View1: TMenuItem;
     tbShowAlpha: TToolButton;
+    tbShowTrace: TToolButton;
+    ToolButton2: TToolButton;
     procedure tbzoomoutwindowClick(Sender: TObject);
     procedure mnuimageClick(Sender: TObject);
     procedure mnuExitClick(Sender: TObject);
@@ -270,17 +275,27 @@ type
     procedure tbQualityBoxSet(Sender: TObject);
     procedure ImageDblClick(Sender: TObject);
     procedure tbShowAlphaClick(Sender: TObject);
-  
+    procedure tbShowTraceClick(Sender: TObject);
+    procedure XmlScannerContent(Sender: TObject; Content: String);
+
   private
     Renderer: TRenderThread;
 
     FMouseMoveState: TMouseMoveState;
     FSelectRect: TRect;
+    DrawSelection: boolean;
     FRotateAngle: double;
+    FClickPos: TPoint;
     FClickAngle: double;
     FViewImage: TPngObject;
-    FViewPos: TPoint;
+    FViewPos, FViewOldPos: TSPoint;
     FViewScale: double;
+
+    // For parsing:
+    FinalXformLoaded: boolean;
+    ActiveXformSet: integer;
+    XMLPaletteFormat: string;
+    XMLPaletteCount: integer;
 
     procedure DrawImageView;
     procedure DrawZoomWindow(ARect: TRect);
@@ -294,13 +309,13 @@ type
       message WM_THREAD_COMPLETE;
     procedure HandleThreadTermination(var Message: TMessage);
       message WM_THREAD_TERMINATE;
+
   public
     { Public declarations }
     UndoIndex, UndoMax: integer;
     Center: array[0..1] of double;
     MainZoom: double;
     StartTime: TDateTime;
-    Remainder: TDateTime;
     AnimPal: TColorMap;
 
     VarMenus: array of TMenuItem;
@@ -313,6 +328,7 @@ type
     function SaveXMLFlame(const cp1: TControlPoint; title, filename: string): boolean;
     procedure DisplayHint(Sender: TObject);
     procedure OnProgress(prog: double);
+    procedure ResizeImage;
     procedure DrawFlame;
     procedure UpdateUndo;
     procedure LoadUndoFlame(index: integer; filename: string);
@@ -348,7 +364,6 @@ procedure UnpackVariations(v: int64);
 procedure MultMatrix(var s: TMatrix; const m: TMatrix);
 procedure ListFlames(FileName: string; sel: integer);
 procedure ListIFS(FileName: string; sel: integer);
-//procedure AdjustScale(var cp1: TControlPoint; width, height: integer);
 procedure NormalizeVariations(var cp1: TControlPoint);
 function GetWinVersion: TWin32Version;
 
@@ -356,22 +371,22 @@ var
   MainForm: TMainForm;
   pname, ptime: string;
   nxform: integer;
-  FinalXformLoaded: boolean; //
-  ParseCp: TControlPoint;    // For parsing;
-  ActiveXformSet: integer;   //
+
   MainCp: TControlPoint;
+  ParseCp: TControlPoint;
+
 
 implementation
 
-
 uses
 {$IFDEF DEBUG}
-  JclDebug, ExceptForm, 
+  JclDebug, ExceptForm,
 {$ENDIF}
   Editor, Options, Regstry,  Render,
   FullScreen, FormRender, Mutate, Adjust, Browser, Save, About, CmapData,
   HtmlHlp, ScriptForm, FormFavorites, FormExport, msMultiPartFormData,
-  ImageColoring, RndFlame;
+  ImageColoring, RndFlame,
+  Tracer;
 
 {$R *.DFM}
 
@@ -832,7 +847,7 @@ end;
 
 procedure TMainForm.OnProgress(prog: double);
 var
-  Elapsed: TDateTime;
+  Elapsed, Remaining: TDateTime;
 begin
   Elapsed := Now - StartTime;
   StatusBar.Panels[0].Text := Format('Elapsed %2.2d:%2.2d:%2.2d.%2.2d',
@@ -840,14 +855,16 @@ begin
     Trunc((Elapsed * 24 - Trunc(Elapsed * 24)) * 60),
       Trunc((Elapsed * 24 * 60 - Trunc(Elapsed * 24 * 60)) * 60),
       Trunc((Elapsed * 24 * 60 * 60 - Trunc(Elapsed * 24 * 60 * 60)) * 100)]);
-  if prog > 0 then 
-    Remainder := Min(Remainder, Elapsed * (power(1 / prog, 1.2) - 1));
+  if prog > 0 then
+    Remaining := Elapsed/prog - Elapsed
+  else
+    Remaining := 0;
 
   StatusBar.Panels[1].Text := Format('Remaining %2.2d:%2.2d:%2.2d.%2.2d',
-    [Trunc(Remainder * 24),
-    Trunc((Remainder * 24 - Trunc(Remainder * 24)) * 60),
-      Trunc((Remainder * 24 * 60 - Trunc(Remainder * 24 * 60)) * 60),
-      Trunc((Remainder * 24 * 60 * 60 - Trunc(Remainder * 24 * 60 * 60)) * 100)]);
+    [Trunc(Remaining * 24),
+    Trunc((Remaining * 24 - Trunc(Remaining * 24)) * 60),
+      Trunc((Remaining * 24 * 60 - Trunc(Remaining * 24 * 60)) * 60),
+      Trunc((Remaining * 24 * 60 * 60 - Trunc(Remaining * 24 * 60 * 60)) * 100)]);
   StatusBar.Panels[2].Text := MainCp.name;
   Application.ProcessMessages;
 end;
@@ -1271,16 +1288,14 @@ function ColorToXmlCompact(cp1: TControlPoint): string;
 var
   i: integer;
 begin
-  Result := '   <colors count="256" data="';
-
+  Result := '   <palette count="256" format="RGB">';
   for i := 0 to 255 do  begin
-    Result := Result + '00' //IntToHex(0,2)
-                     + IntToHex(cp1.cmap[i, 0],2)
+    if ((i and 7) = 0) then Result := Result + #13#10 + '      ';
+    Result := Result + IntToHex(cp1.cmap[i, 0],2)
                      + IntToHex(cp1.cmap[i, 1],2)
                      + IntToHex(cp1.cmap[i, 2],2);
-    if ((i and 7) = 7) and (i <> 255) then Result := Result + #13#10 + '    ';
   end;
-  Result := Result + '"/>';
+  Result := Result + #13#10 + '   </palette>';
 end;
 
 
@@ -1323,7 +1338,7 @@ begin
   if Trim(SheepURL) <> '' then url := 'url="' + Trim(SheepURL) + '" ';
 }
   try
-    parameters := '';
+    parameters := 'version="' + AppVersionString + '" ';
     if cp1.time <> 0 then
       parameters := parameters + format('time="%g" ', [cp1.time]);
 
@@ -1684,70 +1699,171 @@ end;
 
 { ****************************** Display ************************************ }
 
-procedure TMainForm.HandleThreadCompletion(var Message: TMessage);
+procedure Trace1(const str: string);
 begin
-  if not Assigned(Renderer) then exit;
+  if TraceLevel >= 1 then
+    TraceForm.MainTrace.Lines.Add('. ' + str);
+end;
 
-  if assigned(FViewImage) then FViewImage.Free;
-  FViewPos.X := 0;
-  FViewPos.Y := 0;
-  FViewScale := 1;
+procedure Trace2(const str: string);
+begin
+  if TraceLevel >= 2 then
+    TraceForm.MainTrace.Lines.Add('. . ' + str);
+end;
+
+procedure TMainForm.HandleThreadCompletion(var Message: TMessage);
+var
+  oldscale: double;
+begin
+  Trace2(MsgComplete + IntToStr(message.LParam));
+  if not Assigned(Renderer) then begin
+    Trace2(MsgNotAssigned);
+    exit;
+  end;
+  if Renderer.ThreadID <> message.LParam then begin
+    Trace2(MsgAnotherRunning);
+    exit;
+  end;
+  Image.Cursor := crDefault;
+
+  if assigned(FViewImage) then begin
+    oldscale := FViewImage.Width / Image.Width;
+    FViewImage.Free;
+  end
+  else oldscale := FViewScale;
+
   FViewImage := Renderer.GetTransparentImage;
-  DrawImageView;
 
+  if FViewImage <> nil then begin
+    FViewScale := FViewImage.Width / Image.Width;
+
+    FViewPos.X := FViewScale/oldscale * (FViewPos.X - FViewOldPos.X);
+    FViewPos.Y := FViewScale/oldscale * (FViewPos.Y - FViewOldPos.Y);
+
+    DrawImageView;
+{
+    case FMouseMoveState of
+      msZoomWindowMove: FMouseMoveState := msZoomWindow;
+      msZoomOutWindowMove: FMouseMoveState := msZoomOutWindow;
+//    msDragMove: FMouseMoveState := msDrag;
+      msRotateMove: FMouseMoveState := msRotate;
+    end;
+}
+    if FMouseMoveState in [msZoomWindowMove, msZoomOutWindowMove, msRotateMove] then
+      DrawSelection := false;
+
+    Trace1(TimeToStr(Now) + ' : Render complete');
+    Renderer.ShowSmallStats;
+  end
+  else Trace2('WARNING: No image rendered!');
+
+  Renderer.WaitFor;
+  Trace2('Destroying RenderThread #' + IntToStr(Renderer.ThreadID));
   Renderer.Free;
   Renderer := nil;
+  Trace1('');
 end;
 
 procedure TMainForm.HandleThreadTermination(var Message: TMessage);
 begin
-  if Assigned(Renderer) then begin
-    Renderer.Free;
-    Renderer := nil;
+  Trace2(MsgTerminated + IntToStr(message.LParam));
+  if not Assigned(Renderer) then begin
+    Trace2(MsgNotAssigned);
+    exit;
   end;
+  if Renderer.ThreadID <> message.LParam then begin
+    Trace2(MsgAnotherRunning);
+    exit;
+  end;
+  Image.Cursor := crDefault;
+  Trace2('  Render aborted');
+
+  Trace2('Destroying RenderThread #' + IntToStr(Renderer.ThreadID));
+  Renderer.Free;
+  Renderer := nil;
+  Trace1('');
 end;
 
 procedure TMainForm.DrawFlame;
+var
+  GlobalMemoryInfo: TMemoryStatus; // holds the global memory status information
+  RenderMem: integer;
+  RenderCP: TControlPoint;
+  Mem, ApproxMem: cardinal;
 begin
   RedrawTimer.Enabled := False;
   if Assigned(Renderer) then begin
     assert(Renderer.Suspended = false);
 
+    Trace2('Killing previous RenderThread #' + inttostr(Renderer.ThreadID));
     Renderer.Terminate;
     Renderer.WaitFor;
+    Trace2('Destroying RenderThread #' + IntToStr(Renderer.ThreadID));
+
     Renderer.Free;
     Renderer := nil;
   end;
 
-  assert(Renderer = nil); //...?
-
   if not Assigned(Renderer) then
   begin
-    if (MainCp.width <> Image.Width) or (MainCp.height <> Image.height) then
-    begin
-      MainCp.AdjustScale(Image.width, Image.height);
-      if EditForm.Visible then EditForm.UpdateDisplay(true); // preview only?
-    end;
+    if EditForm.Visible and ((MainCP.Width / MainCP.Height) <> (EditForm.cp.Width / EditForm.cp.Height))
+      then EditForm.UpdateDisplay{(true)}; // preview only?
     if AdjustForm.Visible then AdjustForm.UpdateDisplay(true); // preview only!
+
+    RenderCP := MainCP.Clone;
+    RenderCp.AdjustScale(Image.width, Image.height);
+
     // following needed ?
 //    cp.Zoom := Zoom;
 //    cp.center[0] := center[0];
 //    cp.center[1] := center[1];
-    MainCp.sample_density := defSampleDensity;
-    Maincp.spatial_oversample := defOversample;
-    Maincp.spatial_filter_radius := defFilterRadius;
-    MainCP.Transparency := true; // always generate transparency data
+
+    RenderCP.sample_density := defSampleDensity;
+    // oversample and filter are just slowing us down here...
+    RenderCP.spatial_oversample := 1; // defOversample;
+    RenderCP.spatial_filter_radius := 0.001; {?} //defFilterRadius;
+    RenderCP.Transparency := true; // always generate transparency here
+
+    GlobalMemoryInfo.dwLength := SizeOf(GlobalMemoryInfo);
+    GlobalMemoryStatus(GlobalMemoryInfo);
+    Mem := GlobalMemoryInfo.dwAvailPhys;
+
+//    if Output.Lines.Count >= 1000 then Output.Lines.Clear;
+    Trace1('--- Previewing "' + RenderCP.name + '" ---');
+    Trace1(Format('  Available memory: %f Mb', [Mem / (1024*1024)]));
+    ApproxMem := int64(RenderCp.Width) * int64(RenderCp.Height) {* sqr(Oversample)}
+                 * (SizeOfBucket[InternalBitsPerSample] + 4 + 4); // +4 for temp image(s)...?
+    assert(MainPreviewScale <> 0);
+    if ApproxMem * sqr(MainPreviewScale) < Mem then begin
+      if ExtendMainPreview then begin
+        RenderCP.sample_density := RenderCP.sample_density / sqr(MainPreviewScale);
+        RenderCP.Width := round(RenderCp.Width * MainPreviewScale);
+        RenderCP.Height := round(RenderCp.Height * MainPreviewScale);
+      end;
+    end
+    else Trace1('WARNING: Not enough memory for extended preview!');
+    if ApproxMem > Mem then
+      Trace1('OUTRAGEOUS: Not enough memory even for normal preview! :-(');
+    Trace1(Format('  Size: %dx%d, Quality: %f',
+                  [RenderCP.Width, RenderCP.Height, RenderCP.sample_density]));
+    FViewOldPos.x := FViewPos.x;
+    FViewOldPos.y := FViewPos.y;
     StartTime := Now;
-    Remainder := 1;
     try
       Renderer := TRenderThread.Create;
       Renderer.TargetHandle := MainForm.Handle;
+      if TraceLevel > 0 then Renderer.Output := TraceForm.MainTrace.Lines;
       Renderer.OnProgress := OnProgress;
-//      Renderer.Compatibility := Compatibility;
-      Renderer.SetCP(Maincp);
+      Renderer.SetCP(RenderCP);
+
+      Trace2('Starting RenderThread #' + inttostr(Renderer.ThreadID));
       Renderer.Resume;
+
+      Image.Cursor := crAppStart;
     except
+      Trace1('ERROR: Cannot start renderer!');
     end;
+    RenderCP.Free;
   end;
 end;
 
@@ -1870,7 +1986,6 @@ begin
   end;
 end;
 
-
 procedure TMainForm.mnuOpenClick(Sender: TObject);
 begin
   ScriptEditor.Stopped := True;
@@ -1970,6 +2085,7 @@ begin
   RedrawTimer.Enabled := True;
   tbQualityBox.Text := FloatToStr(defSampleDensity);
   tbShowAlpha.Down := ShowTransparency;
+  DrawImageView;
   UpdateWindows;
 end;
 
@@ -2339,6 +2455,11 @@ procedure TMainForm.FormCreate(Sender: TObject);
 var
   dte: string;
 begin
+  Screen.Cursors[crEditArrow]  := LoadCursor(HInstance, 'ARROW_WHITE');
+  Screen.Cursors[crEditMove]   := LoadCursor(HInstance, 'MOVE_WB');
+  Screen.Cursors[crEditRotate] := LoadCursor(HInstance, 'ROTATE_WB');
+  Screen.Cursors[crEditScale]  := LoadCursor(HInstance, 'SCALE_WB');
+
 {$IFDEF DEBUG}
   // Enable raw mode (default mode uses stack frames which aren't always generated by the compiler)
   Include(JclStackTrackingOptions, stRawMode);
@@ -2354,7 +2475,7 @@ begin
   LimitVibrancy := True;
   Favorites := TStringList.Create;
   GetScripts;
-  Compatibility := 1; // for Drave's compatibility
+//  Compatibility := 1; // for Drave's compatibility
   Randomize;
   MainSeed := Random(1234567890);
   maincp := TControlPoint.Create;
@@ -2376,6 +2497,8 @@ begin
 
   tbQualityBox.Text := FloatToStr(defSampleDensity);
   tbShowAlpha.Down := ShowTransparency;
+  DrawSelection := true;
+  FViewScale := 1; // prevent divide by zero (?)
 end;
 
 procedure TMainForm.FormShow(Sender: TObject);
@@ -2418,6 +2541,14 @@ begin
   maincp.spatial_filter_radius := defFilterRadius;
   inc(MainSeed);
   RandSeed := MainSeed;
+
+// somehow this doesn't work:
+//  Image.Width := BackPanel.Width - 2;
+//  Image.Height := BackPanel.Height - 2;
+
+// so we'll do it 'bad' way ;-)
+  Image.Align := alNone;
+
   if FileExists(AppPath + 'default.map') then
   begin
     DefaultPalette := GradientBrowser.LoadFractintMap(AppPath + 'default.map');
@@ -2433,7 +2564,7 @@ begin
     DeleteFile(AppPath + 'apophysis.rand');
   if (defFlameFile = '') or (not FileExists(defFlameFile)) then
   begin
-    MainCp.Width := image.width;
+    MainCp.Width := Image.Width;
     MainCp.Height := Image.Height;
     RandomBatch;
     MainForm.Caption := AppVersionString + ' - Random Batch';
@@ -2529,6 +2660,15 @@ end;
 
 procedure TMainForm.FormKeyPress(Sender: TObject; var Key: Char);
 begin
+  if Key = #27 then begin
+    case FMouseMoveState of
+      msZoomWindowMove: FMouseMoveState := msZoomWindow;
+      msZoomOutWindowMove: FMouseMoveState := msZoomOutWindow;
+      msDragMove: FMouseMoveState := msDrag;
+      msRotateMove: FMouseMoveState := msRotate;
+    end;
+    DrawImageView;
+  end;
   ScriptEditor.Stopped := True;
 end;
 
@@ -2539,6 +2679,8 @@ begin
   StopThread;
   if CanDrawOnResize then
     reDrawTimer.Enabled := True;
+
+  ResizeImage;  
   DrawImageView;
 end;
 
@@ -2631,22 +2773,28 @@ begin
   end;
 end;
 
-procedure ResizeWindow;
+procedure TMainForm.ResizeImage;
 var
-  x, y, xdf, ydf: integer;
+  pw, ph: integer;
 begin
-  xdf := MainForm.Width - MainForm.Image.Width;
-  ydf := MainForm.Height - MainForm.Image.Height;
-  x := Maincp.Width + xdf;
-  y := Maincp.height + ydf;
-  if x <= Screen.width then
-    MainForm.Width := x
-  else
-    MainForm.Width := Screen.Width;
-  if y <= Screen.height then
-    MainForm.height := y
-  else
-    MainForm.height := Screen.height;
+  pw := BackPanel.Width - 2;
+  ph := BackPanel.Height - 2;
+  begin
+    if (MainCP.Width / MainCP.Height) > (pw / ph) then
+    begin
+      Image.Width := pw;
+      Image.Height := round(MainCP.Height / MainCP.Width * pw);
+      Image.Left := 1;
+      Image.Top := (ph - Image.Height) div 2;
+    end
+    else begin
+      Image.Height := ph;
+      Image.Width := round(MainCP.Width / MainCP.Height * ph);
+      Image.Top := 1;
+      Image.Left := (pw - Image.Width) div 2;
+    end;
+  end;
+  //MainCP.AdjustScale(Image.Width, Image.Height);
 end;
 
 procedure TMainForm.ListViewChange(Sender: TObject; Item: TListItem;
@@ -2772,7 +2920,8 @@ begin
         EntryStrings.free;
       end;
     end;
-    if ResizeOnLoad then ResizeWindow;
+    {if ResizeOnLoad then}
+    ResizeImage;
   end;
 
 end;
@@ -2865,9 +3014,9 @@ end;
 procedure TMainForm.ResetLocation;
 begin
   maincp.zoom := 0;
-  maincp.FAngle := 0;
-  maincp.Width := Image.Width;
-  maincp.Height := Image.Height;
+  //maincp.FAngle := 0;
+  //maincp.Width := Image.Width;
+  //maincp.Height := Image.Height;
   maincp.CalcBoundBox;
   center[0] := maincp.center[0];
   center[1] := maincp.center[1];
@@ -2893,6 +3042,8 @@ end;
 procedure TMainForm.RedrawTimerTimer(Sender: TObject);
 { Draw flame when timer fires. This seems to stop a lot of errors }
 begin
+  if FMouseMoveState in [msZoomWindowMove, msZoomOutWindowMove, msDragMove, msRotateMove] then exit;
+
   RedrawTimer.enabled := False;
   DrawFlame;
 end;
@@ -3200,6 +3351,7 @@ end;
 
 procedure TMainForm.mnuFullScreenClick(Sender: TObject);
 begin
+  FullScreenForm.ActiveForm := Screen.ActiveForm;
   FullScreenForm.Width := Screen.Width;
   FullScreenForm.Height := Screen.Height;
   FullScreenForm.Top := 0;
@@ -3242,7 +3394,7 @@ begin
     RenderForm.SaveDialog.FileName := RenderPath + maincp.name + Ext;
     RenderForm.txtFilename.Text := ChangeFileExt(RenderForm.SaveDialog.Filename, Ext);
 
-    RenderForm.cp.Copy(maincp);
+    RenderForm.cp.Copy(MainCP);
     RenderForm.cp.cmap := maincp.cmap;
     RenderForm.zoom := maincp.zoom;
     RenderForm.Center[0] := center[0];
@@ -3266,9 +3418,37 @@ begin
 end;
 
 procedure TMainForm.mnuResetLocationClick(Sender: TObject);
+var
+  scale: double;
+  dx, dy, cdx, cdy: double;
+  sina, cosa: extended;
 begin
   UpdateUndo;
+
+  scale := MainCP.pixels_per_unit * power(2, MainCP.zoom);
+  cdx := MainCP.center[0];
+  cdy := MainCP.center[1];
+
   ResetLocation;
+
+  cdx := MainCP.center[0] - cdx;
+  cdy := MainCP.center[1] - cdy;
+  Sincos(MainCP.FAngle, sina, cosa);
+  if IsZero(sina) then begin
+    dy := cdy*cosa {- cdx*sina};
+    dx := (cdx {+ dy*sina})/cosa;
+  end
+  else begin
+    dx := cdy*sina + cdx*cosa;
+    dy := (dx*cosa - cdx)/sina;
+  end;
+  FViewPos.x := FViewPos.x - dx * scale;
+  FViewPos.y := FViewPos.y - dy * scale;
+
+  FViewScale := FViewScale * MainCP.pixels_per_unit * power(2, MainCP.zoom) / scale;
+
+  DrawImageView;
+
   RedrawTimer.enabled := true;
   UpdateWindows;
 end;
@@ -3500,12 +3680,10 @@ begin
   if FlameInClipboard then
   begin
     mnuPaste.enabled := true;
-//z    btnPaste.enabled := true;
   end
   else
   begin
     mnuPaste.enabled := false;
-//z    btnPaste.enabled := false;
   end;
 end;
 
@@ -3517,6 +3695,8 @@ begin
   nxform := 0;
   FinalXformLoaded := false;
   ActiveXformSet := 0;
+  XMLPaletteFormat := '';
+  XMLPaletteCount := 0;
 //  Parsecp.cmapindex := -2; // generate palette from cmapindex and hue (apo 1 and earlier)
 //  ParseCp.symmetry := 0;
 //  ParseCP.finalXformEnabled := false;
@@ -3547,13 +3727,14 @@ begin
   end;
 
   if FinalXformLoaded = false then begin
-    MainCP.xform[nxform].Clear;
-    MainCP.xform[nxform].symmetry := 1;
+    cp1{MainCP}.xform[nxform].Clear;
+    cp1{MainCP}.xform[nxform].symmetry := 1;
   end;
 
   if nxform < NXFORMS then
     for i := nxform to NXFORMS - 1 do
       cp1.xform[i].density := 0;
+
   // Check for symmetry parameter
   if ParseCp.symmetry <> 0 then
   begin
@@ -3571,7 +3752,8 @@ begin
     ParseXML(MainCP, PCHAR(Clipboard.AsText));
     Transforms := MainCp.TrianglesFromCP(MainTriangles);
     Statusbar.Panels[2].Text := MainCp.name;
-    if ResizeOnLoad then ResizeWindow;
+    {if ResizeOnLoad then}
+    ResizeImage;
     RedrawTimer.Enabled := True;
     Application.ProcessMessages;
     UpdateWindows;
@@ -3619,15 +3801,6 @@ var
   Ext, ex, Path: string;
   cp1: TControlPoint;
 begin
-{
-  if (MainCp.NumXForms > 12) or
-     (MainCP.HasNewVariants) then begin
-    showMessage('WARNING: This flame will not be correctly rendered '#10#13+
-                'by the flam3 version < 2.7b4.'#10#13+
-                'Please use the 2.7b4 version or newer '#10#13+
-                'or use the internal renderer.');
-  end;
-}
   if not FileExists(flam3Path) then
   begin
     Application.MessageBox('Renderer does not exist.', 'Apophysis', 16);
@@ -3739,6 +3912,50 @@ begin
   end;
 end;
 
+////////////////////////////////////////////////////////////////////////////////
+
+procedure ParseCompactColors(cp: TControlPoint; count: integer; in_data: string; alpha: boolean = true);
+  function HexChar(c: Char): Byte;
+  begin
+    case c of
+      '0'..'9':  Result := Byte(c) - Byte('0');
+      'a'..'f':  Result := (Byte(c) - Byte('a')) + 10;
+      'A'..'F':  Result := (Byte(c) - Byte('A')) + 10;
+    else
+      Result := 0;
+    end;
+  end;
+var
+  i, pos, len: integer;
+  c: char;
+  data: string;
+begin
+  // diable generating pallete
+  if Parsecp.cmapindex = -2 then
+    Parsecp.cmapindex := -1;
+
+  Assert(Count = 256, 'only 256 color Colormaps are supported at the moment');
+  data := '';
+  for i := 0 to Length(in_data) do
+  begin
+    c := in_data[i];
+    if c in ['0'..'9']+['A'..'F']+['a'..'f'] then data := data + c;
+  end;
+
+  if alpha then len := count * 8
+  else len := count * 6;
+
+  Assert(len = Length(data), 'Color-data size mismatch');
+
+  for i := 0 to Count-1 do begin
+    if alpha then pos := i*8 + 2
+    else pos := i*6;
+    Parsecp.cmap[i][0] := 16 * HexChar(Data[pos + 1]) + HexChar(Data[pos + 2]);
+    Parsecp.cmap[i][1] := 16 * HexChar(Data[pos + 3]) + HexChar(Data[pos + 4]);
+    Parsecp.cmap[i][2] := 16 * HexChar(Data[pos + 5]) + HexChar(Data[pos + 6]);
+  end;
+end;
+
 procedure TMainForm.ListXmlScannerStartTag(Sender: TObject;
   TagName: string; Attributes: TAttrList);
 begin
@@ -3755,7 +3972,7 @@ begin
   Tokens := TStringList.Create;
  try
 
-  if TagName='xformset' then
+  if TagName='xformset' then // unused in this release...
   begin
     v := Attributes.Value('enabled');
     if v <> '' then ParseCP.finalXformEnabled := (StrToInt(v) <> 0)
@@ -3836,45 +4053,39 @@ begin
     v := Attributes.Value('url');
     if Trim(v) = '' then v := SheepUrl;
     Parsecp.URL := v;
+  end
+  else if TagName='palette' then
+  begin
+    XMLPaletteFormat := Attributes.Value('format');
+    XMLPaletteCount := StrToIntDef(Attributes.Value('count'), 256);
   end;
  finally
     Tokens.free;
  end;
 end;
 
-procedure ParseCompactcolors(cp: TControlPoint; count: integer; in_data: string);
-  function HexChar(c: Char): Byte;
-  begin
-    case c of
-      '0'..'9':  Result := Byte(c) - Byte('0');
-      'a'..'f':  Result := (Byte(c) - Byte('a')) + 10;
-      'A'..'F':  Result := (Byte(c) - Byte('A')) + 10;
-    else
-      Result := 0;
-    end;
-  end;
-var
-  i: integer;
-  c: char;
-  data: string;
+procedure TMainForm.XmlScannerContent(Sender: TObject; Content: String);
 begin
-  // diable generating pallete
-  if Parsecp.cmapindex = -2 then
-    Parsecp.cmapindex := -1;
-
-  Assert(Count = 256, 'only 256 color Colormaps are supported at the moment');
-  data := '';
-  for i := 0 to Length(in_data) do
+  if XMLPaletteCount <= 0 then begin
+    ShowMessage('ERROR: No colors in palette!');
+    exit;
+  end;
+  if XMLPaletteFormat = 'RGB' then
   begin
-    c := in_data[i];
-    if c in ['0'..'9']+['A'..'F']+['a'..'f'] then data := data + c;
+    ParseCompactColors(ParseCP, XMLPaletteCount, Content, false);
+  end
+  else if XMLPaletteFormat = 'RGBA' then
+  begin
+    ParseCompactColors(ParseCP, XMLPaletteCount, Content);
+  end
+  else begin
+    ShowMessage('ERROR: Unsupported palette format!');
+    exit;
   end;
-  Assert((Count * 8) = Length(data), 'Color-data size mismatch');
-  for i := 0 to Count -1 do begin
-    Parsecp.cmap[i][0] := 16 * HexChar(Data[i*8 + 3]) + HexChar(Data[i*8 + 4]);
-    Parsecp.cmap[i][1] := 16 * HexChar(Data[i*8 + 5]) + HexChar(Data[i*8 + 6]);
-    Parsecp.cmap[i][2] := 16 * HexChar(Data[i*8 + 7]) + HexChar(Data[i*8 + 8]);
-  end;
+  Parsecp.cmapindex := -1;
+
+  XMLPaletteFormat := '';
+  XMLPaletteCount := 0;
 end;
 
 procedure TMainForm.XMLScannerEmptyTag(Sender: TObject; TagName: string;
@@ -4004,11 +4215,9 @@ end;
 ///////////////////////////////////////////////////////////////////////////////
 procedure TMainForm.ImageMouseDown(Sender: TObject; Button: TMouseButton;
   Shift: TShiftState; X, Y: Integer);
-var
-  DestRect: TRect;
-  SourceRect: TRect;
 begin
   if button <> mbLeft then exit;
+  FClickPos := Point(x, y);
   case FMouseMoveState of
     msZoomWindow:
       begin
@@ -4058,7 +4267,7 @@ begin
       end;
     msRotate:
       begin
-        FClickAngle:=arctan2(y-Image.Height/2, Image.Width/2-x);
+        FClickAngle := arctan2(y-Image.Height/2, Image.Width/2-x);
 
         FRotateAngle := 0;
         FSelectRect.Left := x;
@@ -4070,41 +4279,81 @@ end;
 
 ///////////////////////////////////////////////////////////////////////////////
 procedure TMainForm.ImageMouseMove(Sender: TObject; Shift: TShiftState; X, Y: Integer);
+const
+  snap_angle = 15*pi/180;
 var
-  DestRect: TRect;
   dx, dy: integer;
+  scale: double;
 begin
+{
+  case FMouseMoveState of
+    msRotate, msRotateMove:
+      Image.Cursor := crEditRotate;
+    msDrag, msDragMove:
+      Image.Cursor := crEditMove;
+    else
+      Image.Cursor := crEditArrow;
+  end;
+}
   case FMouseMoveState of
     msZoomWindowMove,
     msZoomOutWindowMove:
       begin
+        if DrawSelection then DrawZoomWindow(FSelectRect);
+        dx := x - FClickPos.X;
+        dy := y - FClickPos.Y;
+
+        if ssAlt in Shift then begin
+          if (dy = 0) or (abs(dx/dy) >= Image.Width/Image.Height) then
+            dy := Round(dx / Image.Width * Image.Height)
+          else
+            dx := Round(dy / Image.Height * Image.Width);
+          FSelectRect.Left := FClickPos.X - dx;
+          FSelectRect.Top := FClickPos.Y - dy;
+          FSelectRect.Right := FClickPos.X + dx;
+          FSelectRect.Bottom := FClickPos.Y + dy;
+        end
+        else begin
+          FSelectRect.Left := FClickPos.X;
+          FSelectRect.Top := FClickPos.Y;
+          if (dy = 0) or (abs(dx/dy) >= Image.Width/Image.Height) then begin
+            FSelectRect.Right := x;
+            FSelectRect.Bottom := FClickPos.Y + sign(dx*dy) * Round(dx / Image.Width * Image.Height);
+          end
+          else begin
+            FSelectRect.Right := FClickPos.X + sign(dy*dx) * Round(dy / Image.Height * Image.Width);
+            FSelectRect.Bottom := y;
+          end;
+        end;
         DrawZoomWindow(FSelectRect);
-        FSelectRect.BottomRight := Point(x, y);
-        DrawZoomWindow(FSelectRect);
+        DrawSelection := true;
       end;
     msDragMove:
       begin
         assert(assigned(FviewImage));
-
         assert(FViewScale <> 0);
-        FViewPos.X := FViewPos.X + round( (x - FSelectRect.Right) / FViewScale);
-        FViewPos.Y := FViewPos.Y + round( (y - FSelectRect.Bottom) / FViewScale);
+
+        scale := FViewScale * Image.Width / FViewImage.Width;
+        FViewPos.X := FViewPos.X + (x - FSelectRect.Right) / scale;
+        FViewPos.Y := FViewPos.Y + (y - FSelectRect.Bottom) / scale;
         FSelectRect.BottomRight := Point(x, y);
 
-		DrawImageView;
+		    DrawImageView;
       end;
     msRotateMove:
       begin
-        DrawRotatelines(FRotateAngle);
+        if DrawSelection then DrawRotatelines(FRotateAngle);
 
-//        FRotateAngle := FRotateAngle + 0.004 * (FSelectRect.Left - X);
-        FRotateAngle:=arctan2(y-Image.Height/2, Image.Width/2-x) - FClickAngle;
+        FRotateAngle := arctan2(y-Image.Height/2, Image.Width/2-x) - FClickAngle;
+        if ssShift in Shift then // angle snap
+          FRotateAngle := Round(FRotateAngle/snap_angle)*snap_angle;
         FSelectRect.Left := x;
 
 //        pdjpointgen.Rotate(FRotateAngle);
 //        FRotateAngle := 0;
 
         DrawRotatelines(FRotateAngle);
+        DrawSelection := true;
 {
         Image.Refresh;
 if AdjustForm.Visible then begin
@@ -4119,12 +4368,13 @@ end;
 ///////////////////////////////////////////////////////////////////////////////
 procedure TMainForm.ImageMouseUp(Sender: TObject; Button: TMouseButton;
   Shift: TShiftState; X, Y: Integer);
+var
+  scale: double;
 begin
   case FMouseMoveState of
     msZoomWindowMove:
       begin
         DrawZoomWindow(FSelectRect);
-        FSelectRect.BottomRight := Point(x, y);
         FMouseMoveState := msZoomWindow;
         if (abs(FSelectRect.Left - FSelectRect.Right) < 10) or
            (abs(FSelectRect.Top - FSelectRect.Bottom) < 10) then
@@ -4134,13 +4384,17 @@ begin
         UpdateUndo;
         MainCp.ZoomtoRect(FSelectRect);
 
+        FViewScale := FViewScale * Image.Width / abs(FSelectRect.Right - FSelectRect.Left);
+        FViewPos.x := FViewPos.x - ((FSelectRect.Right + FSelectRect.Left) - Image.Width)/2;
+        FViewPos.y := FViewPos.y - ((FSelectRect.Bottom + FSelectRect.Top) - Image.Height)/2;
+        DrawImageView;
+
         RedrawTimer.Enabled := True;
         UpdateWindows;
       end;
     msZoomOutWindowMove:
       begin
         DrawZoomWindow(FSelectRect);
-        FSelectRect.BottomRight := Point(x, y);
         FMouseMoveState := msZoomOutWindow;
         if (abs(FSelectRect.Left - FSelectRect.Right) < 10) or
            (abs(FSelectRect.Top - FSelectRect.Bottom) < 10) then
@@ -4149,6 +4403,13 @@ begin
         StopThread;
         UpdateUndo;
         MainCp.ZoomOuttoRect(FSelectRect);
+
+        scale := Image.Width / abs(FSelectRect.Right - FSelectRect.Left);
+        FViewScale := FViewScale / scale;
+        FViewPos.x := scale * (FViewPos.x + ((FSelectRect.Right + FSelectRect.Left) - Image.Width)/2);
+        FViewPos.y := scale * (FViewPos.y + ((FSelectRect.Bottom + FSelectRect.Top) - Image.Height)/2);
+
+        DrawImageView;
 
         RedrawTimer.Enabled := True;
         UpdateWindows;
@@ -4182,6 +4443,12 @@ begin
         if MainForm_RotationMode = 0 then MainCp.Rotate(FRotateAngle)
         else MainCp.Rotate(-FRotateAngle);
 
+        if assigned(FViewImage) then begin
+          FViewImage.Free;
+          FViewImage := nil;
+          DrawImageView;
+        end;
+
         RedrawTimer.Enabled := True;
         UpdateWindows;
       end;
@@ -4194,6 +4461,13 @@ var
   i, j: integer;
   bm: TBitmap;
   r: TRect;
+  scale: double;
+const
+  msg = #54; // 'NO PREVIEW';
+var
+  ok: boolean;
+  GlobalMemoryInfo: TMemoryStatus; // holds the global memory status information
+  area: int64;
 begin
   bm := TBitmap.Create;
   bm.Width := Image.Width;
@@ -4215,16 +4489,42 @@ begin
       FillRect(Rect(0, 0, bm.Width, bm.Height));
     end;
   end;
+  ok := false;
   if assigned(FViewImage) then begin
-    FViewScale := Image.Width / FViewImage.Width;
+    scale := FViewScale * Image.Width / FViewImage.Width;
 
-    r.Left := round(FViewScale * FViewPos.X);
-    r.Right := round(FViewScale * (FViewPos.X + FViewImage.Width));
-    r.Top := Image.Height div 2 + round(FViewScale * (FViewPos.Y - FViewImage.Height/2));
-    r.Bottom := Image.Height div 2 + round(FViewScale * (FViewPos.Y + FViewImage.Height/2));
+    r.Left := Image.Width div 2 + round(scale * (FViewPos.X - FViewImage.Width/2));
+    r.Right := Image.Width div 2 + round(scale * (FViewPos.X + FViewImage.Width/2));
+    r.Top := Image.Height div 2 + round(scale * (FViewPos.Y - FViewImage.Height/2));
+    r.Bottom := Image.Height div 2 + round(scale * (FViewPos.Y + FViewImage.Height/2));
 
-    FViewImage.Draw(bm.Canvas, r);
+    GlobalMemoryInfo.dwLength := SizeOf(GlobalMemoryInfo);
+    GlobalMemoryStatus(GlobalMemoryInfo);
+    area := abs(r.Right - r.Left) * int64(abs(r.Bottom - r.Top));
+
+    if (area * 4 < GlobalMemoryInfo.dwAvailPhys div 2) or
+      (area <= Screen.Width*Screen.Height*4) then
+    try
+      FViewImage.Draw(bm.Canvas, r);
+      ok := true;
+    except
+    end;
   end;
+
+  if not ok then
+    with bm.Canvas do
+    begin
+      Font.Name := 'Wingdings'; // 'Arial';
+      Font.Height := bm.Height div 4;
+      Font.Color := $808080;
+      Brush.Style := bsClear;
+      i := (bm.Width - TextWidth(msg)) div 2;
+      j := (bm.Height - TextHeight(msg)) div 2;
+      Font.Color := 0;
+      TextOut(i+2,j+2, msg);
+      Font.Color := clWhite; //$808080;
+      TextOut(i,j, msg);
+    end;
   Image.Picture.Graphic := bm;
   Image.Refresh;
   bm.Free;
@@ -4391,6 +4691,7 @@ begin
   end
   else mnuResetLocationClick(Sender);
 end;
+
 {$IFDEF DEBUG}
 ///////////////////////////////////////////////////////////////////////////////
 procedure TMainForm.AppException(Sender: TObject; E: Exception);
@@ -4410,13 +4711,15 @@ end;
 
 ///////////////////////////////////////////////////////////////////////////////
 procedure TMainForm.tbShowAlphaClick(Sender: TObject);
-var
-  DestRect: TRect;
-  bm: TBitmap;
 begin
   ShowTransparency := tbShowAlpha.Down;
 
   DrawImageView;
+end;
+
+procedure TMainForm.tbShowTraceClick(Sender: TObject);
+begin
+  TraceForm.Show;
 end;
 
 end.

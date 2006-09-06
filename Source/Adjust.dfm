@@ -178,9 +178,11 @@ object AdjustForm: TAdjustForm
     Height = 129
     ActivePage = TabSheet1
     Align = alBottom
+    Images = MainForm.Buttons
     TabOrder = 1
     object TabSheet1: TTabSheet
       Caption = 'Camera'
+      ImageIndex = 18
       object scrollZoom: TScrollBar
         Left = 72
         Top = 7
@@ -263,6 +265,7 @@ object AdjustForm: TAdjustForm
         Height = 15
         LargeChange = 1500
         Max = 36000
+        Min = -36000
         PageSize = 0
         SmallChange = 100
         TabOrder = 6
@@ -351,7 +354,7 @@ object AdjustForm: TAdjustForm
     end
     object TabSheet2: TTabSheet
       Caption = 'Rendering'
-      ImageIndex = 1
+      ImageIndex = 35
       object lblContrast: TLabel
         Left = 4
         Top = 80
@@ -532,7 +535,7 @@ object AdjustForm: TAdjustForm
     end
     object TabSheet3: TTabSheet
       Caption = 'Gradient'
-      ImageIndex = 2
+      ImageIndex = 11
       object lblVal: TLabel
         Left = 358
         Top = 55
@@ -866,7 +869,7 @@ object AdjustForm: TAdjustForm
     end
     object TabSheet4: TTabSheet
       Caption = 'Image Size'
-      ImageIndex = 3
+      ImageIndex = 51
       object Bevel2: TBevel
         Left = 4
         Top = 4
@@ -894,6 +897,13 @@ object AdjustForm: TAdjustForm
         Width = 31
         Height = 13
         Caption = 'Height'
+      end
+      object Bevel3: TBevel
+        Left = 302
+        Top = 4
+        Width = 73
+        Height = 93
+        Shape = bsFrame
       end
       object btnPreset1: TButton
         Left = 156
@@ -950,9 +960,9 @@ object AdjustForm: TAdjustForm
         OnClick = btnSet3Click
       end
       object btnApplySize: TBitBtn
-        Left = 302
-        Top = 72
-        Width = 75
+        Left = 308
+        Top = 64
+        Width = 61
         Height = 25
         Caption = 'Apply'
         TabOrder = 6
@@ -1004,6 +1014,18 @@ object AdjustForm: TAdjustForm
           '960'
           '1024')
       end
+      object chkResizeMain: TCheckBox
+        Left = 308
+        Top = 10
+        Width = 61
+        Height = 50
+        Alignment = taLeftJustify
+        Caption = 'Resize Main Window'
+        Checked = True
+        State = cbChecked
+        TabOrder = 10
+        WordWrap = True
+      end
     end
   end
   object QualityPopup: TPopupMenu
@@ -1031,6 +1053,7 @@ object AdjustForm: TAdjustForm
     end
     object mnuInstantPreview: TMenuItem
       Caption = 'Instant Preview'
+      Checked = True
       OnClick = mnuInstantPreviewClick
     end
   end

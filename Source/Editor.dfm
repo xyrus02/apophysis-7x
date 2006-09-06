@@ -412,8 +412,9 @@ object EditForm: TEditForm
           Top = 1
           Width = 170
           Height = 130
-          IncrementalDisplay = True
+          Center = True
           PopupMenu = QualityPopup
+          Proportional = True
         end
       end
       object ControlPanel: TPanel
@@ -1193,7 +1194,7 @@ object EditForm: TEditForm
               ShowHint = True
               OnClick = btnResetPostXFormClick
             end
-            object btnSwapXforms: TSpeedButton
+            object btnPostTriangle: TSpeedButton
               Left = 8
               Top = 260
               Width = 145
@@ -1209,7 +1210,7 @@ object EditForm: TEditForm
               ParentFont = False
               ParentShowHint = False
               ShowHint = True
-              OnClick = btnSwapXformsClick
+              OnClick = btnPostTriangleClick
             end
             object pnlWeight: TPanel
               Left = 8
@@ -1695,8 +1696,7 @@ object EditForm: TEditForm
       Caption = '-'
     end
     object mnuResetLoc: TMenuItem
-      Caption = 'Reset Location'
-      Checked = True
+      Caption = 'Auto reset location'
       OnClick = mnuResetLocClick
     end
   end

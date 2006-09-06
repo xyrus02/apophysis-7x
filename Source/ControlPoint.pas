@@ -1,7 +1,7 @@
 {
      Flame screensaver Copyright (C) 2002 Ronald Hordijk
      Apophysis Copyright (C) 2001-2004 Mark Townsend
-     Apophysis Copyright (C) 2005-2006 Ronald Hordijk, Piotr Borys, Peter Sdobnov     
+     Apophysis Copyright (C) 2005-2006 Ronald Hordijk, Piotr Borys, Peter Sdobnov
 
      This program is free software; you can redistribute it and/or modify
      it under the terms of the GNU General Public License as published by
@@ -34,8 +34,6 @@ const
   BRIGHT_ADJUST = 2.3;
   FUSE = 15;
 
-// ---- MyTypes ----
-
 type
   TCoefsArray= array[0..2, 0..1] of double;
   pCoefsArray= ^TCoefsArray;
@@ -66,8 +64,6 @@ type
   pPreviewPixArray = ^TPreviewPixArray;
   TPreviewPixArray = array[0..159, 0..119, 0..3] of integer;
   TFileType = (ftIfs, ftFla, ftXML);
-
-// -----
 
 type //?
   PLongintArray = ^TLongintArray;
@@ -118,7 +114,7 @@ type
     (* in order to motion blur more accurately we compute the logs of the
       sample density many times and average the results.  we interplate
       only this many times. *)
-    actual_density: extended; // for incomplete renders  
+    actual_density: extended; // for incomplete renders
     nbatches: integer; // this much color resolution.  but making it too high induces clipping
     white_level: integer;
     cmap_inter: integer; // if this is true, then color map interpolates one entry
@@ -164,15 +160,19 @@ type
 //    procedure Testiterate(NrPoints: integer; var Points: TPointsArray);
 
     function Clone: TControlPoint;
-    procedure Copy(cp1: TControlPoint);
+    procedure Copy(cp1: TControlPoint; KeepSizes: boolean = false);
 
-    function HasNewVariants: boolean;
+//    function HasNewVariants: boolean;
     function HasFinalXForm: boolean;
 
     // CP-specific functions moved from unit Main
     function NumXForms: integer;
     function TrianglesFromCP(var Triangles: TTriangles): integer;
     procedure GetFromTriangles(const Triangles: TTriangles; const t: integer);
+
+    procedure GetPostTriangle(var Triangles: TTriangles; const n: integer);
+    procedure SetPostTriangle(const Triangles: TTriangles; const n: integer);
+
     procedure EqualizeWeights;
     procedure NormalizeWeights;
     procedure RandomizeWeights;
@@ -913,6 +913,7 @@ var
   deltay, miny, maxy: double;
   cntminy, cntmaxy: integer;
   LimitOutSidePoints: integer;
+  px, py, sina, cosa: double;
 begin
 {$IFDEF TESTVARIANT}
   center[0] := 0;
@@ -929,6 +930,9 @@ begin
       1: iterateXYC(SUB_BATCH_SIZE, points);
     end;
 }
+    cosa := cos(FAngle);
+    sina := sin(FAngle);
+
     Prepare;
 
     IterateXY(SUB_BATCH_SIZE, points);
@@ -960,6 +964,8 @@ begin
       cntminy := 0;
       cntmaxy := 0;
       for i := 0 to SUB_BATCH_SIZE - 1 do begin
+        px := points[i].x * cosa + points[i].y * sina;
+        py := points[i].y * cosa - points[i].x * sina;
         if (Points[i].x < minx) then Inc(cntminx);
         if (Points[i].x > maxx) then Inc(cntmaxx);
         if (Points[i].y < miny) then Inc(cntminy);
@@ -1490,11 +1496,15 @@ begin
   sl.Free;
 end;
 
-procedure TControlPoint.Copy(cp1: TControlPoint);
+procedure TControlPoint.Copy(cp1: TControlPoint; KeepSizes: boolean = false);
 var
   i: integer;
   sl: TStringList;
+  w, h: integer;
 begin
+  w := Width;
+  h := Height;
+
   Clear;
   sl := TStringList.Create;
 
@@ -1503,10 +1513,16 @@ begin
   ParseStringlist(sl);
 
   Fangle := cp1.FAngle;
+  center[0]:= cp1.center[0];
+  center[1]:= cp1.center[1];
+  pixels_per_unit := cp1.pixels_per_unit;
   cmap := cp1.cmap;
   name := cp1.name;
   nick := cp1.nick;
   url := cp1.url;
+
+  if KeepSizes then
+    AdjustScale(w, h);
 
   for i := 0 to NXFORMS do // was: NXFORMS-1
     xform[i].assign(cp1.xform[i]);
@@ -1649,6 +1665,7 @@ begin
   end;
 end;
 
+(*
 ///////////////////////////////////////////////////////////////////////////////
 function TControlPoint.HasNewVariants: boolean;
 var
@@ -1668,47 +1685,40 @@ begin
   end;
 }
 end;
+*)
 
 ///////////////////////////////////////////////////////////////////////////////
 procedure TControlPoint.ZoomtoRect(R: TRect);
 var
-  scale: double;
-  ppux, ppuy: double;
+  scale, ppu: double;
   dx,dy: double;
 begin
   scale := power(2, zoom);
-  ppux := pixels_per_unit * scale;
-  ppuy := pixels_per_unit * scale;
+  ppu := pixels_per_unit * scale;
 
-  dx := ((r.Left + r.Right)/2 - Width/2)/ppux ;
-  dy := ((r.Top + r.Bottom)/2 - Height/2)/ppuy;
+  dx := ((r.Left + r.Right)/2 - Width/2) / ppu;
+  dy := ((r.Top + r.Bottom)/2 - Height/2) / ppu;
 
   center[0] := center[0] + cos(FAngle) * dx - sin(FAngle) * dy;
-  center[1] := center[1] + sin(FAngle) * dx + cos(FAngle) * dy ;
+  center[1] := center[1] + sin(FAngle) * dx + cos(FAngle) * dy;
 
-  Scale := Scale * Min( Width/(abs(r.Right - r.Left) + 1), Height/(abs(r.Bottom - r.Top) + 1)) ;
-  Zoom := Log2(Scale);
+  zoom := Log2(scale * ( Width/(abs(r.Right - r.Left) + 1)));
 end;
 
 ///////////////////////////////////////////////////////////////////////////////
 procedure TControlPoint.ZoomOuttoRect(R: TRect);
 var
-  scale: double;
-  ppux, ppuy: double;
-  dx,dy: double;
+  ppu: double;
+  dx, dy: double;
 begin
-  scale := power(2, zoom);
-  ppux := pixels_per_unit * scale;
-  ppuy := pixels_per_unit * scale;
+  zoom := Log2(power(2, zoom) / ( Width/(abs(r.Right - r.Left) + 1)));
+  ppu := pixels_per_unit * power(2, zoom);
 
-  dx := ((r.Left + r.Right)/2 - Width/2)/ppux ;
-  dy := ((r.Top + r.Bottom)/2 - Height/2)/ppuy;
+  dx := ((r.Left + r.Right)/2 - Width/2) / ppu;
+  dy := ((r.Top + r.Bottom)/2 - Height/2) / ppu;
 
-  center[0] := center[0] + cos(FAngle) * dx - sin(FAngle) * dy;
-  center[1] := center[1] + sin(FAngle) * dx + cos(FAngle) * dy ;
-
-  Scale := Scale / Min( Width/(abs(r.Right - r.Left) + 1), Height/(abs(r.Bottom - r.Top) + 1)) ;
-  Zoom := Log2(Scale);
+  center[0] := center[0] - cos(FAngle) * dx + sin(FAngle) * dy;
+  center[1] := center[1] - sin(FAngle) * dx - cos(FAngle) * dy;
 end;
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -1960,6 +1970,33 @@ begin
   FinalXformEnabled := EnableFinalXform;
 end;
 
+
+procedure TControlPoint.GetPostTriangle(var Triangles: TTriangles; const n: integer);
+var
+  i, j: integer;
+begin
+  for i := 0 to 2 do
+  with xform[n] do begin
+    Triangles[n].x[i] := Triangles[-1].x[i] * p[0][0] + Triangles[-1].y[i] * p[1][0] + p[2][0];
+    Triangles[n].y[i] := Triangles[-1].x[i] * p[0][1] + Triangles[-1].y[i] * p[1][1] + p[2][1];
+  end;
+  //for i := 0 to 2 do Triangles[n].y[i] := -Triangles[n].y[i];
+end;
+
+procedure TControlPoint.SetPostTriangle(const Triangles: TTriangles; const n: integer);
+begin
+  solve3(Triangles[-1].x[0], -Triangles[-1].y[0], Triangles[n].x[0],
+         Triangles[-1].x[1], -Triangles[-1].y[1], Triangles[n].x[1],
+         Triangles[-1].x[2], -Triangles[-1].y[2], Triangles[n].x[2],
+         xform[n].p[0][0],    xform[n].p[1][0],   xform[n].p[2][0]);
+
+  solve3(Triangles[-1].x[0], -Triangles[-1].y[0], -Triangles[n].y[0],
+         Triangles[-1].x[1], -Triangles[-1].y[1], -Triangles[n].y[1],
+         Triangles[-1].x[2], -Triangles[-1].y[2], -Triangles[n].y[2],
+         xform[n].p[0][1],    xform[n].p[1][1],    xform[n].p[2][1]);
+end;
+
+////////////////////////////////////////////////////////////////////////////////
 procedure TControlPoint.AdjustScale(w, h: integer);
 begin
 //  if width >= height then

@@ -101,7 +101,6 @@ type
     oldProg: double;
 
     ApproxSamples: int64;
-    SaveIncompleteRenders: boolean;
 
     procedure DoPostProcess;
 
@@ -129,9 +128,6 @@ type
     procedure ResetControls;
   end;
 
-const
-  ShowRenderStats = true;
-
 var
   RenderForm: TRenderForm;
   Ratio: double;
@@ -139,7 +135,8 @@ var
 implementation
 
 uses
-  Main, Global, SavePreset, formPostProcess, pngimage;
+  Main, Global, SavePreset, formPostProcess, PngImage, ImageMaker,
+  Tracer;
 
 {$R *.DFM}
 
@@ -191,39 +188,26 @@ begin
     )]);
 end;
 
-function TimeToString(t: TDateTime): string;
-var
-  n: integer;
+procedure Trace2(const str: string);
 begin
-  n := Trunc(t);
-  Result := '';
-  if n>0 then begin
-    Result := Result + Format(' %d day', [n]);
-    if (n mod 10) <> 1 then Result := Result + 's';
-  end;
-  t := t * 24;
-  n := Trunc(t) mod 24;
-  if n>0 then begin
-    Result := Result + Format(' %d hour', [n]);
-    if (n mod 10) <> 1 then Result := Result + 's';
-  end;
-  t := t * 60;
-  n := Trunc(t) mod 60;
-  if n>0 then begin
-    Result := Result + Format(' %d minute', [n]);
-    if (n mod 10) <> 1 then Result := Result + 's';
-  end;
-  t := t * 60;
-  t := t - (Trunc(t) div 60) * 60;
-  Result := Result + Format(' %.2f seconds', [t]);
+  if TraceLevel >= 2 then
+    RenderForm.Output.Lines.Add('. . ' + str);
 end;
 
 procedure TRenderForm.HandleThreadCompletion(var Message: TMessage);
-var
-  Stats: TBucketStats;
 begin
+  Trace2(MsgComplete + IntToStr(message.LParam));
+  if not assigned(Renderer) then begin
+    Trace2(MsgNotAssigned);
+    exit;
+  end;
+  if Renderer.ThreadID <> message.LParam then begin
+    Trace2(MsgAnotherRunning);
+    exit;
+  end;
+
   EndTime := Now;
-//  Output.Lines.Add(TimeToStr(EndTime) + ' : Saving image');
+
   try
     Renderer.SaveImage(FileName);
   except
@@ -236,26 +220,13 @@ begin
     else
       sndPlaySound(pchar(SND_ALIAS_SYSTEMASTERISK), SND_ALIAS_ID or SND_NOSTOP or SND_ASYNC);
 
-  if ShowRenderStats then with Stats do
-    with Output.Lines do
-    begin
-      Add('');
-      Add('Render Statistics:');
-      Add(Format('  Max possible bits: %2.3f', [8 + log2(ApproxSamples)]));
-      Renderer.GetBucketStats(Stats);
-      Add(Format('  Max Red:   %2.3f bits  (%u)', [log2(MaxR), MaxR]));
-      Add(Format('  Max Green: %2.3f bits  (%u)', [log2(MaxG), MaxG]));
-      Add(Format('  Max Blue:  %2.3f bits  (%u)', [log2(MaxB), MaxB]));
-      Add(Format('  Max Count: %2.3f bits  (%u)', [log2(MaxA), MaxA]));
-      Add(Format('  Point hit ratio: %2.2f%%', [100.0*(TotalA/TotalSamples)]));
-      if RenderTime > 0 then // hmm
-        Add(Format('  Average speed: %n points per second', [TotalSamples / (RenderTime * 24 * 60 * 60)]));
-      Add('  Rendering time:' + TimeToString(RenderTime));
-      Add('  Total time:' + TimeToString(EndTime - StartTime));
-    end;
-
-  Output.Lines.Add('');
   PageCtrl.TabIndex := 1;
+  if ShowRenderStats then
+    Renderer.ShowBigStats
+  else
+    Renderer.ShowSmallStats;
+  Output.Lines.Add('  Total time:' + TimeToString(EndTime - StartTime));
+  Output.Lines.Add('');
 
   if not chkLimitMem.Checked and cbPostProcess.checked then
     DoPostProcess;
@@ -269,21 +240,29 @@ end;
 
 procedure TRenderForm.HandleThreadTermination(var Message: TMessage);
 begin
-  if Assigned(Renderer) then
-  begin
-    Output.Lines.Add(TimeToStr(Now) + ' : Rendering terminated!');
-    sndPlaySound(pchar(SND_ALIAS_SYSTEMEXCLAMATION), SND_ALIAS_ID or SND_NOSTOP or SND_ASYNC);
+  Trace2(MsgTerminated + IntToStr(message.LParam));
+  if not assigned(Renderer) then begin
+    Trace2(MsgNotAssigned);
+    exit;
+  end;
+  if Renderer.ThreadID <> message.LParam then begin
+    Trace2(MsgAnotherRunning);
+    exit;
+  end;
+
+  Output.Lines.Add(TimeToStr(Now) + ' : Rendering terminated!');
+  sndPlaySound(pchar(SND_ALIAS_SYSTEMEXCLAMATION), SND_ALIAS_ID or SND_NOSTOP or SND_ASYNC);
 (*
     if SaveIncompleteRenders and not chkLimitMem.Checked then begin
       Output.Lines.Add('Saving incomplete image...');
       Renderer.SaveImage(FileName);
     end;
-    Output.Lines.Add('');
 *)
-    Renderer.Free;
-    Renderer := nil;
-    ResetControls;
-  end;
+  Output.Lines.Add('');
+
+  Renderer.Free;
+  Renderer := nil;
+  ResetControls;
 end;
 
 procedure TRenderForm.OnProgress(prog: double);
@@ -317,9 +296,6 @@ begin
   edt := edt + dt;
   if (edt > 1/24/60/60/2) and (prog > 0) then
   begin
-//  Remainder := Min(Remainder, Elapsed * (power(1 / prog, 1.2) - 1)); // --Z-- this power() is weird
-//  Remaining := Elapsed/prog - Elapsed; // --Z-- should've been like this maybe? ;) too easy anyway...
-
     Remaining := (1 - prog) * edt / (prog - oldProg);
     edt := 0;
     oldProg := prog;
@@ -330,7 +306,6 @@ begin
        Trunc(Remaining * 24 * 60 * 60) mod 60,
        Trunc(Remaining * 24 * 60 * 60 * 100) mod 100]);
   end;
-
   StatusBar.Panels[2].text := 'Slice ' + IntToStr(Renderer.Slice + 1) + ' of ' + IntToStr(Renderer.nrSlices);
 end;
 
@@ -364,8 +339,12 @@ begin
 
   if (not chkLimitMem.checked) and (ApproxMemory > PhysicalMemory) then
   begin
-    Application.MessageBox('You do not have enough memory for this render. Please use memory limiting.', 'Apophysis', 48);
-    exit;
+    //Application.MessageBox('You do not have enough memory for this render. Please use memory limiting.', 'Apophysis', 48);
+    if Application.MessageBox('There is not enough memory for this render. ' +
+                              'You can use memory limiting, or if you are sure that your system has this much RAM, ' +
+                              'you can try to allocate memory anyway. ' +
+                              'Dou you want to try? (USE ON YOUR OWN RISK!!!)', 'Apophysis',
+      MB_YESNO) <> IDYES then exit;
   end;
   if chkLimitMem.checked and (PhysicalMemory < StrToInt(cbMaxMemory.text)) and (Approxmemory > PhysicalMemory) then begin
     Application.MessageBox('You do not have enough memory for this render. Please use a lower Maximum memory setting.', 'Apophysis', 48);
@@ -414,10 +393,8 @@ begin
   end;
   if chkLimitMem.checked then
   begin
-    try
-      MaxMemory := StrToInt(cbMaxMemory.text);
-      if MaxMemory <= 0 then raise Exception.Create('');
-    except
+    MaxMemory := StrToIntDef(cbMaxMemory.text, 0);
+    if MaxMemory * 1024*1024 < ImageWidth * (int64(ImageHeight) * 4 + oversample) then begin
       Application.MessageBox('Invalid maximum memory value', 'Apophysis', 16);
       exit;
     end;
@@ -442,10 +419,10 @@ begin
   btnPause.enabled := true;
   btnCancel.Caption := 'Stop';
   StartTime := Now;
-//  Remaining := 365;
 
   PageCtrl.TabIndex := 1;
 
+  if Output.Lines.Count >= 1000 then Output.Lines.Clear;
   Output.Lines.Add('--- Rendering "' + ExtractFileName(FileName) + '" ---');
   Output.Lines.Add(Format('  Size: %dx%d', [ImageWidth, ImageHeight]));
   Output.Lines.Add(Format('  Quality: %g', [sample_density]));
@@ -462,7 +439,7 @@ begin
     end;
 
   if Assigned(Renderer) then begin
-    Output.Lines.Add(TimeToStr(Now) + 'Shutting down previous render...'); // hmm
+    Output.Lines.Add(TimeToStr(Now) + 'Shutting down previous render'); // hmm...?
     Renderer.Terminate;
     Renderer.WaitFor;
     Renderer.Free;
@@ -517,7 +494,7 @@ procedure TRenderForm.FormShow(Sender: TObject);
 var
   Registry: TRegistry;
 begin
-  { Read posution from registry }
+  { Read position from registry }
   Registry := TRegistry.Create;
   try
     Registry.RootKey := HKEY_CURRENT_USER;
@@ -532,6 +509,7 @@ begin
   finally
     Registry.Free;
   end;
+
   SaveDialog.FileName := Filename;
   case renderFileFormat of
     1: txtFilename.Text := ChangeFileExt(SaveDialog.Filename, '.bmp');
@@ -540,8 +518,8 @@ begin
   end;
   txtOversample.Text := IntToStr(renderOversample);
   txtFilterRadius.Text := FloatToStr(renderFilterRadius);
-  cbWidth.Text := IntToStr(MainForm.Image.Width);
-  cbHeight.Text := IntToStr(MainForm.Image.Height);
+  cbWidth.Text := IntToStr(cp.Width);
+  cbHeight.Text := IntToStr(cp.Height);
   ImageWidth := StrToInt(cbWidth.Text);
   ImageHeight := StrToInt(cbHeight.Text);
   sample_density := renderDensity;
@@ -550,6 +528,7 @@ begin
   cbBitsPerSample.ItemIndex := BitsPerSample;
   ShowMemoryStatus;
   Ratio := ImageWidth / ImageHeight;
+  chkSaveIncompleteRenders.Checked := SaveIncompleteRenders;
 end;
 
 procedure TRenderForm.txtWidthChange(Sender: TObject);
@@ -625,7 +604,7 @@ begin
     end;
 
     if SaveIncompleteRenders and not ChkLimitMem.Checked then begin
-      Renderer.Break;
+      Renderer.BreakRender;
       Renderer.WaitFor; //?
     end
     else begin
@@ -639,12 +618,12 @@ begin
 end;
 
 procedure TRenderForm.txtDensityChange(Sender: TObject);
+var
+  t: double;
 begin
-  try
-    Sample_Density := StrToFloat(txtDensity.Text);
-  except
-  end;
-  ShowMemoryStatus;
+  if TryStrToFloat(txtDensity.Text, t) then
+    Sample_Density := t;
+  if Sample_Density > 0 then ShowMemoryStatus;
 end;
 
 procedure TRenderForm.txtFilterRadiusChange(Sender: TObject);
@@ -785,6 +764,7 @@ var
   i, p: integer;
   Title: string;
   FStrings: TStringList;
+  f: textfile;
 begin
   FStrings := TStringList.Create;
   try

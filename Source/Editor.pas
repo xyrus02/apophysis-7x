@@ -28,12 +28,6 @@ uses
   ControlPoint, XForm, cmap, CustomDrawControl,
   Render;
 
-const
-  crEditArrow  = 20;
-  crEditMove   = 21;
-  crEditRotate = 22;
-  crEditScale  = 23;
-
 type
   TEditForm = class(TForm)
     GrphPnl: TPanel;
@@ -145,7 +139,7 @@ type
     txtPost20: TEdit;
     txtPost21: TEdit;
     btnResetPostXForm: TSpeedButton;
-    btnSwapXforms: TSpeedButton;
+    btnPostTriangle: TSpeedButton;
     GroupBox3: TGroupBox;
     editPivotY: TEdit;
     editPivotX: TEdit;
@@ -274,9 +268,6 @@ type
       Shift: TShiftState; X, Y: Integer);
     procedure VEVarsDblClick(Sender: TObject);
 
-//    procedure vleVariablesGetPickList(Sender: TObject; const KeyName: String; Values: TStrings);
-//    procedure vleVariablesStringsChange(Sender: TObject);
-
     procedure cbTransformsDrawItem(Control: TWinControl; Index: Integer;
       Rect: TRect; State: TOwnerDrawState);
 
@@ -302,7 +293,7 @@ type
     procedure PostCoefValidate(Sender: TObject);
     procedure PostCoefKeypress(Sender: TObject; var Key: Char);
     procedure btnResetPostXFormClick(Sender: TObject);
-    procedure btnSwapXformsClick(Sender: TObject);
+    procedure btnPostTriangleClick(Sender: TObject);
     procedure btnPivotModeClick(Sender: TObject);
     procedure PivotValidate(Sender: TObject);
     procedure PivotKeyPress(Sender: TObject; var Key: Char);
@@ -353,7 +344,6 @@ type
     SelectMode, ExtendedEdit, AxisLock: boolean;
     showVarPreview: boolean;
 
-    // --Z-- variables moved from outside
     GraphZoom: double;
     TriangleCaught, CornerCaught, EdgeCaught: boolean;
     LocalAxisLocked: boolean;
@@ -371,12 +361,6 @@ type
     pnlDragPos, pnlDragOld: integer;
     pnlDragValue: double;
 
-(*
-    { Options }
-    UseFlameBackground, UseTransformColors: boolean;
-    BackGroundColor, ReferenceTrianglecolor: integer;
-    GridColor1, GridColor2, HelpersColor: integer;
-*)
     procedure UpdateFlameX;
     procedure UpdateFlame(DrawMain: boolean);
     procedure UpdateWidgets;
@@ -384,15 +368,13 @@ type
 
     function GetPivot: TSPoint; overload;
     function GetPivot(n: integer): TSPoint; overload;
-//moved to public:    function GetTriangleColor(n: integer): TColor;
 
-    // --Z-- functions moved from outside (?)
     procedure ShowSelectedInfo;
     procedure Scale(var fx, fy: double; x, y: integer);
-//    procedure ReadjustWeights(var cp: TControlPoint);
 
     procedure TriangleViewPaint(Sender: TObject);
     procedure AutoZoom;
+
   public
     cp: TControlPoint;
     Render: TRenderer;
@@ -414,7 +396,6 @@ const
 
 var
   EditForm: TEditForm;
-//  pcenterx, pcentery, pscale: double;
 
 function ColorValToColor(c: TColorMap; index: double): TColor;
 function FlipTriangleVertical(t: TTriangle): TTriangle;
@@ -428,7 +409,6 @@ function Centroid(t: TTriangle): TSPoint;
 function OffsetTriangleRandom(t: TTriangle): TTriangle;
 function ScaleTriangleCenter(t: TTriangle; scale: double): TTriangle;
 function ScaleTrianglePoint(t: TTriangle; x, y, scale: double): TTriangle;
-//procedure ScaleAll;
 
 implementation
 
@@ -580,29 +560,30 @@ function ColorValToColor(c: TColorMap; index: double): TColor;
 var
   i: integer;
 begin
-  i := Trunc(Index * 255); //!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!! >>TODO: check<<
+  i := Trunc(Index * 255);
+  assert(i >= 0);
+  assert(i < 256);
   result := c[i][2] shl 16 + c[i][1] shl 8 + c[i][0];
 end;
 
 procedure TEditForm.UpdatePreview;
 var
   pw, ph: integer;
-  r: double;
 begin
   pw := PrevPnl.Width - 2;
   ph := PrevPnl.Height - 2;
-  if (cp.width / cp.height) > (PrevPnl.Width / PrevPnl.Height) then
+  if (cp.width / cp.height) > (pw / ph) then
   begin
     PreviewImage.Width := pw;
-    r := cp.width / PreviewImage.Width;
-    PreviewImage.height := round(cp.height / r);
+    assert(pw <> 0);
+    PreviewImage.Height := round(cp.height / cp.Width * pw);
     PreviewImage.Left := 1;
     PreviewImage.Top := (ph - PreviewImage.Height) div 2;
   end
   else begin
     PreviewImage.Height := ph;
-    r := cp.height / PreviewImage.height;
-    PreviewImage.Width := round(cp.Width / r);
+    assert(ph <> 0);
+    PreviewImage.Width := round(cp.Width / cp.Height * ph);
     PreviewImage.Top := 1;
     PreviewImage.Left := (pw - PreviewImage.Width) div 2;
   end;
@@ -613,7 +594,6 @@ end;
 procedure TEditForm.UpdateDisplay(PreviewOnly: boolean = false);
 var
   i: integer;
-//  pw, ph: integer;
 begin
   // currently EditForm does not really know if we select another
   // flame in the Main Window - which is not good...
@@ -651,7 +631,7 @@ begin
   TriangleCaught := false;
 
   ShowSelectedInfo;
-  if MainForm.UndoIndex = 0 then AutoZoom // auto-zoom only on 'new' flame - hmm...?
+  if MainForm.UndoIndex = 0 then AutoZoom // auto-zoom only on 'new' flame
   else TriangleView.Invalidate;
 end;
 
@@ -665,15 +645,16 @@ begin
   begin
     cp.zoom := 0;
     cp.CalcBoundbox;
-  end
+{  end
   else
   begin
     cp.zoom := MainCp.zoom;
     cp.center[0] := MainCp.Center[0];
     cp.center[1] := MainCp.Center[1];
+}
   end;
+
   cp.cmap := MainCp.cmap;
-//  Render.Compatibility := compatibility;
   Render.SetCP(cp);
   Render.Render;
   PreviewImage.Picture.Bitmap.Assign(Render.GetImage);
@@ -830,6 +811,7 @@ end;
 procedure TEditForm.UpdateFlameX;
 begin
   cp.GetFromTriangles(MainTriangles, Transforms);
+
   if not chkPreserve.checked then cp.ComputeWeights(MainTriangles, Transforms);
   DrawPreview;
   ShowSelectedInfo;
@@ -838,23 +820,26 @@ end;
 
 procedure TEditForm.UpdateFlame(DrawMain: boolean);
 begin
-//;    MainForm.StopThread;
   StatusBar.Panels[2].Text := Format('Zoom: %f', [GraphZoom]);
+
   cp.GetFromTriangles(MainTriangles, LastTriangle);
+
 //  if not chkPreserve.Checked then ComputeWeights(cp, MainTriangles, transforms);
   DrawPreview;
   ShowSelectedInfo;
   TriangleView.Refresh;
   if DrawMain then begin
     MainForm.StopThread;
-    MainCp.Copy(cp);
+
+    MainCp.Copy(cp, true);
+
     MainCp.cmap := cmap;
     if mnuResetLoc.checked then begin
       MainCp.zoom := 0;
       MainForm.center[0] := cp.center[0];
       MainForm.center[1] := cp.center[1];
     end;
-//    if AdjustForm.Visible then AdjustForm.UpdateDisplay;
+    if AdjustForm.Visible then AdjustForm.UpdateDisplay;
     if MutateForm.Visible then MutateForm.UpdateDisplay;
     MainForm.RedrawTimer.enabled := true;
   end;
@@ -1051,7 +1036,10 @@ var
   tps: TPenStyle;
 label DrawCorner;
 begin
-  assert(SelectedTriangle >= 0);
+  if (SelectedTriangle < 0) then begin
+    assert(false, 'Selected triangle < 0');
+    SelectedTriangle := 0;
+  end;
   assert(TCustomDrawControl(Sender) = TriangleView);
   if SelectedTriangle > LastTriangle then SelectedTriangle := LastTriangle;
 
@@ -1133,11 +1121,11 @@ begin
       begin
         if i <> SelectedTriangle then Pen.Style := psDot;
 
+// this is still a hack --------------------------------------------------------
 with cp.xform[i] do
 if (p[0,0]<>1) or (p[0,1]<>0) or(p[1,0]<>0) or (p[1,1]<>1) or (p[2,0]<>0) or (p[2,1]<>0) then
 begin
   Pen.Color := GetTriangleColor(i) shr 1 and $7f7f7f;
-  //Pen.Mode := pmMerge;
   a:=toscreen(p[0,0] - p[1,0] + p[2,0], -p[0,1] + p[1,1] - p[2,1]);
   moveto(a.x, a.y);
   b:=toscreen(p[0,0] + p[1,0] + p[2,0], -p[0,1] - p[1,1] - p[2,1]);
@@ -1268,7 +1256,6 @@ end;
             end;
           end;
 
-          //i := min( min(Width, Height), integer(round(dmax * sc)));
           i := integer(round(d * sc));
           if i > 4 then
           begin
@@ -1469,11 +1456,6 @@ procedure TEditForm.FormCreate(Sender: TObject);
 var
   i: integer;
 begin
-  Screen.Cursors[crEditArrow]  := LoadCursor(HInstance, 'ARROW_WHITE');
-  Screen.Cursors[crEditMove]   := LoadCursor(HInstance, 'MOVE_WB');
-  Screen.Cursors[crEditRotate] := LoadCursor(HInstance, 'ROTATE_WB');
-  Screen.Cursors[crEditScale]  := LoadCursor(HInstance, 'SCALE_WB');
-
   // Custom control setup
   TriangleView := TCustomDrawControl.Create(self);
   TriangleView.TabStop  := True;
@@ -1499,20 +1481,9 @@ begin
   for i:= 0 to NRVAR - 1 do begin
     VEVars.InsertRow(Varnames(i), '0', True);
   end;
-
   for i:= 0 to GetNrVariableNames - 1 do begin
     vleVariables.InsertRow(GetVariableNameAt(i), '0', True);
   end;
-
-{
-  with vleVariables.ItemProps['blur2_type'] do begin // temporary hack?
-    ReadOnly := true;
-    PickList.Add('gaussian');
-    PickList.Add('zoom');
-    PickList.Add('radial');
-    PickList.Add('defocus');
-  end;
-}
 
   GraphZoom := 1;
 
@@ -1559,8 +1530,6 @@ procedure TEditForm.FormDestroy(Sender: TObject);
 begin
   cp.free;
   Render.free;
-
-//  vleVariables.ItemProps['blur2_type'].Destroy; // :-/
 end;
 
 procedure TEditForm.TriangleViewMouseMove(Sender: TObject; Shift: TShiftState;
@@ -2178,6 +2147,7 @@ begin
         EditPopup.Popup(mousepos.x, mousepos.y)
       else begin
         SelectedTriangle := mouseOverTriangle;
+        cbTransforms.ItemIndex := SelectedTriangle;
         TriangleView.Refresh;
         TrianglePopup.Popup(mousepos.x, mousepos.y)
       end;
@@ -2789,7 +2759,9 @@ begin
     end;
   end;
  end;
+
   cp.TrianglesFromCP(MainTriangles);
+
   ShowSelectedInfo;
   UpdateFlame(true);
 end;
@@ -3043,8 +3015,6 @@ begin
 
     TValueListEditor(Sender).Row := cell.Y;
 
-//    if ((Sender = vleVariables) and vleVariables.ItemProps[varDragIndex].ReadOnly) then exit;
-
     Screen.Cursor := crHSplit;
 
     GetCursorPos(mousepos); // hmmm
@@ -3134,26 +3104,31 @@ end;
 procedure TEditForm.VEVarsDblClick(Sender: TObject);
 var
   n: integer;
+  v, v1: double;
+  changed: boolean;
 begin
   n := TValueListEditor(Sender).Row - 1;
   assert(n >= 0);
   assert(n < TValueListEditor(Sender).rowCount);
 
-  if {(varDragOld >= TValueListEditor(Sender).ColWidths[0]) or}
-     (TValueListEditor(Sender).Values[VarNames(n)] = '0') then exit;
+  changed := false;
 
-  MainForm.UpdateUndo;
   if Sender = VEVars then
   begin
-    cp.xform[SelectedTriangle].vars[n] := 0;
-    VEVars.Values[VarNames(n)] := '0';
+    v := cp.xform[SelectedTriangle].vars[n];
+    cp.xform[SelectedTriangle].vars[n] := IfThen(DoubleClickSetVars and (v = 0), 1, 0);
+    //VEVars.Values[VarNames(n)] := '0';
+    changed := (cp.xform[SelectedTriangle].vars[n] <> v);
   end
   else begin
-    //v := 0; // hmm
+    cp.xform[SelectedTriangle].GetVariable(vleVariables.Keys[n + 1], v);
     cp.xform[SelectedTriangle].ResetVariable(vleVariables.Keys[n + 1]);
     //vleVariables.Values[vleVariables.Keys[varDragIndex+1]] := '0';
+    cp.xform[SelectedTriangle].GetVariable(vleVariables.Keys[n + 1], v1);
+    changed := (v1 <> v);
   end;
 
+  if changed then MainForm.UpdateUndo;
   UpdateFlame(true);
 end;
 
@@ -3747,6 +3722,11 @@ begin
   cp.xform[1].color := 1;
   cp.xform[2].symmetry := 1;
 
+  cp.center[0] := 0;
+  cp.center[1] := 0;
+  cp.zoom := 0;
+  cp.pixels_per_unit := PreviewImage.Width/4;
+
   Transforms := 2;
   SelectedTriangle := 1;
   MainTriangles[0] := MainTriangles[-1];
@@ -3760,6 +3740,7 @@ begin
   cbTransforms.Items.Add('1');
   cbTransforms.Items.Add('2');
   AutoZoom;
+
   UpdateFlame(True);
 end;
 
@@ -3787,6 +3768,7 @@ begin
   MainForm.UpdateUndo;
   cp.xform[SelectedTriangle].c[1][0] := 0;
   cp.xform[SelectedTriangle].c[1][1] := 1;
+
   cp.TrianglesFromCP(MainTriangles);
   UpdateFlame(True);
 end;
@@ -3799,6 +3781,7 @@ begin
   MainForm.UpdateUndo;
   cp.xform[SelectedTriangle].c[2][0] := 0;
   cp.xform[SelectedTriangle].c[2][1] := 0;
+
   cp.TrianglesFromCP(MainTriangles);
   UpdateFlame(True);
 end;
@@ -4062,7 +4045,7 @@ begin
 end;
 
 // this function is temporary...................................................
-procedure TEditForm.btnSwapXformsClick(Sender: TObject);
+procedure TEditForm.btnPostTriangleClick(Sender: TObject);
 var
   i, j: integer;
   t: double;

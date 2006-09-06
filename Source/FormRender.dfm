@@ -3,7 +3,7 @@ object RenderForm: TRenderForm
   Top = 336
   BorderIcons = [biSystemMenu, biMinimize]
   BorderStyle = bsSingle
-  Caption = 'RenderForm'
+  Caption = 'Render to Disk'
   ClientHeight = 449
   ClientWidth = 434
   Color = clBtnFace
@@ -133,7 +133,7 @@ object RenderForm: TRenderForm
     Width = 137
     Height = 17
     Alignment = taLeftJustify
-    Caption = 'Save incomplete render'
+    Caption = 'Save incomplete renders'
     TabOrder = 8
     OnClick = chkSaveIncompleteRendersClick
   end
@@ -143,9 +143,11 @@ object RenderForm: TRenderForm
     Width = 433
     Height = 353
     ActivePage = TabSettings
+    Images = MainForm.Buttons
     TabOrder = 9
     object TabSettings: TTabSheet
       Caption = 'Settings'
+      ImageIndex = 18
       object GroupBox5: TGroupBox
         Left = 8
         Top = 8
@@ -542,7 +544,7 @@ object RenderForm: TRenderForm
     end
     object TabOutput: TTabSheet
       Caption = 'Output'
-      ImageIndex = 1
+      ImageIndex = 38
       object Output: TMemo
         Left = 8
         Top = 8

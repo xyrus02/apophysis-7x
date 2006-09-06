@@ -133,6 +133,8 @@ type
     pnlGamma: TPanel;
     pnlBrightness: TPanel;
     pnlVibrancy: TPanel;
+    chkResizeMain: TCheckBox;
+    Bevel3: TBevel;
     procedure FormCreate(Sender: TObject);
     procedure FormClose(Sender: TObject; var Action: TCloseAction);
     procedure FormDestroy(Sender: TObject);
@@ -356,36 +358,36 @@ begin
 
 //  zoom := MainForm.zoom;
 //  cp.zoom := zoom;
-  Resetting := True; // So the preview doesn't get drawn with these changes..
-  scrollGamma.Position := trunc(cp.Gamma * 100);
-  scrollBrightness.Position := trunc(cp.Brightness * 100);
-  scrollVibrancy.Position := trunc(cp.vibrancy * 100);
-  scrollZoom.Position := trunc(cp.zoom * 1000);
+    Resetting := True; // So the preview doesn't get drawn with these changes..
+    scrollGamma.Position := trunc(cp.Gamma * 100);
+    scrollBrightness.Position := trunc(cp.Brightness * 100);
+    scrollVibrancy.Position := trunc(cp.vibrancy * 100);
+    scrollZoom.Position := trunc(cp.zoom * 1000);
 //  ScrollAngle.Position := Trunc(cp.FAngle * 18000.0 / PI) mod scrollAngle.Max;
-  scrollAngle.Position := Trunc((cp.FAngle + pi)* 18000.0 / PI) mod 36000;
+    scrollAngle.Position := Trunc(cp.FAngle * 18000.0 / PI) mod 36000;
 
-  if (abs(cp.Center[0]) < 1000) and (abs(cp.Center[1]) < 1000) then begin
-    scrollCenterX.Position := trunc(cp.Center[0] * 1000);
-    scrollCenterY.Position := trunc(cp.Center[1] * 1000);
-  end else begin
-    scrollCenterX.Position := 0;
-    scrollCenterY.Position := 0;
-  end;
+    if (abs(cp.Center[0]) < 1000) and (abs(cp.Center[1]) < 1000) then begin
+      scrollCenterX.Position := trunc(cp.Center[0] * 1000);
+      scrollCenterY.Position := trunc(cp.Center[1] * 1000);
+    end else begin
+      scrollCenterX.Position := 0;
+      scrollCenterY.Position := 0;
+    end;
 
-  ColorPanel.color := cp.background[2] shl 16 + cp.background[1] shl 8 + cp.background[0];
-  //cbColor.text := IntToHex(integer(ColorPanel.Color), 6);
+    ColorPanel.color := cp.background[2] shl 16 + cp.background[1] shl 8 + cp.background[0];
+    //cbColor.text := IntToHex(integer(ColorPanel.Color), 6);
 
-  GetMainWindowSize;
+    GetMainWindowSize;
 
-  // gradient
-  if cp.cmapindex >= 0 then
-    cmbPalette.ItemIndex := cp.cmapindex;
-  ScrollBar.Position := 0;
-  Palette := cp.cmap;
-  BackupPal := cp.cmap;
+    // gradient
+    if cp.cmapindex >= 0 then
+      cmbPalette.ItemIndex := cp.cmapindex;
+    ScrollBar.Position := 0;
+    Palette := cp.cmap;
+    BackupPal := cp.cmap;
 
-  Resetting := False;
-editPPU.Text := Format('%.6g', [cp.pixels_per_unit]);
+    Resetting := False;
+    editPPU.Text := Format('%.6g', [100*cp.pixels_per_unit/PreviewImage.Width]);
   end; //***
   DrawPreview;
 end;
@@ -394,7 +396,7 @@ procedure TAdjustForm.UpdateFlame;
 begin
   MainForm.StopThread;
   MainForm.UpdateUndo;
-  MainCp.Copy(cp);
+  MainCp.Copy(cp, true);
 //  MainCp.cmap := cmap;
 //  MainForm.zoom := zoom;
 //  MainForm.Center[0] := Center[0];
@@ -488,6 +490,7 @@ begin
       Registry.WriteInteger('Top', AdjustForm.Top);
       Registry.WriteInteger('Left', AdjustForm.Left);
       Registry.WriteBool('InstantPreview', mnuInstantPreview.Checked);
+      Registry.WriteBool('ResizeMain', chkResizeMain.Checked);
     end;
   finally
     Registry.Free;
@@ -521,6 +524,8 @@ begin
         AdjustForm.Top := Registry.ReadInteger('Top');
       if Registry.ValueExists('InstantPreview') then
         mnuInstantPreview.Checked := Registry.ReadBool('InstantPreview');
+      if Registry.ValueExists('ResizeMain') then
+        chkResizeMain.Checked := Registry.ReadBool('ResizeMain');
       Registry.CloseKey;
     end;
 
@@ -827,7 +832,7 @@ begin
     ScrollVibrancy.Position := v;
     UpdateFlame;
   except on EConvertError do
-      txtVibrancy.Text := FloatToStr(cp.Vibrancy);
+    txtVibrancy.Text := FloatToStr(cp.Vibrancy);
   end;
 end;
 
@@ -871,6 +876,7 @@ procedure TAdjustForm.scrollVibrancyChange(Sender: TObject);
 begin
   cp.Vibrancy := ScrollVibrancy.Position / 100;
   txtVibrancy.text := FloatToStr(cp.Vibrancy);
+  txtVibrancy.Refresh;
   DrawPreview;
 end;
 
@@ -878,6 +884,7 @@ procedure TAdjustForm.scrollGammaChange(Sender: TObject);
 begin
   cp.Gamma := scrollGamma.Position / 100;
   txtGamma.text := FloatToStr(cp.Gamma);
+  txtGamma.Refresh;
   DrawPreview;
 end;
 
@@ -885,6 +892,7 @@ procedure TAdjustForm.scrollBrightnessChange(Sender: TObject);
 begin
   cp.Brightness := ScrollBrightness.Position / 100;
   txtBrightness.text := FloatToStr(cp.Brightness);
+  txtBrightness.Refresh;
   DrawPreview;
 end;
 
@@ -892,6 +900,7 @@ procedure TAdjustForm.scrollZoomChange(Sender: TObject);
 begin
   cp.zoom := scrollZoom.Position / 1000;
   txtZoom.text := FloatToStr(cp.zoom);
+  txtZoom.Refresh;
   DrawPreview;
 end;
 
@@ -899,13 +908,15 @@ procedure TAdjustForm.scrollCenterXChange(Sender: TObject);
 begin
   cp.center[0] := scrollCenterX.Position / 1000;
   txtCenterX.text := FloatToStr(cp.center[0]);
+  txtCenterX.Refresh;
   DrawPreview;
 end;
 
 procedure TAdjustForm.scrollCenterYChange(Sender: TObject);
 begin
   cp.center[1] := scrollCenterY.Position / 1000;
-  txtCentery.text := FloatToStr(cp.center[1]);
+  txtCenterY.text := FloatToStr(cp.center[1]);
+  txtCenterY.Refresh;
   DrawPreview;
 end;
 
@@ -935,8 +946,9 @@ end;
 
 procedure TAdjustForm.scrollAngleChange(Sender: TObject);
 begin
-  cp.FAngle := (scrollAngle.Position - 18000) * PI / 18000.0;
+  cp.FAngle := scrollAngle.Position * PI / 18000.0;
   txtAngle.text := FloatToStr(cp.FAngle * 180 / PI);
+  txtAngle.Refresh;
   DrawPreview;
 end;
 
@@ -959,7 +971,7 @@ begin
   begin
     key := #0;
     try
-      v := Trunc(StrToFloat(txtAngle.Text) * 100) mod scrollAngle.Max - 18000;
+      v := Trunc(StrToFloat(txtAngle.Text) * 100) mod scrollAngle.Max;
       //if v > scrollAngle.Max then v := v - scrollAngle.Max*2
       if v < scrollAngle.Min then v := v + scrollAngle.Max;
       ScrollAngle.Position := v;
@@ -976,9 +988,9 @@ var
 begin
   if (txtAngle.Text <> EditBoxValue) then
   try
-    v := Trunc(StrToFloat(txtAngle.Text) * 100) mod (scrollAngle.Max*2);
-    if v > scrollAngle.Max then v := v - scrollAngle.Max*2
-    else if v < scrollAngle.Min then v := v + scrollAngle.Max*2;
+    v := Trunc(StrToFloat(txtAngle.Text) * 100) mod scrollAngle.Max;
+//    if v > scrollAngle.Max then v := v - scrollAngle.Max*2
+//    else if v < scrollAngle.Min then v := v + scrollAngle.Max*2;
     ScrollAngle.Position := v;
     UpdateFlame;
   except on EConvertError do
@@ -1687,8 +1699,10 @@ begin
   txtWidth.Text := IntToStr(ImageWidth);
   txtHeight.Text := IntToStr(ImageHeight);
 
-  MainForm.Left:=Preset[n].Left;
-  MainForm.Top:=Preset[n].Top;
+  if chkResizeMain.Checked then begin
+    MainForm.Left:=Preset[n].Left;
+    MainForm.Top:=Preset[n].Top;
+  end;
 
   SetMainWindowSize;
 end;
@@ -1739,28 +1753,36 @@ end;
 
 procedure TAdjustForm.SetMainWindowSize;
 var
-  xtot, ytot: integer;
+  l, t, w, h: integer;
 begin
-  xtot := ImageWidth + (MainForm.Width - MainForm.Image.Width);
-  ytot := ImageHeight + (MainForm.Height - MainForm.Image.Height);
-  if xtot > Screen.Width then
-  begin
-    MainForm.Left := 0;
-    xtot := Screen.width;
-  end;
-  if ytot > Screen.height then
-  begin
-    MainForm.Top := 0;
-    ytot := Screen.height;
-  end;
-  MainForm.Width := xtot;
-  MainForm.Height := ytot;
+  MainCp.AdjustScale(ImageWidth, ImageHeight);
+  MainForm.ResizeImage; //?
+
+  if chkResizeMain.Checked then begin
+    l := MainForm.Left;
+    t := MainForm.Top;
+    w := ImageWidth + MainForm.Width - (MainForm.BackPanel.Width - 2);
+    h := ImageHeight + MainForm.Height - (MainForm.BackPanel.Height - 2);
+    if w > Screen.Width then
+    begin
+      l := 0;
+      w := Screen.width;
+    end;
+    if h > Screen.height then
+    begin
+      t := 0;
+      h := Screen.height;
+    end;
+
+    MainForm.SetBounds(l, t, w, h);
+  end
+  else MainForm.RedrawTimer.Enabled := true;
 end;
 
 procedure TAdjustForm.GetMainWindowSize;
 begin
-  ImageWidth := MainForm.Image.Width;
-  ImageHeight := MainForm.Image.Height;
+  ImageWidth := MainCP.Width; //MainForm.Image.Width;
+  ImageHeight := MainCP.Height; //MainForm.Image.Height;
   txtWidth.text := IntToStr(ImageWidth);
   txtHeight.text := IntToStr(ImageHeight);
 end;
@@ -1872,7 +1894,7 @@ begin
     exit;
   end;
   MainForm.UpdateUndo;
-  cp.pixels_per_unit := v;
+  cp.pixels_per_unit := v/100*PreviewImage.Width;
   UpdateFlame;
 end;
 
@@ -1884,7 +1906,7 @@ begin
   if Button <> mbLeft then exit;
 
   if (Sender = pnlMasterScale) then
-    pnlDragValue := cp.pixels_per_unit / 10
+    pnlDragValue := cp.pixels_per_unit / PreviewImage.Width
   else if (Sender = pnlZoom) then
     pnlDragValue := cp.zoom
   else if (Sender = pnlXpos) then
@@ -1915,7 +1937,7 @@ end;
 procedure TAdjustForm.DragPanelMouseMove(Sender: TObject; Shift: TShiftState;
   X, Y: Integer);
 var
-  v: double;
+  sc, v: double;
 begin
   if pnlMM then // hack: to skip MouseMove event
   begin
@@ -1926,22 +1948,22 @@ begin
   begin
     Inc(pnlDragPos, x - pnlDragOld);
 
-    if GetKeyState(VK_MENU) < 0 then v := 100000
-    else if GetKeyState(VK_CONTROL) < 0 then v := 10000
-    else if GetKeyState(VK_SHIFT) < 0 then v := 100
-    else v := 1000;
+    if GetKeyState(VK_MENU) < 0 then sc := 100000
+    else if GetKeyState(VK_CONTROL) < 0 then sc := 10000
+    else if GetKeyState(VK_SHIFT) < 0 then sc := 100
+    else sc := 1000;
 
-    v := Round6(pnlDragValue + pnlDragPos / v);
+    v := Round6(pnlDragValue + pnlDragPos / sc);
 
     SetCursorPos(MousePos.x, MousePos.y); // hmmm
     pnlMM:=true;
 
     if (Sender = pnlMasterScale) then
     begin
-      v := v * 10;
-      if v <= 0.1 then v := 0.1;
-      cp.pixels_per_unit := v;
-      editPPU.Text := FloatToStr(v);
+      v := Round6(pnlDragValue * power(2, pnlDragPos / sc / 2));
+      if v <= 0.0001 then v := 0.0001;
+      cp.pixels_per_unit := v*PreviewImage.Width;
+      editPPU.Text := FloatToStr(v*100);
     end
     else if (Sender = pnlZoom) then
     begin
@@ -1957,7 +1979,7 @@ begin
     end
     else if (Sender = pnlAngle) then
     begin
-      scrollAngle.Position := Trunc((v + pi)* 18000.0 / PI) mod 36000;
+      scrollAngle.Position := Trunc(v * 18000.0 / PI) mod 36000;
     end
     else if (Sender = pnlGamma) then
     begin
@@ -2005,9 +2027,9 @@ begin
   if (Sender = pnlMasterScale) then
   begin
     pValue := @cp.pixels_per_unit;
-    if pValue^ = 32 then exit;
-    pValue^ := 32;
-    editPPU.Text := FloatToStr(pValue^);
+    if pValue^ = PreviewImage.Width/4 then exit;
+    pValue^ := PreviewImage.Width/4;
+    editPPU.Text := FloatToStr(100*pValue^/PreviewImage.Width);
   end
   else if (Sender = pnlZoom) then
   begin
@@ -2023,7 +2045,7 @@ begin
   end
   else if (Sender = pnlAngle) then
   begin
-    scrollAngle.Position := 18000;
+    scrollAngle.Position := 0;
   end
   else if (Sender = pnlGamma) then
   begin
