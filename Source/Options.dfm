@@ -1,6 +1,6 @@
 object OptionsForm: TOptionsForm
-  Left = 675
-  Top = 365
+  Left = 497
+  Top = 238
   BorderIcons = [biSystemMenu, biMinimize, biMaximize, biHelp]
   BorderStyle = bsDialog
   Caption = 'Options'
@@ -51,21 +51,21 @@ object OptionsForm: TOptionsForm
       HelpContext = 1
       Caption = 'General'
       object chkConfirmDel: TCheckBox
-        Left = 136
-        Top = 7
-        Width = 121
+        Left = 8
+        Top = 183
+        Width = 97
         Height = 17
         HelpContext = 1005
         Caption = 'Confirm delete'
-        TabOrder = 3
+        TabOrder = 2
       end
       object JPEG: TGroupBox
         Left = 8
-        Top = 116
+        Top = 124
         Width = 121
         Height = 55
         Caption = 'JPEG Quality'
-        TabOrder = 2
+        TabOrder = 1
         object txtJPEGquality: TComboBox
           Left = 16
           Top = 20
@@ -81,14 +81,6 @@ object OptionsForm: TOptionsForm
             '100'
             '120')
         end
-      end
-      object chkResize: TCheckBox
-        Left = 136
-        Top = 25
-        Width = 121
-        Height = 17
-        Caption = 'Resize on load'
-        TabOrder = 4
       end
       object GroupBox16: TGroupBox
         Left = 8
@@ -113,24 +105,13 @@ object OptionsForm: TOptionsForm
             '8')
         end
       end
-      object rgRotationMode: TRadioGroup
-        Left = 8
-        Top = 60
-        Width = 121
-        Height = 55
-        Caption = 'Rotation Mode'
-        Items.Strings = (
-          'Rotate image'
-          'Rotate frame')
-        TabOrder = 1
-      end
       object GroupBox15: TGroupBox
         Left = 136
-        Top = 158
+        Top = 4
         Width = 297
-        Height = 75
-        Caption = 'When render is finished'
-        TabOrder = 5
+        Height = 101
+        Caption = 'On render complete'
+        TabOrder = 3
         object btnBrowseSound: TSpeedButton
           Left = 264
           Top = 41
@@ -229,14 +210,22 @@ object OptionsForm: TOptionsForm
           Caption = 'Play sound'
           TabOrder = 1
         end
+        object chkShowRenderStats: TCheckBox
+          Left = 8
+          Top = 72
+          Width = 185
+          Height = 17
+          Caption = 'Show extended render statistics'
+          TabOrder = 2
+        end
       end
       object GroupBox18: TGroupBox
         Left = 8
-        Top = 176
+        Top = 64
         Width = 121
         Height = 57
         Caption = 'Internal buffer depth'
-        TabOrder = 6
+        TabOrder = 4
         object cbInternalBitsPerSample: TComboBox
           Left = 16
           Top = 20
@@ -254,11 +243,11 @@ object OptionsForm: TOptionsForm
       end
       object GroupBox19: TGroupBox
         Left = 136
-        Top = 56
+        Top = 112
         Width = 201
         Height = 97
-        Caption = 'Time limited previews'
-        TabOrder = 7
+        Caption = 'Time-limited previews'
+        TabOrder = 5
         Visible = False
         object Label45: TLabel
           Left = 8
@@ -452,24 +441,43 @@ object OptionsForm: TOptionsForm
           'Wandering (old-style)')
         TabOrder = 1
       end
-      object chkExtendedEdit: TCheckBox
+      object GroupBox21: TGroupBox
         Left = 160
-        Top = 80
+        Top = 77
         Width = 145
-        Height = 17
-        Caption = 'Extended edit mode'
-        Checked = True
-        State = cbChecked
+        Height = 65
+        Caption = 'Editor defaults'
         TabOrder = 2
+        object chkAxisLock: TCheckBox
+          Left = 8
+          Top = 38
+          Width = 129
+          Height = 17
+          Caption = 'Lock transform axis'
+          Checked = True
+          State = cbChecked
+          TabOrder = 0
+        end
+        object chkExtendedEdit: TCheckBox
+          Left = 8
+          Top = 18
+          Width = 129
+          Height = 17
+          Caption = 'Extended edit mode'
+          Checked = True
+          State = cbChecked
+          TabOrder = 1
+        end
       end
-      object chkAxisLock: TCheckBox
-        Left = 160
-        Top = 100
-        Width = 145
-        Height = 17
-        Caption = 'Lock transform axis'
-        Checked = True
-        State = cbChecked
+      object rgDoubleClickVars: TRadioGroup
+        Left = 8
+        Top = 144
+        Width = 297
+        Height = 57
+        Caption = 'Double-click on variation'
+        Items.Strings = (
+          'Reset value to zero'
+          'Reset value to zero, if zero set to "1"')
         TabOrder = 3
       end
     end
@@ -532,7 +540,7 @@ object OptionsForm: TOptionsForm
         Left = 8
         Top = 4
         Width = 169
-        Height = 169
+        Height = 229
         Caption = 'Rendering'
         TabOrder = 0
         object lblSampleDensity: TLabel
@@ -625,26 +633,76 @@ object OptionsForm: TOptionsForm
           HelpContext = 1011
           TabOrder = 5
         end
+        object rgTransparency: TRadioGroup
+          Left = 8
+          Top = 160
+          Width = 153
+          Height = 61
+          Caption = 'PNG Transparency'
+          ItemIndex = 0
+          Items.Strings = (
+            'Disabled'
+            'Enabled')
+          TabOrder = 6
+        end
       end
-      object chkShowTransparency: TCheckBox
-        Left = 192
-        Top = 155
-        Width = 129
-        Height = 17
-        Caption = 'Show Transparency'
-        TabOrder = 2
-      end
-      object rgTransparency: TRadioGroup
+      object GroupBox20: TGroupBox
         Left = 184
         Top = 104
-        Width = 193
-        Height = 49
-        Caption = 'PNG Transparency'
-        ItemIndex = 0
-        Items.Strings = (
-          'Disabled'
-          'Enabled')
-        TabOrder = 3
+        Width = 254
+        Height = 129
+        Caption = 'Main Window Preview'
+        TabOrder = 2
+        object Label48: TLabel
+          Left = 208
+          Top = 20
+          Width = 37
+          Height = 13
+          Caption = 'percent'
+        end
+        object chkShowTransparency: TCheckBox
+          Left = 8
+          Top = 42
+          Width = 129
+          Height = 17
+          Caption = 'Show Transparency'
+          TabOrder = 2
+        end
+        object chkExtendMainPreview: TCheckBox
+          Left = 8
+          Top = 20
+          Width = 145
+          Height = 17
+          Caption = 'Extend preview buffer by'
+          TabOrder = 0
+        end
+        object cbExtendPercent: TComboBox
+          Left = 152
+          Top = 18
+          Width = 49
+          Height = 21
+          ItemHeight = 13
+          TabOrder = 1
+          Items.Strings = (
+            '0'
+            '10'
+            '25'
+            '50'
+            '100'
+            '150'
+            '200')
+        end
+        object rgRotationMode: TRadioGroup
+          Left = 8
+          Top = 60
+          Width = 121
+          Height = 61
+          Caption = 'Rotation Mode'
+          Items.Strings = (
+            'Rotate image'
+            'Rotate frame')
+          TabOrder = 3
+        end
       end
     end
     object RandomPage: TTabSheet

@@ -147,7 +147,6 @@ type
     GroupBox8: TGroupBox;
     Label17: TLabel;
     txtServer: TEdit;
-    chkResize: TCheckBox;
     PathsPage: TTabSheet;
     GroupBox10: TGroupBox;
     btnDefGradient: TSpeedButton;
@@ -177,13 +176,10 @@ type
     Label24: TLabel;
     txtSymNVars: TEdit;
     udSymNVars: TUpDown;
-    rgRotationMode: TRadioGroup;
     txtBatchSize: TEdit;
     udBatchSize: TUpDown;
     Label38: TLabel;
     Label39: TLabel;
-    chkShowTransparency: TCheckBox;
-    rgTransparency: TRadioGroup;
     GroupBox15: TGroupBox;
     btnBrowseSound: TSpeedButton;
     txtSoundFile: TEdit;
@@ -201,8 +197,6 @@ type
     pnlGridColor2: TPanel;
     pnlHelpersColor: TPanel;
     rgReferenceMode: TRadioGroup;
-    chkExtendedEdit: TCheckBox;
-    chkAxisLock: TCheckBox;
     chkPlaysound: TCheckBox;
     btnPlay: TSpeedButton;
     Label44: TLabel;
@@ -215,6 +209,18 @@ type
     Label47: TLabel;
     cbPreviewTime: TComboBox;
     cbFullscrTime: TComboBox;
+    GroupBox20: TGroupBox;
+    chkShowTransparency: TCheckBox;
+    chkExtendMainPreview: TCheckBox;
+    Label48: TLabel;
+    rgTransparency: TRadioGroup;
+    cbExtendPercent: TComboBox;
+    chkShowRenderStats: TCheckBox;
+    rgRotationMode: TRadioGroup;
+    GroupBox21: TGroupBox;
+    chkAxisLock: TCheckBox;
+    chkExtendedEdit: TCheckBox;
+    rgDoubleClickVars: TRadioGroup;
     procedure btnCancelClick(Sender: TObject);
     procedure FormShow(Sender: TObject);
     procedure btnOKClick(Sender: TObject);
@@ -246,6 +252,7 @@ type
     procedure pnlHelpersColorClick(Sender: TObject);
     procedure btnBrowseSoundClick(Sender: TObject);
     procedure btnPlayClick(Sender: TObject);
+
   private
     { Private declarations }
   public
@@ -298,20 +305,21 @@ begin
   rgReferenceMode.ItemIndex := ReferenceMode;
   rgRotationMode.ItemIndex := MainForm_RotationMode;
   udBatchSize.Position := BatchSize;
-  chkResize.checked := ResizeOnLoad;
-  rgTransparency.ItemIndex :=  PNGTransparency;
-  chkShowTransparency.Checked := ShowTransparency;
+//  chkResize.checked := ResizeOnLoad;
   if NrTreads <= 1 then
     cbNrTheads.ItemIndex := 0
   else
     cbNrTheads.text := intTostr(NrTreads);
   chkExtendedEdit.Checked := ExtEditEnabled;
   chkAxisLock.Checked := TransformAxisLock;
+  if DoubleClickSetVars then rgDoubleClickVars.ItemIndex := 1
+  else rgDoubleClickVars.ItemIndex := 0;
 
   chkPlaySound.Checked := PlaySoundOnRenderComplete;
   txtSoundFile.Text := RenderCompleteSoundFile;
 
   cbInternalBitsPerSample.ItemIndex := InternalBitsPerSample;
+
 
   if PreviewTimeLimit = 0 then cbPreviewTime.ItemIndex := 0
   else cbPreviewTime.Text := IntToStr(PreviewTimeLimit);
@@ -334,6 +342,13 @@ begin
   pnlGridColor1.Color := GridColor1;
   pnlGridColor2.Color := GridColor2;
   pnlReference.color := TColor(ReferenceTriangleColor);
+
+  rgTransparency.ItemIndex :=  PNGTransparency;
+  chkShowTransparency.Checked := ShowTransparency;
+  cbExtendPercent.Text := FloatToStr((MainPreviewScale - 1) / 0.02);
+  chkExtendMainPreview.Checked := ExtendMainPreview;
+
+  chkShowRenderStats.Checked := ShowRenderStats;
 
   { Random tab }
   udMinXforms.Position := randMinTransforms;
@@ -428,7 +443,7 @@ begin
   ConfirmDelete := chkConfirmDel.Checked;
 
   MainForm_RotationMode := rgRotationMode.ItemIndex;
-  ResizeOnLoad := chkResize.checked;
+//  ResizeOnLoad := chkResize.checked;
 
   InternalBitsPerSample := cbInternalBitsPerSample.ItemIndex;
 
@@ -440,6 +455,7 @@ begin
   ReferenceMode := rgReferenceMode.ItemIndex;
   ExtEditEnabled := chkExtendedEdit.Checked;
   TransformAxisLock := chkAxisLock.Checked;
+  DoubleClickSetVars := rgDoubleClickVars.ItemIndex <> 0;
 
   { Display tab }
   defSampleDensity := StrToFloat(txtSampleDensity.Text);
@@ -465,6 +481,13 @@ begin
   prevHighQuality := StrToFloat(txtHighQuality.Text);
   if prevHighQuality > 100 then prevHighQuality := 100;
   if prevHighQuality < 0.01 then prevHighQuality := 0.01;
+
+  MainPreviewScale := 1 + 0.02 * StrToFloatDef(cbExtendPercent.Text, 0);
+  if MainPreviewScale < 1 then MainPreviewScale := 1
+  else if MainPreviewScale > 3 then MainPreviewScale := 3;
+  ExtendMainPreview := chkExtendMainPreview.Checked;
+
+  ShowRenderStats := chkShowRenderStats.Checked;
 
   { Random tab }
   randMinTransforms := udMinXforms.Position;

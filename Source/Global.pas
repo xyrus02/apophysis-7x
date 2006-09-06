@@ -36,7 +36,7 @@ function dist(x1, y1, x2, y2: double): double;
 function GetVal(token: string): string;
 function ReplaceTabs(str: string): string;
 { Palette and gradient functions }
-function GetGradient(FileName, Entry: string): string;
+//function GetGradient(FileName, Entry: string): string;
 { Misc }
 function det(a, b, c, d: double): double;
 function solve3(x1, x2, x1h, y1, y2, y1h, z1, z2, z1h: double;
@@ -53,18 +53,25 @@ const
   clSlateGray = TColor($837365);
   FT_BMP = 1; FT_PNG = 2; FT_JPG = 3;
 
+const
+  crEditArrow  = 20;
+  crEditMove   = 21;
+  crEditRotate = 22;
+  crEditScale  = 23;
+  
 var
   MainSeed: integer;
   MainTriangles: TTriangles;
   ConfirmDelete: boolean; // Flag confirmation of entry deletion
-//  FlameTitle: string;
   Transforms: integer; // Count of Tranforms
   EnableFinalXform: boolean;
   AppPath: string; // Path of applicatio file
   OpenFile: string; // Name of currently open file
   CanDrawOnResize: boolean;
   PreserveWeights: boolean;
-  {UPR Options}
+
+  { UPR Options }
+
   UPRSampleDensity: integer;
   UPRFilterRadius: double;
   UPROversample: integer;
@@ -81,16 +88,23 @@ var
   Variation: TVariation; // Current variation
   NumTries, TryLength: integer; // Settings for smooth palette
   SmoothPaletteFile: string;
-{ Editor }
+
+  { Editor }
+
   UseFlameBackground, UseTransformColors: boolean;
   EditorBkgColor, ReferenceTriangleColor: integer;
   GridColor1, GridColor2, HelpersColor: integer;
   ExtEditEnabled, TransformAxisLock: boolean;
-{ Display }
+  DoubleClickSetVars: boolean;
+
+  { Display }
+
   defSampleDensity, defPreviewDensity: Double;
   defGamma, defBrightness, defVibrancy, defFilterRadius: Double;
   defOversample: integer;
-{ Render }
+
+  { Render }
+
   renderDensity, renderFilterRadius: double;
   renderOversample, renderWidth, renderHeight: integer;
   renderBitsPerSample: integer;
@@ -98,7 +112,18 @@ var
   JPEGQuality: integer;
   renderFileFormat: integer;
   InternalBitsPerSample: integer;
-{ Defaults }
+
+  NrTreads: Integer;
+  UseNrThreads: integer;
+
+  PNGTransparency: integer;
+  ShowTransparency: boolean;
+
+  MainPreviewScale: double;
+  ExtendMainPreview: boolean;
+
+  { Defaults }
+
   SavePath, SmoothPalettePath: string;
   RandomPrefix, RandomDate: string;
   RandomIndex: integer;
@@ -117,12 +142,20 @@ var
   PlaySoundOnRenderComplete: boolean;
   RenderCompleteSoundFile: string;
 
+  SaveIncompleteRenders: boolean;
+  ShowRenderStats: boolean;
+
+  PreviewTimeLimit, FullscreenTimeLimit: integer;
+  PreviewMinDensity: double;
+
   SymmetryType: integer;
   SymmetryOrder: integer;
   SymmetryNVars: integer;
   Variations: array[0..63] of boolean;
   VariationOptions: int64;
+
   { For random gradients }
+
   MinNodes, MaxNodes, MinHue, MaxHue, MinSat, MaxSat, MinLum, MaxLum: integer;
   ReferenceMode: integer;//FixedReference: boolean;
   MainForm_RotationMode: integer;
@@ -138,18 +171,11 @@ var
   ExportJitters: integer;
   ExportGammaTreshold: double;
   OpenFileType: TFileType;
-  ResizeOnLoad: Boolean;
+//  ResizeOnLoad: Boolean;
   ShowProgress: Boolean;
   defLibrary: string;
   LimitVibrancy: Boolean;
   DefaultPalette: TColorMap;
-  PNGTransparency: integer;
-  ShowTransparency: boolean;
-  NrTreads: Integer;
-  UseNrThreads: integer;
-
-  PreviewTimeLimit, FullscreenTimeLimit: integer;
-  PreviewMinDensity: double;
 
 function Round6(x: double): double;
 
@@ -297,9 +323,6 @@ begin
   end;
 end;
 
-{ Weight manipulation }
-
-
 { Parse }
 
 function GetVal(token: string): string;
@@ -327,7 +350,7 @@ begin
   Result := str;
 end;
 
-
+(*
 { Palette and gradient functions }
 
 function RGBToColor(Pal: TMapPalette; index: integer): Tcolor;
@@ -419,6 +442,7 @@ begin
     FileStrings.Free;
   end;
 end;
+*)
 
 end.
 

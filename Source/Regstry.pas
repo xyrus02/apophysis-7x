@@ -490,7 +490,7 @@ begin
       begin
         SheepServer := 'http://v2d5.sheepserver.net/';
       end;
-      if Registry.ValueExists('ResizeOnLoad') then
+{      if Registry.ValueExists('ResizeOnLoad') then
       begin
         ResizeOnLoad := Registry.ReadBool('ResizeOnLoad');
       end
@@ -498,16 +498,28 @@ begin
       begin
         ResizeOnLoad := False;
       end;
-      if Registry.ValueExists('ShowProgress') then
+}      if Registry.ValueExists('ShowProgress') then
       begin
         ShowProgress := Registry.ReadBool('ShowProgress');
       end else begin
         ShowProgress := true;
       end;
+
+      if Registry.ValueExists('SaveIncompleteRenders') then begin
+        SaveIncompleteRenders := Registry.ReadBool('SaveIncompleteRenders');
+      end else begin
+        SaveIncompleteRenders := false;
+      end;
+      if Registry.ValueExists('ShowRenderStats') then begin
+        ShowRenderStats := Registry.ReadBool('ShowRenderStats');
+      end else begin
+        ShowRenderStats := false;
+      end;
+
       if Registry.ValueExists('PNGTransparency') then begin
         PNGTransparency := Registry.ReadInteger('PNGTransparency');
 
-        if PNGTransparency > 1 then PNGTransparency := 1;
+      if PNGTransparency > 1 then PNGTransparency := 1; // tmp
 
       end else begin
         PNGTransparency := 1
@@ -517,6 +529,19 @@ begin
       end else begin
         ShowTransparency := False;
       end;
+      if Registry.ValueExists('ExtendMainPreview') then begin
+        ExtendMainPreview := Registry.ReadBool('ExtendMainPreview');
+      end else begin
+        ExtendMainPreview := true;
+      end;
+      if Registry.ValueExists('MainPreviewScale') then begin
+        MainPreviewScale := Registry.ReadFloat('MainPreviewScale');
+        if MainPreviewScale < 1 then MainPreviewScale := 1
+        else if MainPreviewScale > 3 then MainPreviewScale := 3;
+      end else begin
+        MainPreviewScale := 1.2;
+      end;
+
       if Registry.ValueExists('NrTreads') then begin
         NrTreads := Registry.ReadInteger('NrTreads');
       end else begin
@@ -603,10 +628,14 @@ begin
       SheepPW := '';
       flam3Path := DefaultPath + 'flam3.exe';
       SheepServer := 'http://v2d5.sheepserver.net/';
-      ResizeOnLoad := False;
+//      ResizeOnLoad := False;
       ShowProgress := true;
+      SaveIncompleteRenders := false;
+      ShowRenderStats := false;
       PNGTransparency := 1;
       ShowTransparency := False;
+      MainPreviewScale := 1.2;
+      ExtendMainPreview := true;
       NrTreads := 1;
       UseNrThreads := 1;
       InternalBitsPerSample := 0;
@@ -662,6 +691,9 @@ begin
       if Registry.ValueExists('LockTransformAxis') then
         TransformAxisLock := Registry.ReadBool('LockTransformAxis')
       else TransformAxisLock := true;
+      if Registry.ValueExists('DoubleClickSetVars') then
+        DoubleClickSetVars := Registry.ReadBool('DoubleClickSetVars')
+      else DoubleClickSetVars := true;
     end
     else begin
       EditorBkgColor := $000000;
@@ -671,6 +703,7 @@ begin
       ReferenceTriangleColor := integer(clGray);
       ExtEditEnabled := true;
       TransformAxisLock := true;
+      DoubleClickSetVars := true;
     end;
     Registry.CloseKey;
 
@@ -1019,17 +1052,23 @@ begin
       Registry.WriteString('Renderer', flam3Path);
       Registry.WriteString('Server', SheepServer);
       Registry.WriteString('Pass', SheepPW);
-      Registry.WriteBool('ResizeOnLoad', ResizeOnLoad);
+//      Registry.WriteBool('ResizeOnLoad', ResizeOnLoad);
       Registry.WriteBool('ShowProgress', ShowProgress);
       Registry.WriteBool('KeepBackground', KeepBackground);
       Registry.WriteString('FunctionLibrary', defLibrary);
 
       Registry.WriteBool('ShowTransparency', ShowTransparency);
       Registry.WriteInteger('PNGTransparency', PNGTransparency);
+      Registry.WriteBool('ExtendMainPreview', ExtendMainPreview);
+      Registry.WriteFloat('MainPreviewScale', MainPreviewScale);
+
+      Registry.WriteBool('SaveIncompleteRenders', SaveIncompleteRenders);
+      Registry.WriteBool('ShowRenderStats', ShowRenderStats);
+
       Registry.WriteInteger('NrTreads', NrTreads);
       Registry.WriteInteger('UseNrThreads', UseNrThreads);
-
       Registry.WriteInteger('InternalBitsPerSample', InternalBitsPerSample);
+
       Registry.WriteInteger('PreviewTimeLimit', PreviewTimeLimit);
       Registry.WriteInteger('FullscreenTimeLimit', FullscreenTimeLimit);
       Registry.WriteFloat('PreviewMinDensity', PreviewMinDensity);
@@ -1045,6 +1084,7 @@ begin
       Registry.WriteInteger('ReferenceTriangleColor', ReferenceTriangleColor);
       Registry.WriteBool('ExtendedEdit', ExtEditEnabled);
       Registry.WriteBool('LockTransformAxis', TransformAxisLock);
+      Registry.WriteBool('DoubleClickSetVars', DoubleClickSetVars);
     end;
     { Display }
     if Registry.OpenKey('\Software\' + APP_NAME + '\Display', True) then
