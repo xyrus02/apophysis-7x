@@ -39,7 +39,7 @@ const
   RS_XO = 2;
   RS_VO = 3;
 
-  AppVersionString = 'Apophysis 2.05 pre-release 15';
+  AppVersionString = 'Apophysis 2.05 pre-release 16';
 
 type
   TMouseMoveState = (msUsual, msZoomWindow, msZoomOutWindow, msZoomWindowMove,
@@ -1313,7 +1313,7 @@ begin
 end;
 
 
-function FlameToXML(const cp1: TControlPoint; sheep: boolean; exporting: boolean = false): string;
+function FlameToXML(const cp1: TControlPoint; exporting: boolean): string;
 var
   t, i{, j}: integer;
   FileList: TStringList;
@@ -1393,13 +1393,11 @@ begin
 
     end;
 
-   { Write palette data }
-    if not sheep then begin
-      if exporting then
-        FileList.Add(ColorToXml(cp1))
-      else
-        FileList.Add(ColorToXmlCompact(cp1));
-   end;
+    { Write palette data }
+    if exporting or OldPaletteFormat then
+      FileList.Add(ColorToXml(cp1))
+    else
+      FileList.Add(ColorToXmlCompact(cp1));
 
     FileList.Add('</flame>');
     result := FileList.text;
@@ -3857,7 +3855,7 @@ begin
       cp1.estimator_curve := ExportEstimatorCurve;
       cp1.jitters := ExportJitters;
       cp1.gamma_treshold := ExportGammaTreshold;
-      FileList.Text := FlameToXML(cp1, false, true);
+      FileList.Text := FlameToXML(cp1, true);
       FileList.SaveToFile(ChangeFileExt(ExportDialog.Filename, '.flame'));
       FileList.Clear;
       FileList.Add('@echo off');
