@@ -420,8 +420,6 @@ var
   gCenterX: double;
   gCenterY: double;
 
-  HelpersEnabled: boolean = true;
-
 {$R *.DFM}
 
 { Triangle transformations }
@@ -2140,6 +2138,10 @@ begin
   else if (Button = mbRight) and viewDragMode then
   begin
     viewDragMode := false;
+
+    Screen.Cursor := crDefault;
+    SetCaptureControl(nil);
+
     if viewDragged=false then // haven't dragged - popup menu then
     begin
       GetCursorPos(mousepos); // hmmm
@@ -2153,9 +2155,6 @@ begin
       end;
     end
     else viewDragged := false;
-    Screen.Cursor := crDefault;
-    SetCaptureControl(nil);
-    //exit;
   end
 end;
 
@@ -2177,20 +2176,11 @@ begin
         EditForm.Width := Registry.ReadInteger('Width');
       if Registry.ValueExists('Height') then
         EditForm.Height := Registry.ReadInteger('Height');
-     { Options }
-      if Registry.ValueExists('UseTransformColors') then
-      begin
-        UseTransformColors := Registry.ReadBool('UseTransformColors');
-      end
-      else
-      begin
-        UseTransformColors := False;
-      end;
 
       if Registry.ValueExists('ResetLocation') then
         mnuResetLoc.checked := Registry.ReadBool('ResetLocation')
-      else mnuResetLoc.checked := true;
-      //tbResetLoc.Down := mnuResetLoc.checked;
+      else
+        mnuResetLoc.checked := false;
       if Registry.ValueExists('HelpersEnabled') then
         HelpersEnabled := Registry.ReadBool('HelpersEnabled')
       else
@@ -2214,15 +2204,16 @@ begin
         trkVarPreviewDepth.Position := Registry.ReadInteger('VariationPreviewDepth');
     end
     else begin
-      UseTransformColors := False;
       UseFlameBackground := False;
-      mnuResetLoc.checked := true;
+      mnuResetLoc.checked := false;
     end;
     Registry.CloseKey;
   finally
     Registry.Free;
   end;
   chkUseXFormColor.checked := UseTransformColors;
+  chkHelpers.Checked := HelpersEnabled;
+
   if ExtendedEdit then tbExtendedEdit.Down := true
   else tbMove.Down := true;
   UpdateDisplay;
@@ -2503,14 +2494,6 @@ begin
     begin
       { Options }
 //      Registry.WriteBool('UseFlameBackground', UseFlameBackground);
-{
-      Registry.WriteBool('UseTransformColors', UseTransformColors);
-      Registry.WriteInteger('BackgroundColor', BackgroundColor);
-      Registry.WriteInteger('GridColor1', GridColor1);
-      Registry.WriteInteger('GridColor2', GridColor2);
-      Registry.WriteInteger('HelpersColor', HelpersColor);
-      Registry.WriteInteger('ReferenceTriangleColor', ReferenceTriangleColor);
-}
       Registry.WriteBool('ResetLocation', mnuResetLoc.checked);
       Registry.WriteBool('VariationPreview', showVarPreview);
       Registry.WriteBool('HelpersEnabled', HelpersEnabled);
@@ -2650,10 +2633,16 @@ begin
 end;
 
 procedure TEditForm.cbTransformsChange(Sender: TObject);
+var
+  n: integer;
 begin
-  if SelectedTriangle <> cbTransforms.ItemIndex then SelectedTriangle := cbTransforms.ItemIndex;
-  ShowSelectedInfo;
-  TriangleView.Invalidate;
+  n := cbTransforms.ItemIndex;
+  if (n <> SelectedTriangle) and (n >= 0) and (n <= LastTriangle) then
+  begin
+    SelectedTriangle := n;
+    ShowSelectedInfo;
+    TriangleView.Invalidate;
+  end;
 end;
 
 procedure TEditForm.cbTransformsDrawItem(Control: TWinControl;

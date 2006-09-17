@@ -1437,12 +1437,12 @@ object EditForm: TEditForm
               Left = 8
               Top = 2
               Width = 145
-              Height = 100
+              Height = 95
               Caption = 'Transform color'
               TabOrder = 0
               object pnlSymmetry: TPanel
                 Left = 8
-                Top = 70
+                Top = 62
                 Width = 73
                 Height = 21
                 Cursor = crHandPoint
@@ -1459,9 +1459,9 @@ object EditForm: TEditForm
                 OnMouseUp = DragPanelMouseUp
               end
               object scrlXFormColor: TScrollBar
-                Left = 8
-                Top = 46
-                Width = 129
+                Left = 9
+                Top = 38
+                Width = 128
                 Height = 15
                 LargeChange = 10
                 Max = 1000
@@ -1497,7 +1497,7 @@ object EditForm: TEditForm
               end
               object txtSymmetry: TEdit
                 Left = 80
-                Top = 70
+                Top = 62
                 Width = 57
                 Height = 21
                 TabOrder = 4
@@ -1508,7 +1508,7 @@ object EditForm: TEditForm
             end
             object GroupBox2: TGroupBox
               Left = 8
-              Top = 108
+              Top = 100
               Width = 145
               Height = 137
               Caption = 'Graph'
