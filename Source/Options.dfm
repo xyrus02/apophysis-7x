@@ -241,79 +241,14 @@ object OptionsForm: TOptionsForm
             '64-bit integer')
         end
       end
-      object GroupBox19: TGroupBox
-        Left = 136
-        Top = 112
-        Width = 201
-        Height = 97
-        Caption = 'Time-limited previews'
+      object chkOldPaletteFormat: TCheckBox
+        Left = 8
+        Top = 204
+        Width = 121
+        Height = 29
+        Caption = 'Save gradient in old file format'
         TabOrder = 5
-        Visible = False
-        object Label45: TLabel
-          Left = 8
-          Top = 19
-          Width = 116
-          Height = 13
-          Caption = 'Fullscreen time limit (ms)'
-        end
-        object Label46: TLabel
-          Left = 8
-          Top = 43
-          Width = 106
-          Height = 13
-          Caption = 'Preview time limit (ms)'
-        end
-        object Label47: TLabel
-          Left = 8
-          Top = 67
-          Width = 116
-          Height = 13
-          Caption = 'Preview minimum quality'
-        end
-        object txtPreviewMinQ: TEdit
-          Left = 128
-          Top = 64
-          Width = 65
-          Height = 21
-          TabOrder = 0
-          Text = '0.2'
-        end
-        object cbPreviewTime: TComboBox
-          Left = 128
-          Top = 40
-          Width = 65
-          Height = 21
-          ItemHeight = 13
-          ItemIndex = 0
-          TabOrder = 1
-          Text = 'off'
-          Items.Strings = (
-            'off'
-            '25'
-            '50'
-            '100'
-            '200'
-            '500'
-            '1000')
-        end
-        object cbFullscrTime: TComboBox
-          Left = 128
-          Top = 16
-          Width = 65
-          Height = 21
-          ItemHeight = 13
-          TabOrder = 2
-          Text = 'off'
-          Items.Strings = (
-            'off'
-            '100'
-            '250'
-            '500'
-            '1000'
-            '2000'
-            '3000'
-            '5000')
-        end
+        WordWrap = True
       end
     end
     object EditorPage: TTabSheet

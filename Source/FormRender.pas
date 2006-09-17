@@ -113,7 +113,7 @@ type
 
   public
     Renderer: TRenderThread;
-    PhysicalMemory, ApproxMemory: int64;
+    PhysicalMemory, ApproxMemory, TotalPhysicalMemory: int64;
     ColorMap: TColorMap;
     cp: TControlPoint;
     Filename: string;
@@ -173,6 +173,8 @@ begin
   GlobalMemoryInfo.dwLength := SizeOf(GlobalMemoryInfo);
   GlobalMemoryStatus(GlobalMemoryInfo);
   PhysicalMemory := GlobalMemoryInfo.dwAvailPhys div 1048576;
+  TotalPhysicalMemory := GlobalMemoryInfo.dwTotalPhys div 1048576;
+  TotalPhysicalMemory := TotalPhysicalMemory * 9 div 10; // assume that OS will take 10% of RAM ;)
   ApproxMemory := int64(ImageHeight) * int64(ImageWidth) * sqr(Oversample) * SizeOfBucket[BitsPerSample] div 1048576;
 
   lblPhysical.Caption := Format('%u', [PhysicalMemory]) + ' Mb';
@@ -337,16 +339,22 @@ begin
   ImageWidth := StrToInt(cbWidth.text);
   ImageHeight := StrToInt(cbHeight.text);
 
-  if (not chkLimitMem.checked) and (ApproxMemory > PhysicalMemory) then
-  begin
-    //Application.MessageBox('You do not have enough memory for this render. Please use memory limiting.', 'Apophysis', 48);
-    if Application.MessageBox('There is not enough memory for this render. ' +
-                              'You can use memory limiting, or if you are sure that your system has this much RAM, ' +
-                              'you can try to allocate memory anyway. ' +
-                              'Dou you want to try? (USE ON YOUR OWN RISK!!!)', 'Apophysis',
-      MB_YESNO) <> IDYES then exit;
-  end;
-  if chkLimitMem.checked and (PhysicalMemory < StrToInt(cbMaxMemory.text)) and (Approxmemory > PhysicalMemory) then begin
+  if not chkLimitMem.checked then begin
+    if (ApproxMemory > TotalPhysicalMemory) then
+    begin
+      Application.MessageBox('You do not have enough memory for this render. Please use memory limiting.', 'Apophysis', 48);
+      exit;
+    end;
+    if (ApproxMemory > PhysicalMemory) then
+    begin
+      if Application.MessageBox('There is not enough memory for this render. ' + #13 +
+                                'You can use memory limiting, or - if you are sure that your system *should* ' + #13 +
+                                'have the required amount of free RAM, you can try to allocate memory anyway. ' + #13#13 +
+                                'Dou you want to try? (SLOW AND UNSTABLE - USE AT YOUR OWN RISK!!!)', 'Apophysis',
+        MB_ICONWARNING or MB_YESNO) <> IDYES then exit;
+    end;
+  end
+  else if (PhysicalMemory < StrToInt(cbMaxMemory.text)) and (Approxmemory > PhysicalMemory) then begin
     Application.MessageBox('You do not have enough memory for this render. Please use a lower Maximum memory setting.', 'Apophysis', 48);
     exit;
   end;

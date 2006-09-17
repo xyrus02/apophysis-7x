@@ -139,11 +139,6 @@ begin
   if TraceLevel > 0 then Renderer.Output := TraceForm.FullscreenTrace.Lines;
   Renderer.SetCP(cp);
 
-  if FullscreenTimeLimit > 0 then begin
-    TimeLimiter.Interval := FullscreenTimeLimit;
-    TimeLimiter.Enabled := FALSE;//true;
-  end;
-
   Renderer.WaitForMore := true;
   RenderStop.Enabled := true;
   RenderMore.Enabled := false;

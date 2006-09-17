@@ -100,6 +100,15 @@ begin
       begin
         ConfirmDelete := True;
       end;
+      if Registry.ValueExists('OldPaletteFormat') then
+      begin
+        OldPaletteFormat := Registry.ReadBool('OldPaletteFormat');
+      end
+      else
+      begin
+        OldPaletteFormat := false;
+      end;
+
       if Registry.ValueExists('KeepBackground') then
       begin
         KeepBackground := Registry.ReadBool('KeepBackground');
@@ -559,18 +568,6 @@ begin
       end;
 
 
-//      if Registry.ValueExists('PreviewTimeLimit') then
-//        PreviewTimeLimit := Registry.ReadInteger('PreviewTimeLimit')
-//      else
-        PreviewTimeLimit := 0;
-//      if Registry.ValueExists('FullscreenTimeLimit') then
-//        FullscreenTimeLimit := Registry.ReadInteger('FullscreenTimeLimit')
-//      else
-        FullscreenTimeLimit := 0;
-//      if Registry.ValueExists('PreviewMinDensity') then
-//        PreviewMinDensity := Registry.ReadFloat('PreviewMinDensity')
-//      else
-        PreviewMinDensity := 0.0;
     end
     else
     begin
@@ -584,6 +581,7 @@ begin
       SavePath := DefaultPath + 'Parameters\My Flames.flame';
       defSmoothPaletteFile := DefaultPath + 'smooth.ugr';
       ConfirmDelete := True;
+      OldPaletteFormat := false;
       NumTries := 10;
       TryLength := 100000;
       randMinTransforms := 2;
@@ -639,32 +637,21 @@ begin
       NrTreads := 1;
       UseNrThreads := 1;
       InternalBitsPerSample := 0;
-      PreviewTimeLimit := 0;
-      FullscreenTimeLimit := 0;
-      PreviewMinDensity := 0.2;
     end;
     Registry.CloseKey;
 
     { Editor } // --Z-- moved from EditForm
     if Registry.OpenKey('Software\' + APP_NAME + '\Forms\Editor', False) then
     begin
-{      if Registry.ValueExists('UseTransformColors') then
-      begin
-        UseTransformColors := Registry.ReadBool('UseTransformColors');
-      end
+      if Registry.ValueExists('UseTransformColors') then
+        UseTransformColors := Registry.ReadBool('UseTransformColors')
       else
-      begin
         UseTransformColors := False;
-      end;
-      if Registry.ValueExists('UseFlameBackground') then
-      begin
-        UseFlameBackground := Registry.ReadBool('UseFlameBackground');
-      end
+      if Registry.ValueExists('HelpersEnabled') then
+        HelpersEnabled := Registry.ReadBool('HelpersEnabled')
       else
-      begin
-        UseFlameBackground := False;
-      end;
-}
+        HelpersEnabled := true;
+
       if Registry.ValueExists('BackgroundColor') then
         EditorBkgColor := Registry.ReadInteger('BackgroundColor')
       else
@@ -696,6 +683,8 @@ begin
       else DoubleClickSetVars := true;
     end
     else begin
+      UseTransformColors := false;
+      HelpersEnabled := true;
       EditorBkgColor := $000000;
       GridColor1 := $444444;
       GridColor2 := $333333;
@@ -997,6 +986,7 @@ begin
       Registry.WriteString('RenderCompleteSoundFile', RenderCompleteSoundFile);
 
       Registry.WriteBool('ConfirmDelete', ConfirmDelete);
+      Registry.WriteBool('OldPaletteFormat', OldPaletteFormat);
       Registry.WriteInteger('NumTries', NumTries);
       Registry.WriteInteger('TryLength', TryLength);
       Registry.WriteInteger('MinTransforms', randMinTransforms);
@@ -1068,15 +1058,12 @@ begin
       Registry.WriteInteger('NrTreads', NrTreads);
       Registry.WriteInteger('UseNrThreads', UseNrThreads);
       Registry.WriteInteger('InternalBitsPerSample', InternalBitsPerSample);
-
-      Registry.WriteInteger('PreviewTimeLimit', PreviewTimeLimit);
-      Registry.WriteInteger('FullscreenTimeLimit', FullscreenTimeLimit);
-      Registry.WriteFloat('PreviewMinDensity', PreviewMinDensity);
     end;
     { Editor }
     if Registry.OpenKey('\Software\' + APP_NAME + '\Forms\Editor', True) then
     begin
       Registry.WriteBool('UseTransformColors', UseTransformColors);
+      Registry.WriteBool('HelpersEnabled', HelpersEnabled);
       Registry.WriteInteger('BackgroundColor', EditorBkgColor);
       Registry.WriteInteger('GridColor1', GridColor1);
       Registry.WriteInteger('GridColor2', GridColor2);

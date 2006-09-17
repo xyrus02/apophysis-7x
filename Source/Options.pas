@@ -202,13 +202,6 @@ type
     Label44: TLabel;
     GroupBox18: TGroupBox;
     cbInternalBitsPerSample: TComboBox;
-    GroupBox19: TGroupBox;
-    Label45: TLabel;
-    Label46: TLabel;
-    txtPreviewMinQ: TEdit;
-    Label47: TLabel;
-    cbPreviewTime: TComboBox;
-    cbFullscrTime: TComboBox;
     GroupBox20: TGroupBox;
     chkShowTransparency: TCheckBox;
     chkExtendMainPreview: TCheckBox;
@@ -221,6 +214,7 @@ type
     chkAxisLock: TCheckBox;
     chkExtendedEdit: TCheckBox;
     rgDoubleClickVars: TRadioGroup;
+    chkOldPaletteFormat: TCheckBox;
     procedure btnCancelClick(Sender: TObject);
     procedure FormShow(Sender: TObject);
     procedure btnOKClick(Sender: TObject);
@@ -300,20 +294,18 @@ begin
   txtDefSmoothFile.Text := defSmoothPaletteFile;
   txtNumtries.text := IntToStr(Numtries);
   txtTryLength.text := IntToStr(Trylength);
-  chkConfirmDel.Checked := ConfirmDelete;
-  txtJPEGQuality.text := IntToStr(JPEGQuality);
-  rgReferenceMode.ItemIndex := ReferenceMode;
-  rgRotationMode.ItemIndex := MainForm_RotationMode;
   udBatchSize.Position := BatchSize;
 //  chkResize.checked := ResizeOnLoad;
   if NrTreads <= 1 then
     cbNrTheads.ItemIndex := 0
   else
     cbNrTheads.text := intTostr(NrTreads);
-  chkExtendedEdit.Checked := ExtEditEnabled;
-  chkAxisLock.Checked := TransformAxisLock;
-  if DoubleClickSetVars then rgDoubleClickVars.ItemIndex := 1
-  else rgDoubleClickVars.ItemIndex := 0;
+
+  chkConfirmDel.Checked := ConfirmDelete;
+  chkOldPaletteFormat.Checked := OldPaletteFormat;
+
+  rgRotationMode.ItemIndex := MainForm_RotationMode;
+  txtJPEGQuality.text := IntToStr(JPEGQuality);
 
   chkPlaySound.Checked := PlaySoundOnRenderComplete;
   txtSoundFile.Text := RenderCompleteSoundFile;
@@ -321,11 +313,14 @@ begin
   cbInternalBitsPerSample.ItemIndex := InternalBitsPerSample;
 
 
-  if PreviewTimeLimit = 0 then cbPreviewTime.ItemIndex := 0
-  else cbPreviewTime.Text := IntToStr(PreviewTimeLimit);
-  if FullscreenTimeLimit = 0 then cbFullscrTime.ItemIndex := 0
-  else cbFullscrTime.Text := IntToStr(FullscreenTimeLimit);
-  txtPreviewMinQ.Text := FloatToStr(PreviewMinDensity);
+  { Editor }
+  rgReferenceMode.ItemIndex := ReferenceMode;
+  chkUseXFormColor.checked := UseTransformColors;
+  chkHelpers.Checked := HelpersEnabled;
+  chkExtendedEdit.Checked := ExtEditEnabled;
+  chkAxisLock.Checked := TransformAxisLock;
+  if DoubleClickSetVars then rgDoubleClickVars.ItemIndex := 1
+  else rgDoubleClickVars.ItemIndex := 0;
 
   { Display tab }
   txtSampleDensity.Text := FloatToStr(defSampleDensity);
@@ -441,18 +436,19 @@ begin
 
   NrTreads := StrToIntDef(cbNrTheads.text, 0);
   ConfirmDelete := chkConfirmDel.Checked;
+  OldPaletteFormat := chkOldPaletteFormat.Checked;
 
   MainForm_RotationMode := rgRotationMode.ItemIndex;
 //  ResizeOnLoad := chkResize.checked;
 
   InternalBitsPerSample := cbInternalBitsPerSample.ItemIndex;
 
-  PreviewTimeLimit := StrToIntDef(cbPreviewTime.Text, 0);
-  FullscreenTimeLimit := StrToIntDef(cbFullscrTime.Text, 0);
-  PreviewMinDensity := StrToFloatDef(txtPreviewMinQ.Text, 0.2);
 
   // Editor
   ReferenceMode := rgReferenceMode.ItemIndex;
+  UseTransformColors := chkUseXFormColor.checked;
+  HelpersEnabled := chkHelpers.Checked;
+
   ExtEditEnabled := chkExtendedEdit.Checked;
   TransformAxisLock := chkAxisLock.Checked;
   DoubleClickSetVars := rgDoubleClickVars.ItemIndex <> 0;

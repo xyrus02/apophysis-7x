@@ -62,7 +62,6 @@ const
 var
   MainSeed: integer;
   MainTriangles: TTriangles;
-  ConfirmDelete: boolean; // Flag confirmation of entry deletion
   Transforms: integer; // Count of Tranforms
   EnableFinalXform: boolean;
   AppPath: string; // Path of applicatio file
@@ -92,6 +91,7 @@ var
   { Editor }
 
   UseFlameBackground, UseTransformColors: boolean;
+  HelpersEnabled: boolean;
   EditorBkgColor, ReferenceTriangleColor: integer;
   GridColor1, GridColor2, HelpersColor: integer;
   ExtEditEnabled, TransformAxisLock: boolean;
@@ -124,6 +124,8 @@ var
 
   { Defaults }
 
+  ConfirmDelete: boolean; // Flag confirmation of entry deletion
+  OldPaletteFormat: boolean;
   SavePath, SmoothPalettePath: string;
   RandomPrefix, RandomDate: string;
   RandomIndex: integer;
@@ -144,9 +146,6 @@ var
 
   SaveIncompleteRenders: boolean;
   ShowRenderStats: boolean;
-
-  PreviewTimeLimit, FullscreenTimeLimit: integer;
-  PreviewMinDensity: double;
 
   SymmetryType: integer;
   SymmetryOrder: integer;
