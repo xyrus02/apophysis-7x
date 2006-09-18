@@ -1,5 +1,6 @@
 {
      Apophysis Copyright (C) 2001-2004 Mark Townsend
+     Apophysis Copyright (C) 2005-2006 Ronald Hordijk, Piotr Borys, Peter Sdobnov     
 
      This program is free software; you can redistribute it and/or modify
      it under the terms of the GNU General Public License as published by
@@ -153,11 +154,13 @@ var
   Variations: array[0..63] of boolean;
   VariationOptions: int64;
 
+  MainForm_RotationMode: integer;
+  PreserveQuality: boolean;
+
   { For random gradients }
 
   MinNodes, MaxNodes, MinHue, MaxHue, MinSat, MaxSat, MinLum, MaxLum: integer;
   ReferenceMode: integer;//FixedReference: boolean;
-  MainForm_RotationMode: integer;
   BatchSize: Integer;
   Compatibility: integer; //0 = original, 1 = Drave's
   Favorites: TStringList;

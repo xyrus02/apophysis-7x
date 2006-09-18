@@ -39,7 +39,7 @@ const
   RS_XO = 2;
   RS_VO = 3;
 
-  AppVersionString = 'Apophysis 2.05 pre-release 16';
+  AppVersionString = 'Apophysis 2.05 pre-release 17';
 
 type
   TMouseMoveState = (msUsual, msZoomWindow, msZoomOutWindow, msZoomWindowMove,
@@ -193,6 +193,8 @@ type
     procedure mnuRWeightsClick(Sender: TObject);
     procedure mnuRandomBatchClick(Sender: TObject);
     procedure FormKeyPress(Sender: TObject; var Key: Char);
+    procedure FormKeyUpDown(Sender: TObject; var Key: Word;
+      Shift: TShiftState);
     procedure mnuOptionsClick(Sender: TObject);
     procedure FormClose(Sender: TObject; var Action: TCloseAction);
     procedure mnuHelpTopicsClick(Sender: TObject);
@@ -290,6 +292,7 @@ type
     FViewImage: TPngObject;
     FViewPos, FViewOldPos: TSPoint;
     FViewScale: double;
+    FShiftState: TShiftState;
 
     // For parsing:
     FinalXformLoaded: boolean;
@@ -2657,13 +2660,25 @@ begin
 end;
 
 procedure TMainForm.FormKeyPress(Sender: TObject; var Key: Char);
+var
+  scale: double;
 begin
   if Key = #27 then begin
     case FMouseMoveState of
-      msZoomWindowMove: FMouseMoveState := msZoomWindow;
-      msZoomOutWindowMove: FMouseMoveState := msZoomOutWindow;
-      msDragMove: FMouseMoveState := msDrag;
-      msRotateMove: FMouseMoveState := msRotate;
+      msZoomWindowMove:
+        FMouseMoveState := msZoomWindow;
+      msZoomOutWindowMove:
+        FMouseMoveState := msZoomOutWindow;
+      msDragMove:
+        begin
+          FMouseMoveState := msDrag;
+
+          scale := FViewScale * Image.Width / FViewImage.Width;
+          FViewPos.X := FViewPos.X - (FSelectRect.Right - FSelectRect.Left) / scale;
+          FViewPos.Y := FViewPos.Y - (FSelectRect.Bottom - FSelectRect.Top) / scale;
+        end;
+      msRotateMove:
+        FMouseMoveState := msRotate;
     end;
     DrawImageView;
   end;
@@ -4280,7 +4295,7 @@ procedure TMainForm.ImageMouseMove(Sender: TObject; Shift: TShiftState; X, Y: In
 const
   snap_angle = 15*pi/180;
 var
-  dx, dy: integer;
+  dx, dy, cx, cy, sgn: integer;
   scale: double;
 begin
 {
@@ -4311,15 +4326,33 @@ begin
           FSelectRect.Right := FClickPos.X + dx;
           FSelectRect.Bottom := FClickPos.Y + dy;
         end
-        else begin
+        else if ssShift in Shift then begin
           FSelectRect.Left := FClickPos.X;
           FSelectRect.Top := FClickPos.Y;
+          sgn := IfThen(dy*dx >=0, 1, -1);
           if (dy = 0) or (abs(dx/dy) >= Image.Width/Image.Height) then begin
             FSelectRect.Right := x;
-            FSelectRect.Bottom := FClickPos.Y + sign(dx*dy) * Round(dx / Image.Width * Image.Height);
+            FSelectRect.Bottom := FClickPos.Y + sgn * Round(dx / Image.Width * Image.Height);
           end
           else begin
-            FSelectRect.Right := FClickPos.X + sign(dy*dx) * Round(dy / Image.Height * Image.Width);
+            FSelectRect.Right := FClickPos.X + sgn * Round(dy / Image.Height * Image.Width);
+            FSelectRect.Bottom := y;
+          end;
+        end
+        else begin
+          sgn := IfThen(dy*dx >=0, 1, -1);
+          if (dy = 0) or (abs(dx/dy) >= Image.Width/Image.Height) then begin
+            cy := (y + FClickPos.Y) div 2;
+            FSelectRect.Left := FClickPos.X;
+            FSelectRect.Right := x;
+            FSelectRect.Top := cy - sgn * Round(dx / 2 / Image.Width * Image.Height);
+            FSelectRect.Bottom := cy + sgn * Round(dx / 2 / Image.Width * Image.Height);
+          end
+          else begin
+            cx := (x + FClickPos.X) div 2;
+            FSelectRect.Left := cx - sgn * Round(dy / 2 / Image.Height * Image.Width);
+            FSelectRect.Right := cx + sgn * Round(dy / 2 / Image.Height * Image.Width);
+            FSelectRect.Top := FClickPos.Y;
             FSelectRect.Bottom := y;
           end;
         end;
@@ -4676,6 +4709,7 @@ begin
   UpdateWindows;
 end;
 
+///////////////////////////////////////////////////////////////////////////////
 procedure TMainForm.ImageDblClick(Sender: TObject);
 begin
   if FMouseMoveState = msRotateMove then
@@ -4715,9 +4749,28 @@ begin
   DrawImageView;
 end;
 
+///////////////////////////////////////////////////////////////////////////////
 procedure TMainForm.tbShowTraceClick(Sender: TObject);
 begin
   TraceForm.Show;
+end;
+
+///////////////////////////////////////////////////////////////////////////////
+procedure TMainForm.FormKeyUpDown(Sender: TObject; var Key: Word;
+  Shift: TShiftState);
+var
+  MousePos: TPoint;
+begin
+  if Shift <> FShiftState then begin
+    if FMouseMoveState in [msZoomWindowMove, msZoomOutWindowMove, msRotateMove, msDragMove] then
+    begin
+      // hack: to generate MouseMove event
+      GetCursorPos(MousePos);
+      SetCursorPos(MousePos.x, MousePos.y);
+    end;
+
+    FShiftState := Shift;
+  end;
 end;
 
 end.

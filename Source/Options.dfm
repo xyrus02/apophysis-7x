@@ -630,13 +630,24 @@ object OptionsForm: TOptionsForm
         object rgRotationMode: TRadioGroup
           Left = 8
           Top = 60
-          Width = 121
+          Width = 113
           Height = 61
           Caption = 'Rotation Mode'
           Items.Strings = (
             'Rotate image'
             'Rotate frame')
           TabOrder = 3
+        end
+        object rgZoomingMode: TRadioGroup
+          Left = 128
+          Top = 60
+          Width = 117
+          Height = 61
+          Caption = 'Zooming mode'
+          Items.Strings = (
+            'Preserve quality'
+            'Preserve speed')
+          TabOrder = 4
         end
       end
     end

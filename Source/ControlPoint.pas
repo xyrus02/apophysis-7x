@@ -1702,7 +1702,10 @@ begin
   center[0] := center[0] + cos(FAngle) * dx - sin(FAngle) * dy;
   center[1] := center[1] + sin(FAngle) * dx + cos(FAngle) * dy;
 
-  zoom := Log2(scale * ( Width/(abs(r.Right - r.Left) + 1)));
+  if PreserveQuality then
+    zoom := Log2(scale * ( Width/(abs(r.Right - r.Left) + 1)))
+  else
+    pixels_per_unit := pixels_per_unit * Width / abs(r.Right - r.Left);
 end;
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -1711,7 +1714,11 @@ var
   ppu: double;
   dx, dy: double;
 begin
-  zoom := Log2(power(2, zoom) / ( Width/(abs(r.Right - r.Left) + 1)));
+
+  if PreserveQuality then
+    zoom := Log2(power(2, zoom) / ( Width/(abs(r.Right - r.Left) + 1)))
+  else
+    pixels_per_unit := pixels_per_unit / Width * abs(r.Right - r.Left);
   ppu := pixels_per_unit * power(2, zoom);
 
   dx := ((r.Left + r.Right)/2 - Width/2) / ppu;

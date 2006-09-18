@@ -21,7 +21,9 @@ object MainForm: TMainForm
   OnCreate = FormCreate
   OnDestroy = FormDestroy
   OnDeactivate = FormDeactivate
+  OnKeyDown = FormKeyUpDown
   OnKeyPress = FormKeyPress
+  OnKeyUp = FormKeyUpDown
   OnShow = FormShow
   PixelsPerInch = 96
   TextHeight = 13

@@ -1,5 +1,6 @@
 {
      Apophysis Copyright (C) 2001-2004 Mark Townsend
+     Apophysis Copyright (C) 2005-2006 Ronald Hordijk, Piotr Borys, Peter Sdobnov     
 
      This program is free software; you can redistribute it and/or modify
      it under the terms of the GNU General Public License as published by
@@ -107,6 +108,14 @@ begin
       else
       begin
         OldPaletteFormat := false;
+      end;
+      if Registry.ValueExists('PreserveQuality') then
+      begin
+        PreserveQuality := Registry.ReadBool('PreserveQuality');
+      end
+      else
+      begin
+        PreserveQuality := true;
       end;
 
       if Registry.ValueExists('KeepBackground') then
@@ -589,6 +598,7 @@ begin
       mutantMinTransforms := 2;
       mutantMaxTransforms := 6;
       randGradient := 0;
+      PreserveQuality := false;
       KeepBackground := False;
       UPRPath := DefaultPath;
       ImageFolder := DefaultPath;
@@ -1045,6 +1055,7 @@ begin
 //      Registry.WriteBool('ResizeOnLoad', ResizeOnLoad);
       Registry.WriteBool('ShowProgress', ShowProgress);
       Registry.WriteBool('KeepBackground', KeepBackground);
+      Registry.WriteBool('PreserveQuality', PreserveQuality);
       Registry.WriteString('FunctionLibrary', defLibrary);
 
       Registry.WriteBool('ShowTransparency', ShowTransparency);

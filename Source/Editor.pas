@@ -364,6 +364,8 @@ type
     procedure UpdateFlameX;
     procedure UpdateFlame(DrawMain: boolean);
     procedure UpdateWidgets;
+    procedure UpdateXformsList;
+
     procedure DeleteTriangle(t: integer);
 
     function GetPivot: TSPoint; overload;
@@ -589,9 +591,17 @@ begin
   DrawPreview;
 end;
 
-procedure TEditForm.UpdateDisplay(PreviewOnly: boolean = false);
+procedure TEditForm.UpdateXformsList;
 var
   i: integer;
+begin
+  cbTransforms.Clear;
+  for i := 1 to Transforms do cbTransforms.Items.Add(IntToStr(i));
+  if EnableFinalXform or cp.HasFinalXForm then cbTransforms.Items.Add('Final');
+  cbTransforms.ItemIndex := SelectedTriangle;
+end;
+
+procedure TEditForm.UpdateDisplay(PreviewOnly: boolean = false);
 begin
   // currently EditForm does not really know if we select another
   // flame in the Main Window - which is not good...
@@ -614,9 +624,7 @@ begin
   cp.cmap := MainCp.cmap;
   cmap := MainCp.cmap;
 
-  cbTransforms.Clear;
-  for i := 1 to Transforms do cbTransforms.Items.Add(IntToStr(i));
-  if cp.HasFinalXForm then cbTransforms.Items.Add('Final');
+  UpdateXformsList;
 
   // just in case:
   SetCaptureControl(nil);
@@ -912,10 +920,7 @@ begin
     Dec(Transforms);
     assert(cp.xform[transforms].density = 0); // cp.xform[transforms].density := 0;
   end;
-  cbTransforms.clear;
-  for i := 1 to Transforms do cbTransforms.Items.Add(IntToStr(i));
-  if EnableFinalXform or (cp.HasFinalXForm = true) then cbTransforms.Items.Add('Final');
-  cbTransforms.ItemIndex := SelectedTriangle;
+  UpdateXformsList;
   UpdateFlame(True);
 end;
 
@@ -1004,7 +1009,7 @@ var
 
   procedure DrawWidgets;
   var
-    i, j, n: integer;
+    i: integer;
   begin
     with Bitmap.Canvas do
       with MainTriangles[SelectedTriangle] do
@@ -1910,8 +1915,7 @@ end;
 procedure TEditForm.TriangleViewMouseDown(Sender: TObject; Button: TMouseButton;
   Shift: TShiftState; X, Y: integer);
 var
-  a, d, fx, fy: double;
-  dx, dy, x1, y1: double;
+  d, fx, fy: double;
   i, j: integer;
   i0, i1: integer;
 label
@@ -2225,8 +2229,6 @@ begin
 end;
 
 procedure TEditForm.mnuAddClick(Sender: TObject);
-var
-  i: integer;
 begin
   if Transforms < NXFORMS then
   begin
@@ -2240,16 +2242,12 @@ begin
     cp.xform[Transforms].vars[0] := 1;
 //    for i := 1 to NRVAR - 1 do cp.xform[Transforms].vars[i] := 0;
     Inc(Transforms);
-    cbTransforms.clear;
-    for i := 1 to Transforms do cbTransforms.Items.Add(IntToStr(i));
-    if EnableFinalXform or (cp.HasFinalXForm = true) then cbTransforms.Items.Add('Final');
+    UpdateXformsList;
     UpdateFlame(True);
   end;
 end;
 
 procedure TEditForm.mnuDupClick(Sender: TObject);
-var
-  i: integer;
 begin
   if Transforms < NXFORMS then
   begin
@@ -2264,9 +2262,7 @@ begin
     end
     else cp.xform[Transforms].density := 0.5;
     Inc(Transforms);
-    cbTransforms.clear;
-    for i := 1 to Transforms do cbTransforms.Items.Add(IntToStr(i));
-    if EnableFinalXform or (cp.HasFinalXForm = true) then cbTransforms.Items.Add('Final');
+    UpdateXformsList;
     UpdateFlame(True);
   end;
 end;
@@ -2652,6 +2648,7 @@ var
   ax,ay,bx,by: integer;
   TrgColor: TColor;
 begin
+  assert(Index >= 0);
   TrgColor := GetTriangleColor(Index);
   with cbTransforms.Canvas do
   begin
@@ -2821,8 +2818,6 @@ begin
 end;
 
 procedure TEditForm.txtXFormColorKeyPress(Sender: TObject; var Key: Char);
-var
-  v: double;
 begin
   if key = #13 then
   begin
@@ -3100,7 +3095,7 @@ begin
   assert(n >= 0);
   assert(n < TValueListEditor(Sender).rowCount);
 
-  changed := false;
+  //changed := false;
 
   if Sender = VEVars then
   begin
@@ -3601,7 +3596,6 @@ procedure TEditForm.ValidateVariable;
 var
   i: integer;
   NewVal, OldVal: double;
-  str, oldstr: string;
 begin
   i := vleVariables.Row;
 
@@ -3715,6 +3709,7 @@ begin
   cp.center[1] := 0;
   cp.zoom := 0;
   cp.pixels_per_unit := PreviewImage.Width/4;
+  cp.FAngle := 0;
 
   Transforms := 2;
   SelectedTriangle := 1;
@@ -3725,9 +3720,10 @@ begin
   EnableFinalXform := false;
   assert(cp.HasFinalXForm = false);
 
-  cbTransforms.clear;
-  cbTransforms.Items.Add('1');
-  cbTransforms.Items.Add('2');
+//  cbTransforms.clear;
+//  cbTransforms.Items.Add('1');
+//  cbTransforms.Items.Add('2');
+  UpdateXformsList;
   AutoZoom;
 
   UpdateFlame(True);
@@ -4093,7 +4089,8 @@ procedure TEditForm.DragPanelMouseDown(Sender: TObject;
 begin
   if Button <> mbLeft then exit;
 
-  //assert(pnlDragMode = false);
+  assert(pnlDragMode = false); //?
+  if pnlDragMode = true then exit;
 
   if (Sender = pnlWeight) then
     if SelectedTriangle < Transforms then

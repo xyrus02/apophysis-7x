@@ -160,8 +160,6 @@ type
     procedure SetCP(CP: TControlPoint);
     procedure Render;
 
-    function GetBucketSize: integer; virtual; abstract;
-
     function GetImage: TBitmap;
     procedure Stop;
 

@@ -215,6 +215,7 @@ type
     chkExtendedEdit: TCheckBox;
     rgDoubleClickVars: TRadioGroup;
     chkOldPaletteFormat: TCheckBox;
+    rgZoomingMode: TRadioGroup;
     procedure btnCancelClick(Sender: TObject);
     procedure FormShow(Sender: TObject);
     procedure btnOKClick(Sender: TObject);
@@ -305,6 +306,10 @@ begin
   chkOldPaletteFormat.Checked := OldPaletteFormat;
 
   rgRotationMode.ItemIndex := MainForm_RotationMode;
+  if PreserveQuality then
+    rgZoomingMode.ItemIndex := 0
+  else
+    rgZoomingMode.ItemIndex := 1;
   txtJPEGQuality.text := IntToStr(JPEGQuality);
 
   chkPlaySound.Checked := PlaySoundOnRenderComplete;
@@ -439,6 +444,7 @@ begin
   OldPaletteFormat := chkOldPaletteFormat.Checked;
 
   MainForm_RotationMode := rgRotationMode.ItemIndex;
+  PreserveQuality := (rgZoomingMode.ItemIndex = 0);
 //  ResizeOnLoad := chkResize.checked;
 
   InternalBitsPerSample := cbInternalBitsPerSample.ItemIndex;
