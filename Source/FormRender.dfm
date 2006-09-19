@@ -119,7 +119,7 @@ object RenderForm: TRenderForm
     Caption = 'Shutdown on complete'
     TabOrder = 6
   end
-  object cbPostProcess: TCheckBox
+  object chkPostProcess: TCheckBox
     Left = 8
     Top = 377
     Width = 121

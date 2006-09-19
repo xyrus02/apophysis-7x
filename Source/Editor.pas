@@ -2146,7 +2146,7 @@ begin
     Screen.Cursor := crDefault;
     SetCaptureControl(nil);
 
-    if viewDragged=false then // haven't dragged - popup menu then
+    if viewDragged = false then // haven't dragged - popup menu then
     begin
       GetCursorPos(mousepos); // hmmm
       if mouseOverTriangle < 0 then
@@ -3380,6 +3380,29 @@ begin
         EditForm.StatusBar.Panels[2].Text := Format('Zoom: %f', [GraphZoom]);
         TriangleView.Invalidate;
       end;
+    VK_ESCAPE:
+      begin
+        if TriangleCaught or CornerCaught or EdgeCaught then begin
+          if modeHack then begin
+            assert(oldMode <> modeNone);
+            editMode := oldMode;
+            oldMode := modeNone;
+
+            modeHack := false;
+          end;
+
+          if HasChanged then
+          begin
+            MainTriangles[SelectedTriangle] := OldTriangle;
+            HasChanged := False;
+          end;
+          EdgeCaught := false;
+          CornerCaught := false;
+          TriangleCaught := false;
+          TriangleView.Invalidate;
+          UpdateFlameX;
+        end;
+      end
   end;
 end;
 

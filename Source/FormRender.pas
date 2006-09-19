@@ -35,7 +35,7 @@ type
     chkSave: TCheckBox;
     StatusBar: TStatusBar;
     chkShutdown: TCheckBox;
-    cbPostProcess: TCheckBox;
+    chkPostProcess: TCheckBox;
     chkSaveIncompleteRenders: TCheckBox;
     PageCtrl: TPageControl;
     TabSettings: TTabSheet;
@@ -152,11 +152,12 @@ begin
   chkLimitMem.Enabled := true;
   cbMaxMemory.enabled := chkLimitMem.Checked;
   cbBitsPerSample.Enabled := true;
-  cbPostProcess.Enabled := not chkLimitMem.Checked;
+  chkPostProcess.Enabled := not chkLimitMem.Checked;
+  chkSaveIncompleteRenders.Enabled := not chkLimitMem.Checked;
   btnRender.Enabled := true;
   cmbPreset.enabled := true;
   chkSave.enabled := true;
-  cbPostProcess.enabled := true;
+  chkPostProcess.enabled := true;
   chkShutdown.enabled := true;
   btnSavePreset.enabled := true;
   btnDeletePreset.enabled := true;
@@ -230,7 +231,7 @@ begin
   Output.Lines.Add('  Total time:' + TimeToString(EndTime - StartTime));
   Output.Lines.Add('');
 
-  if not chkLimitMem.Checked and cbPostProcess.checked then
+  if not chkLimitMem.Checked and chkPostProcess.checked then
     DoPostProcess;
 
   Renderer.Free;
@@ -253,14 +254,8 @@ begin
   end;
 
   Output.Lines.Add(TimeToStr(Now) + ' : Rendering terminated!');
-  sndPlaySound(pchar(SND_ALIAS_SYSTEMEXCLAMATION), SND_ALIAS_ID or SND_NOSTOP or SND_ASYNC);
-(*
-    if SaveIncompleteRenders and not chkLimitMem.Checked then begin
-      Output.Lines.Add('Saving incomplete image...');
-      Renderer.SaveImage(FileName);
-    end;
-*)
   Output.Lines.Add('');
+  sndPlaySound(pchar(SND_ALIAS_SYSTEMEXCLAMATION), SND_ALIAS_ID or SND_NOSTOP or SND_ASYNC);
 
   Renderer.Free;
   Renderer := nil;
@@ -419,7 +414,7 @@ begin
   cbBitsPerSample.Enabled := false;
   cmbPreset.enabled := false;
   chkSave.enabled := false;
-//  cbPostProcess.enabled := false;
+//  chkPostProcess.enabled := false;
 //  chkShutdown.enabled := false;
   btnSavePreset.enabled := false;
   btnDeletePreset.enabled := false;
@@ -592,9 +587,13 @@ begin
 end;
 
 procedure TRenderForm.chkLimitMemClick(Sender: TObject);
+var
+  mm: boolean;
 begin
-  cbMaxMemory.enabled := chkLimitMem.Checked;
-  cbPostProcess.Enabled := not chkLimitMem.Checked;
+  mm := chkLimitMem.Checked;
+  cbMaxMemory.enabled := mm;
+  chkPostProcess.Enabled := not mm;
+  chkSaveIncompleteRenders.Enabled := not mm;
 end;
 
 procedure TRenderForm.txtFilenameChange(Sender: TObject);

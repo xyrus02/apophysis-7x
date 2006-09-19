@@ -284,10 +284,9 @@ type
     Renderer: TRenderThread;
 
     FMouseMoveState: TMouseMoveState;
-    FSelectRect: TRect;
+    FSelectRect, FClickRect: TRect;
     DrawSelection: boolean;
     FRotateAngle: double;
-    FClickPos: TPoint;
     FClickAngle: double;
     FViewImage: TPngObject;
     FViewPos, FViewOldPos: TSPoint;
@@ -301,7 +300,7 @@ type
     XMLPaletteCount: integer;
 
     procedure DrawImageView;
-    procedure DrawZoomWindow(ARect: TRect);
+    procedure DrawZoomWindow;
     procedure DrawRotatelines(Angle: double);
 
     procedure FillVariantMenu;
@@ -389,7 +388,7 @@ uses
   FullScreen, FormRender, Mutate, Adjust, Browser, Save, About, CmapData,
   HtmlHlp, ScriptForm, FormFavorites, FormExport, msMultiPartFormData,
   ImageColoring, RndFlame,
-  Tracer;
+  Tracer, Types;
 
 {$R *.DFM}
 
@@ -2674,8 +2673,8 @@ begin
           FMouseMoveState := msDrag;
 
           scale := FViewScale * Image.Width / FViewImage.Width;
-          FViewPos.X := FViewPos.X - (FSelectRect.Right - FSelectRect.Left) / scale;
-          FViewPos.Y := FViewPos.Y - (FSelectRect.Bottom - FSelectRect.Top) / scale;
+          FViewPos.X := FViewPos.X - (FClickRect.Right - FClickRect.Left) / scale;
+          FViewPos.Y := FViewPos.Y - (FClickRect.Bottom - FClickRect.Top) / scale;
         end;
       msRotateMove:
         FMouseMoveState := msRotate;
@@ -4230,52 +4229,29 @@ procedure TMainForm.ImageMouseDown(Sender: TObject; Button: TMouseButton;
   Shift: TShiftState; X, Y: Integer);
 begin
   if button <> mbLeft then exit;
-  FClickPos := Point(x, y);
+  FClickRect.TopLeft := Point(x, y);
+  FClickRect.BottomRight := FclickRect.TopLeft;
   case FMouseMoveState of
     msZoomWindow:
       begin
         FSelectRect.TopLeft := Point(x, y);
         FSelectRect.BottomRight := Point(x, y);
-        DrawZoomWindow(FSelectRect);
+        DrawZoomWindow;
         FMouseMoveState := msZoomWindowMove;
       end;
     msZoomOutWindow:
       begin
         FSelectRect.TopLeft := Point(x, y);
         FSelectRect.BottomRight := Point(x, y);
-        DrawZoomWindow(FSelectRect);
+        DrawZoomWindow;
         FMouseMoveState := msZoomOutWindowMove;
       end;
     msDrag:
       begin
         if not assigned(FViewImage) then exit;
-{
-        if not assigned(FViewBMP) then
-        FViewBMP := TBitmap.Create;
-        FViewBMP.Width := ClientWidth + 100;
-        FViewBMP.Height := ClientHeight + 100;
-        FViewBMP.Canvas.Brush.Color := clWhite;
 
-        DestRect.Left := 0;
-        DestRect.Right := FViewBMP.Width;
-        DestRect.Top := 0;
-        DestRect.Bottom := FViewBMP.Height;
-
-        FviewBMP.Canvas.Pen.Color := RGB(MainCP.background[0], MainCP.background[1], MainCP.background[2]);
-        FviewBMP.Canvas.Brush.Color := RGB(MainCP.background[0], MainCP.background[1], MainCP.background[2]);
-        FViewBMP.Canvas.Rectangle(DestRect);
-
-        SourceRect := ClientRect;
-        DestRect := SourceRect;
-        DestRect.TopLeft.X := DestRect.TopLeft.X + 50;
-        DestRect.TopLeft.Y := DestRect.TopLeft.Y + 50;
-        DestRect.BottomRight.X := DestRect.BottomRight.X + 50;
-        DestRect.BottomRight.Y := DestRect.BottomRight.Y + 50;
-
-        FViewBMP.Canvas.CopyRect(DestRect, Image.Canvas, SourceRect);
-}
-        FSelectRect.TopLeft := Point(x, y);
-        FSelectRect.BottomRight := Point(x, y);
+//        FSelectRect.TopLeft := Point(x, y);
+//        FSelectRect.BottomRight := Point(x, y);
         FMouseMoveState := msDragMove;
       end;
     msRotate:
@@ -4283,7 +4259,7 @@ begin
         FClickAngle := arctan2(y-Image.Height/2, Image.Width/2-x);
 
         FRotateAngle := 0;
-        FSelectRect.Left := x;
+//        FSelectRect.Left := x;
         DrawRotateLines(FRotateAngle);
         FMouseMoveState := msRotateMove;
       end;
@@ -4312,51 +4288,51 @@ begin
     msZoomWindowMove,
     msZoomOutWindowMove:
       begin
-        if DrawSelection then DrawZoomWindow(FSelectRect);
-        dx := x - FClickPos.X;
-        dy := y - FClickPos.Y;
+        if DrawSelection then DrawZoomWindow;
+        FClickRect.BottomRight := Point(x, y);
+        dx := x - FClickRect.TopLeft.X;
+        dy := y - FClickRect.TopLeft.Y;
 
         if ssAlt in Shift then begin
           if (dy = 0) or (abs(dx/dy) >= Image.Width/Image.Height) then
             dy := Round(dx / Image.Width * Image.Height)
           else
             dx := Round(dy / Image.Height * Image.Width);
-          FSelectRect.Left := FClickPos.X - dx;
-          FSelectRect.Top := FClickPos.Y - dy;
-          FSelectRect.Right := FClickPos.X + dx;
-          FSelectRect.Bottom := FClickPos.Y + dy;
+          FSelectRect.Left := FClickRect.TopLeft.X - dx;
+          FSelectRect.Top := FClickRect.TopLeft.Y - dy;
+          FSelectRect.Right := FClickRect.TopLeft.X + dx;
+          FSelectRect.Bottom := FClickRect.TopLeft.Y + dy;
         end
         else if ssShift in Shift then begin
-          FSelectRect.Left := FClickPos.X;
-          FSelectRect.Top := FClickPos.Y;
+          FSelectRect.TopLeft := FClickRect.TopLeft;
           sgn := IfThen(dy*dx >=0, 1, -1);
           if (dy = 0) or (abs(dx/dy) >= Image.Width/Image.Height) then begin
             FSelectRect.Right := x;
-            FSelectRect.Bottom := FClickPos.Y + sgn * Round(dx / Image.Width * Image.Height);
+            FSelectRect.Bottom := FClickRect.TopLeft.Y + sgn * Round(dx / Image.Width * Image.Height);
           end
           else begin
-            FSelectRect.Right := FClickPos.X + sgn * Round(dy / Image.Height * Image.Width);
+            FSelectRect.Right := FClickRect.TopLeft.X + sgn * Round(dy / Image.Height * Image.Width);
             FSelectRect.Bottom := y;
           end;
         end
         else begin
           sgn := IfThen(dy*dx >=0, 1, -1);
           if (dy = 0) or (abs(dx/dy) >= Image.Width/Image.Height) then begin
-            cy := (y + FClickPos.Y) div 2;
-            FSelectRect.Left := FClickPos.X;
+            cy := (y + FClickRect.TopLeft.Y) div 2;
+            FSelectRect.Left := FClickRect.TopLeft.X;
             FSelectRect.Right := x;
             FSelectRect.Top := cy - sgn * Round(dx / 2 / Image.Width * Image.Height);
             FSelectRect.Bottom := cy + sgn * Round(dx / 2 / Image.Width * Image.Height);
           end
           else begin
-            cx := (x + FClickPos.X) div 2;
+            cx := (x + FClickRect.TopLeft.X) div 2;
             FSelectRect.Left := cx - sgn * Round(dy / 2 / Image.Height * Image.Width);
             FSelectRect.Right := cx + sgn * Round(dy / 2 / Image.Height * Image.Width);
-            FSelectRect.Top := FClickPos.Y;
+            FSelectRect.Top := FClickRect.TopLeft.Y;
             FSelectRect.Bottom := y;
           end;
         end;
-        DrawZoomWindow(FSelectRect);
+        DrawZoomWindow;
         DrawSelection := true;
       end;
     msDragMove:
@@ -4365,9 +4341,9 @@ begin
         assert(FViewScale <> 0);
 
         scale := FViewScale * Image.Width / FViewImage.Width;
-        FViewPos.X := FViewPos.X + (x - FSelectRect.Right) / scale;
-        FViewPos.Y := FViewPos.Y + (y - FSelectRect.Bottom) / scale;
-        FSelectRect.BottomRight := Point(x, y);
+        FViewPos.X := FViewPos.X + (x - FClickRect.Right) / scale;
+        FViewPos.Y := FViewPos.Y + (y - FClickRect.Bottom) / scale;
+        //FClickRect.BottomRight := Point(x, y);
 
 		    DrawImageView;
       end;
@@ -4378,7 +4354,7 @@ begin
         FRotateAngle := arctan2(y-Image.Height/2, Image.Width/2-x) - FClickAngle;
         if ssShift in Shift then // angle snap
           FRotateAngle := Round(FRotateAngle/snap_angle)*snap_angle;
-        FSelectRect.Left := x;
+        //SelectRect.Left := x;
 
 //        pdjpointgen.Rotate(FRotateAngle);
 //        FRotateAngle := 0;
@@ -4394,6 +4370,7 @@ end;
 }
       end;
   end;
+  FClickRect.BottomRight := Point(x, y);
 end;
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -4405,7 +4382,7 @@ begin
   case FMouseMoveState of
     msZoomWindowMove:
       begin
-        DrawZoomWindow(FSelectRect);
+        DrawZoomWindow;
         FMouseMoveState := msZoomWindow;
         if (abs(FSelectRect.Left - FSelectRect.Right) < 10) or
            (abs(FSelectRect.Top - FSelectRect.Bottom) < 10) then
@@ -4425,7 +4402,7 @@ begin
       end;
     msZoomOutWindowMove:
       begin
-        DrawZoomWindow(FSelectRect);
+        DrawZoomWindow;
         FMouseMoveState := msZoomOutWindow;
         if (abs(FSelectRect.Left - FSelectRect.Right) < 10) or
            (abs(FSelectRect.Top - FSelectRect.Bottom) < 10) then
@@ -4447,16 +4424,16 @@ begin
       end;
     msDragMove:
       begin
-        FSelectRect.BottomRight := Point(x, y);
+        FClickRect.BottomRight := Point(x, y);
         FMouseMoveState := msDrag;
 
         if ((x = 0) and (y = 0)) or // double clicked
-           ((FSelectRect.left = FSelectRect.right) and (FSelectRect.top = FSelectRect.bottom))
+           ((FClickRect.left = FClickRect.right) and (FClickRect.top = FClickRect.bottom))
           then Exit;
 
         StopThread;
         UpdateUndo;
-        MainCp.MoveRect(FSelectRect);
+        MainCp.MoveRect(FClickRect);
 
         RedrawTimer.Enabled := True;
         UpdateWindows;
@@ -4570,9 +4547,9 @@ var
 begin
   bkuPen := TPen.Create;
   bkuPen.Assign(Image.Canvas.Pen);
-  Image.Canvas.Pen.Mode    := pmNotXor;
-  Image.Canvas.Pen.Color   := clBlack;
-  Image.Canvas.Pen.Style   := psDash;
+  Image.Canvas.Pen.Mode    := pmXor;
+  Image.Canvas.Pen.Color   := clWhite;
+  Image.Canvas.Pen.Style   := psDot; //psDash;
   Image.Canvas.Brush.Style := bsClear;
 
 //  Image.Canvas.Rectangle(FSelectRect);
@@ -4603,20 +4580,72 @@ begin
 end;
 
 ///////////////////////////////////////////////////////////////////////////////
-procedure TMainForm.DrawZoomWindow(ARect: TRect);
+procedure TMainForm.DrawZoomWindow;
+const
+  cornerSize = 32;
 var
   bkuPen: TPen;
+  dx, dy: integer;
+  l, r, t, b: integer;
 begin
   bkuPen := TPen.Create;
   bkuPen.Assign(Image.Canvas.Pen);
-  Image.Canvas.Pen.Mode    := pmNotXor;
-  Image.Canvas.Pen.Color   := clBlack;
-  Image.Canvas.Pen.Style   := psDash;
-  Image.Canvas.Brush.Style := bsClear;
+  with Image.Canvas do begin
+    Pen.Mode    := pmXor;
+    Pen.Color   := clWhite;
+    Brush.Style := bsClear;
 
-  Image.Canvas.Rectangle(FSelectRect);
+    Pen.Style   := psDot; //psDash;
 
-  Image.Canvas.Pen.Assign(bkuPen);
+    if ssAlt in FShiftState then
+    begin
+      dx := FClickRect.Right - FClickRect.Left;
+      dy := FClickRect.Bottom - FClickRect.Top;
+      Rectangle(FClickRect.Left - dx, FClickRect.Top - dy, FClickRect.Right, FClickRect.Bottom);
+    end
+    else Rectangle(FClickRect);
+
+    dx := FSelectRect.Right - FSelectRect.Left;
+    if dx >= 0 then begin
+      l := FSelectRect.Left - 1;
+      r := FSelectRect.Right;
+    end
+    else begin
+      dx := -dx;
+      l := FSelectRect.Right - 1;
+      r := FSelectRect.Left;
+    end;
+    dx := min(dx div 2 - 1, cornerSize);
+
+    dy := FSelectRect.Bottom - FSelectRect.Top;
+    if dy >= 0 then begin
+      t := FSelectRect.Top - 1;
+      b := FSelectRect.Bottom;
+    end
+    else begin
+      dy := -dy;
+      t := FSelectRect.Bottom - 1;
+      b := FSelectRect.Top;
+    end;
+    dy := min(dy div 2, cornerSize);
+
+    pen.Style := psSolid;
+
+    MoveTo(l + dx, t);
+    LineTo(l, t);
+    LineTo(l, t + dy);
+    MoveTo(r - dx, t);
+    LineTo(r, t);
+    LineTo(r, t + dy);
+    MoveTo(r - dx, b);
+    LineTo(r, b);
+    LineTo(r, b - dy);
+    MoveTo(l + dx, b);
+    LineTo(l, b);
+    LineTo(l, b - dy);
+
+    Pen.Assign(bkuPen);
+  end;
   bkuPen.Free;
 end;
 
@@ -4769,7 +4798,13 @@ begin
       SetCursorPos(MousePos.x, MousePos.y);
     end;
 
-    FShiftState := Shift;
+    if (FMouseMoveState in [msZoomWindowMove, msZoomOutWindowMove]) then
+    begin
+      DrawZoomWindow;
+      FShiftState := Shift;
+      DrawZoomWindow;
+    end
+    else FShiftState := Shift;
   end;
 end;
 
