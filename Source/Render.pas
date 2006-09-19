@@ -639,6 +639,7 @@ begin
     fcp.center[1] := center_base + fcp.height * slice / (fcp.pixels_per_unit * zoom_scale);
     CreateCameraMM;
     ClearBuckets;
+    fcp.actual_density := 0;
 
     t := Now;
     SetPixels;
