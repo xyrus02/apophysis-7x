@@ -70,6 +70,8 @@ procedure TTraceForm.FormCreate(Sender: TObject);
 var
   Registry: TRegistry;
 begin
+  TraceLevel := 0; // Tracer disabled in release version
+
   { Read position from registry }
   Registry := TRegistry.Create;
   try
@@ -85,8 +87,8 @@ begin
       if Registry.ValueExists('Height') then
         self.Height := Registry.ReadInteger('Height');
 
-      if Registry.ValueExists('TraceLevel') then
-        TraceLevel := Registry.ReadInteger('TraceLevel');
+//      if Registry.ValueExists('TraceLevel') then
+//        TraceLevel := Registry.ReadInteger('TraceLevel');
     end;
     Registry.CloseKey;
   finally

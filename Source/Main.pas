@@ -39,7 +39,7 @@ const
   RS_XO = 2;
   RS_VO = 3;
 
-  AppVersionString = 'Apophysis 2.05 pre-release 17';
+  AppVersionString = 'Apophysis 2.05 rc1';
 
 type
   TMouseMoveState = (msUsual, msZoomWindow, msZoomOutWindow, msZoomWindowMove,
@@ -1787,7 +1787,6 @@ end;
 procedure TMainForm.DrawFlame;
 var
   GlobalMemoryInfo: TMemoryStatus; // holds the global memory status information
-  RenderMem: integer;
   RenderCP: TControlPoint;
   Mem, ApproxMem: cardinal;
 begin
@@ -4230,21 +4229,29 @@ procedure TMainForm.ImageMouseDown(Sender: TObject; Button: TMouseButton;
 begin
   if button <> mbLeft then exit;
   FClickRect.TopLeft := Point(x, y);
-  FClickRect.BottomRight := FclickRect.TopLeft;
+  FClickRect.BottomRight := FClickRect.TopLeft;
   case FMouseMoveState of
     msZoomWindow:
       begin
         FSelectRect.TopLeft := Point(x, y);
         FSelectRect.BottomRight := Point(x, y);
         DrawZoomWindow;
-        FMouseMoveState := msZoomWindowMove;
+
+//        if ssAlt in Shift then
+//          FMouseMoveState := msZoomOutWindowMove
+//        else
+          FMouseMoveState := msZoomWindowMove;
       end;
     msZoomOutWindow:
       begin
         FSelectRect.TopLeft := Point(x, y);
         FSelectRect.BottomRight := Point(x, y);
         DrawZoomWindow;
-        FMouseMoveState := msZoomOutWindowMove;
+
+//        if ssAlt in Shift then
+//          FMouseMoveState := msZoomWindowMove
+//        else
+          FMouseMoveState := msZoomOutWindowMove;
       end;
     msDrag:
       begin
@@ -4293,7 +4300,7 @@ begin
         dx := x - FClickRect.TopLeft.X;
         dy := y - FClickRect.TopLeft.Y;
 
-        if ssAlt in Shift then begin
+        if ssShift in Shift then begin
           if (dy = 0) or (abs(dx/dy) >= Image.Width/Image.Height) then
             dy := Round(dx / Image.Width * Image.Height)
           else
@@ -4303,7 +4310,7 @@ begin
           FSelectRect.Right := FClickRect.TopLeft.X + dx;
           FSelectRect.Bottom := FClickRect.TopLeft.Y + dy;
         end
-        else if ssShift in Shift then begin
+        else if ssCtrl in Shift then begin
           FSelectRect.TopLeft := FClickRect.TopLeft;
           sgn := IfThen(dy*dx >=0, 1, -1);
           if (dy = 0) or (abs(dx/dy) >= Image.Width/Image.Height) then begin
@@ -4386,7 +4393,7 @@ begin
         FMouseMoveState := msZoomWindow;
         if (abs(FSelectRect.Left - FSelectRect.Right) < 10) or
            (abs(FSelectRect.Top - FSelectRect.Bottom) < 10) then
-          Exit; // zoom to much or double clicked
+        Exit; // zoom to much or double clicked
 
         StopThread;
         UpdateUndo;
@@ -4597,7 +4604,7 @@ begin
 
     Pen.Style   := psDot; //psDash;
 
-    if ssAlt in FShiftState then
+    if ssShift in FShiftState then
     begin
       dx := FClickRect.Right - FClickRect.Left;
       dy := FClickRect.Bottom - FClickRect.Top;

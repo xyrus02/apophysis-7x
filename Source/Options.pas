@@ -486,7 +486,7 @@ begin
 
   MainPreviewScale := 1 + 0.02 * StrToFloatDef(cbExtendPercent.Text, 0);
   if MainPreviewScale < 1 then MainPreviewScale := 1
-  else if MainPreviewScale > 3 then MainPreviewScale := 3;
+  else if MainPreviewScale > 5 then MainPreviewScale := 5;
   ExtendMainPreview := chkExtendMainPreview.Checked;
 
   ShowRenderStats := chkShowRenderStats.Checked;
