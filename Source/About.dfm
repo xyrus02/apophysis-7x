@@ -1904,7 +1904,7 @@ object AboutForm: TAboutForm
     Font.Name = 'MS Sans Serif'
     Font.Style = [fsUnderline]
     ParentFont = False
-    OnClick = Label4Click
+    OnClick = DevelopersClick
   end
   object Label10: TLabel
     Left = 120
@@ -1934,7 +1934,7 @@ object AboutForm: TAboutForm
     Font.Name = 'MS Sans Serif'
     Font.Style = [fsUnderline]
     ParentFont = False
-    OnClick = lblFlamecomClick
+    OnClick = DevelopersClick
   end
   object Label5: TLabel
     Left = 120

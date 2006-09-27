@@ -49,8 +49,6 @@ type
     Bevel2: TBevel;
     Bevel3: TBevel;
     procedure btnOKClick(Sender: TObject);
-    procedure Label4Click(Sender: TObject);
-    procedure lblFlamecomClick(Sender: TObject);
     procedure FormShow(Sender: TObject);
     procedure lblCreditClick(Sender: TObject);
     procedure DevelopersClick(Sender: TObject);
@@ -73,18 +71,6 @@ uses Main, ShellAPI;
 procedure TAboutForm.btnOKClick(Sender: TObject);
 begin
   ModalResult := mrOK;
-end;
-
-procedure TAboutForm.Label4Click(Sender: TObject);
-begin
-  ShellExecute(ValidParentForm(Self).Handle, 'open', PChar('http://www.apophysis.org'),
-    nil, nil, SW_SHOWNORMAL);
-end;
-
-procedure TAboutForm.lblFlamecomClick(Sender: TObject);
-begin
-  ShellExecute(ValidParentForm(Self).Handle, 'open', PChar('http://flam3.com'),
-    nil, nil, SW_SHOWNORMAL);
 end;
 
 procedure TAboutForm.FormShow(Sender: TObject);

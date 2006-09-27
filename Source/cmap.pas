@@ -269,12 +269,18 @@ begin
       if Indices.Count = 0 then raise EFormatInvalid.Create('No color info');
       for i := 0 to Indices.Count - 1 do
       begin
+       try
         index := StrToInt(Indices[i]);
+        while index < 0 do inc(index, 400);
         index := Round(Index * (255 / 399));
         indices[i] := IntToStr(index);
+        assert(index>=0);
+        assert(index<256);
         Palette[index][0] := StrToInt(Colors[i]) mod 256;
         Palette[index][1] := trunc(StrToInt(Colors[i]) / 256) mod 256;
         Palette[index][2] := trunc(StrToInt(Colors[i]) / 65536);
+       except
+       end;
       end;
       i := 1;
       repeat

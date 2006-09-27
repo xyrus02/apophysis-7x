@@ -335,11 +335,12 @@ begin
   ImageHeight := StrToInt(cbHeight.text);
 
   if not chkLimitMem.checked then begin
-    if (ApproxMemory > TotalPhysicalMemory) then
+    if (ApproxMemory > {Total}PhysicalMemory) then
     begin
       Application.MessageBox('You do not have enough memory for this render. Please use memory limiting.', 'Apophysis', 48);
       exit;
     end;
+{
     if (ApproxMemory > PhysicalMemory) then
     begin
       if Application.MessageBox('There is not enough memory for this render. ' + #13 +
@@ -348,6 +349,7 @@ begin
                                 'Dou you want to try? (SLOW AND UNSTABLE - USE AT YOUR OWN RISK!!!)', 'Apophysis',
         MB_ICONWARNING or MB_YESNO) <> IDYES then exit;
     end;
+}
   end
   else if (PhysicalMemory < StrToInt(cbMaxMemory.text)) and (Approxmemory > PhysicalMemory) then begin
     Application.MessageBox('You do not have enough memory for this render. Please use a lower Maximum memory setting.', 'Apophysis', 48);

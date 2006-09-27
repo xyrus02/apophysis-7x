@@ -50,6 +50,9 @@ type
     x: double;
     y: double;
   end;
+  TSRect = record
+    Left, Top, Right, Bottom: double;
+  end;
   TMapPalette = record
     Red:   array[0..255] of byte;
     Green: array[0..255] of byte;
@@ -182,10 +185,10 @@ type
     constructor Create;
     destructor Destroy; override;
 
-    procedure ZoomtoRect(R: TRect);
-    procedure ZoomOuttoRect(R: TRect);
+    procedure ZoomtoRect(R: TSRect);
+    procedure ZoomOuttoRect(R: TSRect);
+    procedure MoveRect(R: TSRect);
     procedure ZoomIn(Factor: double);
-    procedure MoveRect(R: TRect);
     procedure Rotate(Angle: double);
 
     property ppux: double read getppux;
@@ -1688,7 +1691,7 @@ end;
 *)
 
 ///////////////////////////////////////////////////////////////////////////////
-procedure TControlPoint.ZoomtoRect(R: TRect);
+procedure TControlPoint.ZoomtoRect(R: TSRect);
 var
   scale, ppu: double;
   dx,dy: double;
@@ -1709,7 +1712,7 @@ begin
 end;
 
 ///////////////////////////////////////////////////////////////////////////////
-procedure TControlPoint.ZoomOuttoRect(R: TRect);
+procedure TControlPoint.ZoomOuttoRect(R: TSRect);
 var
   ppu: double;
   dx, dy: double;
@@ -1740,7 +1743,7 @@ begin
 end;
 
 ///////////////////////////////////////////////////////////////////////////////
-procedure TControlPoint.MoveRect(R: TRect);
+procedure TControlPoint.MoveRect(R: TSRect);
 var
   scale: double;
   ppux, ppuy: double;

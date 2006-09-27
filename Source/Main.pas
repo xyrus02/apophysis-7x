@@ -39,7 +39,7 @@ const
   RS_XO = 2;
   RS_VO = 3;
 
-  AppVersionString = 'Apophysis 2.05 rc1';
+  AppVersionString = 'Apophysis 2.05 beta';
 
 type
   TMouseMoveState = (msUsual, msZoomWindow, msZoomOutWindow, msZoomWindowMove,
@@ -3436,7 +3436,7 @@ var
 begin
   UpdateUndo;
 
-  scale := MainCP.pixels_per_unit * power(2, MainCP.zoom);
+  scale := MainCP.pixels_per_unit / MainCP.Width * power(2, MainCP.zoom);
   cdx := MainCP.center[0];
   cdy := MainCP.center[1];
 
@@ -3453,10 +3453,10 @@ begin
     dx := cdy*sina + cdx*cosa;
     dy := (dx*cosa - cdx)/sina;
   end;
-  FViewPos.x := FViewPos.x - dx * scale;
-  FViewPos.y := FViewPos.y - dy * scale;
+  FViewPos.x := FViewPos.x - dx * scale * Image.Width;
+  FViewPos.y := FViewPos.y - dy * scale * Image.Width;
 
-  FViewScale := FViewScale * MainCP.pixels_per_unit * power(2, MainCP.zoom) / scale;
+  FViewScale := FViewScale * MainCP.pixels_per_unit / MainCP.Width * power(2, MainCP.zoom) / scale;
 
   DrawImageView;
 
@@ -4380,11 +4380,20 @@ end;
   FClickRect.BottomRight := Point(x, y);
 end;
 
+function ScaleRect(r: TRect; scale: double): TSRect;
+begin
+  Result.Left := r.Left * scale;
+  Result.Top := r.Top * scale;
+  Result.Right := r.Right * scale;
+  Result.Bottom := r.Bottom * scale;
+end;
+
 ///////////////////////////////////////////////////////////////////////////////
 procedure TMainForm.ImageMouseUp(Sender: TObject; Button: TMouseButton;
   Shift: TShiftState; X, Y: Integer);
 var
   scale: double;
+  rs: TSRect;
 begin
   case FMouseMoveState of
     msZoomWindowMove:
@@ -4393,11 +4402,11 @@ begin
         FMouseMoveState := msZoomWindow;
         if (abs(FSelectRect.Left - FSelectRect.Right) < 10) or
            (abs(FSelectRect.Top - FSelectRect.Bottom) < 10) then
-        Exit; // zoom to much or double clicked
+          Exit; // zoom to much or double clicked
 
         StopThread;
         UpdateUndo;
-        MainCp.ZoomtoRect(FSelectRect);
+        MainCp.ZoomtoRect(ScaleRect(FSelectRect, MainCP.Width / Image.Width));
 
         FViewScale := FViewScale * Image.Width / abs(FSelectRect.Right - FSelectRect.Left);
         FViewPos.x := FViewPos.x - ((FSelectRect.Right + FSelectRect.Left) - Image.Width)/2;
@@ -4417,7 +4426,7 @@ begin
 
         StopThread;
         UpdateUndo;
-        MainCp.ZoomOuttoRect(FSelectRect);
+        MainCp.ZoomOuttoRect(ScaleRect(FSelectRect, MainCP.Width / Image.Width));
 
         scale := Image.Width / abs(FSelectRect.Right - FSelectRect.Left);
         FViewScale := FViewScale / scale;
@@ -4440,7 +4449,7 @@ begin
 
         StopThread;
         UpdateUndo;
-        MainCp.MoveRect(FClickRect);
+        MainCp.MoveRect(ScaleRect(FClickRect, MainCP.Width / Image.Width));
 
         RedrawTimer.Enabled := True;
         UpdateWindows;

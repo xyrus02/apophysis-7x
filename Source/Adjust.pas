@@ -1775,14 +1775,14 @@ begin
     end;
 
     MainForm.SetBounds(l, t, w, h);
-  end
-  else MainForm.RedrawTimer.Enabled := true;
+  end;
+  MainForm.RedrawTimer.Enabled := true;
 end;
 
 procedure TAdjustForm.GetMainWindowSize;
 begin
-  ImageWidth := MainCP.Width; //MainForm.Image.Width;
-  ImageHeight := MainCP.Height; //MainForm.Image.Height;
+  ImageWidth := MainCP.Width;
+  ImageHeight := MainCP.Height;
   txtWidth.text := IntToStr(ImageWidth);
   txtHeight.text := IntToStr(ImageHeight);
 end;
