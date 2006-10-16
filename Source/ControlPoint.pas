@@ -21,6 +21,8 @@ unit ControlPoint;
 
 interface
 
+//{$define VAR_STR}
+
 uses
   Classes, Windows, Cmap, XForm, XFormMan;
 
@@ -40,10 +42,6 @@ type
   TTriangle = record
     x: array[0..2] of double;
     y: array[0..2] of double;
-{    color: integer;
-    locked, visible: boolean;
-    pCoefs: pCoefsArray;
-    pXform: ^TXform; }
   end;
   TTriangles = array[-1..NXFORMS] of TTriangle;
   TSPoint = record
@@ -86,7 +84,6 @@ type
   T2CPointsArray = array of T2Cpoint;
 
   TControlPoint = class
-
   public
     finalXform: TXForm;
     finalXformEnabled: boolean;
@@ -173,8 +170,8 @@ type
     function TrianglesFromCP(var Triangles: TTriangles): integer;
     procedure GetFromTriangles(const Triangles: TTriangles; const t: integer);
 
-    procedure GetPostTriangle(var Triangles: TTriangles; const n: integer);
-    procedure SetPostTriangle(const Triangles: TTriangles; const n: integer);
+    procedure GetTriangle(var Triangle: TTriangle; const n: integer);
+    procedure GetPostTriangle(var Triangle: TTriangle; const n: integer);
 
     procedure EqualizeWeights;
     procedure NormalizeWeights;
@@ -726,6 +723,9 @@ begin
       xform[CurrentXForm].p[2, 0] := StrToFloat(ParseValues[ParsePos]);
       Inc(ParsePos);
       xform[CurrentXForm].p[2, 1] := StrToFloat(ParseValues[ParsePos]);
+    end else if AnsiCompareText(CurrentToken, 'postxswap') = 0 then begin
+      Inc(ParsePos);
+      xform[CurrentXForm].postXswap := (ParseValues[ParsePos] = '1');
     end else if AnsiCompareText(CurrentToken, 'vars') = 0 then begin
       for i := 0 to NRVAR - 1 do begin
         xform[CurrentXForm].vars[i] := 0;
@@ -743,9 +743,14 @@ begin
         Inc(i);
       end;
     end else if AnsiCompareText(CurrentToken, 'variables') = 0 then begin
+{
       v := 0;
       for i:= 0 to GetNrVariableNames-1 do begin
         xform[CurrentXForm].SetVariable(GetVariableNameAt(i), v);
+      end;
+}
+      for i:= 0 to GetNrVariableNames-1 do begin
+        xform[CurrentXForm].ResetVariable(GetVariableNameAt(i));
       end;
 
       i := 0;
@@ -1464,14 +1469,22 @@ begin
       sl.add(s);
       s := 'variables';
       for j:= 0 to GetNrVariableNames-1 do begin
+{$ifndef VAR_STR}
         GetVariable(GetVariableNameAt(j), v);
         s := format('%s %g', [s, v]);
+{$else}
+        s := s + ' ' + GetVariableStr(GetVariableNameAt(j));
+{$endif}
       end;
       sl.add(s);
       sl.Add(format('coefs %.6f %.6f %.6f %.6f %.6f %.6f',
         [c[0][0], c[0][1], c[1][0], c[1][1], c[2][0], c[2][1]]));
       sl.Add(format('post %.6f %.6f %.6f %.6f %.6f %.6f',
         [p[0][0], p[0][1], p[1][0], p[1][1], p[2][0], p[2][1]]));
+      if postXswap then
+        sl.Add('postxswap 1')
+      else
+        sl.Add('postxswap 0');
     end;
   DecimalSeparator := OldDecimalSperator;
 end;
@@ -1898,8 +1911,14 @@ begin
   begin
     for i := 0 to 2 do
     with xform[j] do begin
-      Triangles[j].x[i] := Triangles[-1].x[i] * c[0][0] + Triangles[-1].y[i] * c[1][0] + c[2][0];
-      Triangles[j].y[i] := Triangles[-1].x[i] * c[0][1] + Triangles[-1].y[i] * c[1][1] + c[2][1];
+      if postXswap then begin
+        Triangles[j].x[i] := Triangles[-1].x[i] * p[0][0] + Triangles[-1].y[i] * p[1][0] + p[2][0];
+        Triangles[j].y[i] := Triangles[-1].x[i] * p[0][1] + Triangles[-1].y[i] * p[1][1] + p[2][1];
+      end
+      else begin
+        Triangles[j].x[i] := Triangles[-1].x[i] * c[0][0] + Triangles[-1].y[i] * c[1][0] + c[2][0];
+        Triangles[j].y[i] := Triangles[-1].x[i] * c[0][1] + Triangles[-1].y[i] * c[1][1] + c[2][1];
+      end;
     end;
   end;
   EnableFinalXform := FinalXformEnabled;
@@ -1966,7 +1985,19 @@ var
   i: integer;
 begin
   for i := 0 to t do
-  begin
+   if xform[i].postXswap then
+   begin
+    solve3(Triangles[-1].x[0], -Triangles[-1].y[0], Triangles[i].x[0],
+           Triangles[-1].x[1], -Triangles[-1].y[1], Triangles[i].x[1],
+           Triangles[-1].x[2], -Triangles[-1].y[2], Triangles[i].x[2],
+           xform[i].p[0][0],    xform[i].p[1][0],   xform[i].p[2][0]);
+
+    solve3(Triangles[-1].x[0], -Triangles[-1].y[0], -Triangles[i].y[0],
+           Triangles[-1].x[1], -Triangles[-1].y[1], -Triangles[i].y[1],
+           Triangles[-1].x[2], -Triangles[-1].y[2], -Triangles[i].y[2],
+           xform[i].p[0][1],    xform[i].p[1][1],    xform[i].p[2][1]);
+   end
+   else begin
     solve3(Triangles[-1].x[0], -Triangles[-1].y[0], Triangles[i].x[0],
            Triangles[-1].x[1], -Triangles[-1].y[1], Triangles[i].x[1],
            Triangles[-1].x[2], -Triangles[-1].y[2], Triangles[i].x[2],
@@ -1976,34 +2007,30 @@ begin
            Triangles[-1].x[1], -Triangles[-1].y[1], -Triangles[i].y[1],
            Triangles[-1].x[2], -Triangles[-1].y[2], -Triangles[i].y[2],
            xform[i].c[0][1],    xform[i].c[1][1],    xform[i].c[2][1]);
-  end;
+   end;
   FinalXformEnabled := EnableFinalXform;
 end;
 
-
-procedure TControlPoint.GetPostTriangle(var Triangles: TTriangles; const n: integer);
+procedure TControlPoint.GetTriangle(var Triangle: TTriangle; const n: integer);
 var
   i, j: integer;
 begin
   for i := 0 to 2 do
   with xform[n] do begin
-    Triangles[n].x[i] := Triangles[-1].x[i] * p[0][0] + Triangles[-1].y[i] * p[1][0] + p[2][0];
-    Triangles[n].y[i] := Triangles[-1].x[i] * p[0][1] + Triangles[-1].y[i] * p[1][1] + p[2][1];
+    Triangle.x[i] :=  MainTriangles[-1].x[i] * c[0][0] - MainTriangles[-1].y[i] * c[1][0] + c[2][0];
+    Triangle.y[i] := -MainTriangles[-1].x[i] * c[0][1] + MainTriangles[-1].y[i] * c[1][1] - c[2][1];
   end;
-  //for i := 0 to 2 do Triangles[n].y[i] := -Triangles[n].y[i];
 end;
 
-procedure TControlPoint.SetPostTriangle(const Triangles: TTriangles; const n: integer);
+procedure TControlPoint.GetPostTriangle(var Triangle: TTriangle; const n: integer);
+var
+  i, j: integer;
 begin
-  solve3(Triangles[-1].x[0], -Triangles[-1].y[0], Triangles[n].x[0],
-         Triangles[-1].x[1], -Triangles[-1].y[1], Triangles[n].x[1],
-         Triangles[-1].x[2], -Triangles[-1].y[2], Triangles[n].x[2],
-         xform[n].p[0][0],    xform[n].p[1][0],   xform[n].p[2][0]);
-
-  solve3(Triangles[-1].x[0], -Triangles[-1].y[0], -Triangles[n].y[0],
-         Triangles[-1].x[1], -Triangles[-1].y[1], -Triangles[n].y[1],
-         Triangles[-1].x[2], -Triangles[-1].y[2], -Triangles[n].y[2],
-         xform[n].p[0][1],    xform[n].p[1][1],    xform[n].p[2][1]);
+  for i := 0 to 2 do
+  with xform[n] do begin
+    Triangle.x[i] :=  MainTriangles[-1].x[i] * p[0][0] - MainTriangles[-1].y[i] * p[1][0] + p[2][0];
+    Triangle.y[i] := -MainTriangles[-1].x[i] * p[0][1] + MainTriangles[-1].y[i] * p[1][1] - p[2][1];
+  end;
 end;
 
 ////////////////////////////////////////////////////////////////////////////////

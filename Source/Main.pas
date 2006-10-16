@@ -21,6 +21,8 @@
 
 unit Main;
 
+//{$define VAR_STR}
+
 interface
 
 uses
@@ -39,7 +41,7 @@ const
   RS_XO = 2;
   RS_VO = 3;
 
-  AppVersionString = 'Apophysis 2.05 beta';
+  AppVersionString = 'Apophysis 2.05 post-release 2';
 
 type
   TMouseMoveState = (msUsual, msZoomWindow, msZoomOutWindow, msZoomWindowMove,
@@ -2225,8 +2227,13 @@ begin
           Strings.Add('  ' + xf_str + '_var_' + VarNames(i) + '=' +
             floatToStr(cp1.xform[m].vars[i]));
         for j:= 0 to GetNrVariableNames - 1 do begin
+{$ifndef VAR_STR}
           cp1.xform[m].GetVariable(GetVariableNameAt(j), v);
           Strings.Add('  ' + xf_str + '_par_' + GetVariableNameAt(j) + '=' + floatToStr(v));
+{$else}
+          Strings.Add('  ' + xf_str + '_par_' +
+                      GetVariableNameAt(j) + '=' + cp1.xform[m].GetVariableStr(GetVariableNameAt(j)));
+{$endif}
         end;
       end;
     end;
@@ -4183,8 +4190,12 @@ begin
       for i := 0 to GetNrVariableNames - 1 do begin
         v := Attributes.Value(GetVariableNameAt(i));
         if v <> '' then begin
+{$ifndef VAR_STR}
           d := StrToFloat(v);
           SetVariable(GetVariableNameAt(i), d);
+{$else}
+          SetVariableStr(GetVariableNameAt(i), v);
+{$endif}
         end;
       end;
      end;
@@ -4601,7 +4612,7 @@ const
   cornerSize = 32;
 var
   bkuPen: TPen;
-  dx, dy: integer;
+  dx, dy, cx, cy: integer;
   l, r, t, b: integer;
 begin
   bkuPen := TPen.Create;
@@ -4659,7 +4670,14 @@ begin
     MoveTo(l + dx, b);
     LineTo(l, b);
     LineTo(l, b - dy);
-
+{
+    cx := (l + r) div 2;
+    cy := (t + b) div 2;
+    MoveTo(cx - dx div 2, cy);
+    LineTo(cx + dx div 2 + 1, cy);
+    MoveTo(cx, cy - dy div 2);
+    LineTo(cx, cy + dy div 2 + 1);
+}
     Pen.Assign(bkuPen);
   end;
   bkuPen.Free;

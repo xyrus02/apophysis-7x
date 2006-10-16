@@ -299,7 +299,6 @@ object MainForm: TMainForm
       Caption = 'ToolButton2'
       ImageIndex = 39
       Style = tbsSeparator
-      Visible = False
     end
     object tbShowTrace: TToolButton
       Left = 579
@@ -307,7 +306,6 @@ object MainForm: TMainForm
       Hint = 'Show trace window'
       Caption = 'tbShowTrace'
       ImageIndex = 38
-      Visible = False
       OnClick = tbShowTraceClick
     end
   end

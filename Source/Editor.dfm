@@ -81,7 +81,7 @@ object EditForm: TEditForm
     object EditorToolBar: TToolBar
       Left = 1
       Top = 1
-      Width = 552
+      Width = 560
       Height = 22
       Align = alLeft
       ButtonWidth = 25
@@ -216,41 +216,16 @@ object EditForm: TEditForm
         Style = tbsCheck
         OnClick = tbEditModeClick
       end
-      object tbExtendedEdit: TToolButton
-        Left = 266
-        Top = 0
-        Hint = 'Extended edit mode'
-        Caption = 'Auto'
-        Down = True
-        ImageIndex = 25
-        ParentShowHint = False
-        ShowHint = True
-        Style = tbsCheck
-        OnClick = tbExtendedEditClick
-      end
       object ToolButton6: TToolButton
-        Left = 291
+        Left = 266
         Top = 0
         Width = 8
         Caption = 'ToolButton6'
         ImageIndex = 16
         Style = tbsSeparator
       end
-      object tbAxisLock: TToolButton
-        Left = 299
-        Top = 0
-        Hint = 'Lock transform axes'
-        Caption = 'tbAxisLock'
-        Down = True
-        ImageIndex = 16
-        ParentShowHint = False
-        ShowHint = True
-        Style = tbsCheck
-        Visible = False
-        OnClick = tbAxisLockClick
-      end
       object tbPivotMode: TToolButton
-        Left = 324
+        Left = 274
         Top = 0
         Hint = 'Toggle world pivot mode'
         Caption = 'tbPivotMode'
@@ -261,7 +236,7 @@ object EditForm: TEditForm
         OnClick = btnPivotModeClick
       end
       object ToolButton5: TToolButton
-        Left = 349
+        Left = 299
         Top = 0
         Width = 8
         Caption = 'ToolButton5'
@@ -270,7 +245,7 @@ object EditForm: TEditForm
         Visible = False
       end
       object tbRotate90CCW: TToolButton
-        Left = 357
+        Left = 307
         Top = 0
         Hint = 'Rotate triangle 90'#176' counter-clockwise'
         Caption = 'tbRotate90CCW'
@@ -280,7 +255,7 @@ object EditForm: TEditForm
         OnClick = btTrgRotateLeft90Click
       end
       object tbRotate90CW: TToolButton
-        Left = 382
+        Left = 332
         Top = 0
         Hint = 'Rotate triangle 90'#176' clockwise'
         Caption = 'tbRotate90CW'
@@ -290,7 +265,7 @@ object EditForm: TEditForm
         OnClick = btTrgRotateRight90Click
       end
       object tbFlipHorz: TToolButton
-        Left = 407
+        Left = 357
         Top = 0
         Hint = 'Flip triangle horizontal'
         Caption = 'Flip Horizontal'
@@ -300,7 +275,7 @@ object EditForm: TEditForm
         OnClick = mnuFlipHorizontalClick
       end
       object tbFlipVert: TToolButton
-        Left = 432
+        Left = 382
         Top = 0
         Hint = 'Flip triangle vertical'
         Caption = 'Flip Vertical'
@@ -310,7 +285,7 @@ object EditForm: TEditForm
         OnClick = mnuFlipVerticalClick
       end
       object ToolButton2: TToolButton
-        Left = 457
+        Left = 407
         Top = 0
         Width = 8
         Caption = 'ToolButton2'
@@ -318,7 +293,7 @@ object EditForm: TEditForm
         Style = tbsSeparator
       end
       object tbVarPreview: TToolButton
-        Left = 465
+        Left = 415
         Top = 0
         Hint = 'Show/hide variation preview'
         Caption = 'Variation Preview'
@@ -329,15 +304,26 @@ object EditForm: TEditForm
         OnClick = tbVarPreviewClick
       end
       object ToolButton3: TToolButton
-        Left = 490
+        Left = 440
         Top = 0
         Width = 8
         Caption = 'ToolButton3'
         ImageIndex = 16
         Style = tbsSeparator
       end
+      object tbPostXswap: TToolButton
+        Left = 448
+        Top = 0
+        Hint = 'Enable post-triangle editing'
+        Caption = 'tbPostXswap'
+        ImageIndex = 29
+        ParentShowHint = False
+        ShowHint = True
+        Style = tbsCheck
+        OnClick = tbPostXswapClick
+      end
       object tbEnableFinalXform: TToolButton
-        Left = 498
+        Left = 473
         Top = 0
         Hint = 'Enable final transform'
         Caption = 'Show Final Xform'
@@ -425,8 +411,8 @@ object EditForm: TEditForm
         Align = alClient
         TabOrder = 0
         object lblTransform: TLabel
-          Left = 26
-          Top = 8
+          Left = 28
+          Top = 10
           Width = 59
           Height = 13
           Caption = 'Transform'
@@ -438,8 +424,8 @@ object EditForm: TEditForm
           ParentFont = False
         end
         object cbTransforms: TComboBox
-          Left = 91
-          Top = 4
+          Left = 92
+          Top = 8
           Width = 57
           Height = 19
           Style = csOwnerDrawFixed
@@ -993,24 +979,85 @@ object EditForm: TEditForm
                     '175'
                     '200')
                 end
-                object chkAxisLock: TCheckBox
-                  Left = 24
-                  Top = 163
-                  Width = 121
-                  Height = 17
-                  Hint = 'Lock axes rotation'
-                  Caption = 'Lock transform axes'
-                  Checked = True
-                  ParentShowHint = False
-                  ShowHint = True
-                  State = cbChecked
+                object ToolBar1: TToolBar
+                  Left = 9
+                  Top = 162
+                  Width = 145
+                  Height = 28
+                  Align = alNone
+                  ButtonWidth = 24
+                  Caption = 'ToolBar1'
+                  EdgeInner = esNone
+                  EdgeOuter = esNone
+                  Flat = True
+                  Images = EditorTB
                   TabOrder = 9
-                  OnClick = tbAxisLockClick
+                  object tbCopyTriangle: TToolButton
+                    Left = 0
+                    Top = 0
+                    Hint = 'Copy triangle coordinates'
+                    ImageIndex = 26
+                    ParentShowHint = False
+                    ShowHint = True
+                    OnClick = btnCopyTriangleClick
+                  end
+                  object tbPasteTriangle: TToolButton
+                    Left = 24
+                    Top = 0
+                    Hint = 'Paste triangle coordinates'
+                    ImageIndex = 27
+                    ParentShowHint = False
+                    ShowHint = True
+                    OnClick = btnPasteTriangleClick
+                  end
+                  object tbExtendedEdit: TToolButton
+                    Left = 48
+                    Top = 0
+                    Hint = 'Enable extended edit mode'
+                    Caption = 'tbExtendedEdit'
+                    ImageIndex = 25
+                    ParentShowHint = False
+                    ShowHint = True
+                    Style = tbsCheck
+                    OnClick = tbExtendedEditClick
+                  end
+                  object tbAxisLock: TToolButton
+                    Left = 72
+                    Top = 0
+                    Hint = 'Lock transform axes'
+                    Caption = 'tbAxisLock'
+                    ImageIndex = 16
+                    ParentShowHint = False
+                    ShowHint = True
+                    Style = tbsCheck
+                    OnClick = tbAxisLockClick
+                  end
+                  object tbAutoWeights: TToolButton
+                    Left = 96
+                    Top = 0
+                    Hint = 'Auto-balance weights'
+                    Caption = 'tbAutoWeights'
+                    ImageIndex = 28
+                    ParentShowHint = False
+                    ShowHint = True
+                    Style = tbsCheck
+                  end
+                  object tb2PostXswap: TToolButton
+                    Left = 120
+                    Top = 0
+                    Hint = 'Enable post-triangle editing'
+                    Caption = 'tb2PostXswap'
+                    ImageIndex = 29
+                    ParentShowHint = False
+                    ShowHint = True
+                    Style = tbsCheck
+                    OnClick = tbPostXswapClick
+                  end
                 end
               end
               object GroupBox3: TGroupBox
                 Left = 8
-                Top = 184
+                Top = 188
                 Width = 146
                 Height = 65
                 Caption = 'Pivot Point'
@@ -1081,9 +1128,23 @@ object EditForm: TEditForm
           end
           object tabXForm: TTabSheet
             Caption = 'Transform'
+            object bvlPostCoefs: TBevel
+              Left = 4
+              Top = 152
+              Width = 154
+              Height = 103
+              Shape = bsFrame
+            end
+            object bvlCoefs: TBevel
+              Left = 4
+              Top = 2
+              Width = 154
+              Height = 103
+              Shape = bsFrame
+            end
             object btnResetCoefs: TSpeedButton
               Left = 8
-              Top = 76
+              Top = 78
               Width = 145
               Height = 22
               Hint = 'Reset all vectors to default position'
@@ -1094,7 +1155,7 @@ object EditForm: TEditForm
             end
             object btnXcoefs: TSpeedButton
               Left = 8
-              Top = 4
+              Top = 6
               Width = 25
               Height = 21
               Hint = 'Reset vector X'
@@ -1105,7 +1166,7 @@ object EditForm: TEditForm
             end
             object btnYcoefs: TSpeedButton
               Left = 8
-              Top = 28
+              Top = 30
               Width = 25
               Height = 21
               Hint = 'Reset vector Y'
@@ -1116,7 +1177,7 @@ object EditForm: TEditForm
             end
             object btnOcoefs: TSpeedButton
               Left = 8
-              Top = 52
+              Top = 54
               Width = 25
               Height = 21
               Hint = 'Reset vector O'
@@ -1127,7 +1188,7 @@ object EditForm: TEditForm
             end
             object btnCoefsRect: TSpeedButton
               Left = 8
-              Top = 101
+              Top = 107
               Width = 71
               Height = 17
               Hint = 'Show vectors in rectangular (cartesian) coordinates'
@@ -1140,7 +1201,7 @@ object EditForm: TEditForm
             end
             object btnCoefsPolar: TSpeedButton
               Left = 82
-              Top = 101
+              Top = 107
               Width = 71
               Height = 17
               Hint = 'Show vectors in polar coordinates'
@@ -1152,79 +1213,51 @@ object EditForm: TEditForm
             end
             object btnXpost: TSpeedButton
               Left = 8
-              Top = 188
+              Top = 180
               Width = 25
               Height = 21
               Hint = 'Reset vector X'
               Caption = 'X'
-              Enabled = False
               ParentShowHint = False
               ShowHint = True
-              Visible = False
               OnClick = btnXpostClick
             end
             object btnYpost: TSpeedButton
               Left = 8
-              Top = 212
+              Top = 204
               Width = 25
               Height = 21
               Hint = 'Reset vector Y'
               Caption = 'Y'
-              Enabled = False
               ParentShowHint = False
               ShowHint = True
-              Visible = False
               OnClick = btnYpostClick
             end
             object btnOpost: TSpeedButton
               Left = 8
-              Top = 236
+              Top = 228
               Width = 25
               Height = 21
               Hint = 'Reset vector O'
               Caption = 'O'
-              Enabled = False
               ParentShowHint = False
               ShowHint = True
-              Visible = False
               OnClick = btnOpostClick
             end
-            object btnResetPostXForm: TSpeedButton
+            object btnResetPostCoefs: TSpeedButton
               Left = 8
-              Top = 164
+              Top = 156
               Width = 145
               Height = 22
               Hint = 'Reset post-transform vectors to defaults'
               Caption = 'Reset post-transform'
-              Enabled = False
               ParentShowHint = False
               ShowHint = True
-              Visible = False
-              OnClick = btnResetPostXFormClick
-            end
-            object btnPostTriangle: TSpeedButton
-              Left = 8
-              Top = 260
-              Width = 145
-              Height = 22
-              Hint = 'Swap Xform with PostXform'
-              Caption = '[ Xform <-> PostXform ]'
-              Enabled = False
-              Flat = True
-              Font.Charset = ANSI_CHARSET
-              Font.Color = clWindowText
-              Font.Height = -11
-              Font.Name = 'Tahoma'
-              Font.Style = []
-              ParentFont = False
-              ParentShowHint = False
-              ShowHint = True
-              Visible = False
-              OnClick = btnPostTriangleClick
+              OnClick = btnResetPostCoefsClick
             end
             object pnlWeight: TPanel
               Left = 8
-              Top = 122
+              Top = 128
               Width = 88
               Height = 21
               Cursor = crHandPoint
@@ -1234,7 +1267,7 @@ object EditForm: TEditForm
               Caption = ' Weight:'
               ParentShowHint = False
               ShowHint = True
-              TabOrder = 14
+              TabOrder = 13
               OnDblClick = DragPanelDblClick
               OnMouseDown = DragPanelMouseDown
               OnMouseMove = DragPanelMouseMove
@@ -1242,7 +1275,7 @@ object EditForm: TEditForm
             end
             object txtA: TEdit
               Left = 36
-              Top = 4
+              Top = 6
               Width = 57
               Height = 21
               TabOrder = 0
@@ -1252,7 +1285,7 @@ object EditForm: TEditForm
             end
             object txtB: TEdit
               Left = 96
-              Top = 4
+              Top = 6
               Width = 57
               Height = 21
               TabOrder = 1
@@ -1262,7 +1295,7 @@ object EditForm: TEditForm
             end
             object txtC: TEdit
               Left = 36
-              Top = 28
+              Top = 30
               Width = 57
               Height = 21
               TabOrder = 2
@@ -1272,7 +1305,7 @@ object EditForm: TEditForm
             end
             object txtD: TEdit
               Left = 96
-              Top = 28
+              Top = 30
               Width = 57
               Height = 21
               TabOrder = 3
@@ -1282,7 +1315,7 @@ object EditForm: TEditForm
             end
             object txtE: TEdit
               Left = 36
-              Top = 52
+              Top = 54
               Width = 57
               Height = 21
               TabOrder = 4
@@ -1292,7 +1325,7 @@ object EditForm: TEditForm
             end
             object txtF: TEdit
               Left = 96
-              Top = 52
+              Top = 54
               Width = 57
               Height = 21
               TabOrder = 5
@@ -1302,7 +1335,7 @@ object EditForm: TEditForm
             end
             object txtP: TEdit
               Left = 96
-              Top = 122
+              Top = 128
               Width = 57
               Height = 21
               Hint = '"Weight" is the probability of this transform to be applied'
@@ -1311,9 +1344,69 @@ object EditForm: TEditForm
               OnExit = txtPExit
               OnKeyPress = txtPKeyPress
             end
+            object txtPost00: TEdit
+              Left = 36
+              Top = 180
+              Width = 57
+              Height = 21
+              TabOrder = 7
+              Text = '0'
+              OnExit = PostCoefValidate
+              OnKeyPress = PostCoefKeypress
+            end
+            object txtPost01: TEdit
+              Left = 96
+              Top = 180
+              Width = 57
+              Height = 21
+              TabOrder = 8
+              Text = '0'
+              OnExit = PostCoefValidate
+              OnKeyPress = PostCoefKeypress
+            end
+            object txtPost10: TEdit
+              Left = 36
+              Top = 204
+              Width = 57
+              Height = 21
+              TabOrder = 9
+              Text = '0'
+              OnExit = PostCoefValidate
+              OnKeyPress = PostCoefKeypress
+            end
+            object txtPost11: TEdit
+              Left = 96
+              Top = 204
+              Width = 57
+              Height = 21
+              TabOrder = 10
+              Text = '0'
+              OnExit = PostCoefValidate
+              OnKeyPress = PostCoefKeypress
+            end
+            object txtPost20: TEdit
+              Left = 36
+              Top = 228
+              Width = 57
+              Height = 21
+              TabOrder = 11
+              Text = '0'
+              OnExit = PostCoefValidate
+              OnKeyPress = PostCoefKeypress
+            end
+            object txtPost21: TEdit
+              Left = 96
+              Top = 228
+              Width = 57
+              Height = 21
+              TabOrder = 12
+              Text = '0'
+              OnExit = PostCoefValidate
+              OnKeyPress = PostCoefKeypress
+            end
             object chkPreserve: TCheckBox
               Left = 8
-              Top = 145
+              Top = 257
               Width = 145
               Height = 17
               Hint = 
@@ -1325,79 +1418,8 @@ object EditForm: TEditForm
               ParentShowHint = False
               ShowHint = True
               State = cbChecked
-              TabOrder = 7
-            end
-            object txtPost00: TEdit
-              Left = 36
-              Top = 188
-              Width = 57
-              Height = 21
-              Enabled = False
-              TabOrder = 8
-              Text = '0'
+              TabOrder = 14
               Visible = False
-              OnExit = PostCoefValidate
-              OnKeyPress = PostCoefKeypress
-            end
-            object txtPost01: TEdit
-              Left = 96
-              Top = 188
-              Width = 57
-              Height = 21
-              Enabled = False
-              TabOrder = 9
-              Text = '0'
-              Visible = False
-              OnExit = PostCoefValidate
-              OnKeyPress = PostCoefKeypress
-            end
-            object txtPost10: TEdit
-              Left = 36
-              Top = 212
-              Width = 57
-              Height = 21
-              Enabled = False
-              TabOrder = 10
-              Text = '0'
-              Visible = False
-              OnExit = PostCoefValidate
-              OnKeyPress = PostCoefKeypress
-            end
-            object txtPost11: TEdit
-              Left = 96
-              Top = 212
-              Width = 57
-              Height = 21
-              Enabled = False
-              TabOrder = 11
-              Text = '0'
-              Visible = False
-              OnExit = PostCoefValidate
-              OnKeyPress = PostCoefKeypress
-            end
-            object txtPost20: TEdit
-              Left = 36
-              Top = 236
-              Width = 57
-              Height = 21
-              Enabled = False
-              TabOrder = 12
-              Text = '0'
-              Visible = False
-              OnExit = PostCoefValidate
-              OnKeyPress = PostCoefKeypress
-            end
-            object txtPost21: TEdit
-              Left = 96
-              Top = 236
-              Width = 57
-              Height = 21
-              Enabled = False
-              TabOrder = 13
-              Text = '0'
-              Visible = False
-              OnExit = PostCoefValidate
-              OnKeyPress = PostCoefKeypress
             end
           end
           object tabVariations: TTabSheet
@@ -1532,33 +1554,30 @@ object EditForm: TEditForm
               Left = 8
               Top = 100
               Width = 145
-              Height = 137
-              Caption = 'Graph'
+              Height = 77
+              Caption = 'Variation preview'
               TabOrder = 1
-              object Label1: TLabel
-                Left = 8
-                Top = 56
-                Width = 83
-                Height = 13
-                Caption = 'Variation preview'
-              end
-              object chkHelpers: TCheckBox
-                Left = 8
-                Top = 36
-                Width = 129
-                Height = 17
-                Caption = 'Helper lines'
-                Checked = True
-                State = cbChecked
-                TabOrder = 0
-                OnClick = chkHelpersClick
-              end
               object trkVarPreviewDensity: TTrackBar
                 Left = 8
-                Top = 104
+                Top = 48
                 Width = 65
                 Height = 25
                 Max = 5
+                Min = 1
+                ParentShowHint = False
+                PageSize = 1
+                Position = 2
+                ShowHint = True
+                TabOrder = 0
+                TabStop = False
+                ThumbLength = 15
+                OnChange = trkVarPreviewDensityChange
+              end
+              object trkVarPreviewRange: TTrackBar
+                Left = 8
+                Top = 16
+                Width = 129
+                Height = 25
                 Min = 1
                 ParentShowHint = False
                 PageSize = 1
@@ -1567,26 +1586,11 @@ object EditForm: TEditForm
                 TabOrder = 1
                 TabStop = False
                 ThumbLength = 15
-                OnChange = trkVarPreviewDensityChange
-              end
-              object trkVarPreviewRange: TTrackBar
-                Left = 8
-                Top = 72
-                Width = 129
-                Height = 25
-                Min = 1
-                ParentShowHint = False
-                PageSize = 1
-                Position = 2
-                ShowHint = True
-                TabOrder = 2
-                TabStop = False
-                ThumbLength = 15
                 OnChange = trkVarPreviewRangeChange
               end
               object trkVarPreviewDepth: TTrackBar
                 Left = 72
-                Top = 104
+                Top = 48
                 Width = 65
                 Height = 25
                 Max = 5
@@ -1595,19 +1599,10 @@ object EditForm: TEditForm
                 PageSize = 1
                 Position = 1
                 ShowHint = True
-                TabOrder = 3
+                TabOrder = 2
                 TabStop = False
                 ThumbLength = 15
                 OnChange = trkVarPreviewDepthChange
-              end
-              object chkUseXFormColor: TCheckBox
-                Left = 8
-                Top = 16
-                Width = 129
-                Height = 17
-                Caption = 'Use transform color'
-                TabOrder = 4
-                OnClick = chkUseXFormColorClick
               end
             end
           end
@@ -1634,6 +1629,15 @@ object EditForm: TEditForm
       ImageIndex = 5
       ShortCut = 16473
       OnClick = mnuRedoClick
+    end
+    object N4: TMenuItem
+      Caption = '-'
+    end
+    object mnuAdd: TMenuItem
+      Caption = 'Add transform'
+      Hint = 'Add new triangle'
+      ImageIndex = 1
+      OnClick = mnuAddClick
     end
     object N1: TMenuItem
       Caption = '-'
@@ -1669,14 +1673,10 @@ object EditForm: TEditForm
       ImageIndex = 16
       OnClick = tbAxisLockClick
     end
-    object N4: TMenuItem
-      Caption = '-'
-    end
-    object mnuAdd: TMenuItem
-      Caption = 'Add transform'
-      Hint = 'Add new triangle'
-      ImageIndex = 1
-      OnClick = mnuAddClick
+    object oggleposttriangleediting1: TMenuItem
+      Caption = 'Toggle post-triangle editing'
+      ImageIndex = 29
+      OnClick = tbPostXswapClick
     end
     object N5: TMenuItem
       Caption = '-'
@@ -1726,8 +1726,8 @@ object EditForm: TEditForm
     Left = 313
     Top = 40
     Bitmap = {
-      494C01011A001D00040010001000FFFFFFFFFF10FFFFFFFFFFFFFFFF424D3600
-      0000000000003600000028000000400000008000000001002000000000000080
+      494C01011E002200040010001000FFFFFFFFFF10FFFFFFFFFFFFFFFF424D3600
+      0000000000003600000028000000400000009000000001002000000000000090
       0000000000000000000000000000000000000000000000000000000000000000
       0000000000000000000000000000000000000000000000000000000000000000
       0000000000000000000000000000000000000000000000000000000000000000
@@ -1864,118 +1864,246 @@ object EditForm: TEditForm
       0000000000000000000000000000000000000000000000000000000000000000
       0000000000000000000000000000000000000000000000000000000000000000
       0000000000000000000000000000000000000000000000000000000000000000
-      0000000000000000000000000000000000000000000000000000FFFFFF000000
+      0000000000000000000000000000000000000000000000000000000000000000
+      0000000000000000000000000000000000000000000000000000000000000000
+      0000000000000000000000000000000000000000000000000000000000000000
+      0000000000000000000000000000000000000000000000000000000000000000
+      0000000000000000000000000000000000000000000000000000000000000000
+      0000000000000000000000000000000000000000000000000000000000000000
+      0000000000000000000000000000000000000000000000000000000000000000
+      0000000000000000000000000000000000000000000000000000000000000000
+      0000000000000000000000000000000000000000000000000000000000000000
+      0000000000000000000000000000000000000000000000000000000000000000
+      0000000000000000000000000000000000000000000000000000000000000000
+      0000000000000000000000000000000000000000000000000000000000000000
+      0000000000000000000000000000000000000000000000000000000000000000
+      0000000000000000000000000000000000000000000000000000000000000000
+      0000000000000000000000000000000000000000000000000000000000000000
+      0000000000000000000000000000000000000000000000000000000000000000
+      0000000000000000000000000000000000000000000000000000000000000000
+      0000000000000000000000000000000000000000000000000000000000000000
+      0000000000000000000000000000000000000000000000000000000000000000
+      0000000000000000000000000000000000000000000000000000000000000000
+      0000000000000000000000000000000000000000000000000000000000000000
+      0000000000000000000000000000000000000000000000000000000000000000
+      0000000000000000000000000000000000000000000000000000000000000000
+      0000000000000000000000000000000000000000000000000000000000000000
+      0000000000000000000000000000000000000000000000000000000000000000
+      0000000000000000000000000000000000000000000000000000000000000000
+      0000000000000000000000000000000000000000000000000000000000000000
+      0000000000000000000000000000000000000000000000000000000000000000
+      0000000000000000000000000000000000000000000000000000000000000000
+      0000000000000000000000000000000000000000000000000000000000000000
+      0000000000000000000000000000000000000000000000000000000000000000
+      0000000000000000000000000000000000000000000000000000000000000000
+      0000000000000000000000000000000000000000000000000000000000000000
+      0000000000000000000000000000000000000000000000000000000000000000
+      0000000000000000000000000000000000000000000000000000000000000000
+      0000000000000000000000000000000000000000000000000000000000000000
+      0000000000000000000000000000000000000000000000000000000000000000
+      0000000000000000000000000000000000000000000000000000000000000000
+      0000000000000000000000000000000000000000000000000000000000000000
+      0000000000000000000000000000000000000000000000000000000000000000
+      0000000000000000000000000000000000000000000000000000000000000000
+      0000000000000000000000000000000000000000000000000000000000000000
+      0000000000000000000000000000000000000000000000000000000000000000
+      0000000000000000000000000000000000000000000000000000000000000000
+      0000000000000000000000000000000000000000000000000000000000000000
+      0000000000000000000000000000000000000000000000000000000000000000
+      0000000000000000000000000000000000000000000000000000000000000000
+      0000000000000000000000000000000000000000000000000000000000000000
+      0000000000000000000000000000000000000000000000000000000000000000
+      0000000000000000000000000000000000000000000000000000000000000000
+      0000000000000000000000000000000000000000000000000000000000000000
+      0000000000000000000000000000000000000000000000000000000000000000
+      0000000000000000000000000000000000000000000000000000000000000000
+      0000000000000000000000000000000000000000000000000000000000000000
+      0000000000000000000000000000000000000000000000000000000000000000
+      0000000000000000000000000000000000000000000000000000000000000000
+      0000000000000000000000000000000000005C5C5C0000000000000000000000
+      00005C5C5C0000000000000000000000000000000000000000005C5C5C000000
+      000000000000000000005C5C5C00000000000000000000000000000000000000
+      0000000000000000000000000000000000000000000000000000000000000000
+      0000000000000000000000000000000000000000000000000000000000000000
+      0000000000000000000000000000000000000000000000000000000000000000
+      0000000000000000000000000000000000000000000000000000000000000000
+      0000000000000000000000000000000000000000000000000000000000000000
+      0000000000000000000000000000000000000000000000000000000000000000
+      0000000000000000000000000000000000000000000000000000000000000000
+      0000000000000000000000000000000000000000000000000000000000000000
+      0000000000000000000000000000000000000000000000000000000000000000
+      0000A1A1A1000000000000000000000000000000000000000000000000000000
+      0000000000000000000000000000000000000000000000000000000000000000
+      0000000000000000000000000000000000000000000000000000000000000000
+      0000000000000000000000000000000000000000000000000000000000000000
+      000000000000000000000000000000000000000000005C5C5C00000000005C5C
+      5C00000000000000000000000000000000000000000000000000000000005C5C
+      5C00000000005C5C5C0000000000000000000000000000000000000000000000
+      000000000000000000000000000000000000000000000000000000000000A1A1
+      A100000000000000000000000000000000000000000000000000000000000000
+      0000000000000000000000000000000000000000000000000000000000000000
+      0000000000000000000000000000000000000000000000000000000000000000
+      0000000000000000000000000000000000000000000000000000000000000000
+      0000000000000000000000000000000000000000000000000000000000000000
+      0000000000000000000000000000000000000000000000000000000000000000
+      0000000000000000000000000000000000000000000000000000000000000000
+      0000000000000000000000000000000000000000000000000000A1A1A1000000
+      0000000000000000000000000000000000000000000000000000000000000000
+      0000000000000000000000000000000000000000000000000000000000000000
+      0000000000000000000000000000000000000000000000000000000000000000
+      0000000000000000000000000000000000000000000000000000000000000000
+      00000000000000000000000000000000000000000000000000005C5C5C000000
+      0000000000000000000000000000000000000000000000000000000000000000
+      00005C5C5C000000000000000000000000000000000000000000000000000000
+      00000000000000000000000000000000000000000000A1A1A100000000000000
+      0000000000000000000000000000000000000000000000000000000000000000
+      0000000000000000000000000000000000000000000000000000000000000000
+      0000000000000000000000000000000000000000000000000000000000000000
+      0000000000000000000000000000000000000000000000000000000000000000
+      0000000000000000000000000000000000000000000000000000000000000000
+      0000000000000000000000000000000000000000000000000000000000000000
+      0000000000000000000000000000000000000000000000000000000000000000
+      000000000000000000000000000000000000A1A1A10000000000000000000000
+      0000000000000000000000000000000000000000000000000000000000000000
+      0000000000000000000000000000000000000000000000000000000000000000
+      0000000000000000000000000000000000000000000000000000000000000000
+      0000000000000000000000000000000000000000000000000000000000000000
+      0000000000000000000000000000000000000000000000000000000000000000
+      0000000000000000000000000000000000000000000000000000000000000000
+      0000000000000000000000000000000000000000000000000000000000000000
+      0000000000000000000000000000000000000000000000000000000000000000
+      0000000000000000000000000000000000000000000000000000000000000000
+      0000000000000000000000000000000000000000000000000000000000000000
+      0000000000000000000000000000000000000000000000000000000000000000
+      0000000000000000000000000000000000000000000000000000000000000000
+      0000000000000000000000000000000000000000000000000000000000000000
+      0000000000000000000000000000000000000000000000000000000000000000
+      0000000000000000000000000000000000000000000000000000000000000000
+      0000000000000000000000000000000000000000000000000000000000000000
+      0000000000000000000000000000000000000000000000000000000000000000
+      0000000000000000000000000000000000000000000000000000000000000000
+      0000000000000000000000000000000000000000000000000000000000000000
+      0000000000000000000000000000000000000000000000000000000000000000
+      0000000000000000000000000000000000000000000000000000000000000000
+      0000000000000000000000000000000000000000000000000000000000000000
+      0000000000000000000000000000000000000000000000000000000000000000
+      0000000000000000000000000000000000000000000000000000000000000000
+      0000000000000000000000000000000000000000000000000000000000000000
+      0000000000000000000080000000800000008000000080000000800000008000
+      0000800000008000000080000000000000000000000000000000000000000000
+      0000000000000000000080000000800000008000000080000000800000008000
+      0000800000008000000080000000000000000000000000000000FFFFFF000000
       00000000000000000000000000000000000000000000FFFFFF00000000000000
       000000000000FFFFFF0000000000000000000000000000000000000000000000
       0000000000000000000000000000000000000000000000000000000000000000
       0000000000000000000000000000000000000000000000000000000000000000
-      0000000000000000000000000000000000000000000000000000000000000000
-      0000000000000000000000000000000000000000000000000000000000000000
-      0000000000000000000000000000000000000000000000000000000000000000
-      0000000000000000000000000000000000000000000000000000FFFFFF000000
+      0000000000000000000080000000F8F2F000F8F2F000F8F2F000F8F2F000F8F2
+      F000F8F2F000F8F2F00080000000000000000000000000000000000000000000
+      0000000000000000000080000000F8F2F000F8F2F000F8F2F000F8F2F000F8F2
+      F000F8F2F000F8F2F00080000000000000000000000000000000FFFFFF000000
       00000000000000000000000000000000000000000000FFFFFF00000000000000
       000000000000FFFFFF0000000000000000000000000000000000000000000000
       0000000000000000000000000000000000000000000000000000000000000000
       0000000000000000000000000000000000000000000000000000000000000000
-      0000000000000000000000000000000000000000000000000000000000000000
-      0000000000000000000000000000000000000000000000000000000000000000
-      0000000000000000000000000000000000000000000000000000000000000000
-      0000000000000000000000000000000000000000000000000000FFFFFF000000
+      0000000000000000000080000000F8F2F0000000000000000000000000000000
+      000000000000F8F2F00080000000000000000000000000000000000000000000
+      0000000000000000000080000000F8F2F0000000000000000000000000000000
+      000000000000F8F2F00080000000000000000000000000000000FFFFFF000000
       0000000000000000000000000000000000000000000000000000FFFFFF000000
       0000FFFFFF000000000000000000000000000000000000000000000000000000
       0000000000000000000040606000000000004060600000000000000000000000
       0000000000000000000000000000000000000000000000000000000000000000
-      0000000000000000000000000000000000000000000000000000000000000000
-      0000000000000000000000000000000000000000000000000000000000000000
-      0000000000000000000000000000000000000000000000000000000000000000
-      0000000000000000000000000000000000000000000000000000FFFFFF00FFFF
+      0000000000000000000080000000F8F2F00000000000F8F2F000F8F2F0000000
+      0000F8F2F000F8F2F00080000000000000000000000020404000204040002040
+      4000204040002040400080000000F8F2F00000000000F8F2F000F8F2F0000000
+      0000F8F2F000F8F2F00080000000000000000000000000000000FFFFFF00FFFF
       FF00FFFFFF00000000000000000000000000000000000000000000000000FFFF
       FF00000000000000000000000000000000000000000000000000000000000000
       0000000000000000000000000000000000000000000000000000000000000000
       0000000000000000000000000000000000000000000000000000000000000000
-      0000000000000000000000000000000000000000000000000000000000000000
-      0000000000000000000000000000000000000000000000000000000000000000
-      0000000000000000000000000000000000000000000000000000000000000000
-      0000000000000000000000000000000000000000000000000000FFFFFF000000
+      0000000000000000000080000000F8F2F00000000000F8F2F00000000000F8F2
+      F000F8F2F000F8F2F00080000000000000000000000020404000204040002040
+      4000204040002040400080000000F8F2F00000000000F8F2F00000000000F8F2
+      F000F8F2F000F8F2F00080000000000000000000000000000000FFFFFF000000
       0000000000000000000000000000000000000000000000000000FFFFFF000000
       0000FFFFFF000000000000000000000000000000000000000000000000000000
       0000000000000000000000000000000000000000000000000000000000000000
       0000000000000000000000000000000000000000000000000000000000000000
-      0000000000000000000000000000000000000000000000000000000000000000
-      0000000000000000000000000000000000000000000000000000000000000000
-      0000000000000000000000000000000000000000000000000000000000000000
-      0000000000000000000000000000000000000000000000000000FFFFFF000000
+      0000000000000000000080000000F8F2F0000000000000000000F8F2F000F8F2
+      F000F8F2F000F8F2F00080000000000000000000000020404000204040002040
+      4000204040002040400080000000F8F2F0000000000000000000F8F2F000F8F2
+      F000F8F2F000F8F2F00080000000000000000000000000000000FFFFFF000000
       00000000000000000000000000000000000000000000FFFFFF00000000000000
       000000000000FFFFFF0000000000000000000000000000000000000000000000
       0000000000000000000000000000000000000000000000000000000000000000
-      0000000000000000000000000000000000000000000000000000000000000000
-      0000000000000000000000000000000000000000000000000000000000000000
-      0000000000000000000000000000000000000000000000000000000000000000
-      0000000000000000000000000000000000000000000000000000000000000000
-      0000000000000000000000000000000000000000000000000000FFFFFF00FFFF
+      00000000000000000000000000000000000000000000F8F2F000F8F2F000F8F2
+      F000F8F2F000F8F2F00080000000F8F2F00000000000F8F2F000F8F2F0008000
+      0000800000008000000080000000000000000000000020404000204040002040
+      4000204040002040400080000000F8F2F00000000000F8F2F000F8F2F0008000
+      0000800000008000000080000000000000000000000000000000FFFFFF00FFFF
       FF00FFFFFF00FFFFFF00000000000000000000000000FFFFFF00000000000000
       000000000000FFFFFF0000000000000000000000000000000000406060000000
       0000000000000000000000000000000000000000000000000000000000000000
-      0000406060000000000000000000000000000000000000000000000000000000
+      00004060600000000000000000000000000000000000F8F2F000404040004040
+      4000404040004040400080000000F8F2F000F8F2F000F8F2F000F8F2F0008000
+      0000F8F2F0008000000000000000000000000000000020404000204040002040
+      4000204040002040400080000000F8F2F000F8F2F000F8F2F000F8F2F0008000
+      0000F8F2F0008000000000000000000000000000000000000000000000000000
       0000000000000000000000000000000000000000000000000000000000000000
       0000000000000000000000000000000000000000000000000000000000000000
       0000000000000000000000000000000000000000000000000000000000000000
-      0000000000000000000000000000000000000000000000000000000000000000
-      0000000000000000000000000000000000000000000000000000000000000000
-      0000000000000000000000000000000000000000000000000000000000000000
-      0000000000000000000000000000000000000000000000000000000000000000
-      0000000000000000000000000000000000000000000000000000000000000000
-      0000000000000000000000000000000000000000000000000000000000000000
-      0000000000000000000000000000000000000000000000000000000000000000
-      0000000000000000000000000000000000000000000000000000000000000000
-      0000000000000000000000000000000000000000000000000000000000000000
+      00000000000000000000000000000000000000000000F8F2F00040404000F8F2
+      F000F8F2F0004040400080000000F8F2F000F8F2F000F8F2F000F8F2F0008000
+      0000800000000000000000000000000000000000000020404000204040002040
+      4000204040002040400080000000F8F2F000F8F2F000F8F2F000F8F2F0008000
+      0000800000000000000000000000000000000000000000000000000000000000
       0000000000000000000000000000000000000000000000000000000000000000
       0000000000000000000000000000000000000000000000000000406060000000
       0000000000000000000000000000000000000000000000000000000000000000
-      0000406060000000000000000000000000000000000000000000000000000000
-      0000000000000000000000000000000000000000000000000000000000000000
-      0000000000000000000000000000000000000000000000000000000000000000
-      0000000000000000000000000000000000000000000000000000000000000000
-      0000000000000000000000000000000000000000000000000000000000000000
+      00004060600000000000000000000000000000000000F8F2F00040404000F8F2
+      F00040404000F8F2F00080000000800000008000000080000000800000008000
+      0000000000000000000000000000000000000000000020404000204040002040
+      4000204040002040400080000000800000008000000080000000800000008000
+      0000204040000000000000000000000000000000000000000000000000000000
       0000000000000000000000000000008000000080000000000000000000000000
       0000000000000000000000000000000000000000000000000000000000000000
       0000000000000000000000000000000000000000000000000000000000000000
-      0000000000000000000000000000000000000000000000000000000000000000
-      0000000000000000000000000000000000000000000000000000000000000000
-      0000000000000000000000000000000000000000000000000000000000000000
-      0000000000000000000000000000000000000000000000000000000000000000
-      0000000000000000000000000000000000000000000000000000000000000000
+      00000000000000000000000000000000000000000000F8F2F000404040004040
+      4000F8F2F000F8F2F000F8F2F000000000000000000000000000000000000000
+      0000000000000000000000000000000000000000000020404000204040002040
+      4000204040002040400020404000204040002040400020404000204040002040
+      4000204040000000000000000000000000000000000000000000000000000000
       0000000000000000000000000000008000000080000000000000000000000000
       0000000000000000000000000000000000000000000000000000000000000000
       0000000000000000000000000000000000000000000000000000000000000000
-      0000000000000000000000000000000000000000000000000000000000000000
-      0000000000000000000000000000000000000000000000000000000000000000
-      0000000000000000000000000000000000000000000000000000000000000000
-      0000000000000000000000000000000000000000000000000000000000000000
-      0000000000000000000000000000000000000000000000000000000000000000
+      00000000000000000000000000000000000000000000F8F2F00040404000F8F2
+      F000F8F2F0000000000000000000000000000000000000000000000000000000
+      0000000000000000000000000000000000000000000020404000204040000000
+      0000000000000000000000000000000000000000000000000000000000002040
+      4000204040000000000000000000000000000000000000000000000000000000
       0000000000000080000000800000008000000080000000800000008000000000
       0000000000000000000000000000000000000000000000000000000000000000
       0000000000000000000000000000000000000000000000000000000000000000
-      0000000000000000000000000000000000000000000000000000000000000000
-      0000000000000000000000000000000000000000000000000000000000000000
-      0000000000000000000000000000000000000000000000000000000000000000
-      0000000000000000000000000000000000000000000000000000000000000000
-      0000000000000000000000000000000000000000000000000000000000000000
+      00000000000000000000000000000000000000000000F8F2F000F8F2F000F8F2
+      F000F8F2F00000000000F8F2F000000000000000000000000000000000000000
+      0000000000000000000000000000000000000000000020404000204040000000
+      0000000000000000000000000000000000000000000000000000000000002040
+      4000204040000000000000000000000000000000000000000000000000000000
       0000000000000080000000800000008000000080000000800000008000000000
       0000000000000000000000000000000000000000000000000000000000000000
       0000000000000000000040606000000000004060600000000000000000000000
-      0000000000000000000000000000000000000000000000000000000000000000
-      0000000000000000000000000000000000000000000000000000000000000000
-      0000000000000000000000000000000000000000000000000000000000000000
-      0000000000000000000000000000000000000000000000000000000000000000
-      0000000000000000000000000000000000000000000000000000000000000000
+      00000000000000000000000000000000000000000000F8F2F000F8F2F000F8F2
+      F000F8F2F0000000000000000000000000000000000000000000000000000000
+      0000000000000000000000000000000000000000000020404000204040002040
+      40000000000000FFFF00000000000000000000FFFF0000000000204040002040
+      4000204040000000000000000000000000000000000000000000000000000000
       0000000000000000000000000000008000000080000000000000000000000000
       0000000000000000000000000000000000000000000000000000000000000000
       0000000000000000000000000000000000000000000000000000000000000000
       0000000000000000000000000000000000000000000000000000000000000000
       0000000000000000000000000000000000000000000000000000000000000000
       0000000000000000000000000000000000000000000000000000000000000000
-      0000000000000000000000000000000000000000000000000000000000000000
+      0000000000000000000000FFFF0000FFFF000000000000000000000000000000
       0000000000000000000000000000000000000000000000000000000000000000
       0000000000000000000000000000008000000080000000000000000000000000
       0000000000000000000000000000000000000000000000000000000000000000
@@ -2753,16 +2881,20 @@ object EditForm: TEditForm
       0000000000000000000000000000000000000000000000000000000000000000
       0000000000000000000000000000000000000000000000000000000000000000
       000000000000000000000000000000000000424D3E000000000000003E000000
-      2800000040000000800000000100010000000000000400000000000000000000
+      2800000040000000900000000100010000000000800400000000000000000000
       000000000000000000000000FFFFFF0000000000000000000000000000000000
       0000000000000000000000000000000000000000000000000000000000000000
       0000000000000000000000000000000000000000000000000000000000000000
       0000000000000000000000000000000000000000000000000000000000000000
-      000000000000000000000000000000008F11FFFF000000008F110EE100000000
-      8F117C7D000000008383783D0000000083C77EFD000000008383FEFF00000000
-      8111DEF70000000081119EF3000000008111000100000000FFFF9EF300000000
-      FE7FDEF700000000FE7FFEFF00000000F81F7EFD00000000F81F783D00000000
-      FE7F7C7D00000000FE7F0EE100000000FFFFFEFFFFF7FFFFFEFFFEFFFEF7FEFF
+      00000000000000000000000000000000FFFFFFFF00000000FFFF2AA900000000
+      F01F7EFD00000000F83FFEFF00000000FEFF7EFD000000008EE3FEFF00000000
+      06C17EFD00000000FEFFFEFF0000000076DD000100000000FEFFFEF300000000
+      AEEB7EE500000000FEFFFECF00000000DEF77E9D00000000E00FFE3F00000000
+      FEFF7E7D00000000FFFF2AA9000000008F11FFFFFC01FC018F110EE1FC01FC01
+      8F117C7DFC0180018383783DFC01000183C77EFDFC0100018383FEFF00010001
+      8111DEF70001000181119EF3000300038111000100070003FFFF9EF3000F0003
+      FE7FDEF700FF0003FE7FFEFF00FF0003F81F7EFD00FF0FC3F81F783D01FF0003
+      FE7F7C7D03FF8007FE7F0EE1FFFFF87FFFFFFEFFFFF7FFFFFEFFFEFFFEF7FEFF
       FFFFFEFFFFF7FFFFFEFFFABFFEF7FEFFFFFFFC7FFFD5FFFFFEFFEEFFFEE3FEFB
       FFFFF47FFFF7FFFDAA020002AA02AA00FEE7F467FEE7FEE5FECFEECFFECFFECB
       FE9FFE9FF69FFE9FFE3FFE3FFA3FFE3FFE7FFE7F007FFE7FFEFFFEFFFAFFFABF
@@ -2820,6 +2952,19 @@ object EditForm: TEditForm
       Hint = 'Add new triangle'
       ImageIndex = 1
       OnClick = mnuAddClick
+    end
+    object N21: TMenuItem
+      Caption = '-'
+    end
+    object mnuCopyTriangle: TMenuItem
+      Caption = 'Copy triangle coordinates'
+      ImageIndex = 26
+      OnClick = btnCopyTriangleClick
+    end
+    object mnuPasteTriangle: TMenuItem
+      Caption = 'Paste triangle coordinates'
+      ImageIndex = 27
+      OnClick = btnPasteTriangleClick
     end
     object N2: TMenuItem
       Caption = '-'

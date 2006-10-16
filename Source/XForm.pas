@@ -36,7 +36,7 @@ type
     symmetry: double;
     c00, c01, c10, c11, c20, c21: double;// unnecessary duplicated variables
     p00, p01, p10, p11, p20, p21: double;// :-)
-
+    postXswap: boolean;
 //    nx,ny,x,y: double;
 //    script: TatPascalScripter;
 
@@ -132,6 +132,9 @@ type
     procedure SetVariable(const name: string; var Value: double);
     procedure ResetVariable(const name: string);
 
+    function GetVariableStr(const name: string): string;
+    procedure SetVariableStr(const name: string; var Value: string);
+
     function ToXMLString: string;
     function FinalToXMLString(IsEnabled: boolean): string;
   end;
@@ -172,6 +175,7 @@ begin
   density := 0;
   color := 0;
   symmetry := 0;
+  postXswap := false;
 
   c[0, 0] := 1;
   c[0, 1] := 0;
@@ -1998,6 +2002,8 @@ begin
   symmetry := XForm.symmetry;
   Orientationtype := XForm.Orientationtype;
 
+  postXswap := Xform.postXswap;
+
   for i := 0 to High(FRegVariations)  do begin
     for j:= 0 to FRegVariations[i].GetNrVariables -1 do begin
       Name := FRegVariations[i].GetVariableNameAt(j);
@@ -2029,8 +2035,9 @@ begin
     if vars[i+NRLOCVAR] <> 0 then
       for j:= 0 to FRegVariations[i].GetNrVariables -1 do begin
         Name := FRegVariations[i].GetVariableNameAt(j);
-        FRegVariations[i].GetVariable(Name,Value);
-        Result := Result + Format('%s="%g" ', [name, value]);
+//        FRegVariations[i].GetVariable(Name,Value);
+//        Result := Result + Format('%s="%g" ', [name, value]);
+        Result := Result + Format('%s="%s" ', [name, FRegVariations[i].GetVariableStr(Name)]);
       end;
   end;
 
@@ -2059,8 +2066,9 @@ begin
     if vars[i+NRLOCVAR] <> 0 then
       for j:= 0 to FRegVariations[i].GetNrVariables -1 do begin
         Name := FRegVariations[i].GetVariableNameAt(j);
-        FRegVariations[i].GetVariable(Name,Value);
-        Result := Result + Format('%s="%g" ', [name, value]);
+//        FRegVariations[i].GetVariable(Name,Value);
+//        Result := Result + Format('%s="%g" ', [name, value]);
+        Result := Result + Format('%s="%s" ', [name, FRegVariations[i].GetVariableStr(Name)]);
       end;
   end;
 
@@ -2096,5 +2104,23 @@ begin
 end;
 
 ///////////////////////////////////////////////////////////////////////////////
+function TXForm.GetVariableStr(const name: string): string;
+var
+  i: integer;
+begin
+  for i := 0 to High(FRegVariations) do begin
+    Result := FRegVariations[i].GetVariableStr(name);
+    if Result <> '' then break;
+  end;
+end;
+
+procedure TXForm.SetVariableStr(const name: string; var Value: string);
+var
+  i: integer;
+begin
+  for i := 0 to High(FRegVariations) do begin
+    if FRegVariations[i].SetVariableStr(name, value) then break;
+  end;
+end;
 
 end.

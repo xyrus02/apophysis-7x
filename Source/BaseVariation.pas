@@ -12,7 +12,7 @@ type
     procedure CalcFunction; virtual; abstract;
 
   public
-    vvar:  double; // normalized interp coefs between variations
+    vvar:  double;
     FTx, FTy: ^double;
     FPx, FPy: ^double;
 
@@ -25,6 +25,9 @@ type
     function GetVariable(const Name: string; var Value: double): boolean; virtual;
     function SetVariable(const Name: string; var Value: double): boolean; virtual;
     function ResetVariable(const Name: string): boolean; virtual;
+
+    function GetVariableStr(const Name: string): string; virtual;
+    function SetVariableStr(const Name: string; var strValue: string): boolean; virtual;
 
     procedure Prepare; virtual;
 
@@ -63,6 +66,34 @@ var
 begin
   zero := 0;
   Result := SetVariable(Name, zero);
+end;
+
+///////////////////////////////////////////////////////////////////////////////
+function TBaseVariation.GetVariableStr(const Name: string): string;
+var
+  value: double;
+begin
+  if GetVariable(Name, value) then
+    Result := Format('%.6g', [value])
+  else
+    Result := '';
+end;
+
+function TBaseVariation.SetVariableStr(const Name: string; var strValue: string): boolean;
+var
+  v, oldv: double;
+begin
+  if GetVariable(Name, oldv) then begin
+    try
+      v := StrToFloat(strValue);
+      SetVariable(Name, v);
+    except
+      v := oldv;
+    end;
+    strValue := Format('%.6g', [v]);
+    Result := true;
+  end
+  else Result := false;
 end;
 
 ///////////////////////////////////////////////////////////////////////////////
