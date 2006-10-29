@@ -95,21 +95,21 @@ var
 begin
   n := Trunc(t);
   Result := '';
-  if n>0 then begin
+  if n > 0 then begin
     Result := Result + Format(' %d day', [n]);
-    if (n mod 10) <> 1 then Result := Result + 's';
+    if n <> 1 then Result := Result + 's';
   end;
   t := t * 24;
   n := Trunc(t) mod 24;
-  if n>0 then begin
+  if n > 0 then begin
     Result := Result + Format(' %d hour', [n]);
-    if (n mod 10) <> 1 then Result := Result + 's';
+    if n <> 1 then Result := Result + 's';
   end;
   t := t * 60;
   n := Trunc(t) mod 60;
-  if n>0 then begin
+  if n > 0 then begin
     Result := Result + Format(' %d minute', [n]);
-    if (n mod 10) <> 1 then Result := Result + 's';
+    if n <> 1 then Result := Result + 's';
   end;
   t := t * 60;
   t := t - (Trunc(t) div 60) * 60;

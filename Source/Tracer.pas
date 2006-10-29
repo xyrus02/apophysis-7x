@@ -70,7 +70,7 @@ procedure TTraceForm.FormCreate(Sender: TObject);
 var
   Registry: TRegistry;
 begin
-  //TraceLevel := 0; // Tracer disabled in release version
+  TraceLevel := 0; // Tracer disabled in release version
 
   { Read position from registry }
   Registry := TRegistry.Create;

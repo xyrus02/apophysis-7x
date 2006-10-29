@@ -5,6 +5,8 @@ interface
 uses
   BaseVariation, XFormMan;
 
+{$define _ASM_}
+
 type
   TVariationPDJ = class(TBaseVariation)
   private
@@ -34,9 +36,38 @@ uses
 
 ///////////////////////////////////////////////////////////////////////////////
 procedure TVariationPDJ.CalcFunction;
+{$ifndef _ASM_}
 begin
   FPx^ := FPx^ + vvar * (sin(FA * FTy^) - cos(FB * FTx^));
   FPy^ := FPy^ + vvar * (sin(FC * FTx^) - cos(FD * FTy^));
+{$else}
+asm
+    fld     qword ptr [eax + vvar]
+    mov     edx, [eax + FTx]
+    fld     qword ptr [edx + 8] // FTy
+    fld     qword ptr [edx]     // FTx
+
+    fld     st(1)
+    fmul    qword ptr [eax + Fa]
+    fsin
+    fld     st(1)
+    fmul    qword ptr [eax + Fb]
+    fcos
+    fsubp   st(1), st
+    fmul    st, st(3)
+    fadd    qword ptr [edx + 16] // FPx
+    fstp    qword ptr [edx + 16]
+
+    fmul    qword ptr [eax + Fc]
+    fsin
+    fxch    st(1)
+    fmul    qword ptr [eax + Fd]
+    fcos
+    fsubp   st(1), st
+    fmulp
+    fadd    qword ptr [edx + 24] // FPy
+    fstp    qword ptr [edx + 24]
+{$endif}
 end;
 
 ///////////////////////////////////////////////////////////////////////////////
