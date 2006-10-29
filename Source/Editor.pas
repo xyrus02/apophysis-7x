@@ -640,7 +640,7 @@ begin
   // just in case:
   SetCaptureControl(nil);
   HasChanged := false;
-  viewDragMode := false;
+//  viewDragMode := false;
   varDragMode := false;
   pnlDragMode := false;
   CornerCaught := false;
@@ -3594,7 +3594,7 @@ begin
 
   EditForm.StatusBar.Panels[2].Text := Format('Zoom: %f', [GraphZoom]);
 
-  if viewDragMode then begin 
+  if viewDragMode then begin
     sc := GraphZoom * 50;
     gCenterX := fx - (p.X - TriangleView.Width/2) / sc;
     gCenterY := fy + (p.Y - TriangleView.Height/2) / sc;
