@@ -375,6 +375,8 @@ type
     procedure SaveGradientProc(AMachine: TatVirtualMachine);
     procedure GetVariation(AMachine: TatVirtualMachine);
     procedure SetVariation(AMachine: TatVirtualMachine);
+    procedure GetVariable(AMachine: TatVirtualMachine);
+    procedure SetVariable(AMachine: TatVirtualMachine);
     procedure CalculateScale(AMachine: TatVirtualMachine);
     procedure NormalizeVars(AMachine: TatVirtualMachine);
     procedure CalculateBounds(AMachine: TatVirtualMachine);
@@ -1165,6 +1167,8 @@ begin
   Scripter.DefineMethod('SaveGradient', 2, tkNone, nil, SaveGradientProc);
   Scripter.DefineMethod('Variation', 0, tkInteger, nil, GetVariation);
   Scripter.DefineMethod('SetVariation', 1, tkInteger, nil, SetVariation);
+  Scripter.DefineMethod('GetVariable', 2, tkFloat, nil, GetVariable);
+  Scripter.DefineMethod('SetVariable', 2, tkNone, nil, SetVariable);
   Scripter.DefineMethod('CalculateScale', 0, tkNone, nil, CalculateScale);
   Scripter.DefineMethod('CalculateBounds', 0, tkNone, nil, CalculateBounds);
   Scripter.DefineMethod('NormalizeVars', 0, tkNone, nil, NormalizeVars);
@@ -1714,6 +1718,32 @@ begin
       MainForm.mnuVRandom.checked := True
     else
       MainForm.VarMenus[i].Checked := True;
+  end
+end;
+
+procedure TOperationLibrary.SetVariable(AMachine: TatVirtualMachine);
+var
+  i: integer;
+  vb: double;
+begin
+  with AMachine do
+  begin
+    i := GetInputArgAsInteger(0);
+    vb := GetInputArgAsFloat(1);
+    ScriptEditor.cp.xform[ActiveTransform].SetVariable(GetVariableNameAt(i), vb);
+  end
+end;
+
+procedure TOperationLibrary.GetVariable(AMachine: TatVirtualMachine);
+var
+  i: integer;
+  vb: double;
+begin
+  with AMachine do
+  begin
+    i := GetInputArgAsInteger(0);
+    ScriptEditor.cp.xform[ActiveTransform].GetVariable(GetVariableNameAt(i), vb);
+    ReturnOutputArg(vb);
   end
 end;
 
@@ -2495,7 +2525,7 @@ begin
   with AMachine do
   begin
     v := GetInputArgAsFloat(0);
-    if (v > 0) and (v < 1) then
+    if (v > 0) and (v < 256) then
       cp.xform[ActiveTransform].density := v;
   end;
 end;
@@ -2513,7 +2543,7 @@ begin
   with AMachine do
   begin
     v := GetInputArgAsFloat(0);
-    if (v >= 0) and (v <= 1) then
+    if (v >= -1) and (v <= 1) then
       cp.xform[ActiveTransform].symmetry := v;
   end;
 end;
@@ -2737,7 +2767,35 @@ begin
   Scripter.AddConstant('V_EYEFISH', 23);
   Scripter.AddConstant('V_BUBBLE', 24);
   Scripter.AddConstant('V_CYLINDER', 25);
+  Scripter.AddConstant('V_NOISE', 26);
+  Scripter.AddConstant('V_BLUR', 27);
+  Scripter.AddConstant('V_GAUSSIANBLUR', 28);
+  Scripter.AddConstant('V_RINGS2', 29);
+  Scripter.AddConstant('V_FAN2', 30);
+  Scripter.AddConstant('V_BLOB', 31);
+  Scripter.AddConstant('V_PDJ', 32);
+  Scripter.AddConstant('V_PERSPECTIVE', 33);
+  Scripter.AddConstant('V_JULIAN', 34);
+  Scripter.AddConstant('V_JULIASCOPE', 35);
+  Scripter.AddConstant('V_RADIALBLUR', 36);
   Scripter.AddConstant('V_RANDOM', -1);
+  Scripter.AddConstant('RINGS2_VAL', 0);
+  Scripter.AddConstant('FAN2_X', 1);
+  Scripter.AddConstant('FAN2_Y', 2);
+  Scripter.AddConstant('BLOB_LOW', 3);
+  Scripter.AddConstant('BLOB_HI', 4);
+  Scripter.AddConstant('BLOB_WAWES', 5);
+  Scripter.AddConstant('PDJ_A', 6);
+  Scripter.AddConstant('PDJ_B', 7);
+  Scripter.AddConstant('PDJ_C', 8);
+  Scripter.AddConstant('PDJ_D', 9);
+  Scripter.AddConstant('PERSPECTIVE_ANGLE', 10);
+  Scripter.AddConstant('PERSPECTIVE_DIST', 11);
+  Scripter.AddConstant('JULIAN_POWER', 12);
+  Scripter.AddConstant('JULIAN_DIST', 13);
+  Scripter.AddConstant('JULIASCOPE_POWER', 14);
+  Scripter.AddConstant('JULIASCOPE_DIST', 15);
+  Scripter.AddConstant('RADIAL_BLUR_ANGLE', 16);
   { Variables }
   Scripter.AddVariable('SelectedTransform', EditForm.SelectedTriangle);
   Scripter.AddVariable('Compatibility', Compatibility);
