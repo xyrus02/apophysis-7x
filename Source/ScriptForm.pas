@@ -2741,6 +2741,7 @@ begin
   Scripter.AddConstant('SYM_NONE', 0);
   Scripter.AddConstant('SYM_BILATERAL', 1);
   Scripter.AddConstant('SYM_ROTATIONAL', 2);
+  { Variations }
   Scripter.AddConstant('V_LINEAR', 0);
   Scripter.AddConstant('V_SINUSOIDAL', 1);
   Scripter.AddConstant('V_SPHERICAL', 2);
@@ -2770,21 +2771,23 @@ begin
   Scripter.AddConstant('V_NOISE', 26);
   Scripter.AddConstant('V_BLUR', 27);
   Scripter.AddConstant('V_GAUSSIANBLUR', 28);
-  Scripter.AddConstant('V_RINGS2', 29);
-  Scripter.AddConstant('V_FAN2', 30);
-  Scripter.AddConstant('V_BLOB', 31);
-  Scripter.AddConstant('V_PDJ', 32);
-  Scripter.AddConstant('V_PERSPECTIVE', 33);
-  Scripter.AddConstant('V_JULIAN', 34);
-  Scripter.AddConstant('V_JULIASCOPE', 35);
-  Scripter.AddConstant('V_RADIALBLUR', 36);
+  Scripter.AddConstant('V_RADIALBLUR', 29);
+  Scripter.AddConstant('V_RINGS2', 30);
+  Scripter.AddConstant('V_FAN2', 31);
+  Scripter.AddConstant('V_BLOB', 32);
+  Scripter.AddConstant('V_PDJ', 33);
+  Scripter.AddConstant('V_PERSPECTIVE', 34);
+  Scripter.AddConstant('V_JULIAN', 35);
+  Scripter.AddConstant('V_JULIASCOPE', 36);
+  Scripter.AddConstant('V_CURL', 37);
   Scripter.AddConstant('V_RANDOM', -1);
+  { Variation parameters }
   Scripter.AddConstant('RINGS2_VAL', 0);
   Scripter.AddConstant('FAN2_X', 1);
   Scripter.AddConstant('FAN2_Y', 2);
   Scripter.AddConstant('BLOB_LOW', 3);
   Scripter.AddConstant('BLOB_HI', 4);
-  Scripter.AddConstant('BLOB_WAWES', 5);
+  Scripter.AddConstant('BLOB_WAVES', 5);
   Scripter.AddConstant('PDJ_A', 6);
   Scripter.AddConstant('PDJ_B', 7);
   Scripter.AddConstant('PDJ_C', 8);
@@ -2795,7 +2798,9 @@ begin
   Scripter.AddConstant('JULIAN_DIST', 13);
   Scripter.AddConstant('JULIASCOPE_POWER', 14);
   Scripter.AddConstant('JULIASCOPE_DIST', 15);
-  Scripter.AddConstant('RADIAL_BLUR_ANGLE', 16);
+  Scripter.AddConstant('RADIALBLUR_ANGLE', 16);
+  Scripter.AddConstant('CURL_C0', 17);
+  Scripter.AddConstant('CURL_C1', 18);
   { Variables }
   Scripter.AddVariable('SelectedTransform', EditForm.SelectedTriangle);
   Scripter.AddVariable('Compatibility', Compatibility);
