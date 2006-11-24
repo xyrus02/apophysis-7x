@@ -18,8 +18,9 @@
 }
 program Apophysis205;
 
-{%ToDo 'Apophysis204.todo'}
-{%ToDo 'Apophysis204.todo'}
+{$SetPEFlags $20} // set LARGE_ADDRESS_AWARE flag!
+
+{%ToDo 'Apophysis205.todo'}
 
 uses
   FastMM4 in '..\..\Source\FastMM4.pas',
@@ -41,6 +42,7 @@ uses
   Cmap in '..\..\Source\cmap.pas',
   SavePreset in '..\..\Source\SavePreset.pas' {SavePresetForm},
   ControlPoint in '..\..\Source\ControlPoint.pas',
+  Tracer in '..\..\Source\Tracer.pas',
   HtmlHlp in '..\..\Source\HtmlHlp.pas',
   Preview in '..\..\Source\Preview.pas' {PreviewForm},
   ScriptForm in '..\..\Source\ScriptForm.pas' {ScriptEditor},
@@ -58,36 +60,36 @@ uses
   ImageColoring in '..\..\Source\ImageColoring.pas' {frmImageColoring},
   BaseVariation in '..\..\Source\BaseVariation.pas',
   ImageMaker in '..\..\Source\ImageMaker.pas',
-  RenderThread in '..\..\Source\RenderThread.pas',
+  CustomDrawControl in '..\..\Source\CustomDrawControl.pas',
   Render in '..\..\Source\Render.pas',
+  RenderTypes in '..\..\Source\RenderTypes.pas',
+  RenderST in '..\..\Source\RenderST.pas',
+  RenderMT in '..\..\Source\RenderMT.pas',
+  RenderThread in '..\..\Source\RenderThread.pas',
+  BucketFillerThread in '..\..\Source\BucketFillerThread.pas',
   Render64 in '..\..\Source\Render64.pas',
   Render64MT in '..\..\Source\Render64MT.pas',
-  BucketFillerThread in '..\..\Source\BucketFillerThread.pas',
-  CustomDrawControl in '..\..\Source\CustomDrawControl.pas',
+  Render48 in '..\..\Source\Render48.pas',
+  Render48MT in '..\..\Source\Render48MT.pas',
+  Render32f in '..\..\Source\Render32f.pas',
+  Render32fMT in '..\..\Source\Render32fMT.pas',
+  Render32 in '..\..\Source\Render32.pas',
+  Render32MT in '..\..\Source\Render32MT.pas',
+  FastMM4Messages in '..\..\Source\FastMM4Messages.pas',
+  varRadialBlur in '..\..\Source\varRadialBlur.pas',
   varRings2 in '..\..\Source\varRings2.pas',
   varFan2 in '..\..\Source\varFan2.pas',
-  varblob in '..\..\Source\varblob.pas',
-  varpdj in '..\..\Source\varpdj.pas',
+  varblob in '..\..\Source\varBlob.pas',
+  varpdj in '..\..\Source\varPDJ.pas',
   varPerspective in '..\..\Source\varPerspective.pas',
   varJuliaN in '..\..\Source\varJuliaN.pas',
   varJuliaScope in '..\..\Source\varJuliaScope.pas',
-  FastMM4Messages in '..\..\Source\FastMM4Messages.pas',
-  exceptform in '..\..\Source\exceptform.pas' {frmException},
-  Render32 in '..\..\Source\Render32.pas',
-  Render32f in '..\..\Source\Render32f.pas',
-  Render32fMT in '..\..\Source\Render32fMT.pas',
-  Render32MT in '..\..\Source\Render32MT.pas',
-  Render48 in '..\..\Source\Render48.pas',
-  Render48MT in '..\..\Source\Render48MT.pas',
-  RenderMT in '..\..\Source\RenderMT.pas',
-  RenderST in '..\..\Source\RenderST.pas',
-  RenderTypes in '..\..\Source\RenderTypes.pas',
-  varRadialBlur in '..\..\Source\varRadialBlur.pas';
+  varCurl in '..\..\Source\varCurl.pas';
 
 {$R *.RES}
 
 begin
-  if now > EncodeDate(2006, 10, 30) then begin
+  if now > EncodeDate(2007, 3, 31) then begin
     ShowMessage('This version has expired. Please go to http://sourceforge.net/project/apophysis and download the latest version.');
     Halt
   end;
@@ -113,7 +115,7 @@ begin
   Application.CreateForm(TExportDialog, ExportDialog);
   Application.CreateForm(TfrmPostProcess, frmPostProcess);
   Application.CreateForm(TfrmImageColoring, frmImageColoring);
-  Application.CreateForm(TfrmException, frmException);
+  Application.CreateForm(TTraceForm, TraceForm);
   Application.UpdateFormatSettings := False;
   DecimalSeparator := '.';
   Application.Run;
