@@ -661,6 +661,10 @@ begin
         HelpersEnabled := Registry.ReadBool('HelpersEnabled')
       else
         HelpersEnabled := true;
+      if Registry.ValueExists('ShowAllXforms') then
+        ShowAllXforms := Registry.ReadBool('ShowAllXforms')
+      else
+        ShowAllXforms := true;
 
       if Registry.ValueExists('BackgroundColor') then
         EditorBkgColor := Registry.ReadInteger('BackgroundColor')
@@ -695,6 +699,7 @@ begin
     else begin
       UseTransformColors := false;
       HelpersEnabled := true;
+      ShowAllXforms := true;
       EditorBkgColor := $000000;
       GridColor1 := $444444;
       GridColor2 := $333333;
@@ -1075,6 +1080,7 @@ begin
     begin
       Registry.WriteBool('UseTransformColors', UseTransformColors);
       Registry.WriteBool('HelpersEnabled', HelpersEnabled);
+      Registry.WriteBool('ShowAllXforms', ShowAllXforms);
       Registry.WriteInteger('BackgroundColor', EditorBkgColor);
       Registry.WriteInteger('GridColor1', GridColor1);
       Registry.WriteInteger('GridColor2', GridColor2);

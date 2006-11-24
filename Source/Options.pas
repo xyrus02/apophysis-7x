@@ -216,6 +216,7 @@ type
     rgDoubleClickVars: TRadioGroup;
     chkOldPaletteFormat: TCheckBox;
     rgZoomingMode: TRadioGroup;
+    chkShowAllXforms: TCheckBox;
     procedure btnCancelClick(Sender: TObject);
     procedure FormShow(Sender: TObject);
     procedure btnOKClick(Sender: TObject);
@@ -326,6 +327,7 @@ begin
   chkAxisLock.Checked := TransformAxisLock;
   if DoubleClickSetVars then rgDoubleClickVars.ItemIndex := 1
   else rgDoubleClickVars.ItemIndex := 0;
+  chkShowAllXforms.Checked := ShowAllXforms;
 
   { Display tab }
   txtSampleDensity.Text := FloatToStr(defSampleDensity);
@@ -454,6 +456,7 @@ begin
   ReferenceMode := rgReferenceMode.ItemIndex;
   UseTransformColors := chkUseXFormColor.checked;
   HelpersEnabled := chkHelpers.Checked;
+  ShowAllXforms := chkShowAllXforms.Checked;
 
   ExtEditEnabled := chkExtendedEdit.Checked;
   TransformAxisLock := chkAxisLock.Checked;

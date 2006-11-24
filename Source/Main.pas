@@ -41,7 +41,7 @@ const
   RS_XO = 2;
   RS_VO = 3;
 
-  AppVersionString = 'Apophysis 2.05 post-release 2';
+  AppVersionString = 'Apophysis 2.05 beta 2 rc3';
 
 type
   TMouseMoveState = (msUsual, msZoomWindow, msZoomOutWindow, msZoomWindowMove,
@@ -1808,7 +1808,7 @@ begin
   if not Assigned(Renderer) then
   begin
     if EditForm.Visible and ((MainCP.Width / MainCP.Height) <> (EditForm.cp.Width / EditForm.cp.Height))
-      then EditForm.UpdateDisplay{(true)}; // preview only?
+      then EditForm.UpdateDisplay(true); // preview only?
     if AdjustForm.Visible then AdjustForm.UpdateDisplay(true); // preview only!
 
     RenderCP := MainCP.Clone;
@@ -1938,6 +1938,7 @@ begin
     on EInOutError do Application.MessageBox('Error creating batch', PChar(APP_NAME), 16);
   end;
   RandFile := AppPath + 'apophysis.rand';
+  MainCp.name := '';
 end;
 
 { ******************************** Menu ************************************ }

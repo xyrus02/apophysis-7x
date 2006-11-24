@@ -282,6 +282,8 @@ procedure TBaseRenderer.ShowBigStats;
 var
   Stats: TBucketStats;
   TotalSamples: int64;
+
+  Rbits, Gbits, Bbits, Abits: double;
 begin
   if not assigned(strOutput) then exit;
 
@@ -299,10 +301,14 @@ begin
   strOutput.Add(Format('  Max possible bits: %2.3f', [8 + log2(TotalSamples)]));
   FImageMaker.GetBucketStats(Stats);
   with Stats do begin
-    strOutput.Add(Format('  Max Red:   %2.3f bits', [log2(MaxR)]));
-    strOutput.Add(Format('  Max Green: %2.3f bits', [log2(MaxG)]));
-    strOutput.Add(Format('  Max Blue:  %2.3f bits', [log2(MaxB)]));
-    strOutput.Add(Format('  Max Count: %2.3f bits', [log2(MaxA)]));
+    if MaxR > 0 then Rbits := log2(MaxR) else Rbits := 0;
+    if MaxG > 0 then Gbits := log2(MaxG) else Gbits := 0;
+    if MaxB > 0 then Bbits := log2(MaxB) else Bbits := 0;
+    if MaxA > 0 then Abits := log2(MaxA) else Abits := 0;
+    strOutput.Add(Format('  Max Red:   %2.3f bits', [Rbits]));
+    strOutput.Add(Format('  Max Green: %2.3f bits', [Gbits]));
+    strOutput.Add(Format('  Max Blue:  %2.3f bits', [Bbits]));
+    strOutput.Add(Format('  Max Count: %2.3f bits', [Abits]));
     strOutput.Add(Format('  Point hit ratio: %2.2f%%', [100.0*(TotalA/TotalSamples)]));
     if RenderTime > 0 then // hmm
       strOutput.Add(Format('  Average speed: %n points per second', [TotalSamples / (RenderTime * 24 * 60 * 60)]));

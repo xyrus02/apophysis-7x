@@ -97,6 +97,7 @@ var
   GridColor1, GridColor2, HelpersColor: integer;
   ExtEditEnabled, TransformAxisLock: boolean;
   DoubleClickSetVars: boolean;
+  ShowAllXforms: boolean;
 
   { Display }
 

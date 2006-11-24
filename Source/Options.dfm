@@ -258,40 +258,40 @@ object OptionsForm: TOptionsForm
         Left = 8
         Top = 4
         Width = 145
-        Height = 138
+        Height = 173
         Caption = 'Editor Graph'
         TabOrder = 0
         object Label40: TLabel
           Left = 8
-          Top = 56
+          Top = 88
           Width = 56
           Height = 13
           Caption = 'Background'
         end
         object Label41: TLabel
           Left = 8
-          Top = 96
+          Top = 128
           Width = 50
           Height = 13
           Caption = 'Reference'
         end
         object Label42: TLabel
           Left = 75
-          Top = 56
+          Top = 88
           Width = 50
           Height = 13
           Caption = 'Grid colors'
         end
         object Label43: TLabel
           Left = 75
-          Top = 96
+          Top = 128
           Width = 36
           Height = 13
           Caption = 'Helpers'
         end
         object pnlBackColor: TPanel
           Left = 8
-          Top = 72
+          Top = 104
           Width = 62
           Height = 17
           Cursor = crHandPoint
@@ -320,7 +320,7 @@ object OptionsForm: TOptionsForm
         end
         object pnlReference: TPanel
           Left = 8
-          Top = 112
+          Top = 144
           Width = 62
           Height = 17
           Cursor = crHandPoint
@@ -331,7 +331,7 @@ object OptionsForm: TOptionsForm
         end
         object pnlGridColor1: TPanel
           Left = 75
-          Top = 72
+          Top = 104
           Width = 29
           Height = 17
           Cursor = crHandPoint
@@ -342,7 +342,7 @@ object OptionsForm: TOptionsForm
         end
         object pnlGridColor2: TPanel
           Left = 108
-          Top = 72
+          Top = 104
           Width = 29
           Height = 17
           Cursor = crHandPoint
@@ -353,7 +353,7 @@ object OptionsForm: TOptionsForm
         end
         object pnlHelpersColor: TPanel
           Left = 75
-          Top = 112
+          Top = 144
           Width = 62
           Height = 17
           Cursor = crHandPoint
@@ -361,6 +361,17 @@ object OptionsForm: TOptionsForm
           Color = clGray
           TabOrder = 5
           OnClick = pnlHelpersColorClick
+        end
+        object chkShowAllXforms: TCheckBox
+          Left = 8
+          Top = 56
+          Width = 129
+          Height = 25
+          Caption = 'Always show both type of transforms'
+          Checked = True
+          State = cbChecked
+          TabOrder = 7
+          WordWrap = True
         end
       end
       object rgReferenceMode: TRadioGroup
@@ -405,9 +416,9 @@ object OptionsForm: TOptionsForm
         end
       end
       object rgDoubleClickVars: TRadioGroup
-        Left = 8
+        Left = 160
         Top = 144
-        Width = 297
+        Width = 273
         Height = 57
         Caption = 'Double-click on variation'
         Items.Strings = (

@@ -285,7 +285,7 @@ type
       Shift: TShiftState);
     procedure txtValidateValue(Sender: TObject);
     procedure txtValKeyPress(Sender: TObject; var Key: Char);
-    procedure mnuResetClick(Sender: TObject);
+    procedure mnuResetTriangleClick(Sender: TObject);
     procedure mnuResetAllClick(Sender: TObject);
     procedure btnXcoefsClick(Sender: TObject);
     procedure btnYcoefsClick(Sender: TObject);
@@ -300,6 +300,7 @@ type
     procedure btnOpostClick(Sender: TObject);
     procedure PostCoefValidate(Sender: TObject);
     procedure PostCoefKeypress(Sender: TObject; var Key: Char);
+    procedure btnResetCoefsClick(Sender: TObject);
     procedure btnResetPostCoefsClick(Sender: TObject);
     procedure btnPivotModeClick(Sender: TObject);
     procedure PivotValidate(Sender: TObject);
@@ -738,6 +739,29 @@ begin
     tb2PostXswap.Down := postXswap;
 
     bvlPostCoefs.Visible := postXswap;
+    bvlCoefs.Visible := not postXswap;
+
+    if postXswap then begin
+      btnXcoefs.Font.Style := [];
+      btnYcoefs.Font.Style := [];
+      btnOcoefs.Font.Style := [];
+      btnXpost.Font.Style := [fsBold];
+      btnYpost.Font.Style := [fsBold];
+      btnOpost.Font.Style := [fsBold];
+      btnResetCoefs.Font.Style := [];
+      btnResetPostCoefs.Font.Style := [fsBold];
+    end
+    else begin
+      btnXcoefs.Font.Style := [fsBold];
+      btnYcoefs.Font.Style := [fsBold];
+      btnOcoefs.Font.Style := [fsBold];
+      btnXpost.Font.Style := [];
+      btnYpost.Font.Style := [];
+      btnOpost.Font.Style := [];
+      btnResetCoefs.Font.Style := [fsBold];
+      btnResetPostCoefs.Font.Style := [];
+    end;
+{
     btnXpost.Enabled := postXswap;
     btnYpost.Enabled := postXswap;
     btnOpost.Enabled := postXswap;
@@ -749,7 +773,6 @@ begin
     txtPost21.Enabled  := postXswap;
     btnResetPostCoefs.Enabled := postXswap;
 
-    bvlCoefs.Visible := not postXswap;
     btnXcoefs.Enabled := not postXswap;
     btnYcoefs.Enabled := not postXswap;
     btnOcoefs.Enabled := not postXswap;
@@ -760,6 +783,7 @@ begin
     txtE.Enabled  := not postXswap;
     txtF.Enabled  := not postXswap;
     btnResetCoefs.Enabled := not postXswap;
+}
 
     if SelectedTriangle < Transforms then
     begin
@@ -1172,9 +1196,10 @@ begin
 
         with cp.xform[i] do // draw post-triangle
         if postXswap or
+         ((ShowAllXforms or (i = SelectedTriangle)) and (
           (p[0,0]<>1) or (p[0,1]<>0) or
           (p[1,0]<>0) or (p[1,1]<>1) or
-          (p[2,0]<>0) or (p[2,1]<>0) then
+          (p[2,0]<>0) or (p[2,1]<>0) )) then
         begin
           Pen.Color := GetTriangleColor(i) shr 1 and $7f7f7f;
           tps := Pen.Style;
@@ -1198,7 +1223,8 @@ begin
           f := ToScreen(tT.x[1] - tyx, tT.y[1] - tyy);
           Polyline([a, b, e, f]);
 
-          if postXswap then begin
+          if postXswap and ((i = SelectedTriangle) or ShowAllXforms) then
+          begin
             Pen.Style := psDot;
             cp.GetTriangle(tT, i);
 
@@ -1228,7 +1254,7 @@ begin
           brush.Color := pen.color shr 1 and $7f7f7f;
           Polyline([c, a]);
           brush.Color := EditorBkgColor;
-        end;
+       end;
 
         Pen.Style := psSolid;
         Ellipse(a.x - 4, a.y - 4, a.x + 4, a.y + 4);
@@ -3806,13 +3832,20 @@ begin
   txtValidateValue(Sender);
 end;
 
-procedure TEditForm.mnuResetClick(Sender: TObject);
+procedure TEditForm.mnuResetTriangleClick(Sender: TObject);
 begin
-{
+  if (MainTriangles[SelectedTriangle].x[0] = MainTriangles[-1].x[0]) and
+     (MainTriangles[SelectedTriangle].x[1] = MainTriangles[-1].x[1]) and
+     (MainTriangles[SelectedTriangle].x[2] = MainTriangles[-1].x[2]) and
+     (MainTriangles[SelectedTriangle].y[0] = MainTriangles[-1].y[0]) and
+     (MainTriangles[SelectedTriangle].y[1] = MainTriangles[-1].y[1]) and
+     (MainTriangles[SelectedTriangle].y[2] = MainTriangles[-1].y[2])
+    then exit;
+
   MainForm.UpdateUndo;
   MainTriangles[SelectedTriangle] := MainTriangles[-1];
   UpdateFlame(True);
-}
+{
  with cp.xform[SelectedTriangle] do
  begin
   if (c[0,0]<>1) or (c[0,1]<>0) or(c[1,0]<>0) or (c[1,1]<>1) or (c[2,0]<>0) or (c[2,1]<>0) then
@@ -3829,6 +3862,7 @@ begin
     UpdateFlame(True);
   end;
  end;
+}
 end;
 
 procedure TEditForm.mnuResetAllClick(Sender: TObject);
@@ -4061,6 +4095,26 @@ begin
 
   ShowSelectedInfo;
   UpdateFlame(true);
+end;
+
+procedure TEditForm.btnResetCoefsClick(Sender: TObject);
+begin
+ with cp.xform[SelectedTriangle] do
+ begin
+  if (c[0,0]<>1) or (c[0,1]<>0) or(c[1,0]<>0) or (c[1,1]<>1) or (c[2,0]<>0) or (c[2,1]<>0) then
+  begin
+    MainForm.UpdateUndo;
+    c[0, 0] := 1;
+    c[0, 1] := 0;
+    c[1, 0] := 0;
+    c[1, 1] := 1;
+    c[2, 0] := 0;
+    c[2, 1] := 0;
+    ShowSelectedInfo;
+    cp.TrianglesFromCP(MainTriangles);
+    UpdateFlame(True);
+  end;
+ end;
 end;
 
 procedure TEditForm.btnResetPostCoefsClick(Sender: TObject);
