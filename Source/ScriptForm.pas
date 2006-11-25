@@ -377,6 +377,8 @@ type
     procedure SetVariation(AMachine: TatVirtualMachine);
     procedure GetVariable(AMachine: TatVirtualMachine);
     procedure SetVariable(AMachine: TatVirtualMachine);
+    procedure GetVariableStr(AMachine: TatVirtualMachine);
+    procedure SetVariableStr(AMachine: TatVirtualMachine);
     procedure CalculateScale(AMachine: TatVirtualMachine);
     procedure NormalizeVars(AMachine: TatVirtualMachine);
     procedure CalculateBounds(AMachine: TatVirtualMachine);
@@ -1169,6 +1171,8 @@ begin
   Scripter.DefineMethod('SetVariation', 1, tkInteger, nil, SetVariation);
   Scripter.DefineMethod('GetVariable', 1, tkFloat, nil, GetVariable);
   Scripter.DefineMethod('SetVariable', 2, tkNone, nil, SetVariable);
+  Scripter.DefineMethod('GetVariableStr', 1, tkFloat, nil, GetVariableStr);
+  Scripter.DefineMethod('SetVariableStr', 2, tkNone, nil, SetVariableStr);
   Scripter.DefineMethod('CalculateScale', 0, tkNone, nil, CalculateScale);
   Scripter.DefineMethod('CalculateBounds', 0, tkNone, nil, CalculateBounds);
   Scripter.DefineMethod('NormalizeVars', 0, tkNone, nil, NormalizeVars);
@@ -1744,6 +1748,32 @@ begin
     i := GetInputArgAsInteger(0);
     ScriptEditor.cp.xform[ActiveTransform].GetVariable(GetVariableNameAt(i), vb);
     ReturnOutputArg(vb);
+  end
+end;
+
+procedure TOperationLibrary.GetVariableStr(AMachine: TatVirtualMachine);
+var
+  variable: string;
+  vb: double;
+begin
+  with AMachine do
+  begin
+    variable := GetInputArgAsString(0);
+    ScriptEditor.cp.xform[ActiveTransform].GetVariable(variable, vb);
+    ReturnOutputArg(vb);
+  end
+end;
+
+procedure TOperationLibrary.SetVariableStr(AMachine: TatVirtualMachine);
+var
+  variable: string;
+  vb: double;
+begin
+  with AMachine do
+  begin
+    variable := GetInputArgAsString(0);
+    vb := GetInputArgAsFloat(1);
+    ScriptEditor.cp.xform[ActiveTransform].SetVariable(variable, vb);
   end
 end;
 
