@@ -89,6 +89,7 @@ begin
   //cp.Height := ScriptEditor.Renderer.Height;
   //cp.pixels_per_unit := PixelsPerUnit;
   cp.AdjustScale(ScriptEditor.Renderer.Width, ScriptEditor.Renderer.Height);
+  cp.Transparency := (PNGTransparency <> 0) and (UpperCase(ExtractFileExt(ScriptEditor.Renderer.FileName)) = '.PNG');
 
   Renderer.OnProgress := OnProgress;
 //  Renderer.Compatibility := Compatibility;
