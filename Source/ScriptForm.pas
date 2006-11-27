@@ -1,6 +1,6 @@
 {
      Apophysis Copyright (C) 2001-2004 Mark Townsend
-     Apophysis Copyright (C) 2005-2006 Ronald Hordijk, Piotr Borys, Peter Sdobnov     
+     Apophysis Copyright (C) 2005-2006 Ronald Hordijk, Piotr Borys, Peter Sdobnov
 
      This program is free software; you can redistribute it and/or modify
      it under the terms of the GNU General Public License as published by
@@ -22,9 +22,9 @@ interface
 
 uses
   Windows, Messages, SysUtils, Classes, Graphics, Controls, Forms, Dialogs,
-  ExtCtrls, StdCtrls, ControlPoint, Buttons, ComCtrls, ToolWin,
-  Menus, atScript, atPascal, AdvMemo, Advmps, XFormMan, XForm, GradientHlpr,
-  cmap;
+  ExtCtrls, StdCtrls, ControlPoint, Buttons, ComCtrls, ToolWin, Menus,
+//  Variants,
+  atScript, atPascal, AdvMemo, Advmps, XFormMan, XForm, GradientHlpr, cmap;
 
 const NCPS = 10;
 type
@@ -176,6 +176,14 @@ type
     procedure SetTransformVarProc(AMachine: TatVirtualMachine);
     procedure GetTransformSymProc(AMachine: TatVirtualMachine);
     procedure SetTransformSymProc(AMachine: TatVirtualMachine);
+    procedure GetTransformVariationProc(AMachine: TatVirtualMachine);
+    procedure SetTransformVariationProc(AMachine: TatVirtualMachine);
+    procedure GetTransformVariableProc(AMachine: TatVirtualMachine);
+    procedure SetTransformVariableProc(AMachine: TatVirtualMachine);
+    procedure GetTransformCoefsProc(AMachine: TatVirtualMachine);
+    procedure SetTransformCoefsProc(AMachine: TatVirtualMachine);
+    procedure GetTransformPostCoefsProc(AMachine: TatVirtualMachine);
+    procedure SetTransformPostCoefsProc(AMachine: TatVirtualMachine);
     { Render interface }
     procedure GetRenderFilenameProc(AMachine: TatVirtualMachine);
     procedure SetRenderFilenameProc(AMachine: TatVirtualMachine);
@@ -375,10 +383,15 @@ type
     procedure SaveGradientProc(AMachine: TatVirtualMachine);
     procedure GetVariation(AMachine: TatVirtualMachine);
     procedure SetVariation(AMachine: TatVirtualMachine);
+{
     procedure GetVariable(AMachine: TatVirtualMachine);
     procedure SetVariable(AMachine: TatVirtualMachine);
     procedure GetVariableStr(AMachine: TatVirtualMachine);
     procedure SetVariableStr(AMachine: TatVirtualMachine);
+}
+    procedure GetProgramVersionProc(AMachine: TatVirtualMachine);
+    procedure VariationSupportedProc(AMachine: TatVirtualMachine);
+
     procedure CalculateScale(AMachine: TatVirtualMachine);
     procedure NormalizeVars(AMachine: TatVirtualMachine);
     procedure CalculateBounds(AMachine: TatVirtualMachine);
@@ -1169,10 +1182,15 @@ begin
   Scripter.DefineMethod('SaveGradient', 2, tkNone, nil, SaveGradientProc);
   Scripter.DefineMethod('Variation', 0, tkInteger, nil, GetVariation);
   Scripter.DefineMethod('SetVariation', 1, tkInteger, nil, SetVariation);
+{
   Scripter.DefineMethod('GetVariable', 1, tkFloat, nil, GetVariable);
   Scripter.DefineMethod('SetVariable', 2, tkNone, nil, SetVariable);
   Scripter.DefineMethod('GetVariableStr', 1, tkFloat, nil, GetVariableStr);
   Scripter.DefineMethod('SetVariableStr', 2, tkNone, nil, SetVariableStr);
+}
+  Scripter.DefineMethod('ProgramVersion', 0, tkString, nil, GetProgramVersionProc);
+  Scripter.DefineMethod('VariationSupported', 1, tkInteger, nil, VariationSupportedProc);
+
   Scripter.DefineMethod('CalculateScale', 0, tkNone, nil, CalculateScale);
   Scripter.DefineMethod('CalculateBounds', 0, tkNone, nil, CalculateBounds);
   Scripter.DefineMethod('NormalizeVars', 0, tkNone, nil, NormalizeVars);
@@ -1725,16 +1743,23 @@ begin
   end
 end;
 
+(*
 procedure TOperationLibrary.SetVariable(AMachine: TatVirtualMachine);
 var
-  i: integer;
   vb: double;
+  v: Variant;
 begin
   with AMachine do
   begin
-    i := GetInputArgAsInteger(0);
+    v := GetInputArg(0);
     vb := GetInputArgAsFloat(1);
-    ScriptEditor.cp.xform[ActiveTransform].SetVariable(GetVariableNameAt(i), vb);
+    if varType(v) and varTypeMask = varByte then begin
+      ScriptEditor.cp.xform[ActiveTransform].SetVariable(GetVariableNameAt(Integer(v)), vb);
+    end
+    else if varType(v) and varTypeMask = varString then begin
+      ScriptEditor.cp.xform[ActiveTransform].SetVariable(String(v), vb);
+    end;
+    // else error...?
   end
 end;
 
@@ -1775,6 +1800,25 @@ begin
     vb := GetInputArgAsFloat(1);
     ScriptEditor.cp.xform[ActiveTransform].SetVariable(variable, vb);
   end
+end;
+*)
+
+procedure TOperationLibrary.GetProgramVersionProc(AMachine: TatVirtualMachine);
+begin
+  AMachine.ReturnOutputArg(AppVersionString);
+end;
+
+procedure TOperationLibrary.VariationSupportedProc(AMachine: TatVirtualMachine);
+var
+  i: integer;
+  str: string;
+begin
+  with AMachine do begin
+    str := GetInputArgAsString(0);
+    i := 0;
+    while (i < NRVAR) and (varnames(i) <> str) do Inc(i);
+    ReturnOutputArg(i < NRVAR);
+  end;
 end;
 
 procedure TOperationLibrary.FileCountProc(AMachine: TatVirtualMachine);
@@ -2598,6 +2642,127 @@ begin
   end;
 end;
 
+// -- vars as props --
+
+procedure TScriptEditor.GetTransformVariationProc(AMachine: TatVirtualMachine);
+var
+  i: integer;
+  v: double;
+begin
+  with AMachine do
+  begin
+    i := 0;
+    while (i < NRVAR) and (varnames(i) <> CurrentPropertyName) do Inc(i);
+//    if (i >= NRVAR) then error
+    ReturnOutPutArg(cp.xform[ActiveTransform].vars[i]);
+  end;
+end;
+
+procedure TScriptEditor.SetTransformVariationProc(AMachine: TatVirtualMachine);
+var
+  i: integer;
+  v: double;
+begin
+  with AMachine do
+  begin
+    i := 0;
+    while (i < NRVAR) and (varnames(i) <> CurrentPropertyName) do Inc(i);
+    if (i < NRVAR) then
+      cp.xform[ActiveTransform].vars[i] := GetInputArgAsFloat(0);
+    //else error
+  end;
+end;
+
+procedure TScriptEditor.GetTransformVariableProc(AMachine: TatVirtualMachine);
+var
+  v: double;
+begin
+  with AMachine do
+  begin
+    cp.xform[ActiveTransform].GetVariable(CurrentPropertyName, v);
+    ReturnOutPutArg(v);
+  end;
+end;
+
+procedure TScriptEditor.SetTransformVariableProc(AMachine: TatVirtualMachine);
+var
+  v: double;
+begin
+  with AMachine do
+  begin
+    v := GetInputArgAsFloat(0);
+    ScriptEditor.cp.xform[ActiveTransform].SetVariable(CurrentPropertyName, v);
+  end
+end;
+
+// -- coefs & post-coefs --
+
+procedure TScriptEditor.GetTransformCoefsProc(AMachine: TatVirtualMachine);
+var
+  v: double;
+  i, j: integer;
+begin
+  with AMachine do begin
+    i := GetArrayIndex(0);
+    j := GetArrayIndex(1);
+    v := cp.xform[ActiveTransform].c[i, j];
+    if (i=0)and(j=0) or (i=1)and(j=1) or (i=2)and(j=0) then
+      ReturnOutPutArg(v)
+    else
+      ReturnOutPutArg(-v);
+  end;
+end;
+
+procedure TScriptEditor.SetTransformCoefsProc(AMachine: TatVirtualMachine);
+var
+  v: double;
+  i, j: integer;
+begin
+  with AMachine do
+  begin
+    v := GetInputArgAsFloat(0);
+    i := GetArrayIndex(0);
+    j := GetArrayIndex(1);
+    if (i=0)and(j=0) or (i=1)and(j=1) or (i=2)and(j=0) then
+      cp.xform[ActiveTransform].c[i, j] := v
+    else if (i=0)and(j=1) or (i=1)and(j=0) or (i=2)and(j=1) then
+      cp.xform[ActiveTransform].c[i, j] := -v;
+  end;
+end;
+
+procedure TScriptEditor.GetTransformPostCoefsProc(AMachine: TatVirtualMachine);
+var
+  v: double;
+  i, j: integer;
+begin
+  with AMachine do begin
+    i := GetArrayIndex(0);
+    j := GetArrayIndex(1);
+    v := cp.xform[ActiveTransform].p[i, j];
+    if (i=0)and(j=0) or (i=1)and(j=1) or (i=2)and(j=0) then
+      ReturnOutPutArg(v)
+    else
+      ReturnOutPutArg(-v);
+  end;
+end;
+
+procedure TScriptEditor.SetTransformPostCoefsProc(AMachine: TatVirtualMachine);
+var
+  v: double;
+  i, j: integer;
+begin
+  with AMachine do
+  begin
+    v := GetInputArgAsFloat(0);
+    i := GetArrayIndex(0);
+    j := GetArrayIndex(1);
+    if (i=0)and(j=0) or (i=1)and(j=1) or (i=2)and(j=0) then
+      cp.xform[ActiveTransform].p[i, j] := v
+    else if (i=0)and(j=1) or (i=1)and(j=0) or (i=2)and(j=1) then
+      cp.xform[ActiveTransform].p[i, j] := -v;
+  end;
+end;
+
 { *************************** Render interface ****************************** }
 
 
@@ -2658,6 +2823,8 @@ end;
 { ********************************* Scripter ********************************* }
 
 procedure TScriptEditor.PrepareScripter;
+var
+  i: integer;
 begin
   Scripter.AddLibrary(TatSysUtilsLibrary);
   with Scripter.defineClass(TScriptRender) do
@@ -2697,6 +2864,8 @@ begin
   { Transform interface }
   with Scripter.defineClass(TTransform) do
   begin
+    DefineProp('coefs', tkFloat, GetTransformCoefsProc, SetTransformCoefsProc, nil, false, 2);
+    DefineProp('post', tkFloat, GetTransformPostCoefsProc, SetTransformPostCoefsProc, nil, false, 2);
     DefineProp('a', tkFloat, GetTransformAProc, SetTransformAProc);
     DefineProp('b', tkFloat, GetTransformBProc, SetTransformBProc);
     DefineProp('c', tkFloat, GetTransformCProc, SetTransformCProc);
@@ -2705,8 +2874,13 @@ begin
     DefineProp('f', tkFloat, GetTransformFProc, SetTransformFProc);
     DefineProp('Color', tkFloat, GetTransformColorProc, SetTransformColorProc);
     DefineProp('Weight', tkFloat, GetTransformWeightProc, SetTransformWeightProc);
-    DefineProp('Variation', tkFloat, GetTransformVarProc, SetTransformVarProc, nil, false, 1);
     DefineProp('Symmetry', tkFloat, GetTransformSymProc, SetTransformSymProc);
+    for i:= 0 to NRVAR - 1 do
+      DefineProp(Varnames(i), tkFloat, GetTransformVariationProc, SetTransformVariationProc);
+    for i:= 0 to GetNrVariableNames - 1 do
+      DefineProp(GetVariableNameAt(i), tkFloat, GetTransformVariableProc, SetTransformVariableProc);
+
+    DefineProp('Variation', tkFloat, GetTransformVarProc, SetTransformVarProc, nil, false, 1); // obsolete
   end;
   Scripter.AddObject('Transform', Transform);
   { Options interface }
