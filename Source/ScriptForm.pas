@@ -23,7 +23,6 @@ interface
 uses
   Windows, Messages, SysUtils, Classes, Graphics, Controls, Forms, Dialogs,
   ExtCtrls, StdCtrls, ControlPoint, Buttons, ComCtrls, ToolWin, Menus,
-//  Variants,
   atScript, atPascal, AdvMemo, Advmps, XFormMan, XForm, GradientHlpr, cmap;
 
 const NCPS = 10;
@@ -168,22 +167,29 @@ type
     procedure SetTransformEProc(AMachine: TatVirtualMachine);
     procedure GetTransformFProc(AMachine: TatVirtualMachine);
     procedure SetTransformFProc(AMachine: TatVirtualMachine);
+    procedure GetTransformVarProc(AMachine: TatVirtualMachine);
+    procedure SetTransformVarProc(AMachine: TatVirtualMachine);
+
     procedure GetTransformColorProc(AMachine: TatVirtualMachine);
     procedure SetTransformColorProc(AMachine: TatVirtualMachine);
     procedure GetTransformWeightProc(AMachine: TatVirtualMachine);
     procedure SetTransformWeightProc(AMachine: TatVirtualMachine);
-    procedure GetTransformVarProc(AMachine: TatVirtualMachine);
-    procedure SetTransformVarProc(AMachine: TatVirtualMachine);
     procedure GetTransformSymProc(AMachine: TatVirtualMachine);
     procedure SetTransformSymProc(AMachine: TatVirtualMachine);
+
     procedure GetTransformVariationProc(AMachine: TatVirtualMachine);
     procedure SetTransformVariationProc(AMachine: TatVirtualMachine);
     procedure GetTransformVariableProc(AMachine: TatVirtualMachine);
     procedure SetTransformVariableProc(AMachine: TatVirtualMachine);
+
     procedure GetTransformCoefsProc(AMachine: TatVirtualMachine);
     procedure SetTransformCoefsProc(AMachine: TatVirtualMachine);
     procedure GetTransformPostCoefsProc(AMachine: TatVirtualMachine);
     procedure SetTransformPostCoefsProc(AMachine: TatVirtualMachine);
+
+    procedure TransformClearProc(AMachine: TatVirtualMachine);
+    procedure TransformRotateProc(AMachine: TatVirtualMachine);
+
     { Render interface }
     procedure GetRenderFilenameProc(AMachine: TatVirtualMachine);
     procedure SetRenderFilenameProc(AMachine: TatVirtualMachine);
@@ -223,6 +229,8 @@ type
     procedure SetOversample(AMachine: TatVirtualMachine);
     procedure GetFilterRadius(AMachine: TatVirtualMachine);
     procedure SetFilterRadius(AMachine: TatVirtualMachine);
+    procedure GetTransparency(AMachine: TatVirtualMachine);
+    procedure SetTransparency(AMachine: TatVirtualMachine);
     procedure GetLowQuality(AMachine: TatVirtualMachine);
     procedure SetLowQuality(AMachine: TatVirtualMachine);
     procedure GetMediumQuality(AMachine: TatVirtualMachine);
@@ -389,8 +397,13 @@ type
     procedure GetVariableStr(AMachine: TatVirtualMachine);
     procedure SetVariableStr(AMachine: TatVirtualMachine);
 }
-    procedure GetProgramVersionProc(AMachine: TatVirtualMachine);
     procedure VariationSupportedProc(AMachine: TatVirtualMachine);
+    procedure GetPivotModeProc(AMachine: TatVirtualMachine);
+    procedure SetPivotModeProc(AMachine: TatVirtualMachine);
+    procedure GetPivotXProc(AMachine: TatVirtualMachine);
+    procedure GetPivotYProc(AMachine: TatVirtualMachine);
+    procedure SetPivotProc(AMachine: TatVirtualMachine);
+    procedure ResetPivotProc(AMachine: TatVirtualMachine);
 
     procedure CalculateScale(AMachine: TatVirtualMachine);
     procedure NormalizeVars(AMachine: TatVirtualMachine);
@@ -621,6 +634,21 @@ begin
     v := GetInputArgAsFloat(0);
     if (v >= 0.1) then defFilterRadius := v;
   end;
+end;
+
+procedure TScriptEditor.GetTransparency(AMachine: TatVirtualMachine);
+begin
+  AMachine.ReturnOutPutArg(PNGTransparency);
+end;
+
+procedure TScriptEditor.SetTransparency(AMachine: TatVirtualMachine);
+var
+  v: double;
+begin
+  if AMachine.GetInputArgAsInteger(0) = 0 then
+    PNGTransparency := 0
+  else
+    PNGTransparency := 1;
 end;
 
 procedure TScriptEditor.GetLowQuality(AMachine: TatVirtualMachine);
@@ -1188,8 +1216,15 @@ begin
   Scripter.DefineMethod('GetVariableStr', 1, tkFloat, nil, GetVariableStr);
   Scripter.DefineMethod('SetVariableStr', 2, tkNone, nil, SetVariableStr);
 }
-  Scripter.DefineMethod('ProgramVersion', 0, tkString, nil, GetProgramVersionProc);
+  Scripter.AddConstant('ProgramVersionString', AppVersionString);
   Scripter.DefineMethod('VariationSupported', 1, tkInteger, nil, VariationSupportedProc);
+
+  Scripter.DefineMethod('GetPivotMode', 0, tkInteger, nil, GetPivotModeProc);
+  Scripter.DefineMethod('SetPivotMode', 1, tkNone, nil, SetPivotModeProc);
+  Scripter.DefineMethod('GetPivotX', 0, tkFloat, nil, GetPivotXProc);
+  Scripter.DefineMethod('GetPivotY', 0, tkFloat, nil, GetPivotYProc);
+  Scripter.DefineMethod('SetPivot', 2, tkNone, nil, SetPivotProc);
+  Scripter.DefineMethod('ResetPivot', 0, tkNone, nil, ResetPivotProc);
 
   Scripter.DefineMethod('CalculateScale', 0, tkNone, nil, CalculateScale);
   Scripter.DefineMethod('CalculateBounds', 0, tkNone, nil, CalculateBounds);
@@ -1803,11 +1838,6 @@ begin
 end;
 *)
 
-procedure TOperationLibrary.GetProgramVersionProc(AMachine: TatVirtualMachine);
-begin
-  AMachine.ReturnOutputArg(AppVersionString);
-end;
-
 procedure TOperationLibrary.VariationSupportedProc(AMachine: TatVirtualMachine);
 var
   i: integer;
@@ -2039,6 +2069,64 @@ begin
   NormalizeVariations(ScriptEditor.cp);
 end;
 
+procedure TOperationLibrary.GetPivotModeProc(AMachine: TatVirtualMachine);
+begin
+  AMachine.ReturnOutputArg(Integer(EditForm.PivotMode));
+end;
+
+procedure TOperationLibrary.SetPivotModeProc(AMachine: TatVirtualMachine);
+var
+  n: integer;
+begin
+  n := AMachine.GetInputArgAsInteger(0);
+  if n = 0 then
+    EditForm.PivotMode := pivotLocal
+  else
+    EditForm.PivotMode := pivotWorld;
+end;
+
+procedure TOperationLibrary.GetPivotXProc(AMachine: TatVirtualMachine);
+var
+  px, py: double;
+begin
+//  EditForm.ScriptGetPivot(px, py);
+//  AMachine.ReturnOutputArg(px);
+  if EditForm.PivotMode = pivotLocal then
+    AMachine.ReturnOutputArg(EditForm.LocalPivot.x)
+  else
+    AMachine.ReturnOutputArg(EditForm.WorldPivot.x);
+end;
+
+procedure TOperationLibrary.GetPivotYProc(AMachine: TatVirtualMachine);
+var
+  px, py: double;
+begin
+//  EditForm.ScriptGetPivot(px, py);
+//  AMachine.ReturnOutputArg(py);
+  if EditForm.PivotMode = pivotLocal then
+    AMachine.ReturnOutputArg(EditForm.LocalPivot.y)
+  else
+    AMachine.ReturnOutputArg(EditForm.WorldPivot.y);
+end;
+
+procedure TOperationLibrary.SetPivotProc(AMachine: TatVirtualMachine);
+begin
+  with AMachine do begin
+    if EditForm.PivotMode = pivotLocal then begin
+      EditForm.LocalPivot.x := GetInputArgAsFloat(0);
+      EditForm.LocalPivot.y := GetInputArgAsFloat(1);
+    end
+    else begin
+      EditForm.WorldPivot.x := GetInputArgAsFloat(0);
+      EditForm.WorldPivot.y := GetInputArgAsFloat(1);
+    end;  
+  end;
+end;
+
+procedure TOperationLibrary.ResetPivotProc(AMachine: TatVirtualMachine);
+begin
+  EditForm.btnResetPivotClick(nil);
+end;
 
 { ******************************** Math Library ****************************** }
 
@@ -2763,6 +2851,34 @@ begin
   end;
 end;
 
+procedure TScriptEditor.TransformClearProc(AMachine: TatVirtualMachine);
+begin
+  cp.xform[ActiveTransform].Clear;
+  cp.xform[ActiveTransform].density := 0.5;
+end;
+
+// -- pivot-aware rotating --
+
+procedure TScriptEditor.TransformRotateProc(AMachine: TatVirtualMachine);
+var
+  Triangles: TTriangles;
+  px, py: double;
+
+  tx: TXForm;
+begin
+  tx := TXForm.Create;
+  tx.Assign(scripteditor.cp.xform[NumTransforms]); // just in case (?)
+
+  EditForm.ScriptGetPivot(px, py);
+  cp.TrianglesFromCp(Triangles); // it's ugly but it works...
+  Triangles[ActiveTransform] :=
+    RotateTrianglePoint(Triangles[ActiveTransform], px, py, AMachine.GetInputArgAsFloat(0) * pi / 180);
+  cp.GetFromTriangles(Triangles, NumTransforms);
+
+  cp.xform[NumTransforms].Assign(tx);
+  tx.Free;
+end;
+
 { *************************** Render interface ****************************** }
 
 
@@ -2866,12 +2982,6 @@ begin
   begin
     DefineProp('coefs', tkFloat, GetTransformCoefsProc, SetTransformCoefsProc, nil, false, 2);
     DefineProp('post', tkFloat, GetTransformPostCoefsProc, SetTransformPostCoefsProc, nil, false, 2);
-    DefineProp('a', tkFloat, GetTransformAProc, SetTransformAProc);
-    DefineProp('b', tkFloat, GetTransformBProc, SetTransformBProc);
-    DefineProp('c', tkFloat, GetTransformCProc, SetTransformCProc);
-    DefineProp('d', tkFloat, GetTransformDProc, SetTransformDProc);
-    DefineProp('e', tkFloat, GetTransformEProc, SetTransformEProc);
-    DefineProp('f', tkFloat, GetTransformFProc, SetTransformFProc);
     DefineProp('Color', tkFloat, GetTransformColorProc, SetTransformColorProc);
     DefineProp('Weight', tkFloat, GetTransformWeightProc, SetTransformWeightProc);
     DefineProp('Symmetry', tkFloat, GetTransformSymProc, SetTransformSymProc);
@@ -2880,6 +2990,15 @@ begin
     for i:= 0 to GetNrVariableNames - 1 do
       DefineProp(GetVariableNameAt(i), tkFloat, GetTransformVariableProc, SetTransformVariableProc);
 
+    DefineMethod('Clear', 0, tkNone, nil, TransformClearProc);
+    DefineMethod('Rotate', 1, tkNone, nil, TransformRotateProc);
+
+    DefineProp('a', tkFloat, GetTransformAProc, SetTransformAProc);
+    DefineProp('b', tkFloat, GetTransformBProc, SetTransformBProc);
+    DefineProp('c', tkFloat, GetTransformCProc, SetTransformCProc);
+    DefineProp('d', tkFloat, GetTransformDProc, SetTransformDProc);
+    DefineProp('e', tkFloat, GetTransformEProc, SetTransformEProc);
+    DefineProp('f', tkFloat, GetTransformFProc, SetTransformFProc);
     DefineProp('Variation', tkFloat, GetTransformVarProc, SetTransformVarProc, nil, false, 1); // obsolete
   end;
   Scripter.AddObject('Transform', Transform);
@@ -2900,6 +3019,7 @@ begin
     DefineProp('Vibrancy', tkFloat, GetVibrancy, SetVibrancy);
     DefineProp('Oversample', tkInteger, GetOversample, SetOversample);
     DefineProp('FilterRadius', tkFloat, GetFilterRadius, SetFilterRadius);
+    DefineProp('Transparency', tkInteger, GetTransparency, SetTransparency);
     DefineProp('PreviewLowQuality', tkFloat, GetLowQuality, SetLowQuality);
     DefineProp('PreviewMediumQuality', tkFloat, GetMediumQuality, SetMediumQuality);
     DefineProp('PreviewHighQuality', tkFloat, GetHighQuality, SetHighQuality);
@@ -2985,6 +3105,7 @@ begin
   Scripter.AddConstant('V_JULIASCOPE', 36);
   Scripter.AddConstant('V_CURL', 37);
   Scripter.AddConstant('V_RANDOM', -1);
+(*
   { Variation parameters }
   Scripter.AddConstant('RADIALBLUR_ANGLE', 0);
   Scripter.AddConstant('RINGS2_VAL', 1);
@@ -3005,6 +3126,7 @@ begin
   Scripter.AddConstant('JULIASCOPE_DIST', 16);
   Scripter.AddConstant('CURL_C1', 17);
   Scripter.AddConstant('CURL_C2', 18);
+*)
   { Variables }
   Scripter.AddVariable('SelectedTransform', EditForm.SelectedTriangle);
   Scripter.AddVariable('Compatibility', Compatibility);

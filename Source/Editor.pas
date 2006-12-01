@@ -358,7 +358,7 @@ type
     GraphZoom: double;
     TriangleCaught, CornerCaught, EdgeCaught: boolean;
     LocalAxisLocked: boolean;
-//    SelectedTriangle: integer; // outside only for scripting (??)
+//    SelectedTriangle: integer; // outside only for scripting
     oldSelected: integer;
     SelectedCorner: integer;
     HasChanged: boolean;
@@ -370,8 +370,8 @@ type
     MemTriangle: TTriangle;
 
     oldx, oldy, olddist: double;
-    Pivot, LocalPivot, WorldPivot: TSPoint;
-    PivotMode: (pivotLocal, pivotWorld);
+    Pivot: TSPoint;
+
     VarsCache: array[0..64] of double; // hack: to prevent slow valuelist redraw
 
     pnlDragMode: boolean;
@@ -398,7 +398,10 @@ type
     cp: TControlPoint;
     Render: TRenderer;
 
+    // Accessible from scripter
     SelectedTriangle: integer;
+    PivotMode: (pivotLocal, pivotWorld);
+    LocalPivot, WorldPivot: TSPoint;
 
     procedure UpdatePreview;
     procedure UpdateDisplay(PreviewOnly: boolean = false); //(?)
@@ -406,6 +409,8 @@ type
     function GetTriangleColor(n: integer): TColor;
     function LastTriangle: integer;
     function InsideTriangle(x, y: double): integer;
+
+    procedure ScriptGetPivot(var px, py: double);
   end;
 
 const
@@ -423,7 +428,7 @@ function RotateTriangle(t: TTriangle; rad: double): TTriangle;
 function OffsetTriangle(t: TTriangle; range: double): TTriangle;
 function ScaleTriangle(t: TTriangle; scale: double): TTriangle;
 function RotateTriangleCenter(t: TTriangle; rad: double): TTriangle;
-function RotateTrianglePoint(t: TTriangle; x, y, rad: double): TTriangle;
+function RotateTrianglePoint(t: TTriangle; xr, yr: double; rad: double): TTriangle;
 function Centroid(t: TTriangle): TSPoint;
 function OffsetTriangleRandom(t: TTriangle): TTriangle;
 function ScaleTriangleCenter(t: TTriangle; scale: double): TTriangle;
@@ -545,26 +550,19 @@ begin
   yr := z.y;
   for i := 0 to 2 do
   begin
-    Result.x[i] := xr + (t.x[i] - xr) * cos(rad) -
-      (t.y[i] - yr) * sin(rad);
-    Result.y[i] := yr + (t.x[i] - xr) * sin(rad) +
-      (t.y[i] - yr) * cos(rad);
+    Result.x[i] := xr + (t.x[i] - xr) * cos(rad) - (t.y[i] - yr) * sin(rad);
+    Result.y[i] := yr + (t.x[i] - xr) * sin(rad) + (t.y[i] - yr) * cos(rad);
   end;
 end;
 
-function RotateTrianglePoint(t: TTriangle; x, y, rad: double): TTriangle;
+function RotateTrianglePoint(t: TTriangle; xr, yr: double; rad: double): TTriangle;
 var
   i: integer;
-  xr, yr: double;
 begin
-  xr := x;
-  yr := y;
   for i := 0 to 2 do
   begin
-    Result.x[i] := xr + (t.x[i] - xr) * cos(rad) -
-      (t.y[i] - yr) * sin(rad);
-    Result.y[i] := yr + (t.x[i] - xr) * sin(rad) +
-      (t.y[i] - yr) * cos(rad);
+    Result.x[i] := xr + (t.x[i] - xr) * cos(rad) - (t.y[i] - yr) * sin(rad);
+    Result.y[i] := yr + (t.x[i] - xr) * sin(rad) + (t.y[i] - yr) * cos(rad);
   end;
 end;
 
@@ -827,10 +825,14 @@ begin
   if PivotMode = pivotLocal then begin
     editPivotX.Text := Format('%.6g', [LocalPivot.x]);
     editPivotY.Text := Format('%.6g', [LocalPivot.y]);
+    btnPivotMode.Caption := 'Local Pivot';
+    tbPivotMode.Down := false;
   end
   else begin
     editPivotX.Text := Format('%.6g', [WorldPivot.x]);
     editPivotY.Text := Format('%.6g', [WorldPivot.y]);
+    btnPivotMode.Caption := 'World Pivot';
+    tbPivotMode.Down := true;
   end;
 
   PageControl.Refresh;
@@ -3237,6 +3239,19 @@ begin
   end;
 end;
 
+procedure TEditForm.ScriptGetPivot(var px, py: double);
+begin
+  if (PivotMode = pivotLocal) then
+    with MainTriangles[SelectedTriangle] do begin
+      px := x[1] + (x[0] - x[1])*LocalPivot.x + (x[2] - x[1])*LocalPivot.y;
+      py := y[1] + (y[0] - y[1])*LocalPivot.x + (y[2] - y[1])*LocalPivot.y;
+    end
+  else begin
+    px := WorldPivot.x;
+    py := WorldPivot.y;
+  end;
+end;
+
 procedure TEditForm.btTrgRotateLeftClick(Sender: TObject);
 var
   angle: double;
@@ -4140,16 +4155,18 @@ end;
 procedure TEditForm.btnPivotModeClick(Sender: TObject);
 begin
   if PivotMode <> pivotLocal then
-  with MainTriangles[SelectedTriangle] do begin
+  // with MainTriangles[SelectedTriangle] do
+  begin
     PivotMode := pivotLocal;
-    btnPivotMode.Caption := 'Local Pivot';
-    tbPivotMode.Down := false;
+//    btnPivotMode.Caption := 'Local Pivot';
+//    tbPivotMode.Down := false;
   end
   else
-  with MainTriangles[SelectedTriangle] do begin
+  // with MainTriangles[SelectedTriangle] do
+  begin
     PivotMode := pivotWorld;
-    btnPivotMode.Caption := 'World Pivot';
-    tbPivotMode.Down := true;
+//    btnPivotMode.Caption := 'World Pivot';
+//    tbPivotMode.Down := true;
   end;
 
   TriangleView.Invalidate;
