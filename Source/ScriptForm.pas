@@ -153,6 +153,8 @@ type
     procedure GetFlameURLProc(AMachine: TatVirtualMachine);
     procedure SetFlameBatchesProc(AMachine: TatVirtualMachine);
     procedure GetFlameBatchesProc(AMachine: TatVirtualMachine);
+    procedure GetFlameFinalxformEnabledProc(AMachine: TatVirtualMachine);
+    procedure SetFlameFinalxformEnabledProc(AMachine: TatVirtualMachine);
 
     { Transform interface }
     procedure GetTransformAProc(AMachine: TatVirtualMachine);
@@ -1539,7 +1541,6 @@ begin
   if nxform < NXFORMS then
     for i := nxform to NXFORMS - 1 do
       cp1.xform[i].density := 0;
-  // --?-- cp1.NormalizeWeights;
   // Check for symmetry parameter
   if cp1.symmetry <> 0 then
   begin
@@ -1582,7 +1583,6 @@ begin
     for i := 0 to NXFORMS - 1 do
       if ScriptEditor.cp.xform[i].density = 0 then break;
     NumTransforms := i;
-    // --?-- ScriptEditor.cp.NormalizeWeights;
 //    FlameName := FileList[index];
   finally
     IFSStrings.Free;
@@ -1654,7 +1654,6 @@ begin
     for i := 0 to NXFORMS - 1 do
       if ScriptEditor.cp.xform[i].density = 0 then break;
     NumTransforms := i;
-    // --?-- ScriptEditor.cp.NormalizeWeights;
     if SavedPal then ScriptEditor.cp.cmap := Palette;
     ScriptEditor.cp.name := FileList[index];
   finally
@@ -1892,7 +1891,6 @@ begin
   if NumTransforms > 1 then
   begin
     AMachine.Paused := True;
-    // --?-- ScriptEditor.cp.NormalizeWeights;
     PreviewForm.cp.Copy(ScriptEditor.cp);
     PreviewForm.cp.AdjustScale(PreviewForm.Image.Width, PreviewForm.Image.Height);
     PreviewForm.Show;
@@ -1907,7 +1905,6 @@ procedure TOperationLibrary.RenderProc(AMachine: TatVirtualMachine);
 begin
   if NumTransforms > 1 then
   begin
-    // --?-- ScriptEditor.cp.NormalizeWeights;
     ScriptRenderForm.cp.Copy(ScriptEditor.cp);
     ScriptRenderForm.Caption := 'Rendering ' + ScriptEditor.Renderer.Filename; ;
     ScriptRenderForm.Show;
@@ -2052,7 +2049,8 @@ end;
 procedure TOperationLibrary.TranslateProc(AMachine: TatVirtualMachine);
 begin
   try
-    if (ActiveTransform < 0) or (ActiveTransform > NXFORMS - 1) then raise EFormatInvalid.Create('Transform out of range.');
+    if (ActiveTransform < 0) or (ActiveTransform > NXFORMS) then // was: NXFORMS-1
+      raise EFormatInvalid.Create('Transform out of range.');
     with AMachine do
       ScriptEditor.cp.xform[ActiveTransform].Translate(GetInputArgAsFloat(0), GetInputArgAsFloat(1));
   except on E: EFormatInvalid do
@@ -2437,6 +2435,18 @@ begin
   end;
 end;
 
+procedure TScriptEditor.GetFlameFinalxformEnabledProc(AMachine: TatVirtualMachine);
+begin
+  with AMachine do
+    ReturnOutPutArg(cp.finalXformEnabled);
+end;
+
+procedure TScriptEditor.SetFlameFinalxformEnabledProc(AMachine: TatVirtualMachine);
+begin
+  with AMachine do
+    cp.finalXformEnabled := (GetInputArgAsInteger(0) <> 0);
+end;
+
 procedure TScriptEditor.GetFlameWidthProc(AMachine: TatVirtualMachine);
 begin
   with AMachine do
@@ -2474,13 +2484,15 @@ end;
 procedure TScriptEditor.GetFlamePixelsPerUnitProc(AMachine: TatVirtualMachine);
 begin
   with AMachine do
-    ReturnOutPutArg(cp.pixels_per_unit);
+//    ReturnOutPutArg(cp.pixels_per_unit);
+    ReturnOutPutArg(100*cp.pixels_per_unit/cp.Width);
 end;
 
 procedure TScriptEditor.SetFlamePixelsPerUnitProc(AMachine: TatVirtualMachine);
 begin
   with AMachine do
-    cp.pixels_per_unit := GetInputArgAsInteger(0);
+//    cp.pixels_per_unit := GetInputArgAsInteger(0);  <<--- hmm, ppu isn't integer :-\
+    cp.pixels_per_unit := GetInputArgAsFloat(0) * cp.Width / 100.0;
 end;
 
 procedure TScriptEditor.GetFlamePaletteProc(AMachine: TatVirtualMachine);
@@ -2975,6 +2987,7 @@ begin
     DefineProp('URL', tkString, GetFlameURLProc, SetFlameURLProc);
     DefineProp('Hue', tkFloat, GetFlameHueProc, SetFlameHueProc);
     DefineProp('Batches', tkInteger, GetFlameBatchesProc, SetFlameBatchesProc);
+    DefineProp('FinalXformEnabled', tkInteger, GetFlameFinalxformEnabledProc, SetFlameFinalxformEnabledProc);
   end;
   Scripter.AddObject('Flame', Flame);
   { Transform interface }
@@ -3326,7 +3339,6 @@ begin
   else
     if (LastError = '') and UpdateIt then
     begin
-      // --?-- cp.NormalizeWeights;
       MainForm.UpdateUndo;
       MainCp.Copy(cp);
       UpdateFlame;
@@ -3358,7 +3370,6 @@ procedure TScriptEditor.UpdateFlame;
 begin
   MainForm.StopThread;
   MainForm.UpdateUndo;
-  // --?-- cp.NormalizeWeights;
   MainCp.Copy(cp);
 //  MainCp.name := FlameName;
   Transforms := MainCp.TrianglesFromCP(MainTriangles);
