@@ -191,6 +191,7 @@ type
 
     procedure TransformClearProc(AMachine: TatVirtualMachine);
     procedure TransformRotateProc(AMachine: TatVirtualMachine);
+    procedure TransformRotateOriginProc(AMachine: TatVirtualMachine);
 
     { Render interface }
     procedure GetRenderFilenameProc(AMachine: TatVirtualMachine);
@@ -399,7 +400,7 @@ type
     procedure GetVariableStr(AMachine: TatVirtualMachine);
     procedure SetVariableStr(AMachine: TatVirtualMachine);
 }
-    procedure VariationSupportedProc(AMachine: TatVirtualMachine);
+    procedure VariationIndexProc(AMachine: TatVirtualMachine);
     procedure GetPivotModeProc(AMachine: TatVirtualMachine);
     procedure SetPivotModeProc(AMachine: TatVirtualMachine);
     procedure GetPivotXProc(AMachine: TatVirtualMachine);
@@ -1219,7 +1220,7 @@ begin
   Scripter.DefineMethod('SetVariableStr', 2, tkNone, nil, SetVariableStr);
 }
   Scripter.AddConstant('ProgramVersionString', AppVersionString);
-  Scripter.DefineMethod('VariationSupported', 1, tkInteger, nil, VariationSupportedProc);
+  Scripter.DefineMethod('VariationIndex', 1, tkInteger, nil, VariationIndexProc);
 
   Scripter.DefineMethod('GetPivotMode', 0, tkInteger, nil, GetPivotModeProc);
   Scripter.DefineMethod('SetPivotMode', 1, tkNone, nil, SetPivotModeProc);
@@ -1837,16 +1838,16 @@ begin
 end;
 *)
 
-procedure TOperationLibrary.VariationSupportedProc(AMachine: TatVirtualMachine);
+procedure TOperationLibrary.VariationIndexProc(AMachine: TatVirtualMachine);
 var
   i: integer;
   str: string;
 begin
   with AMachine do begin
-    str := GetInputArgAsString(0);
-    i := 0;
-    while (i < NRVAR) and (varnames(i) <> str) do Inc(i);
-    ReturnOutputArg(i < NRVAR);
+    str := LowerCase(GetInputArgAsString(0));
+    i := NRVAR-1;
+    while (i >= 0) and (varnames(i) <> str) do Dec(i);
+    ReturnOutputArg(i);
   end;
 end;
 
@@ -2869,6 +2870,20 @@ begin
   cp.xform[ActiveTransform].density := 0.5;
 end;
 
+procedure TScriptEditor.TransformRotateOriginProc(AMachine: TatVirtualMachine);
+var
+  tx, ty, rad: double;
+begin
+  rad := AMachine.GetInputArgAsFloat(0) * pi / 180;
+  with EditForm.WorldPivot do
+  with cp.xform[ActiveTransform] do begin
+    tx := x + (c[2,0] - x) * cos(rad) - (-c[2,1] - y) * sin(rad);
+    ty := y + (c[2,0] - x) * sin(rad) + (-c[2,1] - y) * cos(rad);
+    c[2,0] := tx;
+    c[2,1] := -ty;
+  end;
+end;
+
 // -- pivot-aware rotating --
 
 procedure TScriptEditor.TransformRotateProc(AMachine: TatVirtualMachine);
@@ -3005,6 +3020,7 @@ begin
 
     DefineMethod('Clear', 0, tkNone, nil, TransformClearProc);
     DefineMethod('Rotate', 1, tkNone, nil, TransformRotateProc);
+    DefineMethod('RotateOrigin', 1, tkNone, nil, TransformRotateOriginProc);
 
     DefineProp('a', tkFloat, GetTransformAProc, SetTransformAProc);
     DefineProp('b', tkFloat, GetTransformBProc, SetTransformBProc);
@@ -3012,7 +3028,7 @@ begin
     DefineProp('d', tkFloat, GetTransformDProc, SetTransformDProc);
     DefineProp('e', tkFloat, GetTransformEProc, SetTransformEProc);
     DefineProp('f', tkFloat, GetTransformFProc, SetTransformFProc);
-    DefineProp('Variation', tkFloat, GetTransformVarProc, SetTransformVarProc, nil, false, 1); // obsolete
+    DefineProp('Variation', tkFloat, GetTransformVarProc, SetTransformVarProc, nil, false, 1);
   end;
   Scripter.AddObject('Transform', Transform);
   { Options interface }
