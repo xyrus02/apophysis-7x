@@ -401,6 +401,7 @@ type
     procedure SetVariableStr(AMachine: TatVirtualMachine);
 }
     procedure VariationIndexProc(AMachine: TatVirtualMachine);
+    procedure VariationNameProc(AMachine: TatVirtualMachine);
     procedure GetPivotModeProc(AMachine: TatVirtualMachine);
     procedure SetPivotModeProc(AMachine: TatVirtualMachine);
     procedure GetPivotXProc(AMachine: TatVirtualMachine);
@@ -1221,6 +1222,7 @@ begin
 }
   Scripter.AddConstant('ProgramVersionString', AppVersionString);
   Scripter.DefineMethod('VariationIndex', 1, tkInteger, nil, VariationIndexProc);
+  Scripter.DefineMethod('VariationName', 1, tkString, nil, VariationNameProc);
 
   Scripter.DefineMethod('GetPivotMode', 0, tkInteger, nil, GetPivotModeProc);
   Scripter.DefineMethod('SetPivotMode', 1, tkNone, nil, SetPivotModeProc);
@@ -1848,6 +1850,20 @@ begin
     i := NRVAR-1;
     while (i >= 0) and (varnames(i) <> str) do Dec(i);
     ReturnOutputArg(i);
+  end;
+end;
+
+procedure TOperationLibrary.VariationNameProc(AMachine: TatVirtualMachine);
+var
+  i: integer;
+  str: string;
+begin
+  with AMachine do begin
+    i := GetInputArgAsInteger(0);
+    if (i >= 0) and (i < NRVAR) then
+      ReturnOutputArg(varnames(i))
+    else
+      ReturnOutputArg('');
   end;
 end;
 
@@ -2700,7 +2716,7 @@ begin
   with AMachine do
   begin
     v := GetInputArgAsFloat(0);
-    if (v > 0) and (v < 256) then
+    if (v > 0) and (v <= MAX_WEIGHT) then
       cp.xform[ActiveTransform].density := v;
   end;
 end;
@@ -2867,7 +2883,10 @@ end;
 procedure TScriptEditor.TransformClearProc(AMachine: TatVirtualMachine);
 begin
   cp.xform[ActiveTransform].Clear;
-  cp.xform[ActiveTransform].density := 0.5;
+  if ActiveTransform < Transforms then
+    cp.xform[ActiveTransform].density := 0.5
+  else
+    cp.xform[ActiveTransform].symmetry := 1;
 end;
 
 procedure TScriptEditor.TransformRotateOriginProc(AMachine: TatVirtualMachine);
