@@ -90,7 +90,7 @@ object ScriptEditor: TScriptEditor
       Top = 110
       Hint = 'Break'
       Enabled = False
-      ImageIndex = 38
+      ImageIndex = 37
       OnClick = btnBreakClick
     end
   end
@@ -122,12 +122,13 @@ object ScriptEditor: TScriptEditor
       ActiveLineSettings.ShowActiveLine = False
       ActiveLineSettings.ShowActiveLineIndicator = False
       Align = alClient
-      AutoCompletion.Active = False
       AutoCompletion.Font.Charset = DEFAULT_CHARSET
       AutoCompletion.Font.Color = clWindowText
       AutoCompletion.Font.Height = -11
       AutoCompletion.Font.Name = 'MS Sans Serif'
       AutoCompletion.Font.Style = []
+      AutoCompletion.Height = 120
+      AutoCompletion.Width = 400
       AutoCorrect.Active = True
       AutoHintParameterPosition = hpBelowCode
       BlockShow = False
@@ -258,7 +259,7 @@ object ScriptEditor: TScriptEditor
     CommentStyle.TextColor = clNavy
     CommentStyle.BkColor = clWindow
     CommentStyle.Style = [fsItalic]
-    NumberStyle.TextColor = clWindowText
+    NumberStyle.TextColor = clNavy
     NumberStyle.BkColor = clWindow
     NumberStyle.Style = []
     AllStyles = <
@@ -348,7 +349,7 @@ object ScriptEditor: TScriptEditor
       end
       item
         Font.Charset = DEFAULT_CHARSET
-        Font.Color = clBlack
+        Font.Color = clTeal
         Font.Height = -11
         Font.Name = 'Courier New'
         Font.Style = []
@@ -361,7 +362,193 @@ object ScriptEditor: TScriptEditor
       end>
     AutoCompletion.Strings = (
       'ShowMessage'
-      'MessageDlg')
+      ''
+      'RotateFlame'
+      'RotateReference'
+      'Rotate'
+      'Multiply'
+      'StoreFlame'
+      'GetFlame'
+      'LoadFlame'
+      'Scale'
+      'Translate'
+      'ActiveTransform'
+      'SetActiveTransform'
+      'Transforms'
+      'FileCount'
+      'AddTransform'
+      'DeleteTransform'
+      'CopyTransform'
+      'Clear'
+      'Preview'
+      'Render'
+      'Print'
+      'AddSymmetry'
+      'Morph'
+      'SetRenderBounds'
+      'SetFlameFile'
+      'ListFile'
+      'SaveFlame'
+      'GetFileName'
+      'ShowStatus'
+      'RandomFlame'
+      'RandomGradient'
+      'SaveGradient'
+      'Variation'
+      'SetVariation'
+      'ProgramVersionString'
+      'VariationIndex'
+      'VariationName'
+      'GetPivotMode'
+      'SetPivotMode'
+      'GetPivotX'
+      'GetPivotY'
+      'SetPivot'
+      'ResetPivot'
+      'CalculateScale'
+      'CalculateBounds'
+      'NormalizeVars'
+      'GetSaveFileName'
+      'CopyFile'
+      ''
+      'Renderer'
+      ''
+      'Filename'
+      'Width'
+      'Height'
+      'MaxMemory'
+      ''
+      'Flame'
+      ''
+      'Gamma'
+      'Brightness'
+      'Vibrancy'
+      'Time'
+      'Zoom'
+      'Width'
+      'Height'
+      'SampleDensity'
+      'Quality'
+      'Oversample'
+      'FilterRadius'
+      'Scale'
+      'Gradient'
+      'Background'
+      'Name'
+      'Batches'
+      'FinalXformEnabled'
+      ''
+      'Transform'
+      ''
+      'coefs'
+      'post'
+      'Color'
+      'Weight'
+      'Symmetry'
+      'Clear'
+      'Rotate'
+      'Scale'
+      'RotateOrigin'
+      'Variation'
+      ''
+      'Options'
+      ''
+      'JPEGQuality'
+      'BatchSize'
+      'ParameterFile'
+      'SmoothPaletteFile'
+      'NumTries'
+      'TryLength'
+      'ConfirmDelete'
+      'FixedReference'
+      'SampleDensity'
+      'Gamma'
+      'Brightness'
+      'Vibrancy'
+      'Oversample'
+      'FilterRadius'
+      'Transparency'
+      'PreviewLowQuality'
+      'PreviewMediumQuality'
+      'PreviewHighQuality'
+      'MinTransforms'
+      'MaxTransforms'
+      'MutateMinTransforms'
+      'MutateMaxTransforms'
+      'RandomPrefix'
+      'KeepBackground'
+      'SymmetryType'
+      'SymmetryOrder'
+      'Variations'
+      'GradientOnRandom'
+      'MinNodes'
+      'MaxNodes'
+      'MinHue'
+      'MaxHue'
+      'MinSaturation'
+      'MaxSaturation'
+      'MinLuminance'
+      'MaxLuminance'
+      'UPRSampleDensity'
+      'UPRFilterRadius'
+      'UPROversample'
+      'UPRAdjustDensity'
+      'UPRColoringIdent'
+      'UPRColoringFile'
+      'UPRFormulaFile'
+      'UPRFormulaIdent'
+      'UPRWidth'
+      'UPRHeight'
+      'ExportRenderer'
+      ''
+      'PI'
+      'NVARS'
+      'NXFORMS'
+      'INSTALLPATH'
+      'SYM_NONE'
+      'SYM_BILATERAL'
+      'SYM_ROTATIONAL'
+      ''
+      'V_LINEAR'
+      'V_SINUSOIDAL'
+      'V_SPHERICAL'
+      'V_SWIRL'
+      'V_HORSESHOE'
+      'V_POLAR'
+      'V_HANDKERCHIEF'
+      'V_HEART'
+      'V_DISC'
+      'V_SPIRAL'
+      'V_HYPERBOLIC'
+      'V_DIAMOND'
+      'V_EX'
+      'V_JULIA'
+      'V_BENT'
+      'V_WAVES'
+      'V_FISHEYE'
+      'V_POPCORN'
+      'V_EXPONENTIAL'
+      'V_POWER'
+      'V_COSINE'
+      'V_RINGS'
+      'V_FAN'
+      'V_EYEFISH'
+      'V_BUBBLE'
+      'V_CYLINDER'
+      'V_NOISE'
+      'V_BLUR'
+      'V_GAUSSIANBLUR'
+      'V_RADIALBLUR'
+      'V_RINGS2'
+      'V_FAN2'
+      'V_BLOB'
+      'V_PDJ'
+      'V_PERSPECTIVE'
+      'V_JULIAN'
+      'V_JULIASCOPE'
+      'V_CURL'
+      'V_RANDOM'
+      '')
     HintParameter.TextColor = clBlack
     HintParameter.BkColor = clInfoBk
     HintParameter.HintCharStart = '('
@@ -369,10 +556,7 @@ object ScriptEditor: TScriptEditor
     HintParameter.HintCharDelimiter = ';'
     HintParameter.HintCharWriteDelimiter = ','
     HintParameter.Parameters.Strings = (
-      'ShowMessage(const Msg: string);'
-      
-        'MessageDlg(const Msg: string; DlgType: TMsgDlgType; Buttons: TMs' +
-        'gDlgButtons; HelpCtx: Longint): Integer);')
+      'ShowMessage(const Msg: string);')
     HexIdentifier = '$'
     Description = 'Pascal'
     Filter = 'Pascal Files (*.pas,*.dpr,*.dpk,*.inc)|*.pas;*.dpr;*.dpk;*.inc'
