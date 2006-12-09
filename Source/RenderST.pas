@@ -13,7 +13,7 @@ type
   TBaseSTRenderer = class(TBaseRenderer)
 
   protected
-    PropTable: array[0..SUB_BATCH_SIZE] of TXform;
+    PropTable: array[0..PROP_TABLE_SIZE] of TXform;
     finalXform: TXform;
     UseFinalXform: boolean;
 
