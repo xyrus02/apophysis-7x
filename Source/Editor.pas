@@ -2432,7 +2432,6 @@ begin
     else if Sender = txtP then
     begin
       cp.xform[SelectedTriangle].density := StrToFloat(TEdit(Sender).Text);
-      //ReadjustWeights(cp);
       TEdit(Sender).Text := Format('%.6g', [cp.xform[SelectedTriangle].density]);
     end;
     MainForm.UpdateUndo;
@@ -2494,7 +2493,6 @@ begin
       else if Sender = txtP then
       begin
         cp.xform[SelectedTriangle].density := StrToFloat(TEdit(Sender).Text);
-        //ReadjustWeights(cp);
         TEdit(Sender).Text := Format('%.6g', [cp.xform[SelectedTriangle].density]);
       end;
       MainForm.UpdateUndo;
@@ -2529,7 +2527,7 @@ begin
     end;
     NewVal := Round6(StrToFloat(TEdit(Sender).Text));
   if NewVal < 0.000001 then NewVal := 0.000001;
-  if NewVal > 100 then NewVal := 100;
+  if NewVal > MAX_WEIGHT then NewVal := MAX_WEIGHT;
     { If it's not the same as the old value and it was valid }
     TEdit(Sender).Text := Format('%.6g', [NewVal]);
     if (OldVal <> NewVal) and Allow then
@@ -2561,7 +2559,7 @@ begin
   end;
   NewVal := Round6(StrToFloat(TEdit(Sender).Text));
   if NewVal < 0.000001 then NewVal := 0.000001;
-  if NewVal > 100 then NewVal := 100;
+  if NewVal > MAX_WEIGHT then NewVal := MAX_WEIGHT;
     { If it's not the same as the old value and it was valid }
   TEdit(Sender).Text := Format('%.6g', [NewVal]);
   if (OldVal <> NewVal) and Allow then
@@ -4342,7 +4340,8 @@ begin
 
     if (Sender = pnlWeight) then
     begin
-      if v <= 0.000001 then v := 0.000001;
+      if v <= 0.000001 then v := 0.000001
+      else if v > MAX_WEIGHT then v := MAX_WEIGHT;
       cp.xform[SelectedTriangle].density := v;
       pEdit := @txtP;
     end

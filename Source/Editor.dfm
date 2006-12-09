@@ -706,7 +706,7 @@ object EditForm: TEditForm
                   Top = 134
                   Width = 23
                   Height = 24
-                  Hint = 'Scale triangle'
+                  Hint = 'Scale triangle up'
                   Flat = True
                   Glyph.Data = {
                     F6000000424DF600000000000000760000002800000010000000100000000100
@@ -726,7 +726,7 @@ object EditForm: TEditForm
                   Top = 134
                   Width = 23
                   Height = 24
-                  Hint = 'UnScale triangle'
+                  Hint = 'Scale triangle down'
                   Flat = True
                   Glyph.Data = {
                     F6000000424DF600000000000000760000002800000010000000100000000100

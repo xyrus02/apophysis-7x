@@ -5,6 +5,9 @@ interface
 uses
   XFormMan, BaseVariation;
 
+const
+  MAX_WEIGHT = 1000.0;
+  
 type
   TCPpoint = record
     x, y, c: double;
