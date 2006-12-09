@@ -191,6 +191,7 @@ type
 
     procedure TransformClearProc(AMachine: TatVirtualMachine);
     procedure TransformRotateProc(AMachine: TatVirtualMachine);
+    procedure TransformScaleProc(AMachine: TatVirtualMachine);
     procedure TransformRotateOriginProc(AMachine: TatVirtualMachine);
 
     { Render interface }
@@ -349,6 +350,9 @@ uses Main, Editor, Adjust, Global, Mutate, Registry, Preview,
   SavePreset, ap_windows, ap_FileCtrl, bmdll32;
 
 {$R *.DFM}
+
+const
+  ErrorOutOfRange = 'Transform out of range!';
 
 type
 { Library for math functions }
@@ -1388,7 +1392,7 @@ end;
 procedure TOperationLibrary.RotateProc(AMachine: TatVirtualMachine);
 begin
   try
-    if (ActiveTransform < 0) or (ActiveTransform >= ScriptEditor.cp.NumXForms) then raise EFormatInvalid.Create('Transform out of range.');
+    if (ActiveTransform < 0) or (ActiveTransform > NXFORMS) then raise EFormatInvalid.Create(ErrorOutOfRange);
     with AMachine do
       ScriptEditor.cp.xform[ActiveTransform].Rotate(GetInputArgAsFloat(0));
   except on E: EFormatInvalid do
@@ -1403,7 +1407,7 @@ end;
 procedure TOperationLibrary.MulProc(AMachine: TatVirtualMachine);
 begin
   try
-    if (ActiveTransform < 0) or (ActiveTransform >= ScriptEditor.cp.NumXForms) then raise EFormatInvalid.Create('Transform out of range.');
+    if (ActiveTransform < 0) or (ActiveTransform > NXFORMS) then raise EFormatInvalid.Create(ErrorOutOfRange);
     with AMachine do
       ScriptEditor.cp.xform[ActiveTransform].Multiply(GetInputArgAsFloat(0), GetInputArgAsFloat(1), GetInputArgAsFloat(2), GetInputArgAsFloat(3));
   except on E: EFormatInvalid do
@@ -1726,7 +1730,7 @@ end;
 procedure TOperationLibrary.ScaleProc(AMachine: TatVirtualMachine);
 begin
   try
-    if (ActiveTransform < 0) or (ActiveTransform >= ScriptEditor.cp.NumXForms) then raise EFormatInvalid.Create('Transform out of range.');
+    if (ActiveTransform < 0) or (ActiveTransform >= ScriptEditor.cp.NumXForms) then raise EFormatInvalid.Create(ErrorOutOfRange);
     with AMachine do
       ScriptEditor.cp.xform[ActiveTransform].Scale(GetInputArgAsFloat(0));
   except on E: EFormatInvalid do
@@ -1879,8 +1883,12 @@ var
 begin
   NumTransforms := 0;
   ActiveTransform := -1;
+{
   for i := 0 to NXFORMS - 1 do
     ScriptEditor.cp.xform[i].density := 0;
+}
+  ScriptEditor.cp.Clear;
+  ScriptEditor.cp.xform[0].symmetry := 1;
 end;
 
 procedure TOperationLibrary.MorphProc(AMachine: TatVirtualMachine);
@@ -1939,7 +1947,7 @@ begin
       i := GetInputArgAsInteger(0);
     if (i >= 0) and (i < NXFORMS) then
       ActiveTransform := i
-    else raise EFormatInvalid.Create('Transform out of range.');
+    else raise EFormatInvalid.Create(ErrorOutOfRange);
   except on E: EFormatInvalid do
     begin
       Application.ProcessMessages;
@@ -2067,7 +2075,7 @@ procedure TOperationLibrary.TranslateProc(AMachine: TatVirtualMachine);
 begin
   try
     if (ActiveTransform < 0) or (ActiveTransform > NXFORMS) then // was: NXFORMS-1
-      raise EFormatInvalid.Create('Transform out of range.');
+      raise EFormatInvalid.Create(ErrorOutOfRange);
     with AMachine do
       ScriptEditor.cp.xform[ActiveTransform].Translate(GetInputArgAsFloat(0), GetInputArgAsFloat(1));
   except on E: EFormatInvalid do
@@ -2766,12 +2774,24 @@ var
   i: integer;
   v: double;
 begin
+  if (ActiveTransform < 0) or (ActiveTransform > NXFORMS) then begin
+    ScriptEditor.Console.Lines.Add(ErrorOutOfRange);
+    LastError := ErrorOutOfRange;
+    Scripter.Halt;
+    exit;
+  end;
+
   with AMachine do
   begin
     i := 0;
     while (i < NRVAR) and (varnames(i) <> CurrentPropertyName) do Inc(i);
-//    if (i >= NRVAR) then error
-    ReturnOutPutArg(cp.xform[ActiveTransform].vars[i]);
+    if (i < NRVAR) then
+      ReturnOutPutArg(cp.xform[ActiveTransform].vars[i])
+    else begin // shouldn't happen
+      LastError := 'Oops!';
+      ScriptEditor.Console.Lines.Add(LastError);
+      Scripter.Halt;
+    end;
   end;
 end;
 
@@ -2780,13 +2800,24 @@ var
   i: integer;
   v: double;
 begin
+  if (ActiveTransform < 0) or (ActiveTransform > NXFORMS) then begin
+    ScriptEditor.Console.Lines.Add(ErrorOutOfRange);
+    LastError := ErrorOutOfRange;
+    Scripter.Halt;
+    exit;
+  end;
+
   with AMachine do
   begin
     i := 0;
     while (i < NRVAR) and (varnames(i) <> CurrentPropertyName) do Inc(i);
     if (i < NRVAR) then
-      cp.xform[ActiveTransform].vars[i] := GetInputArgAsFloat(0);
-    //else error
+      cp.xform[ActiveTransform].vars[i] := GetInputArgAsFloat(0)
+    else begin // shouldn't happen
+      LastError := 'Oops!';
+      ScriptEditor.Console.Lines.Add(LastError);
+      Scripter.Halt;
+    end;
   end;
 end;
 
@@ -2794,6 +2825,13 @@ procedure TScriptEditor.GetTransformVariableProc(AMachine: TatVirtualMachine);
 var
   v: double;
 begin
+  if (ActiveTransform < 0) or (ActiveTransform > NXFORMS) then begin
+    ScriptEditor.Console.Lines.Add(ErrorOutOfRange);
+    LastError := ErrorOutOfRange;
+    Scripter.Halt;
+    exit;
+  end;
+
   with AMachine do
   begin
     cp.xform[ActiveTransform].GetVariable(CurrentPropertyName, v);
@@ -2805,6 +2843,13 @@ procedure TScriptEditor.SetTransformVariableProc(AMachine: TatVirtualMachine);
 var
   v: double;
 begin
+  if (ActiveTransform < 0) or (ActiveTransform > NXFORMS) then begin
+    ScriptEditor.Console.Lines.Add(ErrorOutOfRange);
+    LastError := ErrorOutOfRange;
+    Scripter.Halt;
+    exit;
+  end;
+
   with AMachine do
   begin
     v := GetInputArgAsFloat(0);
@@ -2819,6 +2864,13 @@ var
   v: double;
   i, j: integer;
 begin
+  if (ActiveTransform < 0) or (ActiveTransform > NXFORMS) then begin
+    ScriptEditor.Console.Lines.Add(ErrorOutOfRange);
+    LastError := ErrorOutOfRange;
+    Scripter.Halt;
+    exit;
+  end;
+
   with AMachine do begin
     i := GetArrayIndex(0);
     j := GetArrayIndex(1);
@@ -2835,6 +2887,13 @@ var
   v: double;
   i, j: integer;
 begin
+  if (ActiveTransform < 0) or (ActiveTransform > NXFORMS) then begin
+    ScriptEditor.Console.Lines.Add(ErrorOutOfRange);
+    LastError := ErrorOutOfRange;
+    Scripter.Halt;
+    exit;
+  end;
+
   with AMachine do
   begin
     v := GetInputArgAsFloat(0);
@@ -2852,6 +2911,13 @@ var
   v: double;
   i, j: integer;
 begin
+  if (ActiveTransform < 0) or (ActiveTransform > NXFORMS) then begin
+    ScriptEditor.Console.Lines.Add(ErrorOutOfRange);
+    LastError := ErrorOutOfRange;
+    Scripter.Halt;
+    exit;
+  end;
+
   with AMachine do begin
     i := GetArrayIndex(0);
     j := GetArrayIndex(1);
@@ -2868,6 +2934,13 @@ var
   v: double;
   i, j: integer;
 begin
+  if (ActiveTransform < 0) or (ActiveTransform > NXFORMS) then begin
+    ScriptEditor.Console.Lines.Add(ErrorOutOfRange);
+    LastError := ErrorOutOfRange;
+    Scripter.Halt;
+    exit;
+  end;
+
   with AMachine do
   begin
     v := GetInputArgAsFloat(0);
@@ -2893,6 +2966,13 @@ procedure TScriptEditor.TransformRotateOriginProc(AMachine: TatVirtualMachine);
 var
   tx, ty, rad: double;
 begin
+  if (ActiveTransform < 0) or (ActiveTransform > NXFORMS) then begin
+    ScriptEditor.Console.Lines.Add(ErrorOutOfRange);
+    LastError := ErrorOutOfRange;
+    Scripter.Halt;
+    exit;
+  end;
+
   rad := AMachine.GetInputArgAsFloat(0) * pi / 180;
   with EditForm.WorldPivot do
   with cp.xform[ActiveTransform] do begin
@@ -2903,7 +2983,7 @@ begin
   end;
 end;
 
-// -- pivot-aware rotating --
+// -- pivot-aware rotating & scaling --
 
 procedure TScriptEditor.TransformRotateProc(AMachine: TatVirtualMachine);
 var
@@ -2912,6 +2992,13 @@ var
 
   tx: TXForm;
 begin
+  if (ActiveTransform < 0) or (ActiveTransform > NXFORMS) then begin
+    ScriptEditor.Console.Lines.Add(ErrorOutOfRange);
+    LastError := ErrorOutOfRange;
+    Scripter.Halt;
+    exit;
+  end;
+
   tx := TXForm.Create;
   tx.Assign(scripteditor.cp.xform[NumTransforms]); // just in case (?)
 
@@ -2919,6 +3006,33 @@ begin
   cp.TrianglesFromCp(Triangles); // it's ugly but it works...
   Triangles[ActiveTransform] :=
     RotateTrianglePoint(Triangles[ActiveTransform], px, py, AMachine.GetInputArgAsFloat(0) * pi / 180);
+  cp.GetFromTriangles(Triangles, NumTransforms);
+
+  cp.xform[NumTransforms].Assign(tx);
+  tx.Free;
+end;
+
+procedure TScriptEditor.TransformScaleProc(AMachine: TatVirtualMachine);
+var
+  Triangles: TTriangles;
+  px, py: double;
+
+  tx: TXForm;
+begin
+  if (ActiveTransform < 0) or (ActiveTransform > NXFORMS) then begin
+    ScriptEditor.Console.Lines.Add(ErrorOutOfRange);
+    LastError := ErrorOutOfRange;
+    Scripter.Halt;
+    exit;
+  end;
+
+  tx := TXForm.Create;
+  tx.Assign(scripteditor.cp.xform[NumTransforms]); // just in case (?)
+
+  EditForm.ScriptGetPivot(px, py);
+  cp.TrianglesFromCp(Triangles); // it's ugly but it works...
+  Triangles[ActiveTransform] :=
+    ScaleTrianglePoint(Triangles[ActiveTransform], px, py, AMachine.GetInputArgAsFloat(0));
   cp.GetFromTriangles(Triangles, NumTransforms);
 
   cp.xform[NumTransforms].Assign(tx);
@@ -2997,6 +3111,7 @@ begin
     DefineProp('MaxMemory', tkInteger, GetRenderMaxMemoryProc, SetRenderMaxMemoryProc);
   end;
   Scripter.AddObject('Renderer', Renderer);
+
   { Flame interface }
   with Scripter.defineClass(TFlame) do
   begin
@@ -3024,6 +3139,7 @@ begin
     DefineProp('FinalXformEnabled', tkInteger, GetFlameFinalxformEnabledProc, SetFlameFinalxformEnabledProc);
   end;
   Scripter.AddObject('Flame', Flame);
+
   { Transform interface }
   with Scripter.defineClass(TTransform) do
   begin
@@ -3032,13 +3148,20 @@ begin
     DefineProp('Color', tkFloat, GetTransformColorProc, SetTransformColorProc);
     DefineProp('Weight', tkFloat, GetTransformWeightProc, SetTransformWeightProc);
     DefineProp('Symmetry', tkFloat, GetTransformSymProc, SetTransformSymProc);
-    for i:= 0 to NRVAR - 1 do
+    for i:= 0 to NRVAR - 1 do begin
       DefineProp(Varnames(i), tkFloat, GetTransformVariationProc, SetTransformVariationProc);
-    for i:= 0 to GetNrVariableNames - 1 do
+      Editor.SyntaxStyles.AutoCompletion.Add(Varnames(i));
+    end;
+    for i:= 0 to GetNrVariableNames - 1 do begin
       DefineProp(GetVariableNameAt(i), tkFloat, GetTransformVariableProc, SetTransformVariableProc);
+      Editor.SyntaxStyles.AutoCompletion.Add(GetVariableNameAt(i));
+    end;
+    Editor.SyntaxStyles.AutoCompletion.Sort;
+    while Editor.SyntaxStyles.AutoCompletion.Strings[0] = '' do Editor.SyntaxStyles.AutoCompletion.Delete(0);
 
     DefineMethod('Clear', 0, tkNone, nil, TransformClearProc);
     DefineMethod('Rotate', 1, tkNone, nil, TransformRotateProc);
+    DefineMethod('Scale', 1, tkNone, nil, TransformScaleProc);
     DefineMethod('RotateOrigin', 1, tkNone, nil, TransformRotateOriginProc);
 
     DefineProp('a', tkFloat, GetTransformAProc, SetTransformAProc);
@@ -3050,6 +3173,7 @@ begin
     DefineProp('Variation', tkFloat, GetTransformVarProc, SetTransformVarProc, nil, false, 1);
   end;
   Scripter.AddObject('Transform', Transform);
+
   { Options interface }
   with Scripter.defineClass(TOptions) do
   begin
@@ -3105,6 +3229,7 @@ begin
   Scripter.AddObject('Options', Options);
   Scripter.AddLibrary(TOperationLibrary);
   Scripter.AddLibrary(TatClassesLibrary);
+
   { Variables and constants }
   Scripter.AddConstant('PI', pi);
   Scripter.AddConstant('NVARS', NRVAR);
@@ -3177,7 +3302,7 @@ begin
 *)
   { Variables }
   Scripter.AddVariable('SelectedTransform', EditForm.SelectedTriangle);
-  Scripter.AddVariable('Compatibility', Compatibility);
+  Scripter.AddVariable('Compatibility', Compatibility); // obsolete
   Scripter.AddVariable('ActiveTransform', ActiveTransform);
   Scripter.AddVariable('UpdateFlame', UpdateIt);
   Scripter.AddVariable('ResetLocation', ResetLocation);
@@ -3187,6 +3312,7 @@ begin
   Scripter.AddVariable('ShowProgress', ShowProgress);
   Scripter.AddVariable('CurrentFile', OpenFile);
   Scripter.AddVariable('LimitVibrancy', LimitVibrancy);
+
   Scripter.AddLibrary(TMathLibrary);
   Scripter.AddLibrary(TatMathLibrary);
 //  Scripter.AddLibrary(TatWindowsLibrary);
