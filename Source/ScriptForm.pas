@@ -3603,7 +3603,7 @@ procedure TScriptEditor.ScripterCompileError(Sender: TObject;
   var msg: string; row, col: Integer; var ShowException: Boolean);
 begin
   Editor.ActiveLine := row - 1;
-  Console.Lines.Add(msg);
+  Console.Lines.Add('Line '+IntToStr(row)+' : '+msg);
   ScriptRenderForm.Close;
   btnRun.Enabled := True;
   btnStop.Enabled := False;
@@ -3612,6 +3612,7 @@ begin
   MainForm.mnuRun.Enabled := True;
   MainForm.mnuStop.Enabled := False;
   btnBreak.Enabled := False;
+  ShowException := true;
   Application.ProcessMessages;
 end;
 
