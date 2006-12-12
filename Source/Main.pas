@@ -41,7 +41,7 @@ const
   RS_XO = 2;
   RS_VO = 3;
 
-  AppVersionString = 'Apophysis 2.05 beta 2 rc3';
+  AppVersionString = 'Apophysis 2.05 beta 2 rc4';
 
 type
   TMouseMoveState = (msUsual, msZoomWindow, msZoomOutWindow, msZoomWindowMove,
@@ -1328,19 +1328,8 @@ begin
   x := cp1.center[0];
   y := cp1.center[1];
 
-{ // not supported by flam3 any more
-  pal := ''; hue := '';
-  if sheep then begin
-    if cp1.cmapindex >= 0 then pal := 'palette="' + IntToStr(cp1.cmapindex) + '" ';
-    hue := 'hue="' + format('%g', [cp1.hue_rotation]) + '" ';
-  end;
-}
 //  if cp1.cmapindex >= 0 then pal := pal + 'gradient="' + IntToStr(cp1.cmapindex) + '" ';
 
-{ // not supported by flam3 any more
-  if Trim(SheepNick) <> '' then nick := 'nick="' + Trim(SheepNick) + '"';
-  if Trim(SheepURL) <> '' then url := 'url="' + Trim(SheepURL) + '" ';
-}
   try
     parameters := 'version="' + AppVersionString + '" ';
     if cp1.time <> 0 then
@@ -1385,16 +1374,8 @@ begin
       FileList.Add(cp1.xform[i].ToXMLString);
     if cp1.HasFinalXForm then
     begin
-
-{$if false} // new file format - how about this?
-      FileList.Add(Format('   <xformset enabled="%d">', [IfThen(cp1.finalXformEnabled, 1, 0)]));
-      FileList.Add('   ' + cp1.xform[t].ToXMLString);
-      Filelist.Add('   </xformset>');
-{$else}
       // 'enabled' flag disabled in this release
       FileList.Add(cp1.xform[t].FinalToXMLString(cp1.finalXformEnabled));
-{$ifend}
-
     end;
 
     { Write palette data }
