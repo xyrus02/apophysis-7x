@@ -56,6 +56,9 @@ type
     MaxMemory, Width, Height: integer;
     Filename: string;
   end;
+  TPivot = class
+  public
+  end;
   TScriptEditor = class(TForm)
     MainOpenDialog: TOpenDialog;
     MainSaveDialog: TSaveDialog;
@@ -106,6 +109,7 @@ type
     cmap: TColorMap;
     Flame: TFlame;
     Options: TOptions;
+    Pivot: TPivot;
     Renderer: TScriptRender;
     Another: TScriptRender;
     procedure UpdateFlame;
@@ -204,6 +208,7 @@ type
     procedure GetRenderMaxMemoryProc(AMachine: TatVirtualMachine);
     procedure SetRenderMaxMemoryProc(AMachine: TatVirtualMachine);
     procedure FillFileList;
+
     { Options interface }
     procedure GetJPEGQuality(AMachine: TatVirtualMachine);
     procedure SetJPEGQuality(AMachine: TatVirtualMachine);
@@ -299,6 +304,17 @@ type
     procedure SetUPRHeight(AMachine: TatVirtualMachine);
     procedure GetExportPath(AMachine: TatVirtualMachine);
     procedure SetExportPath(AMachine: TatVirtualMachine);
+
+    { Pivot interface }
+    procedure GetPivotModeProc(AMachine: TatVirtualMachine);
+    procedure SetPivotModeProc(AMachine: TatVirtualMachine);
+    procedure GetPivotXProc(AMachine: TatVirtualMachine);
+    procedure SetPivotXProc(AMachine: TatVirtualMachine);
+    procedure GetPivotYProc(AMachine: TatVirtualMachine);
+    procedure SetPivotYProc(AMachine: TatVirtualMachine);
+    procedure SetPivotProc(AMachine: TatVirtualMachine);
+    procedure ResetPivotProc(AMachine: TatVirtualMachine);
+
   end;
   TTransform = class
   public
@@ -371,7 +387,7 @@ type
     procedure ScaleProc(AMachine: TatVirtualMachine);
     procedure MulProc(AMachine: TatVirtualMachine);
     procedure TranslateProc(AMachine: TatVirtualMachine);
-    procedure ActiveTransformProc(AMachine: TatVirtualMachine);
+    procedure GetActiveTransformProc(AMachine: TatVirtualMachine);
     procedure SetActiveTransformProc(AMachine: TatVirtualMachine);
     procedure TransformsProc(AMachine: TatVirtualMachine);
     procedure FileCountProc(AMachine: TatVirtualMachine);
@@ -398,20 +414,9 @@ type
     procedure SaveGradientProc(AMachine: TatVirtualMachine);
     procedure GetVariation(AMachine: TatVirtualMachine);
     procedure SetVariation(AMachine: TatVirtualMachine);
-{
-    procedure GetVariable(AMachine: TatVirtualMachine);
-    procedure SetVariable(AMachine: TatVirtualMachine);
-    procedure GetVariableStr(AMachine: TatVirtualMachine);
-    procedure SetVariableStr(AMachine: TatVirtualMachine);
-}
+
     procedure VariationIndexProc(AMachine: TatVirtualMachine);
     procedure VariationNameProc(AMachine: TatVirtualMachine);
-    procedure GetPivotModeProc(AMachine: TatVirtualMachine);
-    procedure SetPivotModeProc(AMachine: TatVirtualMachine);
-    procedure GetPivotXProc(AMachine: TatVirtualMachine);
-    procedure GetPivotYProc(AMachine: TatVirtualMachine);
-    procedure SetPivotProc(AMachine: TatVirtualMachine);
-    procedure ResetPivotProc(AMachine: TatVirtualMachine);
 
     procedure CalculateScale(AMachine: TatVirtualMachine);
     procedure NormalizeVars(AMachine: TatVirtualMachine);
@@ -1194,7 +1199,8 @@ begin
   Scripter.DefineMethod('LoadFlame', 1, tkNone, nil, LoadFlameProc);
   Scripter.DefineMethod('Scale', 1, tkNone, nil, ScaleProc);
   Scripter.DefineMethod('Translate', 2, tkNone, nil, TranslateProc);
-  Scripter.DefineMethod('ActiveTransform', 0, tkInteger, nil, ActiveTransformProc);
+//  Scripter.DefineMethod('ActiveTransform', 0, tkInteger, nil, GetActiveTransformProc);
+  Scripter.DefineProp('ActiveTransform', tkInteger, GetActiveTransformProc, SetActiveTransformProc);
   Scripter.DefineMethod('SetActiveTransform', 1, tkInteger, nil, SetActiveTransformProc);
   Scripter.DefineMethod('Transforms', 0, tkInteger, nil, TransformsProc);
   Scripter.DefineMethod('FileCount', 0, tkInteger, nil, FileCountProc);
@@ -1218,22 +1224,10 @@ begin
   Scripter.DefineMethod('SaveGradient', 2, tkNone, nil, SaveGradientProc);
   Scripter.DefineMethod('Variation', 0, tkInteger, nil, GetVariation);
   Scripter.DefineMethod('SetVariation', 1, tkInteger, nil, SetVariation);
-{
-  Scripter.DefineMethod('GetVariable', 1, tkFloat, nil, GetVariable);
-  Scripter.DefineMethod('SetVariable', 2, tkNone, nil, SetVariable);
-  Scripter.DefineMethod('GetVariableStr', 1, tkFloat, nil, GetVariableStr);
-  Scripter.DefineMethod('SetVariableStr', 2, tkNone, nil, SetVariableStr);
-}
+
   Scripter.AddConstant('ProgramVersionString', AppVersionString);
   Scripter.DefineMethod('VariationIndex', 1, tkInteger, nil, VariationIndexProc);
   Scripter.DefineMethod('VariationName', 1, tkString, nil, VariationNameProc);
-
-  Scripter.DefineMethod('GetPivotMode', 0, tkInteger, nil, GetPivotModeProc);
-  Scripter.DefineMethod('SetPivotMode', 1, tkNone, nil, SetPivotModeProc);
-  Scripter.DefineMethod('GetPivotX', 0, tkFloat, nil, GetPivotXProc);
-  Scripter.DefineMethod('GetPivotY', 0, tkFloat, nil, GetPivotYProc);
-  Scripter.DefineMethod('SetPivot', 2, tkNone, nil, SetPivotProc);
-  Scripter.DefineMethod('ResetPivot', 0, tkNone, nil, ResetPivotProc);
 
   Scripter.DefineMethod('CalculateScale', 0, tkNone, nil, CalculateScale);
   Scripter.DefineMethod('CalculateBounds', 0, tkNone, nil, CalculateBounds);
@@ -1742,7 +1736,7 @@ begin
   end;
 end;
 
-procedure TOperationLibrary.ActiveTransformProc(AMachine: TatVirtualMachine);
+procedure TOperationLibrary.GetActiveTransformProc(AMachine: TatVirtualMachine);
 begin
   with AMachine do
     ReturnOutputArg(ActiveTransform);
@@ -1783,66 +1777,6 @@ begin
       MainForm.VarMenus[i].Checked := True;
   end
 end;
-
-(*
-procedure TOperationLibrary.SetVariable(AMachine: TatVirtualMachine);
-var
-  vb: double;
-  v: Variant;
-begin
-  with AMachine do
-  begin
-    v := GetInputArg(0);
-    vb := GetInputArgAsFloat(1);
-    if varType(v) and varTypeMask = varByte then begin
-      ScriptEditor.cp.xform[ActiveTransform].SetVariable(GetVariableNameAt(Integer(v)), vb);
-    end
-    else if varType(v) and varTypeMask = varString then begin
-      ScriptEditor.cp.xform[ActiveTransform].SetVariable(String(v), vb);
-    end;
-    // else error...?
-  end
-end;
-
-procedure TOperationLibrary.GetVariable(AMachine: TatVirtualMachine);
-var
-  i: integer;
-  vb: double;
-begin
-  with AMachine do
-  begin
-    i := GetInputArgAsInteger(0);
-    ScriptEditor.cp.xform[ActiveTransform].GetVariable(GetVariableNameAt(i), vb);
-    ReturnOutputArg(vb);
-  end
-end;
-
-procedure TOperationLibrary.GetVariableStr(AMachine: TatVirtualMachine);
-var
-  variable: string;
-  vb: double;
-begin
-  with AMachine do
-  begin
-    variable := GetInputArgAsString(0);
-    ScriptEditor.cp.xform[ActiveTransform].GetVariable(variable, vb);
-    ReturnOutputArg(vb);
-  end
-end;
-
-procedure TOperationLibrary.SetVariableStr(AMachine: TatVirtualMachine);
-var
-  variable: string;
-  vb: double;
-begin
-  with AMachine do
-  begin
-    variable := GetInputArgAsString(0);
-    vb := GetInputArgAsFloat(1);
-    ScriptEditor.cp.xform[ActiveTransform].SetVariable(variable, vb);
-  end
-end;
-*)
 
 procedure TOperationLibrary.VariationIndexProc(AMachine: TatVirtualMachine);
 var
@@ -2092,65 +2026,6 @@ begin
   NormalizeVariations(ScriptEditor.cp);
 end;
 
-procedure TOperationLibrary.GetPivotModeProc(AMachine: TatVirtualMachine);
-begin
-  AMachine.ReturnOutputArg(Integer(EditForm.PivotMode));
-end;
-
-procedure TOperationLibrary.SetPivotModeProc(AMachine: TatVirtualMachine);
-var
-  n: integer;
-begin
-  n := AMachine.GetInputArgAsInteger(0);
-  if n = 0 then
-    EditForm.PivotMode := pivotLocal
-  else
-    EditForm.PivotMode := pivotWorld;
-end;
-
-procedure TOperationLibrary.GetPivotXProc(AMachine: TatVirtualMachine);
-var
-  px, py: double;
-begin
-//  EditForm.ScriptGetPivot(px, py);
-//  AMachine.ReturnOutputArg(px);
-  if EditForm.PivotMode = pivotLocal then
-    AMachine.ReturnOutputArg(EditForm.LocalPivot.x)
-  else
-    AMachine.ReturnOutputArg(EditForm.WorldPivot.x);
-end;
-
-procedure TOperationLibrary.GetPivotYProc(AMachine: TatVirtualMachine);
-var
-  px, py: double;
-begin
-//  EditForm.ScriptGetPivot(px, py);
-//  AMachine.ReturnOutputArg(py);
-  if EditForm.PivotMode = pivotLocal then
-    AMachine.ReturnOutputArg(EditForm.LocalPivot.y)
-  else
-    AMachine.ReturnOutputArg(EditForm.WorldPivot.y);
-end;
-
-procedure TOperationLibrary.SetPivotProc(AMachine: TatVirtualMachine);
-begin
-  with AMachine do begin
-    if EditForm.PivotMode = pivotLocal then begin
-      EditForm.LocalPivot.x := GetInputArgAsFloat(0);
-      EditForm.LocalPivot.y := GetInputArgAsFloat(1);
-    end
-    else begin
-      EditForm.WorldPivot.x := GetInputArgAsFloat(0);
-      EditForm.WorldPivot.y := GetInputArgAsFloat(1);
-    end;  
-  end;
-end;
-
-procedure TOperationLibrary.ResetPivotProc(AMachine: TatVirtualMachine);
-begin
-  EditForm.btnResetPivotClick(nil);
-end;
-
 { ******************************** Math Library ****************************** }
 
 procedure TMathLibrary.Init;
@@ -2225,6 +2100,7 @@ begin
   FileList := TStringList.Create;
   Flame := TFlame.Create;
   Options := TOptions.Create;
+  Pivot := TPivot.Create;
   Renderer := TScriptRender.create;
   Another := TScriptRender.create;
   cp := TControlPoint.create;
@@ -2246,6 +2122,7 @@ begin
   Flame.Free;
   Transform.Free;
   Options.Free;
+  Pivot.Free;
 end;
 
 procedure TScriptEditor.FormShow(Sender: TObject);
@@ -3096,6 +2973,79 @@ begin
   end;
 end;
 
+{ **************************************************************************** }
+
+procedure TScriptEditor.GetPivotModeProc(AMachine: TatVirtualMachine);
+begin
+  AMachine.ReturnOutputArg(Integer(EditForm.PivotMode));
+end;
+
+procedure TScriptEditor.SetPivotModeProc(AMachine: TatVirtualMachine);
+var
+  n: integer;
+begin
+  n := AMachine.GetInputArgAsInteger(0);
+  if n = 0 then
+    EditForm.PivotMode := pivotLocal
+  else
+    EditForm.PivotMode := pivotWorld;
+end;
+
+procedure TScriptEditor.GetPivotXProc(AMachine: TatVirtualMachine);
+begin
+//  EditForm.ScriptGetPivot(px, py);
+//  AMachine.ReturnOutputArg(px);
+  if EditForm.PivotMode = pivotLocal then
+    AMachine.ReturnOutputArg(EditForm.LocalPivot.x)
+  else
+    AMachine.ReturnOutputArg(EditForm.WorldPivot.x);
+end;
+
+procedure TScriptEditor.SetPivotXProc(AMachine: TatVirtualMachine);
+begin
+  if EditForm.PivotMode = pivotLocal then
+    EditForm.LocalPivot.x := AMachine.GetInputArgAsFloat(0)
+  else
+    EditForm.WorldPivot.x := AMachine.GetInputArgAsFloat(0);
+end;
+
+procedure TScriptEditor.GetPivotYProc(AMachine: TatVirtualMachine);
+begin
+//  EditForm.ScriptGetPivot(px, py);
+//  AMachine.ReturnOutputArg(py);
+  if EditForm.PivotMode = pivotLocal then
+    AMachine.ReturnOutputArg(EditForm.LocalPivot.y)
+  else
+    AMachine.ReturnOutputArg(EditForm.WorldPivot.y);
+end;
+
+procedure TScriptEditor.SetPivotYProc(AMachine: TatVirtualMachine);
+begin
+  if EditForm.PivotMode = pivotLocal then
+    EditForm.LocalPivot.y := AMachine.GetInputArgAsFloat(0)
+  else
+    EditForm.WorldPivot.y := AMachine.GetInputArgAsFloat(0);
+end;
+
+procedure TScriptEditor.SetPivotProc(AMachine: TatVirtualMachine);
+begin
+  with AMachine do begin
+    if EditForm.PivotMode = pivotLocal then begin
+      EditForm.LocalPivot.x := GetInputArgAsFloat(0);
+      EditForm.LocalPivot.y := GetInputArgAsFloat(1);
+    end
+    else begin
+      EditForm.WorldPivot.x := GetInputArgAsFloat(0);
+      EditForm.WorldPivot.y := GetInputArgAsFloat(1);
+    end;
+  end;
+end;
+
+procedure TScriptEditor.ResetPivotProc(AMachine: TatVirtualMachine);
+begin
+  EditForm.btnResetPivotClick(nil);
+end;
+
 { ********************************* Scripter ********************************* }
 
 procedure TScriptEditor.PrepareScripter;
@@ -3225,8 +3175,19 @@ begin
     DefineProp('UPRHeight', tkInteger, GetUPRHeight, SetUPRHeight);
     DefineProp('ExportRenderer', tkInteger, GetExportPath, SetExportPath);
   end;
-  Scripter.AddComponent(OpenDialog);
   Scripter.AddObject('Options', Options);
+
+  with Scripter.defineClass(TPivot) do
+  begin
+    DefineProp('Mode', tkInteger, GetPivotModeProc, SetPivotModeProc);
+    DefineProp('X', tkFloat, GetPivotXProc, SetPivotXProc);
+    DefineProp('Y', tkFloat, GetPivotYProc, SetPivotYProc);
+    DefineMethod('Set', 2, tkNone, nil, SetPivotProc);
+    DefineMethod('Reset', 0, tkNone, nil, ResetPivotProc);
+  end;
+  Scripter.AddObject('Pivot', Pivot);
+
+  Scripter.AddComponent(OpenDialog);
   Scripter.AddLibrary(TOperationLibrary);
   Scripter.AddLibrary(TatClassesLibrary);
 

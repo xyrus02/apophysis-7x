@@ -20,7 +20,7 @@ object ScriptEditor: TScriptEditor
   TextHeight = 13
   object Splitter1: TSplitter
     Left = 0
-    Top = 244
+    Top = 250
     Width = 531
     Height = 4
     Cursor = crVSplit
@@ -30,7 +30,7 @@ object ScriptEditor: TScriptEditor
     Left = 508
     Top = 0
     Width = 23
-    Height = 244
+    Height = 250
     Align = alRight
     AutoSize = True
     Caption = 'ToolBar'
@@ -96,7 +96,7 @@ object ScriptEditor: TScriptEditor
   end
   object StatusBar: TStatusBar
     Left = 0
-    Top = 337
+    Top = 343
     Width = 531
     Height = 19
     Anchors = [akLeft, akRight]
@@ -106,7 +106,7 @@ object ScriptEditor: TScriptEditor
     Left = 0
     Top = 0
     Width = 508
-    Height = 244
+    Height = 250
     Align = alClient
     BevelInner = bvLowered
     BevelOuter = bvLowered
@@ -116,7 +116,7 @@ object ScriptEditor: TScriptEditor
       Left = 2
       Top = 2
       Width = 504
-      Height = 240
+      Height = 246
       Cursor = crIBeam
       PopupMenu = PopupMenu
       ActiveLineSettings.ShowActiveLine = False
@@ -136,8 +136,6 @@ object ScriptEditor: TScriptEditor
       BlockLineColor = clGray
       BkColor = clWindow
       BorderStyle = bsNone
-      CodeFolding.Enabled = False
-      CodeFolding.LineColor = clGray
       Ctl3D = False
       DelErase = True
       EnhancedHomeKey = False
@@ -147,6 +145,11 @@ object ScriptEditor: TScriptEditor
       Gutter.Font.Height = -13
       Gutter.Font.Name = 'Courier New'
       Gutter.Font.Style = []
+      Gutter.LineNumberStart = 1
+      Gutter.LineNumberTextColor = clBlack
+      Gutter.ShowLineNumbers = True
+      Gutter.Visible = True
+      Gutter.ShowLeadingZeros = False
       Font.Charset = DEFAULT_CHARSET
       Font.Color = clBlack
       Font.Height = -13
@@ -188,14 +191,14 @@ object ScriptEditor: TScriptEditor
       UrlStyle.BkColor = clWhite
       UrlStyle.Style = [fsUnderline]
       UseStyler = True
-      Version = '2.0.0.1'
+      Version = '1.6.0.17'
       WordWrap = wwNone
       OnChange = EditorChange
     end
   end
   object Console: TMemo
     Left = 0
-    Top = 248
+    Top = 254
     Width = 531
     Height = 89
     Align = alBottom
@@ -359,6 +362,7 @@ object ScriptEditor: TScriptEditor
       end>
     AutoCompletion.Strings = (
       'ShowMessage'
+      'InputQuery'
       ''
       'RotateFlame'
       'RotateReference'
@@ -396,12 +400,6 @@ object ScriptEditor: TScriptEditor
       'ProgramVersionString'
       'VariationIndex'
       'VariationName'
-      'GetPivotMode'
-      'SetPivotMode'
-      'GetPivotX'
-      'GetPivotY'
-      'SetPivot'
-      'ResetPivot'
       'CalculateScale'
       'CalculateBounds'
       'NormalizeVars'
@@ -498,6 +496,12 @@ object ScriptEditor: TScriptEditor
       'UPRHeight'
       'ExportRenderer'
       ''
+      'Pivot'
+      ''
+      'Mode'
+      'Set'
+      'Reset'
+      ''
       'PI'
       'NVARS'
       'NXFORMS'
@@ -557,70 +561,38 @@ object ScriptEditor: TScriptEditor
       
         'InputQuery(const Caption: string; const Prompt: string; var Valu' +
         'e: string)'
-      'Translate(X: integer, Y: integer)'
-      'Rotate(Angle: double)'
-      'SetActiveTransform(TransformNumber: integer);'
-      'ListFile(const filename: string)'
       'DeleteFile(const filename: string)'
-      'LoadFlame(FlameNumber: integer)'
-      'SetActiveTransform(TransformNumber: integer)'
-      'ShowStatus(const Text: string)'
+      'RotateFlame(Angle: double)'
       'RotateReference(Angle: double)'
+      'Rotate(Angle: double)'
+      'Multiply(a00: double, a01: double, a10: double, a11: double)'
+      'StoreFlame(FlameNumber: integer)'
+      'GetFlame(FlameNumber: integer)'
+      'LoadFlame(FlameNumber: integer)'
       'Scale(Scale: double)'
-      'SaveFlame(const filename: string)')
+      'Translate(X: double, Y: double)'
+      'SetActiveTransform(TransformNumber: integer)'
+      'Print(something_printable)'
+      'AddSymmetry(symmetry_type: integer)'
+      
+        'Morph(FlameNumber1: integer, FlameNumber2: integer, Time: double' +
+        ')'
+      'SetFlameFile(const filename: string)'
+      'ListFile(const filename: string)'
+      'SaveFlame(const filename: string)'
+      'ShowStatus(const Text: string)'
+      'RandomFlame(randomness_type: integer)'
+      'SaveGradient(Title: string, FileName: string)'
+      'SetVariation(Number: integer)'
+      'VariationIndex(var_name: string): integer'
+      'VariationName(var_index: integer): string'
+      'CopyFile(Source: string, Destination: string)')
     HexIdentifier = '$'
     Description = 'Pascal'
     Filter = 'Pascal Files (*.pas,*.dpr,*.dpk,*.inc)|*.pas;*.dpr;*.dpk;*.inc'
     DefaultExtension = '.pas'
     StylerName = 'Pascal'
     Extensions = 'pas;dpr;dpk;inc'
-    RegionDefinitions = <
-      item
-        Identifier = 'procedure'
-        RegionStart = 'begin'
-        RegionEnd = 'end'
-        RegionType = rtClosed
-        ShowComments = False
-      end
-      item
-        Identifier = 'interface'
-        RegionStart = 'interface'
-        RegionType = rtOpen
-        ShowComments = False
-      end
-      item
-        Identifier = 'unit'
-        RegionStart = 'unit'
-        RegionType = rtFile
-        ShowComments = False
-      end
-      item
-        Identifier = 'implementation'
-        RegionStart = 'implementation'
-        RegionType = rtOpen
-        ShowComments = False
-      end
-      item
-        Identifier = 'case'
-        RegionStart = 'case'
-        RegionEnd = 'end'
-        RegionType = rtIgnore
-        ShowComments = False
-      end
-      item
-        Identifier = 'function'
-        RegionStart = 'begin'
-        RegionEnd = 'end'
-        RegionType = rtClosed
-        ShowComments = False
-      end
-      item
-        Identifier = '{$region'
-        RegionStart = '{$region'
-        RegionEnd = '{$endregion'
-        RegionType = rtClosed
-        ShowComments = False
-      end>
     Left = 328
     Top = 32
   end
