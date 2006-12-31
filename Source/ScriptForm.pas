@@ -1913,7 +1913,7 @@ begin
       for i := 1 to NRVAR - 1 do
         ScriptEditor.cp.xform[ActiveTransform].vars[i] := 0;}
       scriptEditor.cp.xform[ActiveTransform].Clear;
-      ScriptEditor.cp.xform[ActiveTransform].density := 1 / NumTransforms;
+      ScriptEditor.cp.xform[ActiveTransform].density := 0.5;
     end
     else raise EFormatInvalid.Create('Too many transforms.');
   except on E: EFormatInvalid do
@@ -1932,11 +1932,13 @@ begin
   if NumTransforms > 0 then
   try
     // I'm not sure, but *maybe* this will help scripts not to screw up finalXform
-    if ActiveTransform = NumTransforms then // final xform (?)
+    if ActiveTransform = NumTransforms then
+    // final xform - just clear it
+    begin
       scriptEditor.cp.xform[NumTransforms].Clear;
       scriptEditor.cp.xform[NumTransforms].symmetry := 1;
       scriptEditor.cp.finalXformEnabled := false;
-    begin
+      exit;
     end;
     if ActiveTransform = (NumTransforms - 1) then
     { Last triangle...just reduce number}
@@ -1979,9 +1981,10 @@ begin
   try
     if NumTransforms < NXFORMS then
     begin
-      inc(NumTransforms);
       old := ActiveTransform;
-      ActiveTransform := NumTransforms - 1;
+      ActiveTransform := NumTransforms;
+      inc(NumTransforms);
+      ScriptEditor.cp.xform[NumTransforms].Assign(ScriptEditor.cp.xform[ActiveTransform]); // final xform
       ScriptEditor.cp.xform[ActiveTransform].Assign(ScriptEditor.cp.xform[old]);
 {
       ScriptEditor.cp.xform[ActiveTransform].c[0, 1] := ScriptEditor.cp.xform[old].c[0, 1];
