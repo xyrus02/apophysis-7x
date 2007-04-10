@@ -159,6 +159,8 @@ type
     procedure GetFlameBatchesProc(AMachine: TatVirtualMachine);
     procedure GetFlameFinalxformEnabledProc(AMachine: TatVirtualMachine);
     procedure SetFlameFinalxformEnabledProc(AMachine: TatVirtualMachine);
+    procedure GetFlameAngleProc(AMachine: TatVirtualMachine);
+    procedure SetFlameAngleProc(AMachine: TatVirtualMachine);
 
     { Transform interface }
     procedure GetTransformAProc(AMachine: TatVirtualMachine);
@@ -2498,6 +2500,18 @@ begin
     cp.nbatches := GetInputArgAsInteger(0);
 end;
 
+procedure TScriptEditor.GetFlameAngleProc(AMachine: TatVirtualMachine);
+begin
+  with AMachine do
+    ReturnOutPutArg(cp.FAngle);
+end;
+
+procedure TScriptEditor.SetFlameAngleProc(AMachine: TatVirtualMachine);
+begin
+  with AMachine do
+    cp.FAngle := GetInputArgAsFloat(0);
+end;
+
 
 { *************************** Transform interface **************************** }
 
@@ -3090,6 +3104,7 @@ begin
     DefineProp('Hue', tkFloat, GetFlameHueProc, SetFlameHueProc);
     DefineProp('Batches', tkInteger, GetFlameBatchesProc, SetFlameBatchesProc);
     DefineProp('FinalXformEnabled', tkInteger, GetFlameFinalxformEnabledProc, SetFlameFinalxformEnabledProc);
+    DefineProp('Angle', tkFloat, GetFlameAngleProc, SetFlameAngleProc);
   end;
   Scripter.AddObject('Flame', Flame);
 
