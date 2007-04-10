@@ -141,6 +141,7 @@ var
   mutantMinTransforms, mutantMaxTransforms: integer;
   KeepBackground: boolean;
   randGradient: Integer;
+  randGradientFile: string;
   defFlameFile: string;
 
   PlaySoundOnRenderComplete: boolean;

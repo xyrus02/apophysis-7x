@@ -217,6 +217,8 @@ type
     chkOldPaletteFormat: TCheckBox;
     rgZoomingMode: TRadioGroup;
     chkShowAllXforms: TCheckBox;
+    txtGradientsFile: TEdit;
+    btnGradientsFile: TSpeedButton;
     procedure btnCancelClick(Sender: TObject);
     procedure FormShow(Sender: TObject);
     procedure btnOKClick(Sender: TObject);
@@ -248,6 +250,7 @@ type
     procedure pnlHelpersColorClick(Sender: TObject);
     procedure btnBrowseSoundClick(Sender: TObject);
     procedure btnPlayClick(Sender: TObject);
+    procedure btnGradientsFileClick(Sender: TObject);
 
   private
     { Private declarations }
@@ -375,6 +378,7 @@ begin
 
   { Gradient tab }
   grpGradient.ItemIndex := randGradient;
+  txtGradientsFile.Text := randGradientFile;
   udMinNodes.Position := MinNodes;
   udMaxNodes.Position := MaxNodes;
   udMinHue.Position := MinHue;
@@ -507,6 +511,7 @@ begin
 
   {Gradient tab }
   randGradient := grpGradient.ItemIndex;
+  randGradientFile := txtGradientsFile.Text;
   MinNodes := udMinNodes.Position;
   MaxNodes := udMaxNodes.Position;
   MinHue := udMinHue.Position;
@@ -786,6 +791,17 @@ begin
     sndPlaySound(PChar(txtSoundFile.text), SND_FILENAME or SND_ASYNC)
   else
     sndPlaySound(pchar(SND_ALIAS_SYSTEMASTERISK), SND_ALIAS_ID or SND_NOSTOP or SND_ASYNC);
+end;
+
+procedure TOptionsForm.btnGradientsFileClick(Sender: TObject);
+begin
+  OpenDialog.Filter := 'Gradient files (*.ugr)|*.ugr';
+  OpenDialog.InitialDir := ExtractFilePath(randGradientFile);
+  OpenDialog.FileName := '';
+  if OpenDialog.Execute then
+  begin
+    txtGradientsFile.text := OpenDialog.FileName;
+  end;
 end;
 
 end.

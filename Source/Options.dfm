@@ -991,11 +991,55 @@ object OptionsForm: TOptionsForm
     object TabSheet1: TTabSheet
       Caption = 'Gradient'
       ImageIndex = 5
+      object btnGradientsFile: TSpeedButton
+        Left = 120
+        Top = 121
+        Width = 24
+        Height = 24
+        Hint = 'Browse...'
+        Flat = True
+        Font.Charset = ANSI_CHARSET
+        Font.Color = clWindowText
+        Font.Height = -11
+        Font.Name = 'Arial'
+        Font.Style = [fsBold]
+        Glyph.Data = {
+          36030000424D3603000000000000360000002800000010000000100000000100
+          18000000000000030000120B0000120B00000000000000000000FF00FFFF00FF
+          FF00FFFF00FFFF00FFFF00FFFF00FFFF00FFFF00FFFF00FFFF00FFFF00FFFF00
+          FFFF00FFFF00FFFF00FF00000000000000000000000000000000000000000000
+          0000000000000000000000FF00FFFF00FFFF00FFFF00FFFF00FF000000000000
+          9FCFFF9FCFFF9FCFFF9FCFFF9FCFFF9FCFFF9FCFFF9FCFFF9FCFFF000000FF00
+          FFFF00FFFF00FFFF00FF0000009FFFFF0000009FCFFF9FCFFF9FCFFF9FCFFF9F
+          CFFF9FCFFF9FCFFF9FCFFF9FCFFF000000FF00FFFF00FFFF00FF0000009FFFFF
+          9FFFFF0000009FCFFF9FCFFF9FCFFF9FCFFF9FCFFF9FCFFF9FCFFF9FCFFF9FCF
+          FF000000FF00FFFF00FF0000009FFFFF9FFFFF9FFFFF0000009FCFFF9FCFFF9F
+          CFFF9FCFFF9FCFFF9FCFFF9FCFFF9FCFFF9FCFFF000000FF00FF0000009FFFFF
+          9FFFFF9FFFFF9FFFFF0000000000000000000000000000000000000000000000
+          00000000000000FF00FF0000009FFFFF9FFFFF9FFFFF9FFFFF9FFFFF9FFFFF9F
+          FFFF9FFFFF9FFFFF000000FF00FFFF00FFFF00FFFF00FFFF00FF0000009FFFFF
+          9FFFFF9FFFFF9FFFFF9FFFFF9FFFFF9FFFFF9FFFFF9FFFFF000000FF00FFFF00
+          FFFF00FFFF00FFFF00FF0000009FFFFF9FFFFF9FFFFF00000000000000000000
+          0000000000000000000000FF00FFFF00FFFF00FFFF00FFFF00FFFF00FF000000
+          000000000000FF00FFFF00FFFF00FFFF00FFFF00FFFF00FFFF00FFFF00FF0000
+          00000000000000FF00FFFF00FFFF00FFFF00FFFF00FFFF00FFFF00FFFF00FFFF
+          00FFFF00FFFF00FFFF00FFFF00FFFF00FF000000000000FF00FFFF00FFFF00FF
+          FF00FFFF00FFFF00FFFF00FFFF00FFFF00FF0C0C0CFF00FFFF00FFFF00FF0000
+          00FF00FF000000FF00FFFF00FFFF00FFFF00FFFF00FFFF00FFFF00FFFF00FFFF
+          00FFFF00FF0B0B0B020202000000FF00FFFF00FFFF00FFFF00FFFF00FFFF00FF
+          FF00FFFF00FFFF00FFFF00FFFF00FFFF00FFFF00FFFF00FFFF00FFFF00FFFF00
+          FFFF00FFFF00FFFF00FFFF00FFFF00FFFF00FFFF00FFFF00FFFF00FFFF00FFFF
+          00FFFF00FFFF00FFFF00FFFF00FFFF00FFFF00FFFF00FFFF00FF}
+        ParentFont = False
+        ParentShowHint = False
+        ShowHint = True
+        OnClick = btnGradientsFileClick
+      end
       object grpGradient: TRadioGroup
         Left = 8
         Top = 4
         Width = 137
-        Height = 97
+        Height = 117
         HelpContext = 1029
         Caption = 'On random flame'
         ItemIndex = 0
@@ -1003,14 +1047,15 @@ object OptionsForm: TOptionsForm
           'Use random preset'
           'Use default'
           'Use current'
-          'Randomize')
+          'Randomize'
+          'Random from a file')
         TabOrder = 0
       end
       object GroupBox3: TGroupBox
         Left = 153
         Top = 4
         Width = 281
-        Height = 189
+        Height = 229
         Caption = 'Randomize'
         TabOrder = 2
         object Label18: TLabel
@@ -1235,7 +1280,7 @@ object OptionsForm: TOptionsForm
       end
       object GroupBox13: TGroupBox
         Left = 8
-        Top = 106
+        Top = 146
         Width = 137
         Height = 87
         Caption = 'Smooth palette'
@@ -1272,6 +1317,13 @@ object OptionsForm: TOptionsForm
           TabOrder = 1
           Text = '10000'
         end
+      end
+      object txtGradientsFile: TEdit
+        Left = 8
+        Top = 122
+        Width = 110
+        Height = 21
+        TabOrder = 3
       end
     end
     object TabSheet6: TTabSheet

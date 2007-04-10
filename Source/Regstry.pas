@@ -373,6 +373,14 @@ begin
       begin
         MaxSat := 100;
       end;
+      if Registry.ValueExists('RandomGradientFile') then
+      begin
+        randGradientFile := Registry.ReadString('RandomGradientFile');
+      end
+      else
+      begin
+        randGradientFile := ''
+      end;
       if Registry.ValueExists('ReferenceMode') then
         ReferenceMode := Registry.ReadInteger('ReferenceMode')
       else ReferenceMode := 0;
@@ -621,6 +629,7 @@ begin
       MaxHue := 600;
       MaxSat := 100;
       MaxLum := 100;
+      randGradientFile := '';
       BatchSize := 100;
       ScriptPath := DefaultPath + 'Scripts\';
       defLibrary := DefaultPath + 'Scripts\Functions.asc';
@@ -1043,6 +1052,7 @@ begin
       Registry.WriteInteger('MaxHue', MaxHue);
       Registry.WriteInteger('MaxSat', MaxSat);
       Registry.WriteInteger('MaxLum', MaxLum);
+      Registry.WriteString('RandomGradientFile', randGradientFile);
       Registry.WriteInteger('BatchSize', BatchSize);
       Registry.WriteString('ScriptPath', ScriptPath);
       Registry.WriteInteger('ExportFileFormat', ExportFileFormat);
