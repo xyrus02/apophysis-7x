@@ -1,6 +1,7 @@
 {
      Apophysis Copyright (C) 2001-2004 Mark Townsend
      Apophysis Copyright (C) 2005-2006 Ronald Hordijk, Piotr Borys, Peter Sdobnov
+     Apophysis Copyright (C) 2007 Piotr Borys, Peter Sdobnov
 
      This program is free software; you can redistribute it and/or modify
      it under the terms of the GNU General Public License as published by
@@ -41,7 +42,7 @@ const
   RS_XO = 2;
   RS_VO = 3;
 
-  AppVersionString = 'Apophysis 2.05 beta 2 rc4';
+  AppVersionString = 'Apophysis 2.06 alpha 1';
 
 type
   TMouseMoveState = (msUsual, msZoomWindow, msZoomOutWindow, msZoomWindowMove,
@@ -3803,8 +3804,11 @@ var
 begin
   if not FileExists(flam3Path) then
   begin
-    Application.MessageBox('Renderer does not exist.', 'Apophysis', 16);
-    exit
+    Application.MessageBox('The flam3-render.exe renderer could not be find'+#13#10+
+                           'at a specified location.'+#13#10+
+                           'Please check your settings in Options -> Paths -> Export renderer.',
+                           'Apophysis', 16);
+    exit;
   end;
   case ExportFileFormat of
     1: Ext := 'jpg';
