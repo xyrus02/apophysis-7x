@@ -277,9 +277,10 @@ type
     scrollMode: (modeRotate,
                  modeHue, modeSaturation, modeBrightness, modeContrast,
                  modeBlur, modeFrequency);
-    imgDrag, GradientChanged: boolean;
+    GradientChanged: boolean;
+    imgDragMode: (imgDragNone, imgDragRotate, imgDragStretch);
     dragX, oldX: integer;
-    offset: integer; // for display...? :-\
+    oldpos, offset: integer; // for display...? :-\
 
     procedure Apply;
     function Blur(const radius: integer; const pal: TColorMap): TColorMap;
@@ -1618,18 +1619,63 @@ begin
   begin
     dragX:=x;
     oldX:=x; // hmmm
+    oldpos := ( ((x) shl 8) div GradientImage.Width) mod 256;
+if oldpos = 0 then oldpos := 1;
     tmpBackupPal := BackupPal;
-    imgDrag:=true;
+    if ssCtrl in Shift then
+      imgDragMode := imgDragStretch
+    else
+      imgDragMode := imgDragRotate;
     GradientChanged:=false;
   end;
 end;
 
 procedure TAdjustForm.GradImageMouseMove(Sender: TObject;
   Shift: TShiftState; X, Y: Integer);
+  procedure StretchGradient(i0, i1, j0, j1: integer);
+  var
+    k, f: double;
+    i, j, jj, n: integer;
+  begin
+    k := (j1 - j0) / (i1 - i0);
+
+    if k >= 1 then
+    begin
+      for i := i0 to i1-1 do
+      begin
+        j := j0 + round((i - i0) * k);
+
+assert(j >= 0);
+assert(j < 256);
+
+        cp.cmap[i] := Palette[j];
+        BackupPal[i] := tmpBackupPal[j]; //?
+      end;
+    end
+    else begin
+      for i := i0 to i1-1 do
+      begin
+        f := (i - i0) * k;
+        j := j0 + trunc(f);
+        f := frac(f);
+
+assert(j >= 0);
+assert(j < 256);
+
+        if j < 255 then jj := j + 1
+        else jj := 0;
+        for n := 0 to 2 do begin
+          cp.cmap[i][n] := round( Palette[j][n]*(1-f) + Palette[jj][n]*f );
+          BackupPal[i][n] := round( tmpBackupPal[j][n]*(1-f) + tmpBackupPal[jj][n]*f ); //?
+        end;
+      end;
+    end;
+  end;
 var
-  i: integer;
+  i, j: integer;
+  k: double;
 begin
-  if imgDrag and (oldX<>x) then
+  if (imgDragMode <> imgDragNone) and (oldX<>x) then
   begin
     oldX:=x;
     offset := ( ((x - dragX) shl 8) div GradientImage.Width) mod 256;
@@ -1637,35 +1683,22 @@ begin
     lblOffset.Refresh;
     GradientChanged := true;
 
-    for i := 0 to 255 do
-    begin
-      cp.cmap[i][0] := Palette[(256 + i - offset) and $FF][0];
-      cp.cmap[i][1] := Palette[(256 + i - offset) and $FF][1];
-      cp.cmap[i][2] := Palette[(256 + i - offset) and $FF][2];
+    if imgDragmode = imgDragRotate then begin
+      for i := 0 to 255 do
+      begin
+        cp.cmap[i] := Palette[(256 + i - offset) and $FF];
 
-      BackupPal[i][0] := tmpBackupPal[(256 + i - offset) and $FF][0];
-      BackupPal[i][1] := tmpBackupPal[(256 + i - offset) and $FF][1];
-      BackupPal[i][2] := tmpBackupPal[(256 + i - offset) and $FF][2];
-    end;
-    //? cp.CmapIndex := cmbPalette.ItemIndex;
-    //cp.cmap := Palette;
-
-(*
-    if scrollMode = modeRotate then
-    begin
-      Resetting := true;
-      if offset < -128 then ScrollBar.Position := offset+256
-      else if offset > 128 then ScrollBar.Position := offset-256
-      else ScrollBar.Position := offset;
-      Resetting := false;
+        BackupPal[i] := tmpBackupPal[(256 + i - offset) and $FF];
+      end;
     end
-    else for i := 0 to 255 do
-    begin
-      BackupPal[i][0] := tmpBackupPal[(256 + i - offset) and $FF][0];
-      BackupPal[i][1] := tmpBackupPal[(256 + i - offset) and $FF][1];
-      BackupPal[i][2] := tmpBackupPal[(256 + i - offset) and $FF][2];
+    else begin
+      offset := ( (x shl 8) div GradientImage.Width);
+      if offset <= 0 then offset := 1
+      else if offset > 255 then offset := 255;
+
+      StretchGradient(0, offset, 0, oldpos);
+      StretchGradient(offset, 256, oldpos, 256);
     end;
-*)
 
     DrawPreview;
   end;
@@ -1674,9 +1707,9 @@ end;
 procedure TAdjustForm.GradImageMouseUp(Sender: TObject;
   Button: TMouseButton; Shift: TShiftState; X, Y: Integer);
 begin
-  if imgDrag then
+  if imgDragMode <> imgDragNone then
   begin
-    imgDrag := false;
+    imgDragMode := imgDragNone;
     lblOffset.Caption:='';
 
     Palette := cp.cmap;
