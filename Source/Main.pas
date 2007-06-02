@@ -282,6 +282,8 @@ type
     procedure tbShowAlphaClick(Sender: TObject);
     procedure tbShowTraceClick(Sender: TObject);
     procedure XmlScannerContent(Sender: TObject; Content: String);
+    procedure ListViewChanging(Sender: TObject; Item: TListItem;
+      Change: TItemChange; var AllowChange: Boolean);
 
   private
     Renderer: TRenderThread;
@@ -1453,20 +1455,39 @@ var
   Tag: string;
   IFile: TextFile;
   FileList: TStringList;
+  i, p: integer;
+  bakname: string;
 begin
   Tag := RemoveExt(filename);
   Result := True;
   try
     if FileExists(filename) then
     begin
-      if XMLEntryExists(title, filename) then
-      begin
-        DeleteXMLEntry(title, filename);
-      end;
+      bakname := ChangeFileExt(filename, '.bak');
+      if FileExists(bakname) then DeleteFile(bakname);
+      RenameFile(filename, bakname);
 
       FileList := TStringList.create;
       try
-        FileList.LoadFromFile(filename);
+        FileList.LoadFromFile(bakname);
+
+        if Pos(title, FileList.Text) <> 0 then
+        begin
+          i := 0;
+          while Pos('name="' + title + '"', Trim(FileList[i])) = 0 do
+            inc(i);
+
+          p := 0;
+          while p = 0 do
+          begin
+            p := Pos('</flame>', FileList[i]);
+            FileList.Delete(i);
+          end;
+        end;
+
+//      FileList := TStringList.create;
+//      try
+//        FileList.LoadFromFile(filename);
 
         // fix first line
         if (FileList.Count > 0) then begin
@@ -1580,6 +1601,7 @@ function RenameXML(OldIdent: string; var NewIdent: string): boolean;
 var
   Strings: TStringList;
   i: integer;
+  bakname: string;
 begin
   Result := True;
   Strings := TStringList.Create;
@@ -1594,6 +1616,11 @@ begin
           inc(i);
         end;
         Strings[i] := StringReplace(Strings[i], OldIdent, NewIdent, []);
+
+        bakname := ChangeFileExt(OpenFile, '.bak');
+        if FileExists(bakname) then DeleteFile(bakname);
+        RenameFile(OpenFile, bakname);
+
         Strings.SaveToFile(OpenFile);
       end
       else
@@ -2600,6 +2627,14 @@ procedure TMainForm.FormClose(Sender: TObject; var Action: TCloseAction);
 var
   Registry: TRegistry;
 begin
+  if ConfirmExit and (UndoIndex <> 0) then
+    if Application.MessageBox('Do you really want to exit?' + #13#10 +
+       'All unsaved data will be lost!', 'Apophysis', MB_ICONWARNING or MB_YESNO) <> IDYES then
+    begin
+      Action := caNone;
+      exit;
+    end;
+
   ScriptEditor.Stopped := True;
   HtmlHelp(0, nil, HH_CLOSE_ALL, 0);
   { To capture secondary window positions }
@@ -4826,6 +4861,21 @@ begin
     end
     else FShiftState := Shift;
   end;
+end;
+
+procedure TMainForm.ListViewChanging(Sender: TObject; Item: TListItem;
+  Change: TItemChange; var AllowChange: Boolean);
+begin
+{
+  if (Trim(Item.Caption) = Trim(maincp.name)) and
+     (Item.Selected) and (Change = ctState) then
+    if UndoIndex <> 0 then
+      if Application.MessageBox('Are you sure?', 'Apophysis', MB_ICONWARNING or MB_YESNO) <> IDYES then
+      begin
+        AllowChange := false;
+        exit;
+      end;
+}
 end;
 
 end.

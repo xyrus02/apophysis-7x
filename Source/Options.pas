@@ -219,6 +219,8 @@ type
     chkShowAllXforms: TCheckBox;
     txtGradientsFile: TEdit;
     btnGradientsFile: TSpeedButton;
+    chkConfirmExit: TCheckBox;
+    chkConfirmStopRender: TCheckBox;
     procedure btnCancelClick(Sender: TObject);
     procedure FormShow(Sender: TObject);
     procedure btnOKClick(Sender: TObject);
@@ -308,6 +310,8 @@ begin
 
   chkConfirmDel.Checked := ConfirmDelete;
   chkOldPaletteFormat.Checked := OldPaletteFormat;
+  chkConfirmExit.Checked := ConfirmExit;
+  chkConfirmStopRender.Checked := ConfirmStopRender;
 
   rgRotationMode.ItemIndex := MainForm_RotationMode;
   if PreserveQuality then
@@ -448,6 +452,8 @@ begin
   NrTreads := StrToIntDef(cbNrTheads.text, 0);
   ConfirmDelete := chkConfirmDel.Checked;
   OldPaletteFormat := chkOldPaletteFormat.Checked;
+  ConfirmExit := chkConfirmExit.Checked;
+  ConfirmStopRender := chkConfirmStopRender.Checked;
 
   MainForm_RotationMode := rgRotationMode.ItemIndex;
   PreserveQuality := (rgZoomingMode.ItemIndex = 0);

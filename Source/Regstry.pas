@@ -94,21 +94,18 @@ begin
         RenderCompleteSoundFile := '';
 
       if Registry.ValueExists('ConfirmDelete') then
-      begin
-        ConfirmDelete := Registry.ReadBool('ConfirmDelete');
-      end
+        ConfirmDelete := Registry.ReadBool('ConfirmDelete')
       else
-      begin
         ConfirmDelete := True;
-      end;
       if Registry.ValueExists('OldPaletteFormat') then
-      begin
-        OldPaletteFormat := Registry.ReadBool('OldPaletteFormat');
-      end
+        OldPaletteFormat := Registry.ReadBool('OldPaletteFormat')
       else
-      begin
         OldPaletteFormat := false;
-      end;
+      if Registry.ValueExists('ConfirmExit') then
+        ConfirmExit := Registry.ReadBool('ConfirmExit')
+      else
+        ConfirmExit := True;
+
       if Registry.ValueExists('PreserveQuality') then
       begin
         PreserveQuality := Registry.ReadBool('PreserveQuality');
@@ -598,6 +595,7 @@ begin
       SavePath := DefaultPath + 'Parameters\My Flames.flame';
       defSmoothPaletteFile := DefaultPath + 'smooth.ugr';
       ConfirmDelete := True;
+      ConfirmExit := True;
       OldPaletteFormat := false;
       NumTries := 10;
       TryLength := 100000;
@@ -1011,6 +1009,7 @@ begin
 
       Registry.WriteBool('ConfirmDelete', ConfirmDelete);
       Registry.WriteBool('OldPaletteFormat', OldPaletteFormat);
+      Registry.WriteBool('ConfirmExit', ConfirmExit);
       Registry.WriteInteger('NumTries', NumTries);
       Registry.WriteInteger('TryLength', TryLength);
       Registry.WriteInteger('MinTransforms', randMinTransforms);

@@ -250,6 +250,23 @@ object OptionsForm: TOptionsForm
         TabOrder = 5
         WordWrap = True
       end
+      object chkConfirmExit: TCheckBox
+        Left = 136
+        Top = 183
+        Width = 81
+        Height = 17
+        HelpContext = 1005
+        Caption = 'Confirm exit'
+        TabOrder = 6
+      end
+      object chkConfirmStopRender: TCheckBox
+        Left = 136
+        Top = 210
+        Width = 121
+        Height = 17
+        Caption = 'Confirm stop render'
+        TabOrder = 7
+      end
     end
     object EditorPage: TTabSheet
       Caption = 'Editor'

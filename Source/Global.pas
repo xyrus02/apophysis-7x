@@ -128,6 +128,8 @@ var
 
   ConfirmDelete: boolean; // Flag confirmation of entry deletion
   OldPaletteFormat: boolean;
+  ConfirmExit: boolean;
+  ConfirmStopRender: boolean;
   SavePath, SmoothPalettePath: string;
   RandomPrefix, RandomDate: string;
   RandomIndex: integer;

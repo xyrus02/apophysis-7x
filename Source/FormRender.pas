@@ -612,6 +612,10 @@ begin
       btnPause.caption := 'Pause';
     end;
 
+    if ConfirmStopRender then begin
+      if Application.MessageBox('Do you want to stop the current render?', 'Apophysis', 36) = ID_NO then exit;
+    end;  
+
     if SaveIncompleteRenders and not ChkLimitMem.Checked then begin
       Renderer.BreakRender;
       Renderer.WaitFor; //?
