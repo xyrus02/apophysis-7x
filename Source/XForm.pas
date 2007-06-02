@@ -388,9 +388,12 @@ end;
 
 procedure TXForm.DoPostTransform;
 {$ifndef _ASM_}
+var
+  tmp: double;
 begin
+  tmp := FPx;
   FPx := p00 * FPx + p10 * FPy + p20;
-  FPy := p01 * FPx + p11 * FPy + p21;
+  FPy := p01 * tmp + p11 * FPy + p21;
 {$else}
 asm
     fld     qword ptr [eax + FPy]
