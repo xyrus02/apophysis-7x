@@ -183,6 +183,7 @@ type
     tbShowAlpha: TToolButton;
     tbShowTrace: TToolButton;
     ToolButton2: TToolButton;
+    mnuRenderAll: TMenuItem;
     procedure tbzoomoutwindowClick(Sender: TObject);
     procedure mnuimageClick(Sender: TObject);
     procedure mnuExitClick(Sender: TObject);
@@ -282,6 +283,7 @@ type
     procedure tbShowAlphaClick(Sender: TObject);
     procedure tbShowTraceClick(Sender: TObject);
     procedure XmlScannerContent(Sender: TObject; Content: String);
+    procedure mnuRenderAllClick(Sender: TObject);
     procedure ListViewChanging(Sender: TObject; Item: TListItem;
       Change: TItemChange; var AllowChange: Boolean);
 
@@ -2000,7 +2002,7 @@ end;
 procedure TMainForm.mnuOpenClick(Sender: TObject);
 begin
   ScriptEditor.Stopped := True;
-  OpenDialog.Filter := 'Flame files (*.flame)|*.flame|Apophysis 1.0 parameters (*.fla;*.apo)|*.fla;*.apo|Fractint IFS Files (*.ifs)|*.ifs';
+  OpenDialog.Filter := 'Flame files (*.flame;*.flam3)|*.flame;*.flam3|Apophysis 1.0 parameters (*.fla;*.apo)|*.fla;*.apo|Fractint IFS Files (*.ifs)|*.ifs';
   OpenDialog.InitialDir := ParamFolder;
   OpenDialog.FileName := '';
   if OpenDialog.Execute then
@@ -3428,6 +3430,47 @@ begin
     RenderForm.caption := 'Render ' + #39 + maincp.name + #39 + ' to Disk';
     RenderForm.Filename := RenderPath + maincp.name + Ext;
     RenderForm.SaveDialog.FileName := RenderPath + maincp.name + Ext;
+    RenderForm.txtFilename.Text := ChangeFileExt(RenderForm.SaveDialog.Filename, Ext);
+
+    RenderForm.cp.Copy(MainCP);
+    RenderForm.cp.cmap := maincp.cmap;
+    RenderForm.zoom := maincp.zoom;
+    RenderForm.Center[0] := center[0];
+    RenderForm.Center[1] := center[1];
+    if Assigned(RenderForm.Renderer) then RenderForm.Renderer.WaitFor; // hmm #2
+  end;
+  RenderForm.Show;
+end;
+
+procedure TMainForm.mnuRenderAllClick(Sender: TObject);
+var
+  Ext: string;
+  NewRender: Boolean;
+begin
+  NewRender := True;
+
+  if Assigned(RenderForm.Renderer) then
+    if Application.MessageBox('Do you want to abort the current render?', 'Apophysis', 36) = ID_NO then
+      NewRender := false;
+
+  if NewRender then
+  begin
+
+    if Assigned(RenderForm.Renderer) then RenderForm.Renderer.Terminate;
+    if Assigned(RenderForm.Renderer) then RenderForm.Renderer.WaitFor; // hmm #1
+    RenderForm.ResetControls;
+    RenderForm.PageCtrl.TabIndex := 0;
+
+    case renderFileFormat of
+      1: Ext := '.bmp';
+      2: Ext := '.png';
+      3: Ext := '.jpg';
+    end;
+
+    RenderForm.caption := 'Render all flames to disk';
+    RenderForm.bRenderAll := true;
+    RenderForm.Filename := RenderPath + maincp.name + Ext;
+    RenderForm.SaveDialog.FileName := RenderForm.Filename;
     RenderForm.txtFilename.Text := ChangeFileExt(RenderForm.SaveDialog.Filename, Ext);
 
     RenderForm.cp.Copy(MainCP);

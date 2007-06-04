@@ -122,6 +122,7 @@ type
     zoom, Sample_Density, Brightness, Gamma, Vibrancy, Filter_Radius: double;
     center: array[0..1] of double;
     MaxMemory: integer;
+    bRenderAll: boolean;
 
     procedure OnProgress(prog: double);
     procedure ShowMemoryStatus;
@@ -236,7 +237,7 @@ begin
 
   Renderer.Free;
   Renderer := nil;
-  ResetControls;
+  if not bRenderAll then ResetControls;
   if chkShutdown.Checked then
     WindowsExit;
 end;
@@ -314,6 +315,7 @@ begin
   BitsPerSample := 0;
   MainForm.Buttons.GetBitmap(2, btnSavePreset.Glyph);
   MainForm.Buttons.GetBitmap(9, btnDeletePreset.Glyph);
+  bRenderAll := false;
   ListPresets;
 end;
 
@@ -330,6 +332,8 @@ end;
 procedure TRenderForm.btnRenderClick(Sender: TObject);
 var
   t: string;
+  iCurrFlame: integer;
+  path, ext: string;
 begin
   ImageWidth := StrToInt(cbWidth.text);
   ImageHeight := StrToInt(cbHeight.text);
@@ -428,71 +432,154 @@ begin
   PageCtrl.TabIndex := 1;
 
   if Output.Lines.Count >= 1000 then Output.Lines.Clear;
-  Output.Lines.Add('--- Rendering "' + ExtractFileName(FileName) + '" ---');
-  Output.Lines.Add(Format('  Size: %dx%d', [ImageWidth, ImageHeight]));
-  Output.Lines.Add(Format('  Quality: %g', [sample_density]));
-  Output.Lines.Add(Format('  Oversample: %d, Filter: %g', [oversample, filter_radius]));
-  Output.Lines.Add(Format('  Buffer depth: %s', [cbBitsPerSample.Items[BitsPerSample]]));
-  if chkLimitMem.checked then
-    Output.Lines.Add(Format('  Memory limit: %d Mb', [MaxMemory]))
-  else
-    if (UpperCase(ExtractFileExt(FileName)) = '.PNG') and
-       (ImageWidth * ImageHeight >= 20000000) then
-    begin
-      Output.Lines.Add('*** WARNING *** Using PNG format with extreme high-resolution images is not recommended!');
-      Output.Lines.Add('To avoid slowdown (and possible memory problems) use BMP file format instead.');
-    end;
 
-  if Assigned(Renderer) then begin
-    Output.Lines.Add(TimeToStr(Now) + 'Shutting down previous render'); // hmm...?
-    Renderer.Terminate;
-    Renderer.WaitFor;
-    Renderer.Free;
-  end;
-  if not Assigned(Renderer) then
+  if bRenderAll then
   begin
-    // disable screensaver
-    SystemParametersInfo(SPI_SETSCREENSAVEACTIVE, 0, nil, 0);
+    path := ExtractFilePath(FileName);
+    ext := ExtractFileExt(FileName);
+    for iCurrFlame := 0 to MainForm.ListView.Items.Count-1 do
+    begin
+      MainForm.ListView.ItemIndex := iCurrFlame;
+      cp.Free;
+      cp := TControlPoint.Create;
+      cp.Copy(MainCP);
+      cp.cmap := maincp.cmap;
+      zoom := maincp.zoom;
+      Center[0] := MainForm.center[0];
+      Center[1] := MainForm.center[1];
+      FileName := path + cp.name + ext;
+      Output.Lines.Add('--- Rendering "' + ExtractFileName(FileName) + '" ---');
+      Output.Lines.Add(Format('  Size: %dx%d', [ImageWidth, ImageHeight]));
+      Output.Lines.Add(Format('  Quality: %g', [sample_density]));
+      Output.Lines.Add(Format('  Oversample: %d, Filter: %g', [oversample, filter_radius]));
+      Output.Lines.Add(Format('  Buffer depth: %s', [cbBitsPerSample.Items[BitsPerSample]]));
+      if chkLimitMem.checked then
+        Output.Lines.Add(Format('  Memory limit: %d Mb', [MaxMemory]))
+      else
+        if (UpperCase(ExtractFileExt(FileName)) = '.PNG') and
+           (ImageWidth * ImageHeight >= 20000000) then
+        begin
+          Output.Lines.Add('*** WARNING *** Using PNG format with extreme high-resolution images is not recommended!');
+          Output.Lines.Add('To avoid slowdown (and possible memory problems) use BMP file format instead.');
+        end;
 
-    cp.sample_density := Sample_density;
-    cp.spatial_oversample := Oversample;
-    cp.spatial_filter_radius := Filter_Radius;
-    cp.AdjustScale(ImageWidth, ImageHeight);
-    cp.Transparency := (PNGTransparency <> 0) and (UpperCase(ExtractFileExt(FileName)) = '.PNG');
-    renderPath := ExtractFilePath(Filename);
-    if chkSave.checked then
-      MainForm.SaveXMLFlame(cp, ExtractFileName(FileName), renderPath + 'renders.flame');
+      if Assigned(Renderer) then begin
+        //Output.Lines.Add(TimeToStr(Now) + 'Shutting down previous render'); // hmm...?
+        //Renderer.Terminate;
+        Renderer.WaitFor;
+        Renderer.Free;
+      end;
+      if not Assigned(Renderer) then
+      begin
+        // disable screensaver
+        SystemParametersInfo(SPI_SETSCREENSAVEACTIVE, 0, nil, 0);
 
-    oldProg:=0;
-    oldElapsed:=0;
-    edt:=0;
-    ApproxSamples := Round(sample_density * sqr(power(2, cp.zoom)) * int64(ImageHeight) * int64(ImageWidth) / sqr(oversample) );
+        cp.sample_density := Sample_density;
+        cp.spatial_oversample := Oversample;
+        cp.spatial_filter_radius := Filter_Radius;
+        cp.AdjustScale(ImageWidth, ImageHeight);
+        cp.Transparency := (PNGTransparency <> 0) and (UpperCase(ExtractFileExt(FileName)) = '.PNG');
+        renderPath := ExtractFilePath(Filename);
+        if chkSave.checked then
+          MainForm.SaveXMLFlame(cp, ExtractFileName(FileName), renderPath + 'renders.flame');
 
-   try
+        oldProg:=0;
+        oldElapsed:=0;
+        edt:=0;
+        ApproxSamples := Round(sample_density * sqr(power(2, cp.zoom)) * int64(ImageHeight) * int64(ImageWidth) / sqr(oversample) );
 
-    Renderer := TRenderThread.Create;
-    assert(Renderer <> nil);
-    Renderer.BitsPerSample := BitsPerSample;
+       try
+
+        if iCurrFlame = MainForm.ListView.Items.Count-1 then bRenderAll := false;
+        Renderer := TRenderThread.Create;
+        assert(Renderer <> nil);
+        Renderer.BitsPerSample := BitsPerSample;
+        if chkLimitMem.checked then
+          Renderer.MaxMem := MaxMemory;//StrToInt(cbMaxMemory.text);
+        Renderer.OnProgress := OnProgress;
+        Renderer.TargetHandle := self.Handle;
+    //    Renderer.Output := Output.Lines;
+    //    Renderer.Compatibility := compatibility;
+        Renderer.SetCP(cp);
+        Renderer.Priority := tpLower;
+        Renderer.NrThreads := NrTreads;
+
+        Renderer.Output := Output.Lines;
+        Renderer.Resume;
+        if bRenderAll then Renderer.WaitFor;
+       except
+        Output.Lines.Add(TimeToStr(Now) + ' : Rendering failed!');
+        Application.MessageBox('Error while rendering!', 'Apophysis', 48)
+       end;
+      end;
+    end;
+  end else
+  begin
+    Output.Lines.Add('--- Rendering "' + ExtractFileName(FileName) + '" ---');
+    Output.Lines.Add(Format('  Size: %dx%d', [ImageWidth, ImageHeight]));
+    Output.Lines.Add(Format('  Quality: %g', [sample_density]));
+    Output.Lines.Add(Format('  Oversample: %d, Filter: %g', [oversample, filter_radius]));
+    Output.Lines.Add(Format('  Buffer depth: %s', [cbBitsPerSample.Items[BitsPerSample]]));
     if chkLimitMem.checked then
-      Renderer.MaxMem := MaxMemory;//StrToInt(cbMaxMemory.text);
-    Renderer.OnProgress := OnProgress;
-    Renderer.TargetHandle := self.Handle;
-//    Renderer.Output := Output.Lines;
-//    Renderer.Compatibility := compatibility;
-    Renderer.SetCP(cp);
-    Renderer.Priority := tpLower;
-    Renderer.NrThreads := NrTreads;
+      Output.Lines.Add(Format('  Memory limit: %d Mb', [MaxMemory]))
+    else
+      if (UpperCase(ExtractFileExt(FileName)) = '.PNG') and
+         (ImageWidth * ImageHeight >= 20000000) then
+      begin
+        Output.Lines.Add('*** WARNING *** Using PNG format with extreme high-resolution images is not recommended!');
+        Output.Lines.Add('To avoid slowdown (and possible memory problems) use BMP file format instead.');
+      end;
 
-    Renderer.Output := Output.Lines;
-    Renderer.Resume;
-   except
-    Output.Lines.Add(TimeToStr(Now) + ' : Rendering failed!');
-    Application.MessageBox('Error while rendering!', 'Apophysis', 48)
-   end;
+    if Assigned(Renderer) then begin
+      Output.Lines.Add(TimeToStr(Now) + 'Shutting down previous render'); // hmm...?
+      Renderer.Terminate;
+      Renderer.WaitFor;
+      Renderer.Free;
+    end;
+    if not Assigned(Renderer) then
+    begin
+      // disable screensaver
+      SystemParametersInfo(SPI_SETSCREENSAVEACTIVE, 0, nil, 0);
 
-    // enable screensaver
-    SystemParametersInfo(SPI_SETSCREENSAVEACTIVE, 1, nil, 0);
+      cp.sample_density := Sample_density;
+      cp.spatial_oversample := Oversample;
+      cp.spatial_filter_radius := Filter_Radius;
+      cp.AdjustScale(ImageWidth, ImageHeight);
+      cp.Transparency := (PNGTransparency <> 0) and (UpperCase(ExtractFileExt(FileName)) = '.PNG');
+      renderPath := ExtractFilePath(Filename);
+      if chkSave.checked then
+        MainForm.SaveXMLFlame(cp, ExtractFileName(FileName), renderPath + 'renders.flame');
+
+      oldProg:=0;
+      oldElapsed:=0;
+      edt:=0;
+      ApproxSamples := Round(sample_density * sqr(power(2, cp.zoom)) * int64(ImageHeight) * int64(ImageWidth) / sqr(oversample) );
+
+     try
+
+      Renderer := TRenderThread.Create;
+      assert(Renderer <> nil);
+      Renderer.BitsPerSample := BitsPerSample;
+      if chkLimitMem.checked then
+        Renderer.MaxMem := MaxMemory;//StrToInt(cbMaxMemory.text);
+      Renderer.OnProgress := OnProgress;
+      Renderer.TargetHandle := self.Handle;
+  //    Renderer.Output := Output.Lines;
+  //    Renderer.Compatibility := compatibility;
+      Renderer.SetCP(cp);
+      Renderer.Priority := tpLower;
+      Renderer.NrThreads := NrTreads;
+
+      Renderer.Output := Output.Lines;
+      Renderer.Resume;
+     except
+      Output.Lines.Add(TimeToStr(Now) + ' : Rendering failed!');
+      Application.MessageBox('Error while rendering!', 'Apophysis', 48)
+     end;
+    end;
   end;
+  // enable screensaver
+  SystemParametersInfo(SPI_SETSCREENSAVEACTIVE, 1, nil, 0);
 end;
 
 procedure TRenderForm.FormShow(Sender: TObject);
