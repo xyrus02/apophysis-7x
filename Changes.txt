@@ -1,3 +1,17 @@
+2.06
++ Flame.Angle property in scripting language
++ Missing flam3-render.exe file message clarified
++ Getting a random gradient from a given file
++ Added *.flam3 file extension to the 'Open File' dialog
++ 'Render all flames' function added
++ Application exiting warning dialog
++ Stopping a render confirmation dialog
++ Stretching a gradient with ctrl+drag
++ .flame files are now renamed to .bak before saving to them
++ fixed PostXForm bug in non-asm code
++ Changing a background color doesn't require a flame recalculation
++ other minor bugs and changes
+
 2.03b
 + Fixed swapped rings and fan variations
 + Fixed Contrast button label
