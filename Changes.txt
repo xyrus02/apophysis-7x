@@ -10,6 +10,7 @@
 + .flame files are now renamed to .bak before saving to them
 + fixed PostXForm bug in non-asm code
 + Changing a background color doesn't require a flame recalculation
++ Two new variations: rectangles and super_shape
 + other minor bugs and changes
 
 2.03b
