@@ -307,7 +307,7 @@ type
 //    Sample_Density, Zoom: double;
 //    Center: array[0..1] of double;
     procedure UpdateDisplay(PreviewOnly: boolean = false);
-    procedure UpdateFlame;
+    procedure UpdateFlame(bBgOnly: boolean = false);
 
   end;
 
@@ -393,18 +393,18 @@ begin
   DrawPreview;
 end;
 
-procedure TAdjustForm.UpdateFlame;
+procedure TAdjustForm.UpdateFlame(bBgOnly: boolean = false);
 begin
-  MainForm.StopThread;
+  if not bBgOnly then
+    MainForm.StopThread;
   MainForm.UpdateUndo;
   MainCp.Copy(cp, true);
-//  MainCp.cmap := cmap;
-//  MainForm.zoom := zoom;
-//  MainForm.Center[0] := Center[0];
-//  MainForm.Center[1] := Center[1];
   if EditForm.Visible then EditForm.UpdateDisplay;
   if MutateForm.Visible then MutateForm.UpdateDisplay;
-  MainForm.RedrawTimer.enabled := true;
+  if bBgOnly then
+    MainForm.tbShowAlphaClick(Self)
+  else
+    MainForm.RedrawTimer.enabled := true;
 end;
 
 procedure TAdjustForm.DrawPreview;
@@ -935,7 +935,7 @@ begin
     cp.background[1] := col shr 8 and 255;
     cp.background[2] := col shr 16 and 255;
     DrawPreview;
-    UpdateFlame;
+    UpdateFlame(true);
   end;
 end;
 
