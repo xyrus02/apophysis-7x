@@ -31,7 +31,7 @@ uses
 type
   TVariationRectangles = class(TBaseVariation)
   private
-    FRectanglesX, FRectanglesY, RectanglesXFactor: double;
+    FRectanglesX, FRectanglesY: double;
   public
     constructor Create;
 
@@ -110,7 +110,6 @@ begin
   case Index Of
   0: Result := 'rectangles_x';
   1: Result := 'rectangles_y';
-  2: Result := 'rectangles_x_factor';
   else
     Result := '';
   end
@@ -119,7 +118,7 @@ end;
 ///////////////////////////////////////////////////////////////////////////////
 class function TVariationRectangles.GetNrVariables: integer;
 begin
-  Result := 3;
+  Result := 2;
 end;
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -131,10 +130,6 @@ begin
     Result := True;
   end else if Name = 'rectangles_y' then begin
     FRectanglesY := Value;
-    Result := True;
-  end
-  else if Name = 'rectangles_x_factor' then begin
-    RectanglesXFactor := Value;
     Result := True;
   end
 end;
@@ -150,10 +145,6 @@ begin
     Value := FRectanglesY;
     Result := True;
   end
-  else if Name = 'rectangles_x_factor' then begin
-    Value := RectanglesXFactor;
-    Result := True;
-  end
 end;
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -163,7 +154,6 @@ begin
 
   FRectanglesX  := 1.0;
   FRectanglesY := 1.0;
-  RectanglesXFactor := 2.0;
 end;
 
 ///////////////////////////////////////////////////////////////////////////////
