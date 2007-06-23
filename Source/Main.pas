@@ -42,7 +42,7 @@ const
   RS_XO = 2;
   RS_VO = 3;
 
-  AppVersionString = 'Apophysis 2.06 alpha 1';
+  AppVersionString = 'Apophysis 2.06 pre-release 5';
 
 type
   TMouseMoveState = (msUsual, msZoomWindow, msZoomOutWindow, msZoomWindowMove,
@@ -286,6 +286,8 @@ type
     procedure mnuRenderAllClick(Sender: TObject);
     procedure ListViewChanging(Sender: TObject; Item: TListItem;
       Change: TItemChange; var AllowChange: Boolean);
+    procedure ListViewInfoTip(Sender: TObject; Item: TListItem;
+      var InfoTip: String);
 
   private
     Renderer: TRenderThread;
@@ -3882,7 +3884,7 @@ var
 begin
   if not FileExists(flam3Path) then
   begin
-    Application.MessageBox('The flam3-render.exe renderer could not be find'+#13#10+
+    Application.MessageBox('The flam3-render.exe renderer could not be found'+#13#10+
                            'at a specified location.'+#13#10+
                            'Please check your settings in Options -> Paths -> Export renderer.',
                            'Apophysis', 16);
@@ -3955,6 +3957,10 @@ begin
       end;
       if ExportDialog.udStrips.Position > 1 then
         FileList.Add('set nstrips=' + IntToStr(ExportDialog.udStrips.Position));
+      if (PNGTransparency > 0) then
+        FileList.Add('set transparency=1')
+      else
+        FileList.Add('set transparency=0');
       FileList.Add('set out=' + ExportDialog.Filename);
       FileList.Add('@echo Rendering "' + ExportDialog.Filename + '"');
 {
@@ -4918,6 +4924,54 @@ begin
         AllowChange := false;
         exit;
       end;
+}
+end;
+
+procedure TMainForm.ListViewInfoTip(Sender: TObject; Item: TListItem;
+  var InfoTip: String);
+var
+  Bitmap: TBitmap;
+  lcp: TControlPoint;
+begin
+  // flame preview in a tooltip...
+{
+  BitMap := TBitMap.create;
+  Bitmap.PixelFormat := pf24bit;
+  BitMap.Width := 100;
+  BitMap.Height := 100;
+
+  lcp := TControlPoint.Create;
+  lcp.Copy(mainCP);
+  lcp.cmap := mainCP.cmap;
+
+  if Assigned(Renderer) then begin
+    Renderer.WaitFor;
+    Renderer.Free;
+  end;
+  if not Assigned(Renderer) then
+  begin
+    lcp.sample_density := 1;
+    lcp.spatial_oversample := 1;
+    lcp.spatial_filter_radius := 0.3;
+    lcp.AdjustScale(100, 100);
+    lcp.Transparency := false;
+  end;
+  try
+    Renderer := TRenderThread.Create;
+    assert(Renderer <> nil);
+    Renderer.BitsPerSample := 0
+    Renderer.TargetHandle := self.Handle;
+    Renderer.SetCP(lcp);
+    Renderer.Priority := tpLower;
+    Renderer.NrThreads := 1
+    Renderer.Resume;
+    Renderer.WaitFor;
+  except
+  end;
+
+
+  lcp.Free;
+  Bitmap.Free;
 }
 end;
 
