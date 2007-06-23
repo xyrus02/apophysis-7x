@@ -28,7 +28,7 @@ uses
 type
   TVariationSuperShape = class(TBaseVariation)
   private
-    m, n, rnd, a, b, holes : double;
+    m, n1, n2, n3, rnd, holes : double;
   public
     constructor Create;
 
@@ -61,34 +61,39 @@ asm
     FWAIT
 end;
 
+function atan2(const y, x: double): double;
+asm
+    FLD     y
+    FLD     x
+    FPATAN
+end;
+
 procedure TVariationSuperShape.CalcFunction;
 var
-  r, theta, tmp : double;
+  r, theta : double;
   t1, t2 : double;
   dist: double;
   t1a, t2a: double;
 begin
-
-  if n = 0 then
+  theta := 0;
+  if n1 = 0 then
     r := 0
   else begin
-    theta := arctan2(FTy^, FTx^);
+    theta := atan2(FTy^, FTx^);
     SinCos((m*theta+pi)/4, t2, t1);
 
-    t1 := t1/a;
     t1 := abs(t1);
-    t1 := power(t1, n);
+    t1 := power(t1, n2);
 
-    t2 := t2/b;
     t2 := abs(t2);
-    t2 := power(t2, n);
+    t2 := power(t2, n3);
 
     if rnd < 1.0 then
       dist := sqrt(sqr(FTx^)+sqr(FTy^))
     else
       dist := 0;
 
-    r := (rnd*random + (1.0-rnd)*dist - holes) * power(t1+t2, -1/n);
+    r := (rnd*random + (1.0-rnd)*dist - holes) * power(t1+t2, -1/n1);
   end;
 
   if (abs(r) = 0) then
@@ -116,10 +121,10 @@ class function TVariationSuperShape.GetVariableNameAt(const Index: integer): str
 begin
   case Index Of
   0: Result := 'super_shape_m';
-  1: Result := 'super_shape_n';
-  2: Result := 'super_shape_rnd';
-  3: Result := 'super_shape_a';
-  4: Result := 'super_shape_b';
+  1: Result := 'super_shape_n1';
+  2: Result := 'super_shape_n2';
+  3: Result := 'super_shape_n3';
+  4: Result := 'super_shape_rnd';
   5: Result := 'super_shape_holes';
   else
     Result := '';
@@ -139,8 +144,16 @@ begin
   if Name = 'super_shape_m' then begin
     m := Value;
     Result := True;
-  end else if Name = 'super_shape_n' then begin
-    n := Value;
+  end else if Name = 'super_shape_n1' then begin
+    n1 := Value;
+    Result := True;
+  end
+  else if Name = 'super_shape_n2' then begin
+    n2 := Value;
+    Result := True;
+  end
+  else if Name = 'super_shape_n3' then begin
+    n3 := Value;
     Result := True;
   end
   else if Name = 'super_shape_rnd' then begin
@@ -150,14 +163,6 @@ begin
       rnd := 0.0
     else
       rnd := Value;
-    Result := True;
-  end
-  else if Name = 'super_shape_a' then begin
-    a := Value;
-    Result := True;
-  end
-  else if Name = 'super_shape_b' then begin
-    b := Value;
     Result := True;
   end
   else if Name = 'super_shape_holes' then begin
@@ -174,20 +179,20 @@ begin
   if Name = 'super_shape_m' then begin
     Value := m;
     Result := True;
-  end else if Name = 'super_shape_n' then begin
-    Value := n;
+  end else if Name = 'super_shape_n1' then begin
+    Value := n1;
+    Result := True;
+  end
+  else if Name = 'super_shape_n2' then begin
+    Value := n2;
+    Result := True;
+  end
+  else if Name = 'super_shape_n3' then begin
+    Value := n3;
     Result := True;
   end
   else if Name = 'super_shape_rnd' then begin
     Value := rnd;
-    Result := True;
-  end
-  else if Name = 'super_shape_a' then begin
-    Value := a;
-    Result := True;
-  end
-  else if Name = 'super_shape_b' then begin
-    Value := b;
     Result := True;
   end
   else if Name = 'super_shape_holes' then begin
@@ -202,11 +207,11 @@ constructor TVariationSuperShape.Create;
 begin
   inherited Create;
 
-  m  := 4.0;
-  n := 1.0;
+  m  := 5.0;
+  n1 := 2.0;
+  n2 := 0.3;
+  n3 := 0.3;
   rnd := 0.0;
-  a := 1.0;
-  b := 1.0;
   holes := 1.0;
 end;
 
