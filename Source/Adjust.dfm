@@ -176,7 +176,7 @@ object AdjustForm: TAdjustForm
     Top = 132
     Width = 388
     Height = 129
-    ActivePage = TabSheet1
+    ActivePage = TabSheet3
     Align = alBottom
     Images = MainForm.Buttons
     TabOrder = 1
@@ -638,7 +638,7 @@ object AdjustForm: TAdjustForm
         Top = 78
         Width = 23
         Height = 22
-        Hint = 'Paste fradient from clipboard'
+        Hint = 'Paste gradient from clipboard'
         Flat = True
         Glyph.Data = {
           36030000424D3603000000000000360000002800000010000000100000000100
