@@ -13,6 +13,7 @@
 + Two new variations: rectangles and super_shape
 + Output file path fixed, when exporting a flame to flam3
 + Transparency option flag taken into account, when exporting a flame to flam3
++ Plugin engine for adding custom variations
 + Other minor bugs and changes
 
 2.03b
