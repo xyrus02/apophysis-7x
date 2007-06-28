@@ -969,7 +969,7 @@ begin
     if (SelectedTriangle = Transforms) then Dec(SelectedTriangle);
   end
   else
-  if (Transforms <= 2) then exit
+  if (Transforms <= 1) then exit
   else begin
     MainForm.UpdateUndo;
     if t = (Transforms - 1) then
@@ -3886,10 +3886,7 @@ begin
   for i := 0 to Transforms do cp.xform[i].Clear;
   cp.xform[0].vars[0] := 1;
   cp.xform[0].density := 0.5;
-  cp.xform[1].vars[0] := 1;
-  cp.xform[1].density := 0.5;
-  cp.xform[1].color := 1;
-  cp.xform[2].symmetry := 1;
+  cp.xform[1].symmetry := 1;
 
   cp.center[0] := 0;
   cp.center[1] := 0;
@@ -3897,11 +3894,10 @@ begin
   cp.pixels_per_unit := PreviewImage.Width/4;
   cp.FAngle := 0;
 
-  Transforms := 2;
+  Transforms := 1;
   SelectedTriangle := 1;
   MainTriangles[0] := MainTriangles[-1];
-  MainTriangles[1] := MainTriangles[-1];
-  MainTriangles[2] := MainTriangles[-1]; // kinda reset finalxform
+  MainTriangles[1] := MainTriangles[-1]; // kinda reset finalxform
 
   EnableFinalXform := false;
   assert(cp.HasFinalXForm = false);
