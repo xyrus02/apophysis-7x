@@ -42,7 +42,7 @@ const
   RS_XO = 2;
   RS_VO = 3;
 
-  AppVersionString = 'Apophysis 2.06 pre-release 5';
+  AppVersionString = 'Apophysis 2.06 beta';
 
 type
   TMouseMoveState = (msUsual, msZoomWindow, msZoomOutWindow, msZoomWindowMove,
@@ -1353,10 +1353,12 @@ begin
     if cp1.zoom <> 0 then
       parameters := parameters + format('zoom="%g" ', [cp1.zoom]);
 
-    parameters := parameters +
-      'oversample="' + IntToStr(cp1.spatial_oversample) +
-      format('" filter="%g" ', [cp1.spatial_filter_radius]) +
-      format('quality="%g" ', [cp1.sample_density]);
+    parameters := parameters + format(
+             'oversample="%d" filter="%g" quality="%g" ',
+             [cp1.spatial_oversample,
+              cp1.spatial_filter_radius,
+              cp1.sample_density]
+             );
     if cp1.nbatches <> 1 then parameters := parameters + 'batches="' + IntToStr(cp1.nbatches) + '" ';
 
     parameters := parameters +

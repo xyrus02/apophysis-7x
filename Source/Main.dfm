@@ -330,6 +330,7 @@ object MainForm: TMainForm
     OnChange = ListViewChange
     OnChanging = ListViewChanging
     OnEdited = ListViewEdited
+    OnInfoTip = ListViewInfoTip
   end
   object BackPanel: TPanel
     Left = 164
