@@ -279,7 +279,8 @@ begin
     exit;
   end;
 
-  if (dt < 1/24/60/60/10) then exit;
+  //if (dt < 1/24/60/60/10) then exit;
+  if (dt < 1/24/60/60) then exit; // PB: too much time consuming... was every 1/10th seconds!
   oldElapsed := Elapsed;
 
   prog := (Renderer.Slice + Prog) / Renderer.NrSlices;
@@ -305,6 +306,7 @@ begin
        Trunc(Remaining * 24 * 60 * 60 * 100) mod 100]);
   end;
   StatusBar.Panels[2].text := 'Slice ' + IntToStr(Renderer.Slice + 1) + ' of ' + IntToStr(Renderer.nrSlices);
+  Application.ProcessMessages;
 end;
 
 procedure TRenderForm.FormCreate(Sender: TObject);
@@ -490,6 +492,7 @@ begin
 
        try
 
+        if not bRenderAll then exit;
         if iCurrFlame = MainForm.ListView.Items.Count-1 then bRenderAll := false;
         Renderer := TRenderThread.Create;
         assert(Renderer <> nil);
@@ -498,12 +501,9 @@ begin
           Renderer.MaxMem := MaxMemory;//StrToInt(cbMaxMemory.text);
         Renderer.OnProgress := OnProgress;
         Renderer.TargetHandle := self.Handle;
-    //    Renderer.Output := Output.Lines;
-    //    Renderer.Compatibility := compatibility;
         Renderer.SetCP(cp);
         Renderer.Priority := tpLower;
         Renderer.NrThreads := NrTreads;
-
         Renderer.Output := Output.Lines;
         Renderer.Resume;
         if bRenderAll then Renderer.WaitFor;
@@ -692,29 +692,32 @@ end;
 
 procedure TRenderForm.btnCancelClick(Sender: TObject);
 begin
-  if Assigned(Renderer) then
+  if Assigned(Renderer) or bRenderAll then
   begin
-    if Renderer.Suspended then begin
-      Renderer.Resume;
-      btnPause.caption := 'Pause';
-    end;
+    if Assigned(Renderer) then
+      if Renderer.Suspended then begin
+        Renderer.Resume;
+        btnPause.caption := 'Pause';
+      end;
 
     if ConfirmStopRender then begin
       if Application.MessageBox('Do you want to stop the current render?', 'Apophysis', 36) = ID_NO then exit;
-    end;  
-
-    if SaveIncompleteRenders and not ChkLimitMem.Checked then begin
-      Renderer.BreakRender;
-      Renderer.WaitFor; //?
-    end
-    else begin
-      Renderer.Terminate;
-      Renderer.WaitFor; //?
-
-      PageCtrl.TabIndex := 0;
     end;
-  end
-  else close;
+
+    bRenderAll := false;
+    if Assigned(Renderer) then
+      if SaveIncompleteRenders and not ChkLimitMem.Checked then
+      begin
+        Renderer.BreakRender;
+        Renderer.WaitFor; //?
+      end else
+      begin
+        Renderer.Terminate;
+        Renderer.WaitFor; //?
+        PageCtrl.TabIndex := 0;
+      end;
+  end else
+    Close;
 end;
 
 procedure TRenderForm.txtDensityChange(Sender: TObject);
