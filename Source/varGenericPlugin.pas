@@ -23,6 +23,8 @@
   Started by Jed Kelsey, June 2007
 }
 
+{TODO : Make it creating new classes at runtime for itself...}
+
 unit varGenericPlugin;
 
 interface
@@ -93,13 +95,10 @@ type
   end;
 
   //////////////////////////////////////////////////////////////////////
-  { Derive a number of classes from the base TPluginVariation class and
-    ensure a unique PluginData record for each derived class (each plugin),
-    and override a class function to return the appropriate PluginData.
-    There's got to be a much more straightforward way to do this, taking
-    advantage of Delphi's late (run-time) binding to make it work with an
-    arbitrary number of class "instances" and build them on the fly,
-    but I'm new to Delphi & not sure what it is :)  Suggestions anyone? }
+  {
+    Either this, either interfaces...
+    Anyone has some other suggestion?... :) please?
+  }
 
   TPluginVariation0 = class(TPluginVariation)
     class function GetPluginData : PPluginData; override;
@@ -140,6 +139,87 @@ type
   TPluginVariation9 = class(TPluginVariation)
     class function GetPluginData : PPluginData; override;
   end;
+
+  TPluginVariation10 = class(TPluginVariation)
+    class function GetPluginData : PPluginData; override;
+  end;
+
+  TPluginVariation11 = class(TPluginVariation)
+    class function GetPluginData : PPluginData; override;
+  end;
+
+  TPluginVariation12 = class(TPluginVariation)
+    class function GetPluginData : PPluginData; override;
+  end;
+
+  TPluginVariation13 = class(TPluginVariation)
+    class function GetPluginData : PPluginData; override;
+  end;
+
+  TPluginVariation14 = class(TPluginVariation)
+    class function GetPluginData : PPluginData; override;
+  end;
+
+  TPluginVariation15 = class(TPluginVariation)
+    class function GetPluginData : PPluginData; override;
+  end;
+
+  TPluginVariation16 = class(TPluginVariation)
+    class function GetPluginData : PPluginData; override;
+  end;
+
+  TPluginVariation17 = class(TPluginVariation)
+    class function GetPluginData : PPluginData; override;
+  end;
+
+  TPluginVariation18 = class(TPluginVariation)
+    class function GetPluginData : PPluginData; override;
+  end;
+
+  TPluginVariation19 = class(TPluginVariation)
+    class function GetPluginData : PPluginData; override;
+  end;
+
+  TPluginVariation20 = class(TPluginVariation)
+    class function GetPluginData : PPluginData; override;
+  end;
+
+  TPluginVariation21 = class(TPluginVariation)
+    class function GetPluginData : PPluginData; override;
+  end;
+
+  TPluginVariation22 = class(TPluginVariation)
+    class function GetPluginData : PPluginData; override;
+  end;
+
+  TPluginVariation23 = class(TPluginVariation)
+    class function GetPluginData : PPluginData; override;
+  end;
+
+  TPluginVariation24 = class(TPluginVariation)
+    class function GetPluginData : PPluginData; override;
+  end;
+
+  TPluginVariation25 = class(TPluginVariation)
+    class function GetPluginData : PPluginData; override;
+  end;
+
+  TPluginVariation26 = class(TPluginVariation)
+    class function GetPluginData : PPluginData; override;
+  end;
+
+  TPluginVariation27 = class(TPluginVariation)
+    class function GetPluginData : PPluginData; override;
+  end;
+
+  TPluginVariation28 = class(TPluginVariation)
+    class function GetPluginData : PPluginData; override;
+  end;
+
+  TPluginVariation29 = class(TPluginVariation)
+    class function GetPluginData : PPluginData; override;
+  end;
+
   //////////////////////////////////////////////////////////////////////
 
   var
@@ -218,6 +298,106 @@ begin
   Result := @(PluginData[9]);
 end;
 
+class function TPluginVariation10.GetPluginData : PPluginData;
+begin
+  Result := @(PluginData[10]);
+end;
+
+class function TPluginVariation11.GetPluginData : PPluginData;
+begin
+  Result := @(PluginData[11]);
+end;
+
+class function TPluginVariation12.GetPluginData : PPluginData;
+begin
+  Result := @(PluginData[12]);
+end;
+
+class function TPluginVariation13.GetPluginData : PPluginData;
+begin
+  Result := @(PluginData[13]);
+end;
+
+class function TPluginVariation14.GetPluginData : PPluginData;
+begin
+  Result := @(PluginData[14]);
+end;
+
+class function TPluginVariation15.GetPluginData : PPluginData;
+begin
+  Result := @(PluginData[15]);
+end;
+
+class function TPluginVariation16.GetPluginData : PPluginData;
+begin
+  Result := @(PluginData[16]);
+end;
+
+class function TPluginVariation17.GetPluginData : PPluginData;
+begin
+  Result := @(PluginData[17]);
+end;
+
+class function TPluginVariation18.GetPluginData : PPluginData;
+begin
+  Result := @(PluginData[18]);
+end;
+
+class function TPluginVariation19.GetPluginData : PPluginData;
+begin
+  Result := @(PluginData[19]);
+end;
+
+class function TPluginVariation20.GetPluginData : PPluginData;
+begin
+  Result := @(PluginData[20]);
+end;
+
+class function TPluginVariation21.GetPluginData : PPluginData;
+begin
+  Result := @(PluginData[21]);
+end;
+
+class function TPluginVariation22.GetPluginData : PPluginData;
+begin
+  Result := @(PluginData[22]);
+end;
+
+class function TPluginVariation23.GetPluginData : PPluginData;
+begin
+  Result := @(PluginData[23]);
+end;
+
+class function TPluginVariation24.GetPluginData : PPluginData;
+begin
+  Result := @(PluginData[24]);
+end;
+
+class function TPluginVariation25.GetPluginData : PPluginData;
+begin
+  Result := @(PluginData[25]);
+end;
+
+class function TPluginVariation26.GetPluginData : PPluginData;
+begin
+  Result := @(PluginData[26]);
+end;
+
+class function TPluginVariation27.GetPluginData : PPluginData;
+begin
+  Result := @(PluginData[27]);
+end;
+
+class function TPluginVariation28.GetPluginData : PPluginData;
+begin
+  Result := @(PluginData[28]);
+end;
+
+class function TPluginVariation29.GetPluginData : PPluginData;
+begin
+  Result := @(PluginData[29]);
+end;
+
 //////////// ////////// ////////////
 
 procedure TPluginVariation.Prepare;
@@ -249,8 +429,7 @@ end;
 ///////////////////////////////////////////////////////////////////////////////
 class function TPluginVariation.GetInstance: TBaseVariation;
 begin
-  //Result := TPluginVariation.Create; // Want derived class's constructor!
-  Result := Self.Create; //So the derived class type gets preserved...
+  Result := Self.Create;
 end;
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -293,8 +472,6 @@ begin
   if FindFirst('.\Plugins\*.dll', faAnyFile, searchResult) = 0 then
   begin
     repeat
-      //ShowMessage('Found plugin: '+searchResult.Name+' ('+IntToStr(searchResult.Size)+' bytes)');
-      // Work with PluginData for the derived class (would be returned by GetPluginData)
       with PluginData[NumPlugins] do begin
         //Load DLL and initialize plugins!
         PluginHandle := LoadLibrary(PChar('.\Plugins\'+searchResult.Name));
@@ -343,7 +520,7 @@ end;
 
 ///////////////////////////////////////////////////////////////////////////////
 initialization
-  SetLength(PluginData,10);
+  SetLength(PluginData,30);
 
   PluginData[0].PluginClass := TPluginVariation0;
   PluginData[1].PluginClass := TPluginVariation1;
@@ -355,6 +532,26 @@ initialization
   PluginData[7].PluginClass := TPluginVariation7;
   PluginData[8].PluginClass := TPluginVariation8;
   PluginData[9].PluginClass := TPluginVariation9;
+  PluginData[10].PluginClass := TPluginVariation10;
+  PluginData[11].PluginClass := TPluginVariation11;
+  PluginData[12].PluginClass := TPluginVariation12;
+  PluginData[13].PluginClass := TPluginVariation13;
+  PluginData[14].PluginClass := TPluginVariation14;
+  PluginData[15].PluginClass := TPluginVariation15;
+  PluginData[16].PluginClass := TPluginVariation16;
+  PluginData[17].PluginClass := TPluginVariation17;
+  PluginData[18].PluginClass := TPluginVariation18;
+  PluginData[19].PluginClass := TPluginVariation19;
+  PluginData[20].PluginClass := TPluginVariation20;
+  PluginData[21].PluginClass := TPluginVariation21;
+  PluginData[22].PluginClass := TPluginVariation22;
+  PluginData[23].PluginClass := TPluginVariation23;
+  PluginData[24].PluginClass := TPluginVariation24;
+  PluginData[25].PluginClass := TPluginVariation25;
+  PluginData[26].PluginClass := TPluginVariation26;
+  PluginData[27].PluginClass := TPluginVariation27;
+  PluginData[28].PluginClass := TPluginVariation28;
+  PluginData[29].PluginClass := TPluginVariation29;
 
   InitializePlugins;
 
