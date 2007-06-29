@@ -1,6 +1,7 @@
 {
      Apophysis Copyright (C) 2001-2004 Mark Townsend
      Apophysis Copyright (C) 2005-2006 Ronald Hordijk, Piotr Borys, Peter Sdobnov     
+     Apophysis Copyright (C) 2007 Piotr Borys, Peter Sdobnov
 
      This program is free software; you can redistribute it and/or modify
      it under the terms of the GNU General Public License as published by
@@ -92,8 +93,8 @@ uses
 {$R *.RES}
 
 begin
-  if now > EncodeDate(2007, 6, 30) then begin
-    ShowMessage('This version has expired. Please go to http://sourceforge.net/project/apophysis and download the latest version.');
+  if now > EncodeDate(2007, 11, 1) then begin
+    ShowMessage('This version has expired. Please go to http://sourceforge.net/projects/apophysis and download the latest version.');
     Halt
   end;
 
