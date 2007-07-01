@@ -1849,7 +1849,7 @@ end;
 
 procedure TOperationLibrary.PreviewProc(AMachine: TatVirtualMachine);
 begin
-  if NumTransforms > 1 then
+  if NumTransforms > 0 then
   begin
     AMachine.Paused := True;
     PreviewForm.cp.Copy(ScriptEditor.cp);
@@ -1864,7 +1864,7 @@ end;
 
 procedure TOperationLibrary.RenderProc(AMachine: TatVirtualMachine);
 begin
-  if NumTransforms > 1 then
+  if NumTransforms > 0 then
   begin
     ScriptRenderForm.cp.Copy(ScriptEditor.cp);
     ScriptRenderForm.Caption := 'Rendering ' + ScriptEditor.Renderer.Filename; ;
@@ -3463,7 +3463,7 @@ begin
     //Compile;
     Execute;
   end;
-  if (NumTransforms < 2) and UpdateIt then
+  if (NumTransforms < 1) and UpdateIt then
   begin
     Console.Lines.Add('Not enough transforms.');
     ScriptRenderForm.Close;

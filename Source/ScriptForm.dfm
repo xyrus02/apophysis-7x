@@ -191,7 +191,7 @@ object ScriptEditor: TScriptEditor
       UrlStyle.BkColor = clWhite
       UrlStyle.Style = [fsUnderline]
       UseStyler = True
-      Version = '1.6.0.17'
+      Version = '1.6.0.13'
       WordWrap = wwNone
       OnChange = EditorChange
     end
@@ -609,7 +609,6 @@ object ScriptEditor: TScriptEditor
     LibOptions.SourceFileExt = '.psc'
     LibOptions.CompiledFileExt = '.pcu'
     LibOptions.UseScriptFiles = False
-    CallExecHookEvent = False
     Left = 360
     Top = 32
   end
