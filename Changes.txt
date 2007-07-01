@@ -1,3 +1,9 @@
+2.06b
++ Single-transform flames are now understood by scripts.
+
+2.06a
++ Fixed incorrectly quoted output filename, wile exporting to flam3-render
+
 2.06
 + Flame.Angle property in scripting language
 + Missing flam3-render.exe file message clarified
