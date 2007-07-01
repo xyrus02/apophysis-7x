@@ -3963,7 +3963,7 @@ begin
         FileList.Add('set transparency=1')
       else
         FileList.Add('set transparency=0');
-      FileList.Add('set out="' + ExportDialog.Filename + '"');
+      FileList.Add('set out=' + ExportDialog.Filename);
       FileList.Add('@echo Rendering "' + ExportDialog.Filename + '"');
 {
       FileList.Add(ExtractShortPathName(hqiPath) + ' < ' + ExtractShortPathName(ChangeFileExt(ExportDialog.Filename, '.flame')));
