@@ -409,7 +409,6 @@ end;
 ///////////////////////////////////////////////////////////////////////////////
 procedure TPluginVariation.CalcFunction;
 begin
-  GetPluginData.PluginVarInit(MyVariation, Pointer(FPX), Pointer(FPy), Pointer(FTx), Pointer(FTy), vvar);
   GetPluginData.PluginVarCalc(MyVariation);
 end;
 
