@@ -42,7 +42,7 @@ const
   RS_XO = 2;
   RS_VO = 3;
 
-  AppVersionString = 'Apophysis 2.06 beta';
+  AppVersionString = 'Apophysis 2.06c beta';
 
 type
   TMouseMoveState = (msUsual, msZoomWindow, msZoomOutWindow, msZoomWindowMove,
@@ -2847,6 +2847,7 @@ var
   EntryStrings, Tokens: TStringList;
   SavedPal: Boolean;
   i, j: integer;
+  floatcolor: double;
   s: string;
   Palette: TcolorMap;
 begin
@@ -2906,9 +2907,12 @@ begin
             for j := 0 to 255 do begin
               s := FStrings[i];
               GetTokens(s, tokens);
-              Palette[j][0] := StrToInt(Tokens[0]);
-              Palette[j][1] := StrToInt(Tokens[1]);
-              Palette[j][2] := StrToInt(Tokens[2]);
+              floatcolor := StrToFloat(Tokens[0]);
+              Palette[j][0] := round(floatcolor);
+              floatcolor := StrToFloat(Tokens[1]);
+              Palette[j][1] := round(floatcolor);
+              floatcolor := StrToFloat(Tokens[2]);
+              Palette[j][2] := round(floatcolor);
               inc(i);
             end;
           end;
@@ -4183,7 +4187,7 @@ procedure TMainForm.XMLScannerEmptyTag(Sender: TObject; TagName: string;
 var
   i: integer;
   v: string;
-  d: double;
+  d, floatcolor: double;
   Tokens: TStringList;
 begin
   Tokens := TStringList.Create;
@@ -4282,9 +4286,12 @@ begin
       i := StrToInt(Attributes.value('index'));
       v := Attributes.value('rgb');
       GetTokens(v, tokens);
-      Parsecp.cmap[i][0] := StrToInt(Tokens[0]);
-      Parsecp.cmap[i][1] := StrToInt(Tokens[1]);
-      Parsecp.cmap[i][2] := StrToInt(Tokens[2]);
+      floatcolor := StrToFloat(Tokens[0]);
+      Parsecp.cmap[i][0] := round(floatcolor);
+      floatcolor := StrToFloat(Tokens[1]);
+      Parsecp.cmap[i][1] := round(floatcolor);
+      floatcolor := StrToFloat(Tokens[2]);
+      Parsecp.cmap[i][2] := round(floatcolor);
     end;
     if TagName = 'colors' then
     begin
