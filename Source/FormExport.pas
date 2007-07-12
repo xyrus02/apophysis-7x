@@ -142,9 +142,9 @@ begin
   udOversample.Position := Oversample;
   Ratio := ImageWidth / ImageHeight;
   Batches := 1;
-  Estimator := 5.0;
+  Estimator := 9.0;
   EstimatorMin := 0.0;
-  EstimatorCurve := 0.6;
+  EstimatorCurve := 0.4;
   Jitters := 1;
   GammaTreshold := 0.01;
   GetLocaleFormatSettings(LOCALE_SYSTEM_DEFAULT, FloatFormatSettings);

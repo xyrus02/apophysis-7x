@@ -260,9 +260,9 @@ begin
 
   white_level := 200;
 
-  estimator := 5.0;
+  estimator := 9.0;
   estimator_min := 0.0;
-  estimator_curve := 0.6;
+  estimator_curve := 0.4;
   jitters := 1;
   gamma_treshold := 0.01;
 
