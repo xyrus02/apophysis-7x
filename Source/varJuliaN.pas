@@ -263,9 +263,9 @@ begin
 {$else}
 asm
     mov     edx, [eax + FTx] //[eax + FTy]
-    fld     qword ptr [edx]
-//    mov     edx, [eax + FTx]
     fld     qword ptr [edx + 8]
+//    mov     edx, [eax + FTx]
+    fld     qword ptr [edx]
     fld     qword ptr [eax + vvar]
     fmul    st(2), st
     fmulp
