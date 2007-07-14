@@ -176,7 +176,7 @@ object AdjustForm: TAdjustForm
     Top = 132
     Width = 388
     Height = 129
-    ActivePage = TabSheet3
+    ActivePage = TabSheet2
     Align = alBottom
     Images = MainForm.Buttons
     TabOrder = 1
@@ -375,7 +375,7 @@ object AdjustForm: TAdjustForm
         Caption = ' Master Scale'
         ParentShowHint = False
         ShowHint = True
-        TabOrder = 9
+        TabOrder = 8
         OnDblClick = DragPanelDblClick
         OnMouseDown = DragPanelMouseDown
         OnMouseMove = DragPanelMouseMove
@@ -392,7 +392,7 @@ object AdjustForm: TAdjustForm
         Caption = 'Gamma'
         ParentShowHint = False
         ShowHint = True
-        TabOrder = 10
+        TabOrder = 9
         OnDblClick = DragPanelDblClick
         OnMouseDown = DragPanelMouseDown
         OnMouseMove = DragPanelMouseMove
@@ -468,25 +468,14 @@ object AdjustForm: TAdjustForm
         OnExit = txtVibrancyExit
         OnKeyPress = txtVibrancyKeyPress
       end
-      object ColorPanel: TPanel
-        Left = 72
-        Top = 78
-        Width = 65
-        Height = 21
-        Cursor = crHandPoint
-        BevelOuter = bvLowered
-        Color = clBlack
-        TabOrder = 6
-        OnClick = ColorPanelClick
-      end
       object chkTransparent: TCheckBox
-        Left = 144
-        Top = 80
+        Left = 138
+        Top = 79
         Width = 81
         Height = 17
         Caption = 'Transparent'
         Enabled = False
-        TabOrder = 7
+        TabOrder = 6
         Visible = False
       end
       object editPPU: TEdit
@@ -494,7 +483,7 @@ object AdjustForm: TAdjustForm
         Top = 76
         Width = 75
         Height = 21
-        TabOrder = 8
+        TabOrder = 7
         OnExit = editPPUValidate
         OnKeyPress = editPPUKeyPress
       end
@@ -509,7 +498,7 @@ object AdjustForm: TAdjustForm
         Caption = 'Brightness'
         ParentShowHint = False
         ShowHint = True
-        TabOrder = 11
+        TabOrder = 10
         OnDblClick = DragPanelDblClick
         OnMouseDown = DragPanelMouseDown
         OnMouseMove = DragPanelMouseMove
@@ -526,11 +515,22 @@ object AdjustForm: TAdjustForm
         Caption = 'Vibrancy'
         ParentShowHint = False
         ShowHint = True
-        TabOrder = 12
+        TabOrder = 11
         OnDblClick = DragPanelDblClick
         OnMouseDown = DragPanelMouseDown
         OnMouseMove = DragPanelMouseMove
         OnMouseUp = DragPanelMouseUp
+      end
+      object ColorButton: TJvColorButton
+        Left = 72
+        Top = 75
+        Width = 57
+        Height = 24
+        OtherCaption = '&Other...'
+        Options = [cdFullOpen, cdAnyColor]
+        OnChange = ColorButtonChange
+        TabOrder = 12
+        TabStop = False
       end
     end
     object TabSheet3: TTabSheet
@@ -1056,11 +1056,6 @@ object AdjustForm: TAdjustForm
       Checked = True
       OnClick = mnuInstantPreviewClick
     end
-  end
-  object ColorDialog: TColorDialog
-    Options = [cdFullOpen]
-    Left = 232
-    Top = 16
   end
   object GradientPopup: TPopupMenu
     Images = MainForm.Buttons

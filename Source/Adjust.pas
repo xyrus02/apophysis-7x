@@ -23,7 +23,7 @@ interface
 uses
   Windows, Messages, SysUtils, Classes, Graphics, Controls, Forms, Dialogs,
   StdCtrls, ExtCtrls, ComCtrls, Buttons, Menus, AppEvnts,
-  ControlPoint, Cmap, Render;
+  ControlPoint, Cmap, Render, JvExControls, JvColorBox, JvColorButton;
 
 const
   WM_UPDATE_PARAMS = WM_APP + 5439;
@@ -41,7 +41,6 @@ type
     mnuLowQuality: TMenuItem;
     mnuMediumQuality: TMenuItem;
     mnuHighQuality: TMenuItem;
-    ColorDialog: TColorDialog;
     PrevPnl: TPanel;
     PreviewImage: TImage;
     PageControl: TPageControl;
@@ -60,7 +59,6 @@ type
     txtBrightness: TEdit;
     scrollVibrancy: TScrollBar;
     txtVibrancy: TEdit;
-    ColorPanel: TPanel;
     TabSheet3: TTabSheet;
     scrollAngle: TScrollBar;
     txtAngle: TEdit;
@@ -135,6 +133,7 @@ type
     pnlVibrancy: TPanel;
     chkResizeMain: TCheckBox;
     Bevel3: TBevel;
+    ColorButton: TJvColorButton;
     procedure FormCreate(Sender: TObject);
     procedure FormClose(Sender: TObject; var Action: TCloseAction);
     procedure FormDestroy(Sender: TObject);
@@ -176,7 +175,6 @@ type
     procedure scrollZoomChange(Sender: TObject);
     procedure scrollCenterXChange(Sender: TObject);
     procedure scrollCenterYChange(Sender: TObject);
-    procedure ColorPanelClick(Sender: TObject);
     procedure scrollContrastScroll(Sender: TObject;
       ScrollCode: TScrollCode; var ScrollPos: Integer);
     procedure txtGammaEnter(Sender: TObject);
@@ -256,6 +254,7 @@ type
       Shift: TShiftState; X, Y: Integer);
     procedure DragPanelDblClick(Sender: TObject);
     procedure FormActivate(Sender: TObject);
+    procedure ColorButtonChange(Sender: TObject);
 
   private
     Resetting: boolean;
@@ -375,7 +374,7 @@ begin
       scrollCenterY.Position := 0;
     end;
 
-    ColorPanel.color := cp.background[2] shl 16 + cp.background[1] shl 8 + cp.background[0];
+    ColorButton.Color := cp.background[2] shl 16 + cp.background[1] shl 8 + cp.background[0];
     //cbColor.text := IntToHex(integer(ColorPanel.Color), 6);
 
     GetMainWindowSize;
@@ -921,22 +920,16 @@ begin
   DrawPreview;
 end;
 
-procedure TAdjustForm.ColorPanelClick(Sender: TObject);
+procedure TAdjustForm.ColorButtonChange(Sender: TObject);
 var
   col: Longint;
 begin
-  ColorDialog.Color := COlorPanel.Color;
-  if ColorDialog.Execute then
-  begin
-    ColorPanel.Color := ColorDialog.Color;
-    //cbColor.text := IntToHex(integer(ColorDialog.Color), 6);
-    col := ColorToRGB(ColorDialog.Color);
-    cp.background[0] := col and 255;
-    cp.background[1] := col shr 8 and 255;
-    cp.background[2] := col shr 16 and 255;
-    DrawPreview;
-    UpdateFlame(true);
-  end;
+  col := ColorToRGB(ColorButton.Color);
+  cp.background[0] := col and 255;
+  cp.background[1] := col shr 8 and 255;
+  cp.background[2] := col shr 16 and 255;
+  DrawPreview;
+  UpdateFlame(true);
 end;
 
 procedure TAdjustForm.scrollContrastScroll(Sender: TObject;

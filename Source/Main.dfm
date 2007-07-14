@@ -2021,4 +2021,8 @@ object MainForm: TMainForm
     Left = 72
     Top = 120
   end
+  object XPManifest1: TXPManifest
+    Left = 104
+    Top = 120
+  end
 end

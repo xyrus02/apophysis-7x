@@ -24,7 +24,7 @@ interface
 uses
   Windows, Messages, SysUtils, Classes, Graphics, Controls, Forms, Dialogs,
   StdCtrls, ComCtrls, ExtCtrls, Buttons, Registry, Mask, CheckLst,
-  MMSystem;
+  MMSystem, JvExControls, JvColorBox, JvColorButton;
 
 type
   TOptionsForm = class(TForm)
@@ -189,13 +189,8 @@ type
     Label41: TLabel;
     Label42: TLabel;
     Label43: TLabel;
-    pnlBackColor: TPanel;
     chkUseXFormColor: TCheckBox;
     chkHelpers: TCheckBox;
-    pnlReference: TPanel;
-    pnlGridColor1: TPanel;
-    pnlGridColor2: TPanel;
-    pnlHelpersColor: TPanel;
     rgReferenceMode: TRadioGroup;
     chkPlaysound: TCheckBox;
     btnPlay: TSpeedButton;
@@ -221,6 +216,11 @@ type
     btnGradientsFile: TSpeedButton;
     chkConfirmExit: TCheckBox;
     chkConfirmStopRender: TCheckBox;
+    cbtnBackColor: TJvColorButton;
+    cbtnReference: TJvColorButton;
+    cbtnGrid1: TJvColorButton;
+    cbtnGrid2: TJvColorButton;
+    cbtnHelpers: TJvColorButton;
     procedure btnCancelClick(Sender: TObject);
     procedure FormShow(Sender: TObject);
     procedure btnOKClick(Sender: TObject);
@@ -245,14 +245,14 @@ type
     procedure btnRendererClick(Sender: TObject);
     procedure SpeedButton2Click(Sender: TObject);
     procedure FormCreate(Sender: TObject);
-    procedure pnlBackColorClick(Sender: TObject);
-    procedure pnlReferenceClick(Sender: TObject);
-    procedure pnlGridColor1Click(Sender: TObject);
-    procedure pnlGridColor2Click(Sender: TObject);
-    procedure pnlHelpersColorClick(Sender: TObject);
     procedure btnBrowseSoundClick(Sender: TObject);
     procedure btnPlayClick(Sender: TObject);
     procedure btnGradientsFileClick(Sender: TObject);
+    procedure cbtnBackColorChange(Sender: TObject);
+    procedure cbtnReferenceChange(Sender: TObject);
+    procedure cbtnGrid1Change(Sender: TObject);
+    procedure cbtnGrid2Change(Sender: TObject);
+    procedure cbtnHelpersChange(Sender: TObject);
 
   private
     { Private declarations }
@@ -347,10 +347,10 @@ begin
   txtMediumQuality.Text := FloatToStr(prevMediumQuality);
   txtHighQuality.Text := FloatToStr(prevHighQuality);
 
-  pnlBackColor.Color := TColor(EditorBkgColor);
-  pnlGridColor1.Color := GridColor1;
-  pnlGridColor2.Color := GridColor2;
-  pnlReference.color := TColor(ReferenceTriangleColor);
+  cbtnBackColor.Color := TColor(EditorBkgColor);
+  cbtnGrid1.Color := GridColor1;
+  cbtnGrid2.Color := GridColor2;
+  cbtnReference.Color := TColor(ReferenceTriangleColor);
 
   rgTransparency.ItemIndex :=  PNGTransparency;
   chkShowTransparency.Checked := ShowTransparency;
@@ -730,54 +730,29 @@ begin
   end;
 end;
 
-procedure TOptionsForm.pnlBackColorClick(Sender: TObject);
+procedure TOptionsForm.cbtnBackColorChange(Sender: TObject);
 begin
-  AdjustForm.ColorDialog.Color := pnlBackColor.Color;
-  if AdjustForm.ColorDialog.Execute then
-  begin
-    pnlBackColor.Color := AdjustForm.ColorDialog.Color;
-    EditorBkgColor := Integer(pnlBackColor.color);
-  end;
+  EditorBkgColor := Integer(cbtnBackColor.Color);
 end;
 
-procedure TOptionsForm.pnlReferenceClick(Sender: TObject);
+procedure TOptionsForm.cbtnReferenceChange(Sender: TObject);
 begin
-  AdjustForm.ColorDialog.Color := pnlReference.Color;
-  if AdjustForm.ColorDialog.Execute then
-  begin
-    pnlReference.Color := AdjustForm.ColorDialog.Color;
-    ReferenceTriangleColor := Integer(pnlReference.color);
-  end;
+  ReferenceTriangleColor := Integer(cbtnReference.Color);
 end;
 
-procedure TOptionsForm.pnlGridColor1Click(Sender: TObject);
+procedure TOptionsForm.cbtnGrid1Change(Sender: TObject);
 begin
-  AdjustForm.ColorDialog.Color := pnlGridColor1.Color;
-  if AdjustForm.ColorDialog.Execute then
-  begin
-    pnlGridColor1.Color := AdjustForm.ColorDialog.Color;
-    GridColor1 := Integer(pnlGridColor1.color);
-  end;
+  GridColor1 := Integer(cbtnGrid1.Color);
 end;
 
-procedure TOptionsForm.pnlGridColor2Click(Sender: TObject);
+procedure TOptionsForm.cbtnGrid2Change(Sender: TObject);
 begin
-  AdjustForm.ColorDialog.Color := pnlGridColor2.Color;
-  if AdjustForm.ColorDialog.Execute then
-  begin
-    pnlGridColor2.Color := AdjustForm.ColorDialog.Color;
-    GridColor2 := Integer(pnlGridColor2.color);
-  end;
+  GridColor2 := Integer(cbtnGrid2.Color);
 end;
 
-procedure TOptionsForm.pnlHelpersColorClick(Sender: TObject);
+procedure TOptionsForm.cbtnHelpersChange(Sender: TObject);
 begin
-  AdjustForm.ColorDialog.Color := pnlHelpersColor.Color;
-  if AdjustForm.ColorDialog.Execute then
-  begin
-    pnlHelpersColor.Color := AdjustForm.ColorDialog.Color;
-    HelpersColor := Integer(pnlHelpersColor.color);
-  end;
+  HelpersColor := Integer(cbtnHelpers.Color);
 end;
 
 procedure TOptionsForm.btnBrowseSoundClick(Sender: TObject);

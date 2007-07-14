@@ -33,7 +33,7 @@ uses
   ExtDlgs, AppEvnts, ShellAPI, Registry,
   Global, Xform, XFormMan, ControlPoint, CMap,
   RenderThread, RenderTypes,
-  LibXmlParser, LibXmlComps, PngImage;
+  LibXmlParser, LibXmlComps, PngImage, XPMan;
 
 const
   PixelCountMax = 32768;
@@ -42,7 +42,7 @@ const
   RS_XO = 2;
   RS_VO = 3;
 
-  AppVersionString = 'Apophysis 2.06c beta';
+  AppVersionString = 'Apophysis 2.06d beta';
 
 type
   TMouseMoveState = (msUsual, msZoomWindow, msZoomOutWindow, msZoomWindowMove,
@@ -184,6 +184,7 @@ type
     tbShowTrace: TToolButton;
     ToolButton2: TToolButton;
     mnuRenderAll: TMenuItem;
+    XPManifest1: TXPManifest;
     procedure tbzoomoutwindowClick(Sender: TObject);
     procedure mnuimageClick(Sender: TObject);
     procedure mnuExitClick(Sender: TObject);
