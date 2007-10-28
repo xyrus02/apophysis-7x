@@ -23,7 +23,7 @@ interface
 uses
   Windows, Messages, SysUtils, Classes, Graphics, Controls, Forms, Dialogs,
   StdCtrls, ExtCtrls, ComCtrls, Buttons, Menus, AppEvnts,
-  ControlPoint, Cmap, Render, JvExControls, JvColorBox, JvColorButton;
+  ControlPoint, Cmap, Render;
 
 const
   WM_UPDATE_PARAMS = WM_APP + 5439;
@@ -41,6 +41,7 @@ type
     mnuLowQuality: TMenuItem;
     mnuMediumQuality: TMenuItem;
     mnuHighQuality: TMenuItem;
+    ColorDialog: TColorDialog;
     PrevPnl: TPanel;
     PreviewImage: TImage;
     PageControl: TPageControl;
@@ -59,6 +60,7 @@ type
     txtBrightness: TEdit;
     scrollVibrancy: TScrollBar;
     txtVibrancy: TEdit;
+    ColorPanel: TPanel;
     TabSheet3: TTabSheet;
     scrollAngle: TScrollBar;
     txtAngle: TEdit;
@@ -122,8 +124,6 @@ type
     Bevel2: TBevel;
     N8: TMenuItem;
     mnuInstantPreview: TMenuItem;
-    editPPU: TEdit;
-    pnlMasterScale: TPanel;
     pnlZoom: TPanel;
     pnlXpos: TPanel;
     pnlYpos: TPanel;
@@ -133,7 +133,8 @@ type
     pnlVibrancy: TPanel;
     chkResizeMain: TCheckBox;
     Bevel3: TBevel;
-    ColorButton: TJvColorButton;
+    pnlMasterScale: TPanel;
+    editPPU: TEdit;
     procedure FormCreate(Sender: TObject);
     procedure FormClose(Sender: TObject; var Action: TCloseAction);
     procedure FormDestroy(Sender: TObject);
@@ -175,6 +176,7 @@ type
     procedure scrollZoomChange(Sender: TObject);
     procedure scrollCenterXChange(Sender: TObject);
     procedure scrollCenterYChange(Sender: TObject);
+    procedure ColorPanelClick(Sender: TObject);
     procedure scrollContrastScroll(Sender: TObject;
       ScrollCode: TScrollCode; var ScrollPos: Integer);
     procedure txtGammaEnter(Sender: TObject);
@@ -254,7 +256,14 @@ type
       Shift: TShiftState; X, Y: Integer);
     procedure DragPanelDblClick(Sender: TObject);
     procedure FormActivate(Sender: TObject);
-    procedure ColorButtonChange(Sender: TObject);
+
+    procedure PreviewImageMouseDown(Sender: TObject; Button: TMouseButton;
+      Shift: TShiftState; X, Y: Integer);
+    procedure PreviewImageMouseMove(Sender: TObject; Shift: TShiftState; X,
+      Y: Integer);
+    procedure PreviewImageMouseUp(Sender: TObject; Button: TMouseButton;
+      Shift: TShiftState; X, Y: Integer);
+    procedure PreviewImageDblClick(Sender: TObject);
 
   private
     Resetting: boolean;
@@ -268,6 +277,10 @@ type
     pnlDragPos, pnlDragOld: integer;
     pnlDragValue: double;
     mousepos: TPoint;
+
+    camDragMode, camDragged, camMM: boolean;
+    camDragPos, camDragOld: TPoint;
+    camDragValueX, camDragValueY, camSin, camCos: double;
 
   private // gradient stuff
     Palette, BackupPal: TColorMap;
@@ -374,7 +387,7 @@ begin
       scrollCenterY.Position := 0;
     end;
 
-    ColorButton.Color := cp.background[2] shl 16 + cp.background[1] shl 8 + cp.background[0];
+    ColorPanel.color := cp.background[2] shl 16 + cp.background[1] shl 8 + cp.background[0];
     //cbColor.text := IntToHex(integer(ColorPanel.Color), 6);
 
     GetMainWindowSize;
@@ -920,16 +933,22 @@ begin
   DrawPreview;
 end;
 
-procedure TAdjustForm.ColorButtonChange(Sender: TObject);
+procedure TAdjustForm.ColorPanelClick(Sender: TObject);
 var
   col: Longint;
 begin
-  col := ColorToRGB(ColorButton.Color);
-  cp.background[0] := col and 255;
-  cp.background[1] := col shr 8 and 255;
-  cp.background[2] := col shr 16 and 255;
-  DrawPreview;
-  UpdateFlame(true);
+  ColorDialog.Color := COlorPanel.Color;
+  if ColorDialog.Execute then
+  begin
+    ColorPanel.Color := ColorDialog.Color;
+    //cbColor.text := IntToHex(integer(ColorDialog.Color), 6);
+    col := ColorToRGB(ColorDialog.Color);
+    cp.background[0] := col and 255;
+    cp.background[1] := col shr 8 and 255;
+    cp.background[2] := col shr 16 and 255;
+    DrawPreview;
+    UpdateFlame(true);
+  end;
 end;
 
 procedure TAdjustForm.scrollContrastScroll(Sender: TObject;
@@ -1956,7 +1975,8 @@ begin
   //SetCaptureControl(TControl(Sender));
 
   Screen.Cursor := crHSplit;
-  GetCursorPos(mousepos); // hmmm
+  //GetCursorPos(mousepos); // hmmm
+  mousePos := (Sender as TControl).ClientToScreen(Point(x, y));
   pnlDragged := false;
 end;
 
@@ -2099,6 +2119,93 @@ begin
   txtCenterX.text := FloatToStr(cp.center[0]);
   txtCentery.text := FloatToStr(cp.center[1]);
   txtAngle.text := FloatToStr(cp.FAngle * 180 / PI);
+end;
+
+///////////////////////////////////////////////////////////////////////////////
+
+procedure TAdjustForm.PreviewImageMouseDown(Sender: TObject;
+  Button: TMouseButton; Shift: TShiftState; X, Y: Integer);
+begin
+  if Button <> mbLeft then exit;
+
+  camDragValueX := cp.Center[0];
+  camDragValueY := cp.Center[1];
+
+  camDragMode := true;
+  camDragPos.x := 0;
+  camDragPos.y := 0;
+  camDragOld.x := x;
+  camDragOld.y := y;
+  camSin := sin(cp.FAngle);
+  camCos := cos(cp.FAngle);
+  camMM := false;
+  //SetCaptureControl(TControl(Sender));
+
+  Screen.Cursor := crNone;
+  //GetCursorPos(mousepos); // hmmm
+  mousePos := (Sender as TControl).ClientToScreen(Point(x, y));
+  camDragged := false;
+end;
+
+procedure TAdjustForm.PreviewImageMouseMove(Sender: TObject;
+  Shift: TShiftState; X, Y: Integer);
+var
+  sc, vx, vy: double;
+begin
+  if camMM then // hack: to skip MouseMove event
+  begin
+    camMM:=false;
+  end
+  else
+  if camDragMode and ( (x <> camDragOld.x) or (y <> camDragOld.y) ) then
+  begin
+    Inc(camDragPos.x, x - camDragOld.x);
+    Inc(camDragPos.y, y - camDragOld.y);
+
+    vx := Round6(camDragValueX - (camDragPos.x * camCos - camDragPos.y * camSin) / 200);
+    vy := Round6(camDragValueY - (camDragPos.x * camSin + camDragPos.y * camCos) / 200);
+
+    cp.center[0] := vx;
+    txtCenterX.Text := FloatToStr(vx);
+    txtCenterX.Refresh;
+    cp.center[1] := vy;
+    txtCenterY.Text := FloatToStr(vy);
+    txtCenterY.Refresh;
+
+    SetCursorPos(MousePos.x, MousePos.y); // hmmm
+    pnlMM:=true;
+
+    camDragged := True;
+    DrawPreview;
+  end;
+end;
+
+procedure TAdjustForm.PreviewImageMouseUp(Sender: TObject;
+  Button: TMouseButton; Shift: TShiftState; X, Y: Integer);
+begin
+  if Button <> mbLeft then exit;
+
+  if camDragMode then
+  begin
+    camDragMode := false;
+    Screen.Cursor := crDefault;
+
+    if camDragged then
+    begin
+      UpdateFlame;
+      camDragged := False;
+    end;
+  end;
+end;
+
+procedure TAdjustForm.PreviewImageDblClick(Sender: TObject);
+begin
+  cp.center[0] := 0;
+  cp.center[1] := 0;
+  txtCenterX.Text := '0';
+  txtCenterY.Text := '0';
+
+  UpdateFlame;
 end;
 
 end.

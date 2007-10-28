@@ -165,10 +165,14 @@ object AdjustForm: TAdjustForm
       Top = 1
       Width = 160
       Height = 120
+      Cursor = crCross
       Anchors = []
       Center = True
       IncrementalDisplay = True
       PopupMenu = QualityPopup
+      OnMouseDown = PreviewImageMouseDown
+      OnMouseMove = PreviewImageMouseMove
+      OnMouseUp = PreviewImageMouseUp
     end
   end
   object PageControl: TPageControl
@@ -363,24 +367,6 @@ object AdjustForm: TAdjustForm
         AutoSize = False
         Caption = 'Background'
       end
-      object pnlMasterScale: TPanel
-        Left = 232
-        Top = 76
-        Width = 73
-        Height = 21
-        Cursor = crHandPoint
-        Hint = 'Click and drag to change value'
-        Alignment = taLeftJustify
-        BevelOuter = bvLowered
-        Caption = ' Master Scale'
-        ParentShowHint = False
-        ShowHint = True
-        TabOrder = 8
-        OnDblClick = DragPanelDblClick
-        OnMouseDown = DragPanelMouseDown
-        OnMouseMove = DragPanelMouseMove
-        OnMouseUp = DragPanelMouseUp
-      end
       object pnlGamma: TPanel
         Left = 4
         Top = 4
@@ -392,7 +378,7 @@ object AdjustForm: TAdjustForm
         Caption = 'Gamma'
         ParentShowHint = False
         ShowHint = True
-        TabOrder = 9
+        TabOrder = 8
         OnDblClick = DragPanelDblClick
         OnMouseDown = DragPanelMouseDown
         OnMouseMove = DragPanelMouseMove
@@ -468,24 +454,26 @@ object AdjustForm: TAdjustForm
         OnExit = txtVibrancyExit
         OnKeyPress = txtVibrancyKeyPress
       end
+      object ColorPanel: TPanel
+        Left = 72
+        Top = 78
+        Width = 65
+        Height = 21
+        Cursor = crHandPoint
+        BevelOuter = bvLowered
+        Color = clBlack
+        TabOrder = 6
+        OnClick = ColorPanelClick
+      end
       object chkTransparent: TCheckBox
-        Left = 138
-        Top = 79
+        Left = 144
+        Top = 80
         Width = 81
         Height = 17
         Caption = 'Transparent'
         Enabled = False
-        TabOrder = 6
-        Visible = False
-      end
-      object editPPU: TEdit
-        Left = 304
-        Top = 76
-        Width = 75
-        Height = 21
         TabOrder = 7
-        OnExit = editPPUValidate
-        OnKeyPress = editPPUKeyPress
+        Visible = False
       end
       object pnlBrightness: TPanel
         Left = 4
@@ -498,7 +486,7 @@ object AdjustForm: TAdjustForm
         Caption = 'Brightness'
         ParentShowHint = False
         ShowHint = True
-        TabOrder = 10
+        TabOrder = 9
         OnDblClick = DragPanelDblClick
         OnMouseDown = DragPanelMouseDown
         OnMouseMove = DragPanelMouseMove
@@ -515,22 +503,11 @@ object AdjustForm: TAdjustForm
         Caption = 'Vibrancy'
         ParentShowHint = False
         ShowHint = True
-        TabOrder = 11
+        TabOrder = 10
         OnDblClick = DragPanelDblClick
         OnMouseDown = DragPanelMouseDown
         OnMouseMove = DragPanelMouseMove
         OnMouseUp = DragPanelMouseUp
-      end
-      object ColorButton: TJvColorButton
-        Left = 72
-        Top = 75
-        Width = 57
-        Height = 24
-        OtherCaption = '&Other...'
-        Options = [cdFullOpen, cdAnyColor]
-        OnChange = ColorButtonChange
-        TabOrder = 12
-        TabStop = False
       end
     end
     object TabSheet3: TTabSheet
@@ -1028,6 +1005,33 @@ object AdjustForm: TAdjustForm
       end
     end
   end
+  object pnlMasterScale: TPanel
+    Left = 280
+    Top = 108
+    Width = 57
+    Height = 21
+    Cursor = crHandPoint
+    Hint = 'Click and drag to change value'
+    Alignment = taLeftJustify
+    BevelOuter = bvLowered
+    Caption = ' Scale'
+    ParentShowHint = False
+    ShowHint = True
+    TabOrder = 2
+    OnDblClick = DragPanelDblClick
+    OnMouseDown = DragPanelMouseDown
+    OnMouseMove = DragPanelMouseMove
+    OnMouseUp = DragPanelMouseUp
+  end
+  object editPPU: TEdit
+    Left = 336
+    Top = 108
+    Width = 49
+    Height = 21
+    TabOrder = 3
+    OnExit = editPPUValidate
+    OnKeyPress = editPPUKeyPress
+  end
   object QualityPopup: TPopupMenu
     Images = MainForm.Buttons
     Left = 200
@@ -1056,6 +1060,11 @@ object AdjustForm: TAdjustForm
       Checked = True
       OnClick = mnuInstantPreviewClick
     end
+  end
+  object ColorDialog: TColorDialog
+    Options = [cdFullOpen]
+    Left = 232
+    Top = 16
   end
   object GradientPopup: TPopupMenu
     Images = MainForm.Buttons
