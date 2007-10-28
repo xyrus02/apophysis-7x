@@ -44,7 +44,7 @@ object OptionsForm: TOptionsForm
     Top = 8
     Width = 451
     Height = 265
-    ActivePage = EditorPage
+    ActivePage = GeneralPage
     TabOrder = 0
     TabStop = False
     object GeneralPage: TTabSheet
@@ -306,13 +306,24 @@ object OptionsForm: TOptionsForm
           Height = 13
           Caption = 'Helpers'
         end
+        object pnlBackColor: TPanel
+          Left = 8
+          Top = 104
+          Width = 62
+          Height = 17
+          Cursor = crHandPoint
+          BevelOuter = bvLowered
+          Color = clBlack
+          TabOrder = 0
+          OnClick = pnlBackColorClick
+        end
         object chkUseXFormColor: TCheckBox
           Left = 8
           Top = 16
           Width = 129
           Height = 17
           Caption = 'Use transform color'
-          TabOrder = 0
+          TabOrder = 4
         end
         object chkHelpers: TCheckBox
           Left = 8
@@ -322,7 +333,51 @@ object OptionsForm: TOptionsForm
           Caption = 'Helper lines'
           Checked = True
           State = cbChecked
+          TabOrder = 6
+        end
+        object pnlReference: TPanel
+          Left = 8
+          Top = 144
+          Width = 62
+          Height = 17
+          Cursor = crHandPoint
+          BevelOuter = bvLowered
+          Color = clGray
           TabOrder = 1
+          OnClick = pnlReferenceClick
+        end
+        object pnlGridColor1: TPanel
+          Left = 75
+          Top = 104
+          Width = 29
+          Height = 17
+          Cursor = crHandPoint
+          BevelOuter = bvLowered
+          Color = clBlack
+          TabOrder = 2
+          OnClick = pnlGridColor1Click
+        end
+        object pnlGridColor2: TPanel
+          Left = 108
+          Top = 104
+          Width = 29
+          Height = 17
+          Cursor = crHandPoint
+          BevelOuter = bvLowered
+          Color = clBlack
+          TabOrder = 3
+          OnClick = pnlGridColor2Click
+        end
+        object pnlHelpersColor: TPanel
+          Left = 75
+          Top = 144
+          Width = 62
+          Height = 17
+          Cursor = crHandPoint
+          BevelOuter = bvLowered
+          Color = clGray
+          TabOrder = 5
+          OnClick = pnlHelpersColorClick
         end
         object chkShowAllXforms: TCheckBox
           Left = 8
@@ -332,48 +387,8 @@ object OptionsForm: TOptionsForm
           Caption = 'Always show both type of transforms'
           Checked = True
           State = cbChecked
-          TabOrder = 2
+          TabOrder = 7
           WordWrap = True
-        end
-        object cbtnReference: TJvColorButton
-          Left = 8
-          Top = 141
-          Width = 63
-          OtherCaption = '&Other...'
-          Options = [cdFullOpen]
-          OnChange = cbtnReferenceChange
-          TabOrder = 3
-          TabStop = False
-        end
-        object cbtnGrid1: TJvColorButton
-          Left = 73
-          Top = 102
-          Width = 34
-          OtherCaption = '&Other...'
-          Options = [cdFullOpen]
-          OnChange = cbtnGrid1Change
-          TabOrder = 4
-          TabStop = False
-        end
-        object cbtnGrid2: TJvColorButton
-          Left = 108
-          Top = 102
-          Width = 34
-          OtherCaption = '&Other...'
-          Options = [cdFullOpen]
-          OnChange = cbtnGrid2Change
-          TabOrder = 5
-          TabStop = False
-        end
-        object cbtnHelpers: TJvColorButton
-          Left = 73
-          Top = 142
-          Width = 69
-          OtherCaption = '&Other...'
-          Options = [cdFullOpen]
-          OnChange = cbtnHelpersChange
-          TabOrder = 6
-          TabStop = False
         end
       end
       object rgReferenceMode: TRadioGroup
@@ -427,16 +442,6 @@ object OptionsForm: TOptionsForm
           'Reset value to zero'
           'Reset value to zero, if zero set to "1"')
         TabOrder = 3
-      end
-      object cbtnBackColor: TJvColorButton
-        Left = 16
-        Top = 106
-        Width = 63
-        OtherCaption = '&Other...'
-        Options = [cdFullOpen]
-        OnChange = cbtnBackColorChange
-        TabOrder = 4
-        TabStop = False
       end
     end
     object DisplayPage: TTabSheet
