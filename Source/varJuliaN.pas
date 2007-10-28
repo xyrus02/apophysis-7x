@@ -6,6 +6,7 @@ uses
   BaseVariation, XFormMan;
 
 const
+  var_name = 'julian';
   var_n_name='julian_power';
   var_c_name='julian_dist';
 
@@ -17,8 +18,8 @@ type
     N: integer;
     c: double;
 
-    rN: integer;
-    cn: double;
+    absN: integer;
+    cN, vvar2: double;
 
     procedure CalcPower1;
     procedure CalcPowerMinus1;
@@ -46,7 +47,7 @@ type
 implementation
 
 uses
-  math;
+  Math;
 
 // TVariationJulian
 
@@ -59,8 +60,10 @@ end;
 
 procedure TVariationJulian.Prepare;
 begin
-  rN := abs(N);
-  cn := c / N / 2;
+  absN := abs(N);
+  cN := c / N / 2;
+
+  vvar2 := vvar * sqrt(2)/2;
 end;
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -83,36 +86,20 @@ var
   r: double;
   sina, cosa: extended;
 begin
-  sincos((arctan2(FTy^, FTx^) + 2*pi*random(rn)) / N, sina, cosa);
-  r := vvar * Math.Power(sqr(FTx^) + sqr(FTy^), cn);
+  sincos((arctan2(FTy^, FTx^) + 2*pi*random(absN)) / N, sina, cosa);
+  r := vvar * Math.Power(sqr(FTx^) + sqr(FTy^), cN);
 
   FPx^ := FPx^ + r * cosa;
   FPy^ := FPy^ + r * sina;
 {$else}
 asm
     mov     edx, [eax + FTx]
-    fld     qword ptr [edx + 8]
-    fld     qword ptr [eax + cn]
-//    mov     edx, [eax + FTx]
-    fld     qword ptr [edx]
+    fld     qword ptr [edx]     // FTx
+    fld     qword ptr [edx + 8] // FTy
+    fld     qword ptr [eax + cN]
     fld     st(2)
-    fld     st(1)
-    fpatan
-    mov     ecx, eax
-    mov     eax, dword ptr [eax + rN]
-    call    System.@RandInt
-    push    eax
-    fild    dword ptr [esp]
-    add     esp, 4
-    fldpi
-    fadd    st, st
-    fmulp
-    faddp
-    fidiv   dword ptr [ecx + N]
-
-    fxch    st(3)
     fmul    st, st
-    fxch    st(1)
+    fld     st(2)
     fmul    st, st
     faddp
 //  ---  x^y = 2^(y*log2(x))
@@ -127,17 +114,29 @@ asm
     fscale
     fstp    st(1)
 //  ---
-    fmul    qword ptr [ecx + vvar]
-    fxch    st(1)
-    fsincos
-    fmul    st, st(2)
+    fmul    qword ptr [eax + vvar]
 
+    fxch    st(2)
+    fpatan
+    mov     ecx, eax
+    mov     eax, dword ptr [eax + absN]
+    call    System.@RandInt
+    push    eax
+    fild    dword ptr [esp]
+    add     esp, 4
+    fldpi
+    fadd    st, st
+    fmulp
+    faddp
+    fidiv   dword ptr [ecx + N]
+    fsincos
+
+    fmul    st, st(2)
     mov     edx, [ecx + FPx]
-    fadd    qword ptr [edx]
+    fadd    qword ptr [edx] // FPx
     fstp    qword ptr [edx]
     fmulp
-//    mov     edx, [ecx + FPy]
-    fadd    qword ptr [edx + 8]
+    fadd    qword ptr [edx + 8] // FPy
     fstp    qword ptr [edx + 8]
     fwait
 {$endif}
@@ -146,53 +145,48 @@ end;
 procedure TVariationJulian.CalcPower2;
 {$ifndef _ASM_}
 var
-  r: double;
-  sina, cosa: extended;
+  d: double;
 begin
-  sincos((arctan2(FTy^, FTx^)/2 + pi*random(2)), sina, cosa);
-  r := vvar * sqrt(sqrt(sqr(FTx^) + sqr(FTy^)));
+  d := sqrt( sqrt(sqr(FTx^) + sqr(FTy^)) + FTx^ );
 
-  FPx^ := FPx^ + r * cosa;
-  FPy^ := FPy^ + r * sina;
+  if random(2) = 0 then begin
+    FPx^ := FPx^ + vvar2 * d;
+    FPy^ := FPy^ + vvar2 / d * FTy^;
+  end
+  else begin
+    FPx^ := FPx^ - vvar2 * d;
+    FPy^ := FPy^ - vvar2 / d * FTy^;
+  end;
 {$else}
 asm
     mov     edx, [eax + FTx]
-    fld     qword ptr [edx + 8]
-//    mov     edx, [eax + FTx]
-    fld     qword ptr [edx]
+    fld     qword ptr [edx + 8] // FTy
+    fld     qword ptr [edx]     // FTx
     fld     st(1)
+    fmul    st,st
     fld     st(1)
-    fpatan
-    fld1
-    fadd    st, st
-    fdivp   st(1), st
-    mov     ecx, eax
-    mov     eax, 2
+    fmul    st,st
+    faddp
+    fsqrt
+    faddp
+    fsqrt
+
+    fld     qword ptr [eax + vvar2]
+    mov     ecx,eax
+    mov     eax,2
     call    System.@RandInt
-    fldpi
-    push    eax
-    fimul   dword ptr [esp]
-    add     esp, 4
-    faddp
+    shr eax,1
+    jc      @skip
+    fchs
+@skip:
 
-    fxch    st(2)
-    fmul    st, st
-    fxch    st(1)
-    fmul    st, st
-    faddp
-    fsqrt
-    fsqrt
-    fmul    qword ptr [ecx + vvar]
-    fxch    st(1)
+    fmul    st(2),st
+    fmul    st,st(1)
 
-    fsincos
-
-    fmul    st, st(2)
     mov     edx, [ecx + FPx]
     fadd    qword ptr [edx]
     fstp    qword ptr [edx]
-    fmulp
-//    mov     edx, [ecx + FPy]
+    fdivp   st(1),st
     fadd    qword ptr [edx + 8]
     fstp    qword ptr [edx + 8]
     fwait
@@ -202,54 +196,59 @@ end;
 procedure TVariationJulian.CalcPowerMinus2;
 {$ifndef _ASM_}
 var
-  r: double;
-  sina, cosa: extended;
+  r, xd: double;
 begin
-  sincos((arctan2(FTy^, FTx^)/2 + pi*random(2)), sina, cosa);
-  r := vvar / sqrt(sqrt(sqr(FTx^) + sqr(FTy^)));
+  r := sqrt(sqr(FTx^) + sqr(FTy^));
+  xd := r + FTx^;
 
-  FPx^ := FPx^ + r * cosa;
-  FPy^ := FPy^ - r * sina;
+  r := vvar / sqrt(r * (sqr(Fty^) + sqr(xd)) );
+
+  if random(2) = 0 then begin
+    FPx^ := FPx^ + r * xd;
+    FPy^ := FPy^ - r * FTy^;
+  end
+  else begin
+    FPx^ := FPx^ - r * xd;
+    FPy^ := FPy^ + r * FTy^;
+  end;
 {$else}
 asm
+
     mov     edx, [eax + FTx]
     fld     qword ptr [edx + 8]
-//    mov     edx, [eax + FTx]
     fld     qword ptr [edx]
     fld     st(1)
+    fmul    st,st
     fld     st(1)
-    fpatan
-    fld1
-    fadd    st, st
-    fdivp   st(1), st
-    mov     ecx, eax
-    mov     eax, 2
-    call    System.@RandInt
-    fldpi
-    push    eax
-    fimul   dword ptr [esp]
-    add     esp, 4
-    faddp
-
-    fxch    st(2)
-    fmul    st, st
-    fxch    st(1)
-    fmul    st, st
+    fmul    st,st
     faddp
     fsqrt
-    fsqrt
-    fdivr   qword ptr [ecx + vvar]
-    fxch    st(1)
-
-    fsincos
-
-    fmul    st, st(2)
-    mov     edx, [ecx + FPx]
-    fadd    qword ptr [edx]
-    fstp    qword ptr [edx]
+    fadd    st(1),st
+    fld     st(1)
+    fmul    st,st
+    fld     st(3)
+    fmul    st,st
+    faddp
     fmulp
-//    mov     edx, [ecx + FPy]
-    fsubr   qword ptr [edx + 8]
+    fsqrt
+
+    fdivr   qword ptr [eax + vvar]
+
+    mov     ecx,eax
+    mov     eax,2
+    call    System.@RandInt
+    shr eax,1
+    jc      @skip
+    fchs
+@skip:
+
+    fmul    st(1),st
+    fmulp   st(2),st
+
+    mov     edx, [ecx + FPx]
+    fsubr   qword ptr [edx]
+    fstp    qword ptr [edx]
+    fadd    qword ptr [edx + 8]
     fstp    qword ptr [edx + 8]
     fwait
 {$endif}
@@ -263,9 +262,9 @@ begin
 {$else}
 asm
     mov     edx, [eax + FTx] //[eax + FTy]
-    fld     qword ptr [edx + 8]
-//    mov     edx, [eax + FTx]
     fld     qword ptr [edx]
+//    mov     edx, [eax + FTx]
+    fld     qword ptr [edx + 8]
     fld     qword ptr [eax + vvar]
     fmul    st(2), st
     fmulp
@@ -321,7 +320,7 @@ end;
 ///////////////////////////////////////////////////////////////////////////////
 class function TVariationJulian.GetName: string;
 begin
-  Result := 'julian';
+  Result := var_name;
 end;
 
 ///////////////////////////////////////////////////////////////////////////////
