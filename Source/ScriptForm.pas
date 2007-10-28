@@ -177,6 +177,8 @@ type
     procedure SetTransformFProc(AMachine: TatVirtualMachine);
     procedure GetTransformVarProc(AMachine: TatVirtualMachine);
     procedure SetTransformVarProc(AMachine: TatVirtualMachine);
+    procedure GetTransformVariProc(AMachine: TatVirtualMachine);
+    procedure SetTransformVariProc(AMachine: TatVirtualMachine);
 
     procedure GetTransformColorProc(AMachine: TatVirtualMachine);
     procedure SetTransformColorProc(AMachine: TatVirtualMachine);
@@ -419,6 +421,8 @@ type
 
     procedure VariationIndexProc(AMachine: TatVirtualMachine);
     procedure VariationNameProc(AMachine: TatVirtualMachine);
+    procedure VariableIndexProc(AMachine: TatVirtualMachine);
+    procedure VariableNameProc(AMachine: TatVirtualMachine);
 
     procedure CalculateScale(AMachine: TatVirtualMachine);
     procedure NormalizeVars(AMachine: TatVirtualMachine);
@@ -1230,6 +1234,8 @@ begin
   Scripter.AddConstant('ProgramVersionString', AppVersionString);
   Scripter.DefineMethod('VariationIndex', 1, tkInteger, nil, VariationIndexProc);
   Scripter.DefineMethod('VariationName', 1, tkString, nil, VariationNameProc);
+  Scripter.DefineMethod('VariableIndex', 1, tkInteger, nil, VariableIndexProc);
+  Scripter.DefineMethod('VariableName', 1, tkString, nil, VariableNameProc);
 
   Scripter.DefineMethod('CalculateScale', 0, tkNone, nil, CalculateScale);
   Scripter.DefineMethod('CalculateBounds', 0, tkNone, nil, CalculateBounds);
@@ -1788,7 +1794,7 @@ begin
   with AMachine do begin
     str := LowerCase(GetInputArgAsString(0));
     i := NRVAR-1;
-    while (i >= 0) and (varnames(i) <> str) do Dec(i);
+    while (i >= 0) and (LowerCase(varnames(i)) <> str) do Dec(i);
     ReturnOutputArg(i);
   end;
 end;
@@ -1802,6 +1808,33 @@ begin
     i := GetInputArgAsInteger(0);
     if (i >= 0) and (i < NRVAR) then
       ReturnOutputArg(varnames(i))
+    else
+      ReturnOutputArg('');
+  end;
+end;
+
+procedure TOperationLibrary.VariableIndexProc(AMachine: TatVirtualMachine);
+var
+  i: integer;
+  str: string;
+begin
+  with AMachine do begin
+    str := LowerCase(GetInputArgAsString(0));
+    i := GetNrVariableNames-1;
+    while (i >= 0) and (LowerCase(GetVariableNameAt(i)) <> str) do Dec(i);
+    ReturnOutputArg(i);
+  end;
+end;
+
+procedure TOperationLibrary.VariableNameProc(AMachine: TatVirtualMachine);
+var
+  i: integer;
+  str: string;
+begin
+  with AMachine do begin
+    i := GetInputArgAsInteger(0);
+    if (i >= 0) and (i < GetNrVariableNames) then
+      ReturnOutputArg(GetVariableNameAt(i))
     else
       ReturnOutputArg('');
   end;
@@ -2512,7 +2545,6 @@ begin
     cp.FAngle := GetInputArgAsFloat(0);
 end;
 
-
 { *************************** Transform interface **************************** }
 
 procedure TScriptEditor.GetTransformAProc(AMachine: TatVirtualMachine);
@@ -2661,6 +2693,30 @@ begin
   end;
 end;
 
+procedure TScriptEditor.GetTransformVariProc(AMachine: TatVirtualMachine);
+var
+  v: double;
+begin
+  with AMachine do begin
+    cp.xform[ActiveTransform].GetVariable(GetVariableNameAt(Integer(GetArrayIndex(0))), v);
+    ReturnOutPutArg(v);
+  end;
+end;
+
+procedure TScriptEditor.SetTransformVariProc(AMachine: TatVirtualMachine);
+var
+  v: double;
+  i: integer;
+begin
+  with AMachine do
+  begin
+    v := GetInputArgAsFloat(0);
+    i := GetArrayIndex(0);
+    if (i >= 0) and (i < GetNrVariableNames) then
+      cp.xform[ActiveTransform].SetVariable(GetVariableNameAt(i), v);
+  end;
+end;
+
 // -- vars as props --
 
 procedure TScriptEditor.GetTransformVariationProc(AMachine: TatVirtualMachine);
@@ -2747,7 +2803,7 @@ begin
   with AMachine do
   begin
     v := GetInputArgAsFloat(0);
-    ScriptEditor.cp.xform[ActiveTransform].SetVariable(CurrentPropertyName, v);
+    cp.xform[ActiveTransform].SetVariable(CurrentPropertyName, v);
   end
 end;
 
@@ -3105,6 +3161,7 @@ begin
     DefineProp('Batches', tkInteger, GetFlameBatchesProc, SetFlameBatchesProc);
     DefineProp('FinalXformEnabled', tkInteger, GetFlameFinalxformEnabledProc, SetFlameFinalxformEnabledProc);
     DefineProp('Angle', tkFloat, GetFlameAngleProc, SetFlameAngleProc);
+
   end;
   Scripter.AddObject('Flame', Flame);
 
@@ -3139,6 +3196,7 @@ begin
     DefineProp('e', tkFloat, GetTransformEProc, SetTransformEProc);
     DefineProp('f', tkFloat, GetTransformFProc, SetTransformFProc);
     DefineProp('Variation', tkFloat, GetTransformVarProc, SetTransformVarProc, nil, false, 1);
+    DefineProp('Variable', tkFloat, GetTransformVariProc, SetTransformVariProc, nil, false, 1);
   end;
   Scripter.AddObject('Transform', Transform);
 
@@ -3212,6 +3270,7 @@ begin
   { Variables and constants }
   Scripter.AddConstant('PI', pi);
   Scripter.AddConstant('NVARS', NRVAR);
+  Scripter.AddConstant('NumVariables', GetNrVariableNames);
   Scripter.AddConstant('NXFORMS', NXFORMS);
   Scripter.AddConstant('INSTALLPATH', ExtractFilePath(Application.exename));
   Scripter.AddConstant('SYM_NONE', 0);
