@@ -15,6 +15,7 @@ function GetNrRegisteredVariations: integer;
 function GetRegisteredVariation(const Index: integer): TBaseVariationClass;
 function GetNrVariableNames: integer;
 function GetVariableNameAt(const Index: integer): string;
+function GetVariationIndex(const str: string): integer;
 
 implementation
 
@@ -70,6 +71,16 @@ begin
     Result := cvarnames[Index]
   else
     Result := TBaseVariationClass(VariationList[Index - NRLOCVAR]).GetName;
+end;
+
+///////////////////////////////////////////////////////////////////////////////
+function GetVariationIndex(const str: string): integer;
+var
+  i: integer;
+begin
+  i := NRVAR-1;
+  while (i >= 0) and (Varnames(i) <> str) do Dec(i);
+  Result := i;
 end;
 
 ///////////////////////////////////////////////////////////////////////////////

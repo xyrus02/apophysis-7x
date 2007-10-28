@@ -63,7 +63,7 @@ type
     rings_dx,
     fan_dx, fan_dx2,
     cosine_var2,
-    polar_vpi: double;
+    polar_vpi, disc_vpi: double;
 
     gauss_rnd: array [0..3] of double;
     gauss_N: integer;
@@ -122,7 +122,6 @@ type
     procedure NextPoint(var px, py, pc: double); overload;
     procedure NextPoint(var CPpoint: TCPpoint); overload;
     procedure NextPointTo(var CPpoint, ToPoint: TCPpoint);
-//    procedure NextPoint(var px, py, pz, pc: double); overload;
     procedure NextPointXY(var px, py: double);
     procedure NextPoint2C(var p: T2CPoint);
 
@@ -145,7 +144,7 @@ type
 implementation
 
 uses
-  SysUtils, Math;
+  SysUtils, Math, StrUtils;
 
 const
   EPS: double = 1E-300;
@@ -245,8 +244,27 @@ begin
     Inc(FNrFunctions);
   end;
 
+  // Pre- variations
+  for i := 0 to NrVar - 1 do begin
+    if (vars[i] <> 0.0) and (LeftStr(Varnames(i), 4) = 'pre_') then begin
+      FCalcFunctionList[FNrFunctions] := FFunctionList[i];
+      Inc(FNrFunctions);
+    end;
+  end;
+
+  // Normal variations
   for i := 0 to NrVar - 1 do begin
     if (vars[i] <> 0.0) then begin
+      if (LeftStr(Varnames(i), 4) = 'pre_') or (LeftStr(Varnames(i), 5) = 'post_') then continue;
+
+      FCalcFunctionList[FNrFunctions] := FFunctionList[i];
+      Inc(FNrFunctions);
+    end;
+  end;
+
+  // Post- variations
+  for i := 0 to NrVar - 1 do begin
+    if (vars[i] <> 0.0) and (LeftStr(Varnames(i), 5) = 'post_') then begin
       FCalcFunctionList[FNrFunctions] := FFunctionList[i];
       Inc(FNrFunctions);
     end;
@@ -262,6 +280,7 @@ begin
   cosine_var2 := vars[20]/2;
 
   polar_vpi := vars[5]/pi;
+  disc_vpi := vars[8]/pi;
 
   gauss_rnd[0] := random;
   gauss_rnd[1] := random;
@@ -697,16 +716,17 @@ var
   r, sinr, cosr: double;
 begin
   SinCos(PI * sqrt(sqr(FTx) + sqr(FTy)), sinr, cosr);
-  r := vars[8] * FAngle / PI;
+  r := disc_vpi * FAngle; //r := vars[8] * FAngle / PI;
   FPx := FPx + sinr * r;
   FPy := FPy + cosr * r;
 {$else}
 asm
-    mov     edx, [eax + vars]
-    fld     qword ptr [edx + 8*8]
+    fld     qword ptr [eax + disc_vpi]
+//    mov     edx, [eax + vars]
+//    fld     qword ptr [edx + 8*8]
     fmul    qword ptr [eax + FAngle]
-    fldpi
-    fdivp   st(1), st
+//    fldpi
+//    fdivp   st(1), st
     fld     qword ptr [eax + FTx]
     fmul    st, st
     fld     qword ptr [eax + FTy]
@@ -990,17 +1010,6 @@ end;
 //--15--///////////////////////////////////////////////////////////////////////
 procedure TXForm.Waves;
 {$ifndef _ASM_}
-{
-var
-  dx,dy,nx,ny: double;
-begin
-  dx := c20;
-  dy := c21;
-  nx := FTx + c10 * sin(FTy / ((dx * dx) + EPS));
-  ny := FTy + c11 * sin(FTx / ((dy * dy) + EPS));
-  FPx := FPx + vars[15] * nx;
-  FPy := FPy + vars[15] * ny;
-}
 begin
   //FPx := FPx + vars[15] * (FTx + c10 * sin(FTy / (sqr(c20) + EPS)));
   //FPy := FPy + vars[15] * (FTy + c11 * sin(FTx / (sqr(c21) + EPS)));
