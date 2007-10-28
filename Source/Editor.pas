@@ -2245,7 +2245,8 @@ begin
 
     if viewDragged = false then // haven't dragged - popup menu then
     begin
-      GetCursorPos(mousepos); // hmmm
+      //GetCursorPos(mousepos); // hmmm
+      mousePos := (Sender as TControl).ClientToScreen(Point(x, y));
       if mouseOverTriangle < 0 then
         EditPopup.Popup(mousepos.x, mousepos.y)
       else begin
@@ -3099,7 +3100,8 @@ begin
 
     Screen.Cursor := crHSplit;
 
-    GetCursorPos(mousepos); // hmmm
+    //GetCursorPos(mousepos); // hmmm
+    mousePos := (Sender as TControl).ClientToScreen(Point(x, y));
 
     varDragMode:=true;
     varDragPos:=0;
@@ -4305,7 +4307,8 @@ begin
   //SetCaptureControl(TControl(Sender));
 
   Screen.Cursor := crHSplit;
-  GetCursorPos(mousepos); // hmmm
+  //GetCursorPos(mousepos); // hmmm
+  mousePos := (Sender as TControl).ClientToScreen(Point(x, y));
   HasChanged := false;
 end;
 
