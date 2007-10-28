@@ -36,36 +36,37 @@ uses
   Dialogs;  //ShowMessage
 
 type
-  TPluginVarGetName = function : PChar; cdecl;
-  TPluginVarGetNrVariables = function : Integer; cdecl;
-  TPluginVarGetVariableNameAt = function(const Index: integer): PChar; cdecl;
+//  TPluginVarGetName = function : PChar; cdecl;
+//  TPluginVarGetNrVariables = function : Integer; cdecl;
+//  TPluginVarGetVariableNameAt = function(const Index: integer): PChar; cdecl;
 
-  TPluginVarCreate = function : Pointer; cdecl;
-  TPluginVarDestroy = function(var MyVariation : Pointer) : LongBool; cdecl;
-  TPluginVarInit = function(MyVariation, FPx, FPy, FTx, FTy: Pointer; vvar: double) : LongBool; cdecl;
-  TPluginVarPrepare = function(MyVariation : Pointer) : LongBool; cdecl;
-  TPluginVarCalc = function(MyVariation : Pointer) : LongBool; cdecl;
-  TPluginVarGetVariable = function(MyVariation:Pointer; const Name: PChar; var value: double) : LongBool; cdecl;
-  TPluginVarSetVariable = function(MyVariation:Pointer; const Name: PChar; var value: double) : LongBool; cdecl;
+//  TPluginVarCreate = function : Pointer; cdecl;
+//  TPluginVarDestroy = function(var MyVariation : Pointer) : LongBool; cdecl;
+//  TPluginVarInit = function(MyVariation, FPx, FPy, FTx, FTy: Pointer; vvar: double) : LongBool; cdecl;
+//  TPluginVarPrepare = function(MyVariation : Pointer) : LongBool; cdecl;
+//  TPluginVarCalc = function(MyVariation : Pointer) : LongBool; cdecl;
+//  TPluginVarGetVariable = function(MyVariation:Pointer; const Name: PChar; var value: double) : LongBool; cdecl;
+//  TPluginVarSetVariable = function(MyVariation:Pointer; const Name: PChar; var value: double) : LongBool; cdecl;
 
   TPluginVariationClass = class of TPluginVariation;
 
   TPluginData = record
-    Instance : Integer;
-    PluginHandle : THandle;
-    PluginClass : TPluginVariationClass;
+    Instance: Integer;
+    PluginHandle: THandle;
+    PluginClass: TPluginVariationClass;
 
-    PluginVarGetName : TPluginVarGetName;
-    PluginVarGetNrVariables : TPluginVarGetNrVariables;
-    PluginVarGetVariableNameAt: TPluginVarGetVariableNameAt;
+    PluginVarGetName:           function: PChar; cdecl;
+    PluginVarGetNrVariables:    function: Integer; cdecl;
+    PluginVarGetVariableNameAt: function(const Index: integer): PChar; cdecl;
 
-    PluginVarCreate : TPluginVarCreate;
-    PluginVarDestroy : TPluginVarDestroy;
-    PluginVarInit : TPluginVarInit;
-    PluginVarPrepare : TPluginVarPrepare;
-    PluginVarCalc : TPluginVarCalc;
-    PluginVarGetVariable : TPluginVarGetVariable;
-    PluginVarSetVariable : TPluginVarSetVariable;
+    PluginVarCreate:      function: Pointer; cdecl;
+    PluginVarDestroy:     function(var MyVariation: Pointer): LongBool; cdecl;
+    PluginVarInit:        function(MyVariation, FPx, FPy, FTx, FTy: Pointer; vvar: double): LongBool; cdecl;
+    PluginVarInit3D:      function(MyVariation, FPx, FPy, FPz, FTx, FTy, FTz: Pointer; vvar: double): LongBool; cdecl;
+    PluginVarPrepare:     function(MyVariation: Pointer): LongBool; cdecl;
+    PluginVarCalc:        function(MyVariation: Pointer): LongBool; cdecl;
+    PluginVarGetVariable: function(MyVariation: Pointer; const Name: PChar; var value: double): LongBool; cdecl;
+    PluginVarSetVariable: function(MyVariation: Pointer; const Name: PChar; var value: double): LongBool; cdecl;
   end;
   PPluginData = ^TPluginData;
 
@@ -402,8 +403,13 @@ end;
 
 procedure TPluginVariation.Prepare;
 begin
-  GetPluginData.PluginVarInit(MyVariation, Pointer(FPX), Pointer(FPy), Pointer(FTx), Pointer(FTy), vvar);
-  GetPluginData.PluginVarPrepare(MyVariation);
+  with GetPluginData^ do begin
+//    if @PluginVarInit3D <> nil then
+//      PluginVarInit3D(MyVariation, Pointer(FPX), Pointer(FPy), Pointer(FPz), Pointer(FTx), Pointer(FTy), Pointer(FTz), vvar)
+//    else
+      PluginVarInit(MyVariation, Pointer(FPX), Pointer(FPy), Pointer(FTx), Pointer(FTy), vvar);
+    PluginVarPrepare(MyVariation);
+  end;
 end;
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -464,7 +470,8 @@ end;
 ///////////////////////////////////////////////////////////////////////////////
 procedure InitializePlugins;
 var
-  searchResult : TSearchRec;
+  searchResult: TSearchRec;
+  name: string;
 begin
   NumPlugins := 0;
   // Try to find regular files matching *.dll in the plugins dir
@@ -479,16 +486,25 @@ begin
           if @PluginVarGetName = nil then begin  // Must not be a valid plugin!
             FreeLibrary(PluginHandle);
             ShowMessage('Invalid Plugin: Could not find PluginVarGetName in '+searchResult.Name);
-          end else begin
+            continue;
+          end;
+          name := PluginVarGetName;
+          if GetVariationIndex(name) >= 0 then begin
+            FreeLibrary(PluginHandle);
+            ShowMessage('Plugin "' + searchResult.Name + '" not loaded: Variation ' + name + ' already exists!');
+          end
+          else begin
             @PluginVarGetNrVariables    := GetProcAddress(PluginHandle,'PluginVarGetNrVariables');
             @PluginVarGetVariableNameAt := GetProcAddress(PluginHandle,'PluginVarGetVariableNameAt');
             @PluginVarCreate            := GetProcAddress(PluginHandle,'PluginVarCreate');
             @PluginVarDestroy           := GetProcAddress(PluginHandle,'PluginVarDestroy');
             @PluginVarInit              := GetProcAddress(PluginHandle,'PluginVarInit');
+            @PluginVarInit3D            := GetProcAddress(PluginHandle,'PluginVarInit3D');
             @PluginVarPrepare           := GetProcAddress(PluginHandle,'PluginVarPrepare');
             @PluginVarCalc              := GetProcAddress(PluginHandle,'PluginVarCalc');
             @PluginVarGetVariable       := GetProcAddress(PluginHandle,'PluginVarGetVariable');
             @PluginVarSetVariable       := GetProcAddress(PluginHandle,'PluginVarSetVariable');
+
             Instance := NumPlugins+1;
 
             RegisterVariation(PluginClass);
