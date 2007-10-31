@@ -2162,8 +2162,15 @@ begin
     Inc(camDragPos.x, x - camDragOld.x);
     Inc(camDragPos.y, y - camDragOld.y);
 
-    vx := Round6(camDragValueX - (camDragPos.x * camCos - camDragPos.y * camSin) / 200);
-    vy := Round6(camDragValueY - (camDragPos.x * camSin + camDragPos.y * camCos) / 200);
+    if GetKeyState(VK_MENU) < 0 then sc := 1000
+    else if GetKeyState(VK_CONTROL) < 0 then sc := 100
+    else if GetKeyState(VK_SHIFT) < 0 then sc := 1
+    else sc := 10;
+
+    sc := sc * cp.pixels_per_unit;
+
+    vx := Round6(camDragValueX - (camDragPos.x * camCos - camDragPos.y * camSin) / sc);
+    vy := Round6(camDragValueY - (camDragPos.x * camSin + camDragPos.y * camCos) / sc);
 
     cp.center[0] := vx;
     txtCenterX.Text := FloatToStr(vx);

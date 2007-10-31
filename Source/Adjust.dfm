@@ -170,6 +170,7 @@ object AdjustForm: TAdjustForm
       Center = True
       IncrementalDisplay = True
       PopupMenu = QualityPopup
+      OnDblClick = PreviewImageDblClick
       OnMouseDown = PreviewImageMouseDown
       OnMouseMove = PreviewImageMouseMove
       OnMouseUp = PreviewImageMouseUp
@@ -1007,7 +1008,7 @@ object AdjustForm: TAdjustForm
   end
   object pnlMasterScale: TPanel
     Left = 280
-    Top = 108
+    Top = 106
     Width = 57
     Height = 21
     Cursor = crHandPoint
@@ -1025,7 +1026,7 @@ object AdjustForm: TAdjustForm
   end
   object editPPU: TEdit
     Left = 336
-    Top = 108
+    Top = 106
     Width = 49
     Height = 21
     TabOrder = 3
