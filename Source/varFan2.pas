@@ -150,5 +150,5 @@ end;
 
 ///////////////////////////////////////////////////////////////////////////////
 initialization
-  RegisterVariation(TVariationFan2);
+  RegisterVariation(TVariationClassLoader.Create(TVariationFan2));
 end.

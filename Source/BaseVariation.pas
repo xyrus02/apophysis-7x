@@ -36,6 +36,27 @@ type
 
   TBaseVariationClass = class of TBaseVariation;
 
+type
+  TVariationLoader = class
+  public
+    function GetName: string; virtual; abstract;
+    function GetInstance: TBaseVariation; virtual; abstract;
+    function GetNrVariables: integer; virtual; abstract;
+    function GetVariableNameAt(const Index: integer): string; virtual; abstract;
+  end;
+
+type
+  TVariationClassLoader = class (TVariationLoader)
+  public
+    constructor Create(varClass : TBaseVariationClass);
+    function GetName: string; override;
+    function GetInstance: TBaseVariation; override;
+    function GetNrVariables: integer; override;
+    function GetVariableNameAt(const Index: integer): string; override;
+
+  private
+    VariationClass : TBaseVariationClass;
+  end;
 
 implementation
 
@@ -111,6 +132,34 @@ end;
 procedure TBaseVariation.GetCalcFunction(var Delphi_Suxx: TCalcFunction);
 begin
   Delphi_Suxx := CalcFunction;
+end;
+
+///////////////////////////////////////////////////////////////////////////////
+{ TVariationClassLoader }
+
+constructor TVariationClassLoader.Create(varClass : TBaseVariationClass);
+begin
+  VariationClass := varClass;
+end;
+
+function TVariationClassLoader.GetName: string;
+begin
+  Result := VariationClass.GetName();
+end;
+
+function TVariationClassLoader.GetInstance: TBaseVariation;
+begin
+  Result := VariationClass.GetInstance();
+end;
+
+function TVariationClassLoader.GetNrVariables: integer;
+begin
+  Result := VariationClass.GetNrVariables();
+end;
+
+function TVariationClassLoader.GetVariableNameAt(const Index: integer): string;
+begin
+  Result := VariationClass.GetVariableNameAt(Index);
 end;
 
 end.

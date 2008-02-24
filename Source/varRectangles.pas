@@ -164,5 +164,5 @@ end;
 
 ///////////////////////////////////////////////////////////////////////////////
 initialization
-  RegisterVariation(TVariationRectangles);
+  RegisterVariation(TVariationClassLoader.Create(TVariationRectangles));
 end.

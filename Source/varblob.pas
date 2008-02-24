@@ -147,5 +147,5 @@ end;
 
 ///////////////////////////////////////////////////////////////////////////////
 initialization
-  RegisterVariation(TVariationBlob);
+  RegisterVariation(TVariationClassLoader.Create(TVariationBlob));
 end.

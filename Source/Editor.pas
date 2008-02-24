@@ -372,7 +372,8 @@ type
     oldx, oldy, olddist: double;
     Pivot: TSPoint;
 
-    VarsCache: array[0..64] of double; // hack: to prevent slow valuelist redraw
+    VarsCache: array[0..150] of double; // hack: to prevent slow valuelist redraw
+                                        // -JF- 64 wasn't big enough... buffer overrun
 
     pnlDragMode: boolean;
     pnlDragPos, pnlDragOld: integer;

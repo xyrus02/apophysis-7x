@@ -223,5 +223,5 @@ end;
 
 ///////////////////////////////////////////////////////////////////////////////
 initialization
-  RegisterVariation(TVariationSuperShape);
+  RegisterVariation(TVariationClassLoader.Create(TVariationSuperShape));
 end.

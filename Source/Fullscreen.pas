@@ -198,12 +198,13 @@ end;
 procedure TFullscreenForm.OnProgress(prog: double);
 begin
   prog := (Renderer.Slice + Prog) / Renderer.NrSlices;
-  if prog = 1 then
+ try
+  if prog >= 1 then
   begin
     Canvas.Brush.Color := clBlack;
     Canvas.FillRect(Rect(5, ClientHeight - 15, ClientWidth - 5, ClientHeight - 5));
   end
-  else begin
+  else if prog >= 0 then begin
     Canvas.Brush.Color := clTeal;
     Canvas.FrameRect(Rect(5, ClientHeight - 15, ClientWidth - 5, ClientHeight - 5));
     Canvas.Brush.Color := clTeal;
@@ -211,6 +212,8 @@ begin
     Canvas.Brush.Color := clBlack;
     Canvas.Fillrect(Rect(7 + Round(prog * (ClientWidth - 14)), ClientHeight - 13, ClientWidth - 7, ClientHeight - 7));
   end;
+ except
+ end;
   Application.ProcessMessages;
 end;
 

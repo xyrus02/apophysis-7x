@@ -188,5 +188,5 @@ end;
 
 ///////////////////////////////////////////////////////////////////////////////
 initialization
-  RegisterVariation(TVariationPerspective);
+  RegisterVariation(TVariationClassLoader.Create(TVariationPerspective));
 end.

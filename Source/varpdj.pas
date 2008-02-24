@@ -150,5 +150,5 @@ end;
 
 ///////////////////////////////////////////////////////////////////////////////
 initialization
-  RegisterVariation(TVariationPDJ);
+  RegisterVariation(TVariationClassLoader.Create(TVariationPDJ));
 end.

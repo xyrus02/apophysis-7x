@@ -431,5 +431,5 @@ end;
 
 ///////////////////////////////////////////////////////////////////////////////
 initialization
-  RegisterVariation(TVariationJuliaScope);
+  RegisterVariation(TVariationClassLoader.Create(TVariationJuliaScope));
 end.

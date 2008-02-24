@@ -10,9 +10,9 @@ const
 
 function NrVar: integer;
 function Varnames(const index: integer): String;
-procedure RegisterVariation(Variation: TBaseVariationClass);
+procedure RegisterVariation(Variation: TVariationLoader);
 function GetNrRegisteredVariations: integer;
-function GetRegisteredVariation(const Index: integer): TBaseVariationClass;
+function GetRegisteredVariation(const Index: integer): TVariationLoader;
 function GetNrVariableNames: integer;
 function GetVariableNameAt(const Index: integer): string;
 function GetVariationIndex(const str: string): integer;
@@ -25,7 +25,8 @@ uses
 var
   VariationList: TList;
   VariableNames: TStringlist;
-
+  loaderNum : integer;
+  
 ///////////////////////////////////////////////////////////////////////////////
 function NrVar: integer;
 begin
@@ -70,7 +71,7 @@ begin
   if Index < NRLOCVAR then
     Result := cvarnames[Index]
   else
-    Result := TBaseVariationClass(VariationList[Index - NRLOCVAR]).GetName;
+    Result := TVariationLoader(VariationList[Index - NRLOCVAR]).GetName;
 end;
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -84,7 +85,7 @@ begin
 end;
 
 ///////////////////////////////////////////////////////////////////////////////
-procedure RegisterVariation(Variation: TBaseVariationClass);
+procedure RegisterVariation(Variation: TVariationLoader);
 var
   i: integer;
 begin
@@ -101,9 +102,9 @@ begin
 end;
 
 ///////////////////////////////////////////////////////////////////////////////
-function GetRegisteredVariation(const Index: integer): TBaseVariationClass;
+function GetRegisteredVariation(const Index: integer): TVariationLoader;
 begin
-  Result := TBaseVariationClass(VariationList[Index]);
+  Result := TVariationLoader(VariationList[Index]);
 end;
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -122,7 +123,13 @@ end;
 initialization
   VariationList := TList.Create;
   VariableNames := TStringlist.create;
+
 finalization
+
   VariableNames.Free;
+
+  // The registered variation loaders are owned here, so we must free them.
+  for loaderNum := 0 to VariationList.Count-1 do
+    TVariationLoader(VariationList[loaderNum]).Free;
   VariationList.Free;
 end.

@@ -321,5 +321,5 @@ end;
 
 ///////////////////////////////////////////////////////////////////////////////
 initialization
-  RegisterVariation(TVariationRadialBlur);
+  RegisterVariation(TVariationClassLoader.Create(TVariationRadialBlur));
 end.

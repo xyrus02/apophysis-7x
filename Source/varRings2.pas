@@ -119,5 +119,5 @@ end;
 
 ///////////////////////////////////////////////////////////////////////////////
 initialization
-  RegisterVariation(TVariationRings2);
+  RegisterVariation(TVariationClassLoader.Create(TVariationRings2));
 end.

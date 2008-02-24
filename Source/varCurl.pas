@@ -354,5 +354,5 @@ end;
 
 ///////////////////////////////////////////////////////////////////////////////
 initialization
-  RegisterVariation(TVariationCurl);
+  RegisterVariation(TVariationClassLoader.Create(TVariationCurl));
 end.

@@ -386,5 +386,5 @@ end;
 
 ///////////////////////////////////////////////////////////////////////////////
 initialization
-  RegisterVariation(TVariationJulian);
+  RegisterVariation(TVariationClassLoader.Create(TVariationJulian));
 end.
