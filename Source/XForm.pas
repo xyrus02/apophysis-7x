@@ -48,7 +48,7 @@ type
   private
     FNrFunctions: Integer;
     FFunctionList: array of TCalcFunction;
-    FCalcFunctionList: array[0..64] of TCalcFunction;
+    FCalcFunctionList: array{[0..64]} of TCalcFunction;
 
     FTx, FTy: double;
     FPx, FPy: double;
@@ -226,6 +226,8 @@ begin
     FRegVariations[i].Prepare;
     FRegVariations[i].GetCalcFunction(FFunctionList[NRLOCVAR + i]);
   end;
+
+  SetLength(FCalcFunctionList, NrVar + 2);
 
   CalculateAngle := (vars[5] <> 0.0) or (vars[6] <> 0.0) or (vars[7] <> 0.0) or
                     (vars[8] <> 0.0) or (vars[12] <> 0.0) or (vars[13] <> 0.0) or
@@ -2020,10 +2022,10 @@ begin
   postXswap := Xform.postXswap;
 
   for i := 0 to High(FRegVariations)  do begin
-    for j:= 0 to FRegVariations[i].GetNrVariables -1 do begin
+    for j := 0 to FRegVariations[i].GetNrVariables - 1 do begin
       Name := FRegVariations[i].GetVariableNameAt(j);
-      XForm.FRegVariations[i].GetVariable(Name,Value);
-      FRegVariations[i].SetVariable(Name,Value);
+      XForm.FRegVariations[i].GetVariable(Name, Value);
+      FRegVariations[i].SetVariable(Name, Value);
     end;
   end;
 end;
@@ -2048,7 +2050,7 @@ begin
 
   for i := 0 to High(FRegVariations)  do begin
     if vars[i+NRLOCVAR] <> 0 then
-      for j:= 0 to FRegVariations[i].GetNrVariables -1 do begin
+      for j := 0 to FRegVariations[i].GetNrVariables - 1 do begin
         Name := FRegVariations[i].GetVariableNameAt(j);
 //        FRegVariations[i].GetVariable(Name,Value);
 //        Result := Result + Format('%s="%g" ', [name, value]);
@@ -2079,7 +2081,7 @@ begin
 
   for i := 0 to High(FRegVariations)  do begin
     if vars[i+NRLOCVAR] <> 0 then
-      for j:= 0 to FRegVariations[i].GetNrVariables -1 do begin
+      for j := 0 to FRegVariations[i].GetNrVariables - 1 do begin
         Name := FRegVariations[i].GetVariableNameAt(j);
 //        FRegVariations[i].GetVariable(Name,Value);
 //        Result := Result + Format('%s="%g" ', [name, value]);

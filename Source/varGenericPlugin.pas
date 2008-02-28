@@ -79,6 +79,9 @@ type
     class function GetName: string; override;
     class function GetInstance: TBaseVariation; override;
 
+    function GetNrVariables: integer; override;
+    function GetVariableNameAt(const Index: integer): string; override;
+
     function SetVariable(const Name: string; var value: double): boolean; override;
     function GetVariable(const Name: string; var value: double): boolean; override;
     function ResetVariable(const Name: string): boolean; override;
@@ -184,6 +187,18 @@ begin
 end;
 
 ///////////////////////////////////////////////////////////////////////////////
+function TPluginVariation.GetNrVariables: integer;
+begin
+  Result := PluginData.PluginVarGetNrVariables;
+end;
+
+///////////////////////////////////////////////////////////////////////////////
+function TPluginVariation.GetVariableNameAt(const Index: integer): string;
+begin
+  Result := PluginData.PluginVarGetVariableNameAt(Index);
+end;
+
+///////////////////////////////////////////////////////////////////////////////
 function TPluginVariation.SetVariable(const Name: string; var value: double): boolean;
 begin
   Result := PluginData.PluginVarSetVariable(MyVariation,PChar(Name),value);
@@ -219,7 +234,7 @@ begin
           @PluginVarGetName := GetProcAddress(PluginHandle,'PluginVarGetName');
           if @PluginVarGetName = nil then begin  // Must not be a valid plugin!
             FreeLibrary(PluginHandle);
-            msg := msg + 'Invalid plugin type: "'+searchResult.Name + '" is not a plugin' + #13#10;
+            msg := msg + 'Invalid plugin type: "' + searchResult.Name + '" is not a plugin' + #13#10;
             continue;
           end;
           name := PluginVarGetName;
@@ -243,12 +258,15 @@ begin
             RegisterVariation(TVariationPluginLoader.Create(PluginData));
           end;
         end else
-          msg := msg + 'Cannot open plugin file: '+searchResult.Name + #13#10;
+          msg := msg + 'Cannot open plugin file: ' + searchResult.Name + #13#10;
       end;
     until (FindNext(searchResult) <> 0);
     SysUtils.FindClose(searchResult); //Since we use Windows unit (LoadLibrary)
 
-    if msg <> '' then Application.MessageBox(PChar('There were problems with some of the plugins:' + #13#10#13#10 + msg), 'Warning', MB_OK);
+    if msg <> '' then
+      Application.MessageBox(
+        PChar('There were problems with some of the plugins:' + #13#10#13#10 + msg),
+        'Warning', MB_ICONWARNING or MB_OK);
   end;
 end;
 

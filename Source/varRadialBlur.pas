@@ -29,8 +29,8 @@ type
     class function GetName: string; override;
     class function GetInstance: TBaseVariation; override;
 
-    class function GetNrVariables: integer; override;
-    class function GetVariableNameAt(const Index: integer): string; override;
+    function GetNrVariables: integer; override;
+    function GetVariableNameAt(const Index: integer): string; override;
 
     function GetVariable(const Name: string; var value: double): boolean; override;
     function SetVariable(const Name: string; var value: double): boolean; override;
@@ -275,7 +275,7 @@ begin
 end;
 
 ///////////////////////////////////////////////////////////////////////////////
-class function TVariationRadialBlur.GetVariableNameAt(const Index: integer): string;
+function TVariationRadialBlur.GetVariableNameAt(const Index: integer): string;
 begin
   case Index of
     0: Result := var_a_name;
@@ -314,7 +314,7 @@ begin
 end;
 
 ///////////////////////////////////////////////////////////////////////////////
-class function TVariationRadialBlur.GetNrVariables: integer;
+function TVariationRadialBlur.GetNrVariables: integer;
 begin
   Result := 1;
 end;

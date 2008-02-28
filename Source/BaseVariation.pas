@@ -19,8 +19,8 @@ type
     class function GetName: string; virtual; abstract;
     class function GetInstance: TBaseVariation; virtual; abstract;
 
-    class function GetNrVariables: integer; virtual;
-    class function GetVariableNameAt(const Index: integer): string; virtual;
+    function GetNrVariables: integer; virtual;
+    function GetVariableNameAt(const Index: integer): string; virtual;
 
     function GetVariable(const Name: string; var Value: double): boolean; virtual;
     function SetVariable(const Name: string; var Value: double): boolean; virtual;
@@ -65,7 +65,7 @@ uses SysUtils;
 { TBaseVariation }
 
 ///////////////////////////////////////////////////////////////////////////////
-class function TBaseVariation.GetNrVariables: integer;
+function TBaseVariation.GetNrVariables: integer;
 begin
   Result := 0;
 end;
@@ -118,7 +118,7 @@ begin
 end;
 
 ///////////////////////////////////////////////////////////////////////////////
-class function TBaseVariation.GetVariableNameAt(const Index: integer): string;
+function TBaseVariation.GetVariableNameAt(const Index: integer): string;
 begin
   Result := ''
 end;
@@ -153,13 +153,21 @@ begin
 end;
 
 function TVariationClassLoader.GetNrVariables: integer;
+var
+  hack : TBaseVariation;
 begin
-  Result := VariationClass.GetNrVariables();
+  hack := GetInstance();
+  Result := hack.GetNrVariables();
+  hack.Free();
 end;
 
 function TVariationClassLoader.GetVariableNameAt(const Index: integer): string;
+var
+  hack : TBaseVariation;
 begin
-  Result := VariationClass.GetVariableNameAt(Index);
+  hack := GetInstance();
+  Result := hack.GetVariableNameAt(Index);
+  hack.Free();
 end;
 
 end.

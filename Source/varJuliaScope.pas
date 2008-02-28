@@ -32,8 +32,8 @@ type
     class function GetName: string; override;
     class function GetInstance: TBaseVariation; override;
 
-    class function GetNrVariables: integer; override;
-    class function GetVariableNameAt(const Index: integer): string; override;
+    function GetNrVariables: integer; override;
+    function GetVariableNameAt(const Index: integer): string; override;
 
     function SetVariable(const Name: string; var value: double): boolean; override;
     function GetVariable(const Name: string; var value: double): boolean; override;
@@ -369,7 +369,7 @@ begin
 end;
 
 ///////////////////////////////////////////////////////////////////////////////
-class function TVariationJuliaScope.GetVariableNameAt(const Index: integer): string;
+function TVariationJuliaScope.GetVariableNameAt(const Index: integer): string;
 begin
   case Index of
   0: Result := var_n_name;
@@ -410,7 +410,7 @@ begin
 end;
 
 ///////////////////////////////////////////////////////////////////////////////
-class function TVariationJuliaScope.GetNrVariables: integer;
+function TVariationJuliaScope.GetNrVariables: integer;
 begin
   Result := 2;
 end;
