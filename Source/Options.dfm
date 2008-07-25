@@ -739,7 +739,7 @@ object OptionsForm: TOptionsForm
           Height = 21
           Associate = txtMaxXforms
           Min = 2
-          Max = 12
+          Max = 100
           Position = 6
           TabOrder = 3
         end
