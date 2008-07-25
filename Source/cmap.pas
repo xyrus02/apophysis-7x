@@ -100,7 +100,7 @@ begin
       2: begin rgb[0] := p; rgb[1] := v; rgb[2] := t; end;
       3: begin rgb[0] := p; rgb[1] := q; rgb[2] := v; end;
       4: begin rgb[0] := t; rgb[1] := p; rgb[2] := v; end;
-      5: begin rgb[0] := v; rgb[1] := p; rgb[2] := t; end;
+      5: begin rgb[0] := v; rgb[1] := p; rgb[2] := q; end;
     end;
   except on EMathError do
   end;
