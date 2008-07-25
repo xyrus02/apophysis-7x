@@ -1,7 +1,7 @@
 {
      Apophysis Copyright (C) 2001-2004 Mark Townsend
      Apophysis Copyright (C) 2005-2006 Ronald Hordijk, Piotr Borys, Peter Sdobnov
-     Apophysis Copyright (C) 2007 Piotr Borys, Peter Sdobnov
+     Apophysis Copyright (C) 2007-2008 Piotr Borys, Peter Sdobnov
 
      This program is free software; you can redistribute it and/or modify
      it under the terms of the GNU General Public License as published by
@@ -42,7 +42,7 @@ const
   RS_XO = 2;
   RS_VO = 3;
 
-  AppVersionString = 'Apophysis 2.07 beta';
+  AppVersionString = 'Apophysis 2.08 beta pre4.5';
 
 type
   TMouseMoveState = (msUsual, msZoomWindow, msZoomOutWindow, msZoomWindowMove,
@@ -4236,6 +4236,22 @@ begin
         p[1][1] := StrToFloat(Tokens[3]);
         p[2][0] := StrToFloat(Tokens[4]);
         p[2][1] := StrToFloat(Tokens[5]);
+      end;
+
+      v := Attributes.Value('chaos');
+      if v <> '' then begin
+        GetTokens(v, tokens);
+        for i := 0 to Tokens.Count-1 do
+          modWeights[i] := Abs(StrToFloat(Tokens[i]));
+      end;
+      //else for i := 0 to NXFORMS-1 do modWeights[i] := 1;
+
+      v := Attributes.Value('plotmode');
+      if v <> '' then begin
+        if v = 'off' then
+          noPlot := true
+        else
+          noPlot := false;  
       end;
 
       for i := 0 to NRVAR - 1 do

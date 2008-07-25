@@ -50,6 +50,8 @@ begin
   finalXform.Prepare;
   useFinalXform := fcp.FinalXformEnabled and fcp.HasFinalXform;
 
+  fcp.Prepare;
+{
   for i := 0 to n - 1 do begin
     fcp.xform[i].Prepare;
     totValue := totValue + fcp.xform[i].density;
@@ -66,6 +68,7 @@ begin
     PropTable[i] := fcp.xform[j];
     LoopValue := LoopValue + TotValue / PROP_TABLE_SIZE;
   end;
+}
 end;
 
 ///////////////////////////////////////////////////////////////////////////////

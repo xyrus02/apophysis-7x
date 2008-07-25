@@ -2,6 +2,7 @@
      Flame screensaver Copyright (C) 2002 Ronald Hordijk
      Apophysis Copyright (C) 2001-2004 Mark Townsend
      Apophysis Copyright (C) 2005-2006 Ronald Hordijk, Piotr Borys, Peter Sdobnov
+     Apophysis Copyright (C) 2007-2008 Piotr Borys, Peter Sdobnov
 
      This program is free software; you can redistribute it and/or modify
      it under the terms of the GNU General Public License as published by
@@ -126,6 +127,7 @@ var
   MapColor: PColorMapColor;
 
   p: TCPPoint;
+  xf: TXForm;
   t: int64;
 begin
 {$ifndef _ASM_}
@@ -149,11 +151,17 @@ end;
 {$endif}
 
   try
-    for i := 0 to FUSE do
-      PropTable[Random(PROP_TABLE_SIZE)].NextPoint(p);
+    xf := fcp.xform[0];//random(fcp.NumXForms)];
+    for i := 0 to FUSE do begin
+      xf := xf.PropTable[Random(PROP_TABLE_SIZE)];
+      xf.NextPoint(p);
+    end;
 
     for i := 0 to SUB_BATCH_SIZE-1 do begin
-      PropTable[Random(PROP_TABLE_SIZE)].NextPoint(p);
+      xf := xf.PropTable[Random(PROP_TABLE_SIZE)];
+      xf.NextPoint(p);
+
+      if xf.noPlot then continue;
 
       px := p.x - camX0;
       if (px < 0) or (px > camW) then continue;
@@ -212,6 +220,7 @@ var
   MapColor: PColorMapColor;
 
   p: TCPPoint;
+  xf: TXForm;
   t: int64;
 begin
 {$ifndef _ASM_}
@@ -235,11 +244,17 @@ end;
 {$endif}
 
   try
-    for i := 0 to FUSE do
-      PropTable[Random(PROP_TABLE_SIZE)].NextPoint(p);
+    xf := fcp.xform[0];//random(fcp.NumXForms)];
+    for i := 0 to FUSE do begin
+      xf := xf.PropTable[Random(PROP_TABLE_SIZE)];
+      xf.NextPoint(p);
+    end;
 
     for i := 0 to SUB_BATCH_SIZE-1 do begin
-      PropTable[Random(PROP_TABLE_SIZE)].NextPoint(p);
+      xf := xf.PropTable[Random(PROP_TABLE_SIZE)];
+      xf.NextPoint(p);
+
+      if xf.noPlot then continue;
 
       px := p.x * cosa + p.y * sina + rcX;
       if (px < 0) or (px > camW) then continue;
@@ -299,6 +314,7 @@ var
   MapColor: PColorMapColor;
 
   p, q: TCPPoint;
+  xf: TXForm;
   t: int64;
 begin
 {$ifndef _ASM_}
@@ -322,11 +338,18 @@ end;
 {$endif}
 
   try
-    for i := 0 to FUSE do
-      PropTable[Random(PROP_TABLE_SIZE)].NextPoint(p);
+    xf := fcp.xform[0];//random(fcp.NumXForms)];
+    for i := 0 to FUSE do begin
+      xf := xf.PropTable[Random(PROP_TABLE_SIZE)];
+      xf.NextPoint(p);
+    end;
 
     for i := 0 to SUB_BATCH_SIZE-1 do begin
-      PropTable[Random(PROP_TABLE_SIZE)].NextPoint(p);
+      xf := xf.PropTable[Random(PROP_TABLE_SIZE)];
+      xf.NextPoint(p);
+
+      if xf.noPlot then continue;
+
       finalXform.NextPointTo(p, q);
 
       px := q.x - camX0;
@@ -386,6 +409,7 @@ var
   MapColor: PColorMapColor;
 
   p, q: TCPPoint;
+  xf: TXForm;
   t: int64;
 begin
 {$ifndef _ASM_}
@@ -409,11 +433,18 @@ end;
 {$endif}
 
   try
-    for i := 0 to FUSE do
-      PropTable[Random(PROP_TABLE_SIZE)].NextPoint(p);
+    xf := fcp.xform[0];//random(fcp.NumXForms)];
+    for i := 0 to FUSE do begin
+      xf := xf.PropTable[Random(PROP_TABLE_SIZE)];
+      xf.NextPoint(p);
+    end;
 
     for i := 0 to SUB_BATCH_SIZE-1 do begin
-      PropTable[Random(PROP_TABLE_SIZE)].NextPoint(p);
+      xf := xf.PropTable[Random(PROP_TABLE_SIZE)];
+      xf.NextPoint(p);
+
+      if xf.noPlot then continue;
+
       finalXform.NextPointTo(p, q);
 
       px := q.x * cosa + q.y * sina + rcX;
@@ -465,7 +496,7 @@ end;
   end;
 end;
 
-// -- { TRenderer32MM } -------------------------------------------------------
+// -- { TRenderer48MM } -------------------------------------------------------
 
 procedure TRenderer48MM.CalcBufferSize;
 begin

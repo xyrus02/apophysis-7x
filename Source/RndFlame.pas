@@ -511,14 +511,14 @@ begin
               Result.xform[i].c[2][0] := random * 2 - 1;
               Result.xform[i].c[2][1] := random * 2 - 1;
             end;
-            for i := 0 to NXFORMS - 1 do
+            for i := 0 to 100-1 do //NXFORMS - 1 do
               Result.xform[i].density := 0;
             for i := 0 to Transforms - 1 do
               Result.xform[i].density := 1 / Transforms;
             SetVariation(Result);
           end;
         9: begin
-            for i := 0 to NXFORMS - 1 do
+            for i := 0 to 100-1 do //NXFORMS - 1 do
               Result.xform[i].density := 0;
             for i := 0 to Transforms - 1 do
               Result.xform[i].density := 1 / Transforms;

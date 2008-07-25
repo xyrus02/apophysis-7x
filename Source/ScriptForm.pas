@@ -180,6 +180,11 @@ type
     procedure GetTransformVariProc(AMachine: TatVirtualMachine);
     procedure SetTransformVariProc(AMachine: TatVirtualMachine);
 
+    procedure GetTransformChaosProc(AMachine: TatVirtualMachine);
+    procedure SetTransformChaosProc(AMachine: TatVirtualMachine);
+    procedure GetTransformPlotModeProc(AMachine: TatVirtualMachine);
+    procedure SetTransformPlotModeProc(AMachine: TatVirtualMachine);
+
     procedure GetTransformColorProc(AMachine: TatVirtualMachine);
     procedure SetTransformColorProc(AMachine: TatVirtualMachine);
     procedure GetTransformWeightProc(AMachine: TatVirtualMachine);
@@ -2717,6 +2722,46 @@ begin
   end;
 end;
 
+procedure TScriptEditor.GetTransformChaosProc(AMachine: TatVirtualMachine);
+begin
+  with AMachine do
+    ReturnOutPutArg(cp.xform[ActiveTransform].modWeights[Integer(GetArrayIndex(0))]);
+end;
+
+procedure TScriptEditor.SetTransformChaosProc(AMachine: TatVirtualMachine);
+var
+  v: double;
+  i: integer;
+begin
+  with AMachine do
+  begin
+    v := GetInputArgAsFloat(0);
+    i := GetArrayIndex(0);
+    if (i >= 0) and (i < NumTransforms) then
+      cp.xform[ActiveTransform].modWeights[i] := v;
+  end;
+end;
+
+procedure TScriptEditor.GetTransformPlotModeProc(AMachine: TatVirtualMachine);
+begin
+  with AMachine do
+    if cp.xform[ActiveTransform].noPlot then
+      ReturnOutPutArg(1)
+    else
+      ReturnOutPutArg(0);
+end;
+
+procedure TScriptEditor.SetTransformPlotModeProc(AMachine: TatVirtualMachine);
+var
+  v: integer;
+begin
+  with AMachine do
+  begin
+    v := GetInputArgAsInteger(0);
+    cp.xform[ActiveTransform].noPlot := v <> 0;
+  end;
+end;
+
 // -- vars as props --
 
 procedure TScriptEditor.GetTransformVariationProc(AMachine: TatVirtualMachine);
@@ -3197,6 +3242,7 @@ begin
     DefineProp('f', tkFloat, GetTransformFProc, SetTransformFProc);
     DefineProp('Variation', tkFloat, GetTransformVarProc, SetTransformVarProc, nil, false, 1);
     DefineProp('Variable', tkFloat, GetTransformVariProc, SetTransformVariProc, nil, false, 1);
+    DefineProp('Chaos', tkFloat, GetTransformChaosProc, SetTransformChaosProc, nil, false, 1);
   end;
   Scripter.AddObject('Transform', Transform);
 

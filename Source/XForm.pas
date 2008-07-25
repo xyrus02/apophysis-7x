@@ -1,3 +1,24 @@
+{
+     Flame screensaver Copyright (C) 2002 Ronald Hordijk
+     Apophysis Copyright (C) 2001-2004 Mark Townsend
+     Apophysis Copyright (C) 2005-2006 Ronald Hordijk, Piotr Borys, Peter Sdobnov
+     Apophysis Copyright (C) 2007-2008 Piotr Borys, Peter Sdobnov
+
+     This program is free software; you can redistribute it and/or modify
+     it under the terms of the GNU General Public License as published by
+     the Free Software Foundation; either version 2 of the License, or
+     (at your option) any later version.
+
+     This program is distributed in the hope that it will be useful,
+     but WITHOUT ANY WARRANTY; without even the implied warranty of
+     MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+     GNU General Public License for more details.
+
+     You should have received a copy of the GNU General Public License
+     along with this program; if not, write to the Free Software
+     Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
+}
+
 unit XForm;
 
 interface
@@ -7,15 +28,18 @@ uses
 
 const
   MAX_WEIGHT = 1000.0;
-  
+  NXFORMS = 100;
+
 type
   TCPpoint = record
     x, y, c: double;
+    //invisible: boolean;
   end;
   PCPpoint = ^TCPpoint;
 
   TXYpoint = record
     x, y: double;
+    skip: boolean;
   end;
   PXYpoint = ^TXYpoint;
 
@@ -40,15 +64,21 @@ type
     c00, c01, c10, c11, c20, c21: double;// unnecessary duplicated variables
     p00, p01, p10, p11, p20, p21: double;// :-)
     postXswap: boolean;
+
+    noPlot: boolean;
+    RetraceXform: boolean;
 //    nx,ny,x,y: double;
 //    script: TatPascalScripter;
+
+    modWeights: array [0..NXFORMS] of double;
+    PropTable: array of TXForm;
 
     Orientationtype: integer;
 
   private
     FNrFunctions: Integer;
     FFunctionList: array of TCalcFunction;
-    FCalcFunctionList: array{[0..64]} of TCalcFunction;
+    FCalcFunctionList: array of TCalcFunction;
 
     FTx, FTy: double;
     FPx, FPy: double;
@@ -74,6 +104,7 @@ type
     procedure PrecalcSinCos;
     procedure PrecalcAll;
     procedure DoPostTransform;
+    procedure DoInvalidOperation;
 
     procedure Linear;              // var[0]
     procedure Sinusoidal;          // var[1]
@@ -104,6 +135,7 @@ type
     procedure Noise;               // var[26]
     procedure Blur;                // var[27]
     procedure Gaussian;            // var[28]
+    procedure PreBlur;	           // var[29]
 
     function Mul33(const M1, M2: TMatrix): TMatrix;
     function Identity: TMatrix;
@@ -116,11 +148,11 @@ type
     destructor Destroy; override;
     procedure Clear;
     procedure Prepare;
+    procedure PrepareInvalidXForm;
 
     procedure Assign(Xform: TXForm);
 
-    procedure NextPoint(var px, py, pc: double); overload;
-    procedure NextPoint(var CPpoint: TCPpoint); overload;
+    procedure NextPoint(var CPpoint: TCPpoint);
     procedure NextPointTo(var CPpoint, ToPoint: TCPpoint);
     procedure NextPointXY(var px, py: double);
     procedure NextPoint2C(var p: T2CPoint);
@@ -196,6 +228,12 @@ begin
   vars[0] := 1;
   for i := 1 to High(vars) do
     vars[i] := 0;
+
+  for i := 0 to NXFORMS do
+    modWeights[i] := 1;
+
+  noPlot := false;
+  RetraceXform := false;
 end;
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -235,6 +273,15 @@ begin
 //  CalculateLength := False;
   CalculateSinCos := (vars[9] <> 0.0) or (vars[11] <> 0.0) or (vars[19] <> 0.0) or (vars[21] <> 0.0);
 
+  // Pre- variations
+  for i := 0 to NrVar - 1 do begin
+    if (vars[i] <> 0.0) and (LeftStr(Varnames(i), 4) = 'pre_') then begin
+      FCalcFunctionList[FNrFunctions] := FFunctionList[i];
+      Inc(FNrFunctions);
+    end;
+  end;
+
+  // Precalc must be called after pre- vars
   if CalculateAngle or CalculateSinCos then
   begin
     if CalculateAngle and CalculateSinCos then
@@ -244,14 +291,6 @@ begin
     else //if CalculateSinCos then
       FCalcFunctionList[FNrFunctions] := PrecalcSinCos;
     Inc(FNrFunctions);
-  end;
-
-  // Pre- variations
-  for i := 0 to NrVar - 1 do begin
-    if (vars[i] <> 0.0) and (LeftStr(Varnames(i), 4) = 'pre_') then begin
-      FCalcFunctionList[FNrFunctions] := FFunctionList[i];
-      Inc(FNrFunctions);
-    end;
   end;
 
   // Normal variations
@@ -334,6 +373,23 @@ begin
     Inc(FNrFunctions);
   end;
 *)
+end;
+
+procedure TXForm.PrepareInvalidXForm;
+begin
+  c00 := 1;
+  c01 := 0;
+  c10 := 0;
+  c11 := 1;
+  c20 := 0;
+  c21 := 0;
+
+  colorC1 := 1;
+  colorC2 := 0;
+
+  FNrFunctions := 1;
+  SetLength(FCalcFunctionList, 1);
+  FCalcFunctionList[0] := DoInvalidOperation;
 end;
 
 procedure TXForm.PrecalcAngle;
@@ -434,6 +490,11 @@ asm
     fstp    qword ptr [eax + FPy]
     fwait
 {$endif}
+end;
+
+procedure TXForm.DoInvalidOperation;
+begin
+  raise EMathError.Create('');
 end;
 
 //--0--////////////////////////////////////////////////////////////////////////
@@ -1615,8 +1676,54 @@ asm
 {$endif}
 end;
 
+//--29--///////////////////////////////////////////////////////////////////////
+procedure TXForm.PreBlur;
+{$ifndef _ASM_}
+var
+  r, sina, cosa: double;
+begin
+  SinCos(random * 2*pi, sina, cosa);
+  r := vars[29] * (gauss_rnd[0] + gauss_rnd[1] + gauss_rnd[2] + gauss_rnd[3] - 2);
+  gauss_rnd[gauss_N] := random;
+  gauss_N := (gauss_N+1) and $3;
+
+  FTx := FTx + r * cosa;
+  FTy := FTy + r * sina;
+{$else}
+asm
+    fld     qword ptr [ebx + gauss_rnd]
+    fadd    qword ptr [ebx + gauss_rnd+8]
+    fadd    qword ptr [ebx + gauss_rnd+16]
+    fadd    qword ptr [ebx + gauss_rnd+24]
+    fld1
+    fadd    st,st
+    fsubp   st(1),st
+    mov     edx, [ebx + vars]
+    fmul    qword ptr [edx + 29*8]
+    call    System.@RandExt
+    mov     edx, [ebx + gauss_N]
+    fst     qword ptr [ebx + gauss_rnd + edx*8]
+    inc     edx
+    and     edx,$03
+    mov     [eax + gauss_N], edx
+
+    fadd    st, st
+    fldpi
+    fmulp
+    fsincos
+    fmul    st, st(2)
+    fadd    qword ptr [ebx + FTx]
+    fstp    qword ptr [ebx + FTx]
+    fmulp
+    fadd    qword ptr [ebx + FTy]
+    fstp    qword ptr [ebx + FTy]
+    fwait
+{$endif}
+end;
+
 //***************************************************************************//
 
+(*
 procedure TXForm.NextPoint(var px, py, pc: double);
 var
   i: Integer;
@@ -1640,6 +1747,7 @@ begin
   px := FPx;
   py := FPy;
 end;
+*)
 
 ///////////////////////////////////////////////////////////////////////////////
 procedure TXForm.NextPoint(var CPpoint: TCPpoint);
@@ -1799,6 +1907,9 @@ begin
 
   px := FPx;
   py := FPy;
+
+//  if PlotMode <> keepPlot then
+//    skip := (PlotMode = neverPlot);
 end;
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -1981,6 +2092,7 @@ begin
   FFunctionList[26] := Noise;
   FFunctionList[27] := Blur;
   FFunctionList[28] := Gaussian;
+  FFunctionList[29] := PreBlur;
 
   //registered
 //  for i := 0 to High(FRegVariations) do
@@ -2028,6 +2140,12 @@ begin
       FRegVariations[i].SetVariable(Name, Value);
     end;
   end;
+
+  for i := 0 to 100 do
+    modWeights[i] := xform.modWeights[i];
+
+  noPlot := xform.noPlot;
+  RetraceXform := xform.RetraceXform;
 end;
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -2036,10 +2154,11 @@ var
   i, j: integer;
   Name: string;
   Value: double;
+  numChaos: integer;
 begin
   result := Format('   <xform weight="%g" color="%g" ', [density, color]);
   if symmetry <> 0 then result := result + format('symmetry="%g" ', [symmetry]);
-  
+
   for i := 0 to nrvar - 1 do begin
     if vars[i] <> 0 then
       Result := Result + varnames(i) + format('="%g" ', [vars[i]]);
@@ -2057,6 +2176,22 @@ begin
         Result := Result + Format('%s="%s" ', [name, FRegVariations[i].GetVariableStr(Name)]);
       end;
   end;
+
+  numChaos := -1;
+  for i := NXFORMS-1 downto 0 do
+    if modWeights[i] <> 1 then begin
+      numChaos := i;
+      break;
+    end;
+  if numChaos >= 0 then begin
+    Result := Result + 'chaos="';
+    for i := 0 to numChaos do
+      Result := Result + Format('%g ', [modWeights[i]]);
+    Result := Result + '" ';
+  end;
+
+  if noPlot = true then
+    Result := Result + 'plotmode="off" ';
 
   Result := Result + '/>';
 end;

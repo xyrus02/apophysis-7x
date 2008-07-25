@@ -6,7 +6,7 @@ uses
   BaseVariation;
 
 const
-  NRLOCVAR = 29;
+  NRLOCVAR = 30;
 
 function NrVar: integer;
 function Varnames(const index: integer): String;
@@ -65,7 +65,8 @@ const
     'cylinder',
     'noise',
     'blur',
-    'gaussian_blur'
+    'gaussian_blur',
+    'pre_blur'
     );
 begin
   if Index < NRLOCVAR then

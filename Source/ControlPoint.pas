@@ -2,6 +2,7 @@
      Flame screensaver Copyright (C) 2002 Ronald Hordijk
      Apophysis Copyright (C) 2001-2004 Mark Townsend
      Apophysis Copyright (C) 2005-2006 Ronald Hordijk, Piotr Borys, Peter Sdobnov
+     Apophysis Copyright (C) 2007-2008 Piotr Borys, Peter Sdobnov
 
      This program is free software; you can redistribute it and/or modify
      it under the terms of the GNU General Public License as published by
@@ -17,6 +18,7 @@
      along with this program; if not, write to the Free Software
      Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
 }
+
 unit ControlPoint;
 
 interface
@@ -27,8 +29,6 @@ uses
   Classes, Windows, Cmap, XForm, XFormMan;
 
 const
-  NXFORMS = 100;
-
   SUB_BATCH_SIZE = 10000;
   PROP_TABLE_SIZE = 1024;
   PREFILTER_WHITE = (1 shl 26);
@@ -88,6 +88,8 @@ type
     finalXform: TXForm;
     finalXformEnabled: boolean;
     useFinalXform: boolean;
+    soloXform: integer;
+
     Transparency: boolean;
 
     xform: array[0..NXFORMS] of TXForm;
@@ -127,11 +129,13 @@ type
     jitters: integer;
     gamma_treshold: double;
 
-    PropTable: array of TXForm;//Integer;
+//    PropTable: array of TXForm;//Integer;
     FAngle: Double;
     FTwoColorDimensions: Boolean;
 
   private
+    invalidXform: TXForm;
+    
     function getppux: double;
     function getppuy: double;
 
@@ -222,6 +226,8 @@ begin
   for i := 0 to NXFORMS do begin
     xform[i] := TXForm.Create;
   end;
+  invalidXform := TXForm.Create;
+  soloXform := -1;
 
   pulse[0][0] := 0;
   pulse[0][1] := 60;
@@ -278,6 +284,7 @@ var
 begin
   for i := 0 to NXFORMS do
     xform[i].Free;
+  invalidXform.Free;
 
   inherited;
 end;
@@ -289,10 +296,13 @@ var
   LoopValue: double;
   j: integer;
   TotValue: double;
-begin
-  SetLength(PropTable, PROP_TABLE_SIZE);
 
-  totValue := 0;
+  k: integer;
+  tp: array[0..NXFORMS] of double;
+begin
+//  SetLength(PropTable, PROP_TABLE_SIZE);
+
+  //totValue := 0;
   n := NumXforms;
   assert(n > 0);
 
@@ -301,21 +311,45 @@ begin
   useFinalXform := FinalXformEnabled and HasFinalXform;
   for i := 0 to n - 1 do begin
     xform[i].Prepare;
-    totValue := totValue + xform[i].density;
+    //totValue := totValue + xform[i].density;
+  end;
+  invalidXform.PrepareInvalidXForm;
+
+  if soloXform >= 0 then begin
+    for i := 0 to n - 1 do xform[i].noPlot := true;
+    xform[soloXform].noPlot := false;
   end;
 
-  LoopValue := 0;
-  for i := 0 to PROP_TABLE_SIZE-1 do begin
-    propsum := 0;
-    j := -1;
-    repeat
-      inc(j);
-      propsum := propsum + xform[j].density;
-    until (propsum > LoopValue) or (j = n - 1);
-    PropTable[i] := xform[j];
-    LoopValue := LoopValue + TotValue / PROP_TABLE_SIZE;
-  end;
+  for k := 0 to n - 1 do begin
+    totValue := 0;
+    SetLength(xform[k].PropTable, PROP_TABLE_SIZE);
 
+    for i := 0 to n - 1 do begin
+      tp[i] := xform[i].density * xform[k].modWeights[i];
+      totValue := totValue + tp[i];
+    end;
+
+    if totValue > 0 then begin
+     LoopValue := 0;
+      for i := 0 to PROP_TABLE_SIZE-1 do begin
+        propsum := 0;
+        j := -1;
+        repeat
+          inc(j);
+          propsum := propsum + tp[j];//xform[j].density;
+        until (propsum > LoopValue) or (j = n - 1);
+
+      //assert(tp[j]<>0);
+
+        xform[k].PropTable[i] := xform[j];
+        LoopValue := LoopValue + TotValue / PROP_TABLE_SIZE;
+      end;
+    end
+    else begin
+      for i := 0 to PROP_TABLE_SIZE-1 do
+        xform[k].PropTable[i] := invalidXform;
+    end;
+  end;
 end;
 
 procedure TControlPoint.IterateXY(NrPoints: integer; var Points: TPointsXYArray);
@@ -323,28 +357,44 @@ var
   i: Integer;
   px, py: double;
   pPoint: PXYPoint;
+
+  xf: TXform;
 begin
   px := 2 * random - 1;
   py := 2 * random - 1;
 
   try
-    for i := 0 to FUSE do
-      PropTable[Random(PROP_TABLE_SIZE)].NextPointXY(px,py);
+    xf := xform[0];//random(NumXForms)];
+    for i := 0 to FUSE do begin
+      xf := xf.PropTable[Random(PROP_TABLE_SIZE)];
+      xf.NextPointXY(px,py);
+    end;
 
     pPoint := @Points[0];
+
 if UseFinalXform then
     for i := 0 to NrPoints - 1 do begin
-      PropTable[Random(PROP_TABLE_SIZE)].NextPointXY(px,py);
-      pPoint^.X := px;
-      pPoint^.Y := py;
+      xf := xf.PropTable[Random(PROP_TABLE_SIZE)];
+      xf.NextPointXY(px,py);
+      if xf.noPlot then
+        pPoint^.x := MaxDouble // hack
+      else begin
+        pPoint^.X := px;
+        pPoint^.Y := py;
+      end;
       finalXform.NextPointXY(pPoint^.X, pPoint^.y);
       Inc(pPoint);
     end
 else
     for i := 0 to NrPoints - 1 do begin
-      PropTable[Random(PROP_TABLE_SIZE)].NextPointXY(px,py);
-      pPoint.X := px;
-      pPoint.Y := py;
+      xf := xf.PropTable[Random(PROP_TABLE_SIZE)];
+      xf.NextPointXY(px,py);
+      if xf.noPlot then
+        pPoint^.x := MaxDouble // hack
+      else begin
+        pPoint.X := px;
+        pPoint.Y := py;
+      end;
       Inc(pPoint);
     end
   except
@@ -359,6 +409,8 @@ var
   i: Integer;
   p: TCPPoint;
   pPoint: PCPPoint;
+
+  xf: TXform;
 begin
 {$if false}
   p.x := 2 * random - 1;
@@ -381,23 +433,35 @@ end;
 {$ifend}
 
   try
-    for i := 0 to FUSE do
-      PropTable[Random(PROP_TABLE_SIZE)].NextPoint(p);
+    xf := xform[0];//random(NumXForms)];
+    for i := 0 to FUSE do begin
+      xf := xf.PropTable[Random(PROP_TABLE_SIZE)];
+      xf.NextPoint(p);
+    end;
 
     pPoint := @Points[0];
 
 if UseFinalXform then
     for i := 0 to NrPoints - 1 do begin
-      PropTable[Random(PROP_TABLE_SIZE)].NextPoint(p);
-      finalXform.NextPointTo(p, pPoint^);
+      xf := xf.PropTable[Random(PROP_TABLE_SIZE)];
+      xf.NextPoint(p);
+      if xf.noPlot then
+        pPoint^.x := MaxDouble // hack
+      else
+        finalXform.NextPointTo(p, pPoint^);
       Inc(pPoint);
     end
 else
     for i := 0 to NrPoints - 1 do begin
-      PropTable[Random(PROP_TABLE_SIZE)].NextPoint(p);
-      pPoint^.x := p.x;
-      pPoint^.y := p.y;
-      pPoint^.c := p.c;
+      xf := xf.PropTable[Random(PROP_TABLE_SIZE)];
+      xf.NextPoint(p);
+      if xf.noPlot then
+        pPoint^.x := MaxDouble // hack
+      else begin
+        pPoint^.x := p.x;
+        pPoint^.y := p.y;
+        pPoint^.c := p.c;
+      end;
       Inc(pPoint);
     end
   except
@@ -461,6 +525,8 @@ var
   //px, py, pc1, pc2: double;
   p: T2CPoint;
   CurrentPoint: P2Cpoint;
+
+  xf: TXform;
 begin
   p.x := 2 * random - 1;
   p.y := 2 * random - 1;
@@ -468,13 +534,17 @@ begin
   p.c2 := random;
 
   try
-    for i := 0 to FUSE do
-      PropTable[Random(PROP_TABLE_SIZE)].NextPoint2C(p);//px, py, pc1, pc2);
+    xf := xform[random(NumXForms)];
+    for i := 0 to FUSE do begin
+      xf := xf.PropTable[Random(PROP_TABLE_SIZE)];
+      xf.NextPoint2C(p);//px, py, pc1, pc2);
+    end;
 
     CurrentPoint := @Points[0];
 if UseFinalXform then
     for i := 0 to NrPoints - 1 do begin
-      PropTable[Random(PROP_TABLE_SIZE)].NextPoint2C(p);//px, py, pc1, pc2);
+      xf := xf.PropTable[Random(PROP_TABLE_SIZE)];
+      xf.NextPoint2C(p);//px, py, pc1, pc2);
       CurrentPoint.X := p.x;
       CurrentPoint.Y := p.y;
       CurrentPoint.C1 := p.c1;
@@ -484,7 +554,8 @@ if UseFinalXform then
     end
 else
     for i := 0 to NrPoints - 1 do begin
-      PropTable[Random(PROP_TABLE_SIZE)].NextPoint2C(p);
+      xf := xf.PropTable[Random(PROP_TABLE_SIZE)];
+      xf.NextPoint2C(p);
       CurrentPoint.X := p.x;
       CurrentPoint.Y := p.y;
       CurrentPoint.C1 := p.c1;
@@ -506,6 +577,8 @@ var
   minx, maxx, miny, maxy: double;
   Points: TPointsXYArray;
   CurrentPoint: PXYPoint;
+
+  xf: TXForm;
 begin
   Result := false;
 
@@ -518,12 +591,16 @@ begin
   Prepare;
 
   try
-    for i := 0 to FUSE do
-      PropTable[Random(PROP_TABLE_SIZE)].NextPointXY(px,py);
+    xf := xform[random(NumXForms)];
+    for i := 0 to FUSE do begin
+      xf := xf.PropTable[Random(PROP_TABLE_SIZE)];
+      xf.NextPointXY(px,py);
+    end;
 
     CurrentPoint := @Points[0];
     for i := 0 to n-1 do begin
-      PropTable[Random(PROP_TABLE_SIZE)].NextPointXY(px,py);
+      xf := xf.PropTable[Random(PROP_TABLE_SIZE)];
+      xf.NextPointXY(px,py);
       CurrentPoint.X := px;
       CurrentPoint.Y := py;
       Inc(CurrentPoint);
@@ -580,6 +657,9 @@ begin
     end else if AnsiCompareText(CurrentToken, 'finalxformenabled') = 0 then begin
       Inc(ParsePos);
       finalxformenabled := StrToInt(ParseValues[ParsePos]) <> 0;
+    end else if AnsiCompareText(CurrentToken, 'soloxform') = 0 then begin
+      Inc(ParsePos);
+      soloxform := StrToInt(ParseValues[ParsePos]);
     end else if AnsiCompareText(CurrentToken, 'time') = 0 then begin
       Inc(ParsePos);
       time := StrToFloat(ParseValues[ParsePos]);
@@ -766,6 +846,23 @@ begin
         Inc(i);
       end;
 
+    end else if AnsiCompareText(CurrentToken, 'chaos') = 0 then begin
+      i := 0;
+      while true do begin
+        if (ParsePos + 1) >= ParseValues.Count then
+          break;
+        if ParseValues[ParsePos + 1][1] in ['a'..'z', 'A'..'Z'] then
+          break;
+
+        Inc(ParsePos);
+        v := StrToFloat(ParseValues[ParsePos]);
+        xform[CurrentXForm].modWeights[i] := v;
+        Inc(i);
+      end;
+
+    end else if AnsiCompareText(CurrentToken, 'plotmode') = 0 then begin
+      Inc(ParsePos);
+      xform[CurrentXForm].noPlot := StrToInt(ParseValues[ParsePos]) <> 0;
     end else begin
       OutputDebugString(Pchar('Unknown Token: ' + CurrentToken));
     end;
@@ -1456,8 +1553,9 @@ begin
   sl.add(format('brightness %f gamma %f vibrancy %f hue_rotation %f cmap_inter %d',
     [brightness * BRIGHT_ADJUST, gamma, vibrancy, hue_rotation, cmap_inter]));
   sl.add(format('finalxformenabled %d', [ifthen(finalxformenabled, 1, 0)]));
+  sl.add(format('soloxform %d', [soloXform]));
 
-  for i := 0 to NXFORMS do
+  for i := 0 to NumXForms+1 do //NXFORMS do
     with xform[i] do begin
       //if density = 0 then continue; - FinalXform has weight=0
 
@@ -1485,6 +1583,15 @@ begin
         sl.Add('postxswap 1')
       else
         sl.Add('postxswap 0');
+
+      s := 'chaos';
+      for j := 0 to NumXForms+1 do begin
+        s := s + format(' %g', [modWeights[j]]);
+      end;
+      sl.Add(s);
+
+      sl.Add(Format('plotmode %d', [Ifthen(noPlot, 1, 0)]));
+
     end;
   DecimalSeparator := OldDecimalSperator;
 end;

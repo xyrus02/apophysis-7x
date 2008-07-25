@@ -1,7 +1,7 @@
 {
      Apophysis Copyright (C) 2001-2004 Mark Townsend
      Apophysis Copyright (C) 2005-2006 Ronald Hordijk, Piotr Borys, Peter Sdobnov
-     Apophysis Copyright (C) 2007 Piotr Borys, Peter Sdobnov
+     Apophysis Copyright (C) 2007-2008 Piotr Borys, Peter Sdobnov
 
      This program is free software; you can redistribute it and/or modify
      it under the terms of the GNU General Public License as published by
@@ -17,11 +17,11 @@
      along with this program; if not, write to the Free Software
      Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
 }
+
 {
   Variation Plugin DLL support for Apophysis:
   Generic Plugin Support Unit
   Started by Jed Kelsey, June 2007
-
 
   
   Portions Copyright (C) 2008 Joel Faber
