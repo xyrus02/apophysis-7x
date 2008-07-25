@@ -190,6 +190,8 @@ procedure TMutateForm.ShowMutants;
 var
   i: integer;
 begin
+  if Visible = false then exit;
+
   Updating := true;
   for i := 1 to 8 do
   begin
