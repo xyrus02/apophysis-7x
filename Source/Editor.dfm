@@ -54,7 +54,7 @@ object EditForm: TEditForm
   TextHeight = 13
   object StatusBar: TStatusBar
     Left = 0
-    Top = 532
+    Top = 527
     Width = 574
     Height = 15
     Panels = <
@@ -339,14 +339,14 @@ object EditForm: TEditForm
     Left = 0
     Top = 24
     Width = 574
-    Height = 508
+    Height = 503
     Align = alClient
     TabOrder = 1
     object Splitter1: TSplitter
       Left = 392
       Top = 1
       Width = 9
-      Height = 506
+      Height = 501
       Align = alRight
       AutoSnap = False
       Beveled = True
@@ -357,7 +357,7 @@ object EditForm: TEditForm
       Left = 1
       Top = 1
       Width = 391
-      Height = 506
+      Height = 501
       Align = alClient
       BevelOuter = bvNone
       Color = clAppWorkSpace
@@ -367,7 +367,7 @@ object EditForm: TEditForm
       Left = 401
       Top = 1
       Width = 172
-      Height = 506
+      Height = 501
       Align = alRight
       Alignment = taLeftJustify
       BevelOuter = bvNone
@@ -384,30 +384,11 @@ object EditForm: TEditForm
         MinSize = 130
         OnMoved = splitterMoved
       end
-      object PrevPnl: TPanel
-        Left = 0
-        Top = 0
-        Width = 172
-        Height = 130
-        Align = alTop
-        BevelOuter = bvLowered
-        Color = clAppWorkSpace
-        TabOrder = 1
-        object PreviewImage: TImage
-          Left = 1
-          Top = 1
-          Width = 170
-          Height = 130
-          Center = True
-          PopupMenu = QualityPopup
-          Proportional = True
-        end
-      end
       object ControlPanel: TPanel
         Left = 0
         Top = 138
         Width = 172
-        Height = 368
+        Height = 363
         Align = alClient
         TabOrder = 0
         object lblTransform: TLabel
@@ -438,10 +419,10 @@ object EditForm: TEditForm
         end
         object PageControl: TPageControl
           Left = 1
-          Top = 36
+          Top = 31
           Width = 170
           Height = 331
-          ActivePage = tabVariations
+          ActivePage = tabColors
           Align = alBottom
           Anchors = [akLeft, akTop, akRight, akBottom]
           MultiLine = True
@@ -1428,58 +1409,6 @@ object EditForm: TEditForm
               Visible = False
             end
           end
-          object tabVariations: TTabSheet
-            Caption = 'Variations'
-            object VEVars: TValueListEditor
-              Left = 0
-              Top = 0
-              Width = 162
-              Height = 285
-              Align = alClient
-              ScrollBars = ssVertical
-              TabOrder = 0
-              TitleCaptions.Strings = (
-                'Variation'
-                'Value')
-              OnDblClick = VEVarsDblClick
-              OnDrawCell = VEVarsDrawCell
-              OnExit = VEVarsChange
-              OnKeyPress = VEVarsKeyPress
-              OnMouseDown = VEVarsMouseDown
-              OnMouseMove = VEVarsMouseMove
-              OnMouseUp = VEVarsMouseUp
-              OnValidate = VEVarsValidate
-              ColWidths = (
-                93
-                63)
-            end
-          end
-          object TabSheet4: TTabSheet
-            Caption = 'Variables'
-            ImageIndex = 4
-            object vleVariables: TValueListEditor
-              Left = 0
-              Top = 0
-              Width = 162
-              Height = 285
-              Align = alClient
-              ScrollBars = ssVertical
-              TabOrder = 0
-              TitleCaptions.Strings = (
-                'Variable'
-                'Value')
-              OnDblClick = VEVarsDblClick
-              OnExit = vleVariablesExit
-              OnKeyPress = vleVariablesKeyPress
-              OnMouseDown = VEVarsMouseDown
-              OnMouseMove = VEVarsMouseMove
-              OnMouseUp = VEVarsMouseUp
-              OnValidate = vleVariablesValidate
-              ColWidths = (
-                93
-                63)
-            end
-          end
           object tabColors: TTabSheet
             Caption = 'Colors'
             ImageIndex = 3
@@ -1558,7 +1487,7 @@ object EditForm: TEditForm
             end
             object GroupBox2: TGroupBox
               Left = 8
-              Top = 100
+              Top = 182
               Width = 145
               Height = 77
               Caption = 'Variation preview'
@@ -1611,7 +1540,140 @@ object EditForm: TEditForm
                 OnChange = trkVarPreviewDepthChange
               end
             end
+            object GroupBox4: TGroupBox
+              Left = 8
+              Top = 104
+              Width = 145
+              Height = 73
+              Caption = 'Transform visibility'
+              TabOrder = 2
+              object chkXformInvisible: TCheckBox
+                Left = 8
+                Top = 16
+                Width = 129
+                Height = 17
+                Caption = 'Invisible'
+                TabOrder = 0
+                OnClick = chkPlotModeClick
+              end
+              object chkXformSolo: TCheckBox
+                Left = 8
+                Top = 48
+                Width = 129
+                Height = 17
+                Caption = 'Solo'
+                TabOrder = 1
+                OnClick = chkXformSoloClick
+              end
+              object chkRetrace: TCheckBox
+                Left = 8
+                Top = 32
+                Width = 129
+                Height = 17
+                Caption = 'Retrace xform'
+                TabOrder = 2
+              end
+            end
           end
+          object tabVariations: TTabSheet
+            Caption = 'Variations'
+            object VEVars: TValueListEditor
+              Left = 0
+              Top = 0
+              Width = 162
+              Height = 285
+              Align = alClient
+              ScrollBars = ssVertical
+              TabOrder = 0
+              TitleCaptions.Strings = (
+                'Variation'
+                'Value')
+              OnDblClick = VEVarsDblClick
+              OnDrawCell = VEVarsDrawCell
+              OnExit = VEVarsChange
+              OnKeyPress = VEVarsKeyPress
+              OnMouseDown = VEVarsMouseDown
+              OnMouseMove = VEVarsMouseMove
+              OnMouseUp = VEVarsMouseUp
+              OnValidate = VEVarsValidate
+              ColWidths = (
+                93
+                63)
+            end
+          end
+          object TabSheet4: TTabSheet
+            Caption = 'Variables'
+            ImageIndex = 4
+            object vleVariables: TValueListEditor
+              Left = 0
+              Top = 0
+              Width = 162
+              Height = 285
+              Align = alClient
+              ScrollBars = ssVertical
+              TabOrder = 0
+              TitleCaptions.Strings = (
+                'Variable'
+                'Value')
+              OnDblClick = VEVarsDblClick
+              OnExit = vleVariablesExit
+              OnKeyPress = vleVariablesKeyPress
+              OnMouseDown = VEVarsMouseDown
+              OnMouseMove = VEVarsMouseMove
+              OnMouseUp = VEVarsMouseUp
+              OnValidate = vleVariablesValidate
+              ColWidths = (
+                93
+                63)
+            end
+          end
+          object TabChaos: TTabSheet
+            Caption = 'Xaos'
+            ImageIndex = 5
+            object vleChaos: TValueListEditor
+              Left = 0
+              Top = 0
+              Width = 162
+              Height = 285
+              Align = alClient
+              PopupMenu = ChaosPopup
+              ScrollBars = ssVertical
+              TabOrder = 0
+              TitleCaptions.Strings = (
+                'Path'
+                'Weight modifier')
+              OnDblClick = VEVarsDblClick
+              OnDrawCell = VleChaosDrawCell
+              OnExit = vleChaosExit
+              OnKeyPress = vleChaosKeyPress
+              OnMouseDown = VEVarsMouseDown
+              OnMouseMove = VEVarsMouseMove
+              OnMouseUp = VEVarsMouseUp
+              OnValidate = vleChaosValidate
+              ColWidths = (
+                65
+                91)
+            end
+          end
+        end
+      end
+      object PrevPnl: TPanel
+        Left = 0
+        Top = 0
+        Width = 172
+        Height = 130
+        Align = alTop
+        BevelOuter = bvLowered
+        Color = clAppWorkSpace
+        TabOrder = 1
+        object PreviewImage: TImage
+          Left = 1
+          Top = 1
+          Width = 170
+          Height = 130
+          Center = True
+          PopupMenu = QualityPopup
+          Proportional = True
         end
       end
     end
@@ -3014,6 +3076,39 @@ object EditForm: TEditForm
       Caption = 'Reset scale'
       ImageIndex = 23
       OnClick = mnuResetTrgScaleClick
+    end
+  end
+  object ChaosPopup: TPopupMenu
+    Left = 353
+    Top = 241
+    object mnuChaosViewTo: TMenuItem
+      Caption = 'View as "&to"'
+      Checked = True
+      RadioItem = True
+      OnClick = mnuChaosViewToClick
+    end
+    object mnuChaosViewFrom: TMenuItem
+      Caption = 'View as "&from"'
+      RadioItem = True
+      OnClick = mnuChaosViewFromClick
+    end
+    object N9: TMenuItem
+      Caption = '-'
+    end
+    object mnuChaosClearAll: TMenuItem
+      Caption = '&Clear all'
+      OnClick = mnuChaosClearAllClick
+    end
+    object mnuChaosSetAll: TMenuItem
+      Caption = '&Set all'
+      OnClick = mnuChaosSetAllClick
+    end
+    object N10: TMenuItem
+      Caption = '-'
+    end
+    object mnuLinkPostxform: TMenuItem
+      Caption = 'Add linked xform'
+      OnClick = mnuLinkPostxformClick
     end
   end
 end

@@ -1,6 +1,7 @@
 {
      Apophysis Copyright (C) 2001-2004 Mark Townsend
      Apophysis Copyright (C) 2005-2006 Ronald Hordijk, Piotr Borys, Peter Sdobnov
+     Apophysis Copyright (C) 2007-2008 Piotr Borys, Peter Sdobnov
 
      This program is free software; you can redistribute it and/or modify
      it under the terms of the GNU General Public License as published by
@@ -16,7 +17,9 @@
      along with this program; if not, write to the Free Software
      Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
 }
+
 //{$D-,L-,O+,Q-,R-,Y-,S-}
+
 unit Editor;
 
 //{$define VAR_STR}
@@ -185,6 +188,21 @@ type
     oggleposttriangleediting1: TMenuItem;
     mnuCopyTriangle: TMenuItem;
     mnuPasteTriangle: TMenuItem;
+    TabChaos: TTabSheet;
+    vleChaos: TValueListEditor;
+    ChaosPopup: TPopupMenu;
+    mnuChaosViewTo: TMenuItem;
+    mnuChaosViewFrom: TMenuItem;
+    N9: TMenuItem;
+    mnuChaosClearAll: TMenuItem;
+    mnuChaosSetAll: TMenuItem;
+    N10: TMenuItem;
+    mnuLinkPostxform: TMenuItem;
+    GroupBox4: TGroupBox;
+    chkXformInvisible: TCheckBox;
+    chkXformSolo: TCheckBox;
+    chkRetrace: TCheckBox;
+
     procedure ValidateVariable;
     procedure vleVariablesValidate(Sender: TObject; ACol, ARow: Integer; const KeyName, KeyValue: string);
     procedure vleVariablesKeyPress(Sender: TObject; var Key: Char);
@@ -327,6 +345,21 @@ type
     procedure btnCopyTriangleClick(Sender: TObject);
     procedure btnPasteTriangleClick(Sender: TObject);
 
+    procedure ValidateChaos;
+    procedure vleChaosExit(Sender: TObject);
+    procedure vleChaosKeyPress(Sender: TObject; var Key: Char);
+    procedure vleChaosValidate(Sender: TObject; ACol, ARow: Integer;
+      const KeyName, KeyValue: String);
+    procedure VleChaosDrawCell(Sender: TObject; ACol, ARow: Integer;
+      Rect: TRect; State: TGridDrawState);
+    procedure mnuChaosViewToClick(Sender: TObject);
+    procedure mnuChaosViewFromClick(Sender: TObject);
+    procedure chkPlotModeClick(Sender: TObject);
+    procedure mnuChaosClearAllClick(Sender: TObject);
+    procedure mnuChaosSetAllClick(Sender: TObject);
+    procedure mnuLinkPostxformClick(Sender: TObject);
+    procedure chkXformSoloClick(Sender: TObject);
+
   private
     TriangleView: TCustomDrawControl;
     cmap: TColorMap;
@@ -351,6 +384,7 @@ type
     varDragValue: double;
     varDragPos, varDragOld: integer;
     varMM: boolean; //hack?
+    pDragValue: ^double;
 
     SelectMode, ExtendedEdit, AxisLock: boolean;
     showVarPreview: boolean;
@@ -604,12 +638,21 @@ end;
 
 procedure TEditForm.UpdateXformsList;
 var
-  i: integer;
+  i, n: integer;
+  prefix: string;
 begin
   cbTransforms.Clear;
   for i := 1 to Transforms do cbTransforms.Items.Add(IntToStr(i));
   if EnableFinalXform or cp.HasFinalXForm then cbTransforms.Items.Add('Final');
   cbTransforms.ItemIndex := SelectedTriangle;
+
+  if mnuChaosViewTo.Checked then prefix := 'to %d'
+  else prefix := 'from %d';
+  n := Transforms + 1;
+  while vleChaos.RowCount > n do
+    vleChaos.DeleteRow(vleChaos.RowCount-1);
+  while vleChaos.RowCount < n do
+    vleChaos.InsertRow(Format(prefix, [vleChaos.RowCount]), '1', true);
 end;
 
 procedure TEditForm.UpdateDisplay(PreviewOnly: boolean = false);
@@ -788,10 +831,29 @@ begin
     begin
       txtP.text := Format('%.6g', [density]);
       txtP.Enabled := true;
+      vleChaos.Enabled := true;
+      chkXformInvisible.Enabled := true;
+      chkXformInvisible.Checked := noPlot;
+      chkXformSolo.Enabled := true;
+      chkRetrace.Enabled := not noPlot;
+      if cp.soloXform >= 0 then begin
+        chkXformSolo.Checked := true;
+        chkXformSolo.Caption := Format('Solo transform #%d', [cp.soloXform + 1]);
+      end
+      else begin
+        chkXformSolo.Checked := false;
+        chkXformSolo.Caption := 'Solo';
+      end;
     end
-    else begin
+    else begin // disable controls for FinalXform
       txtP.Enabled := false;
       txtP.Text := 'n/a';
+      vleChaos.Enabled := false;
+      chkXformInvisible.Enabled := false;
+      chkXformInvisible.Checked := false;
+      chkXformSolo.Enabled := false;
+      chkRetrace.Checked := true;
+      chkRetrace.Enabled := false;
     end;
     tbEnableFinalXform.Down := EnableFinalXform;
 
@@ -821,6 +883,27 @@ begin
       if vleVariables.Values[GetVariableNameAt(i)] <> strval then
         vleVariables.Values[GetVariableNameAt(i)] := strval;
     end;
+
+    //Assert(vleChaos.RowCount = Transforms+1);
+    if SelectedTriangle < Transforms then begin
+      if mnuChaosViewTo.Checked then
+        // view as "to" values
+        for i := 1 to Transforms do begin
+          strval := Format('%.6g', [modWeights[i - 1]]);
+          if vleChaos.Cells[1, i] <> strval then
+            vleChaos.Cells[1, i] := strval;
+        end
+      else
+        // view as "from" values
+        for i := 1 to Transforms do begin
+          strval := Format('%.6g', [cp.xform[i - 1].modWeights[SelectedTriangle]]);
+          if vleChaos.Cells[1, i] <> strval then
+            vleChaos.Cells[1, i] := strval;
+        end;
+    end
+    else
+      for i := 1 to vleChaos.RowCount-1 do
+        vleChaos.Cells[1, i] := 'n/a';
   end;
 
   if PivotMode = pivotLocal then begin
@@ -954,7 +1037,7 @@ end;
 
 procedure TEditForm.DeleteTriangle(t: integer);
 var
-  i: integer;
+  i, j: integer;
 begin
   if (t = Transforms) then
   begin
@@ -973,6 +1056,14 @@ begin
   if (Transforms <= 1) then exit
   else begin
     MainForm.UpdateUndo;
+    // delete xform from all probability tables
+    for i := 0 to Transforms-1 do
+    with cp.xform[i] do begin
+      for j := t to Transforms-1 do
+        modWeights[j] := modWeights[j+1];
+      modWeights[Transforms-1] := 1;
+    end;
+    //
     if t = (Transforms - 1) then
     begin
       MainTriangles[t] := MainTriangles[Transforms];
@@ -1110,6 +1201,7 @@ var
   tps: TPenStyle;
   tT: TTriangle;
   txx, txy, tyx, tyy: double;
+  str: string;
 label DrawCorner;
 begin
   if (SelectedTriangle < 0) then begin
@@ -1439,8 +1531,10 @@ begin
           for i:= NRVAR - 1 downto 0 do
             if cp.xform[mouseOverTriangle].vars[i] <> 0 then
             begin
-              ax := Width-foc_ofs*2 - TextWidth(Varnames(i));
-              TextOut(ax, ay, Varnames(i));
+              str := Varnames(i);
+              if str='julian' then str := str + ' ' + cp.xform[mouseOverTriangle].GetVariableStr('julian_power'); // hack
+              ax := Width-foc_ofs*2 - TextWidth(str);
+              TextOut(ax, ay, str);
               Inc(ay, font.Height);
             end;
 //        brush.Style := bsSolid;
@@ -1578,6 +1672,11 @@ begin
   for i:= 0 to GetNrVariableNames - 1 do begin
     vleVariables.InsertRow(GetVariableNameAt(i), '0', True);
   end;
+
+//  for i:= 0 to NXFORMS - 1 do begin
+//    vleChaos.InsertRow(inttostr(i + 1), '1', True);
+//  end;
+  vleChaos.InsertRow('to 1', '1', true);
 
   GraphZoom := 1;
 
@@ -2348,6 +2447,8 @@ begin
 end;
 
 procedure TEditForm.mnuDupClick(Sender: TObject);
+var
+  i: integer;
 begin
   if Transforms < NXFORMS then
   begin
@@ -2358,6 +2459,9 @@ begin
     begin
       MainTriangles[Transforms] := MainTriangles[SelectedTriangle];
       cp.xform[Transforms].Assign(cp.xform[SelectedTriangle]);
+      for i := 0 to Transforms-1 do
+        cp.xform[i].modWeights[Transforms] := cp.xform[i].modWeights[SelectedTriangle];
+      cp.xform[Transforms].modWeights[Transforms] := cp.xform[SelectedTriangle].modWeights[SelectedTriangle];
       SelectedTriangle := Transforms;
     end
     else cp.xform[Transforms].density := 0.5;
@@ -2547,6 +2651,7 @@ var
   Allow: boolean;
   NewVal, OldVal: double;
 begin
+  if SelectedTriangle >= Transforms then exit;
   Allow := True;
   OldVal := Round6(cp.xform[SelectedTriangle].density);
     { Test that it's a valid floating point number }
@@ -3110,8 +3215,16 @@ begin
     SetCaptureControl(TValueListEditor(Sender));
     if Sender = VEVars then
       varDragValue := cp.xform[SelectedTriangle].vars[varDragIndex]
-    else
-      cp.xform[SelectedTriangle].GetVariable(vleVariables.Keys[varDragIndex+1], varDragValue);
+    else if Sender = vleVariables then
+      cp.xform[SelectedTriangle].GetVariable(vleVariables.Keys[varDragIndex+1], varDragValue)
+    else if Sender = vleChaos then begin
+      if mnuChaosViewTo.Checked then
+        pDragValue := @cp.xform[SelectedTriangle].modWeights[varDragIndex]
+      else
+        pDragValue := @cp.xform[varDragIndex].modWeights[SelectedTriangle];
+      varDragValue := pDragValue^;
+    end
+    else Assert(false);
 
     HasChanged := False;
   end;
@@ -3153,15 +3266,17 @@ begin
     if Sender = VEVars then
     begin
       cp.xform[SelectedTriangle].vars[varDragIndex] := v;
-      TValueListEditor(Sender).Values[VarNames(varDragIndex)] := FloatToStr(v); //Format('%.6g', [v]);
+      VEVars.Values[VarNames(varDragIndex)] := FloatToStr(v); //Format('%.6g', [v]);
     end
-    else begin
+    else if Sender = vleVariables then begin
       cp.xform[SelectedTriangle].SetVariable(vleVariables.Keys[varDragIndex+1], v);
       vleVariables.Values[vleVariables.Keys[varDragIndex+1]] := FloatToStr(v);
-{
-      vleVariables.Values[vleVariables.Keys[varDragIndex+1]] :=
-        cp.xform[SelectedTriangle].GetVariableStr(vleVariables.Keys[varDragIndex+1]);
-}
+    end
+    else begin
+      if v < 0 then v := 0;
+      //cp.xform[SelectedTriangle].modWeights[varDragIndex] := v;
+      pDragValue^ := v;
+      vleChaos.Cells[1, varDragIndex+1] := FloatToStr(v);
     end;
 
     HasChanged := True;
@@ -3208,13 +3323,27 @@ begin
     //VEVars.Values[VarNames(n)] := '0';
     changed := (cp.xform[SelectedTriangle].vars[n] <> v);
   end
-  else begin
+  else if Sender = vleVariables then begin
     cp.xform[SelectedTriangle].GetVariable(vleVariables.Keys[n + 1], v);
     cp.xform[SelectedTriangle].ResetVariable(vleVariables.Keys[n + 1]);
     //vleVariables.Values[vleVariables.Keys[varDragIndex+1]] := '0';
     cp.xform[SelectedTriangle].GetVariable(vleVariables.Keys[n + 1], v1);
     changed := (v1 <> v);
-  end;
+  end
+  else if Sender = vleChaos then begin
+    if mnuChaosViewTo.Checked then
+      pDragValue := @cp.xform[SelectedTriangle].modWeights[varDragIndex]
+    else
+      pDragValue := @cp.xform[varDragIndex].modWeights[SelectedTriangle];
+    v := pDragValue^;
+    //v := cp.xform[SelectedTriangle].modWeights[n];
+    v := ifthen(v = 1, 0, 1);
+    //cp.xform[SelectedTriangle].modWeights[n] := v;
+    pDragValue^ := v;
+    vleChaos.Cells[1, n+1] := FloatToStr(v);
+    changed := true;
+  end
+  else Assert(false);
 
   if changed then MainForm.UpdateUndo;
   UpdateFlame(true);
@@ -4637,6 +4766,237 @@ begin
     MainForm.UpdateUndo;
     MainTriangles[SelectedTriangle] := MemTriangle;
     UpdateFlame(True);
+  end;
+end;
+
+// --------------------------------------------------------------- Chaos Editor
+
+procedure TEditForm.ValidateChaos;
+var
+  i: integer;
+  NewVal, OldVal: double;
+begin
+  i := vleChaos.Row - 1;
+
+  if mnuChaosViewTo.Checked then
+    OldVal := Round6(cp.xform[SelectedTriangle].modWeights[i])
+  else
+    OldVal := Round6(cp.xform[i].modWeights[SelectedTriangle]);
+
+  try
+    NewVal := Round6(StrToFloat(vleChaos.Cells[1, i+1]));
+  except
+    vleChaos.Cells[1, i+1] := Format('%.6g', [OldVal]);
+    exit;
+  end;
+  if (NewVal <> OldVal) then
+  begin
+    MainForm.UpdateUndo;
+
+    if mnuChaosViewTo.Checked then
+      cp.xform[SelectedTriangle].modWeights[i] := NewVal
+    else
+      cp.xform[i].modWeights[SelectedTriangle] := NewVal;
+
+    vleChaos.Cells[1, i+1] := Format('%.6g', [NewVal]);
+    ShowSelectedInfo;
+    UpdateFlame(True);
+  end;
+end;
+
+procedure TEditForm.vleChaosExit(Sender: TObject);
+begin
+  ValidateChaos;
+end;
+
+procedure TEditForm.vleChaosKeyPress(Sender: TObject; var Key: Char);
+begin
+  if key = #13 then
+  begin
+    key := #0;
+    ValidateChaos;
+  end;
+end;
+
+procedure TEditForm.vleChaosValidate(Sender: TObject; ACol, ARow: Integer;
+  const KeyName, KeyValue: String);
+begin
+  ValidateChaos;
+end;
+
+procedure TEditForm.VleChaosDrawCell(Sender: TObject; ACol, ARow: Integer;
+  Rect: TRect; State: TGridDrawState);
+var
+  h,ax,ay,bx,by: integer;
+  trgColor: TColor;
+begin
+  if (ACol > 0) or (ARow = 0) then exit;
+
+  trgColor := GetTriangleColor(ARow - 1);
+  with vleChaos.Canvas do begin
+    h := Rect.Bottom - Rect.Top - 2;
+//    TextOut(Rect.Left+h+2, Rect.Top+1, vleChaos.Cells[ACol, ARow]);
+
+    ax:=Rect.Right-3;
+    ay:=Rect.Top+2;
+    bx:=Rect.Right-h;
+    by:=Rect.Bottom-3;
+
+    pen.Color := clBlack;
+    Polyline([Point(ax+1, ay-2), Point(ax+1, by+1), Point(bx-2, by+1), Point(ax+1, ay-2)]);
+
+    pen.Color := trgColor;
+    brush.Color := pen.Color shr 1 and $7f7f7f;
+    Polygon([Point(ax, ay), Point(ax, by), Point(bx, by)]);
+  end;
+end;
+
+procedure TEditForm.mnuChaosViewToClick(Sender: TObject);
+var
+  i: integer;
+begin
+  mnuChaosViewTo.Checked := true;
+  for i := 1 to vleChaos.RowCount-1 do begin
+    vleChaos.Cells[0, i] := Format('to %d', [i]);
+    vleChaos.Cells[1, i] := FloatToStr(cp.xform[SelectedTriangle].modWeights[i-1]);
+  end;
+  //ShowSelectedInfo;
+end;
+
+procedure TEditForm.mnuChaosViewFromClick(Sender: TObject);
+var
+  i: integer;
+begin
+  mnuChaosViewFrom.Checked := true;
+  for i := 1 to vleChaos.RowCount-1 do begin
+    vleChaos.Cells[0, i] := Format('from %d', [i]);
+    vleChaos.Cells[1, i] := FloatToStr(cp.xform[i-1].modWeights[SelectedTriangle]);
+  end;
+  //ShowSelectedInfo;
+end;
+
+procedure TEditForm.chkPlotModeClick(Sender: TObject);
+var
+  newMode: boolean;
+begin
+  if (SelectedTriangle < Transforms) then
+  begin
+    newMode := chkXformInvisible.Checked;
+    if cp.xform[SelectedTriangle].noPlot <> newMode then begin
+      MainForm.UpdateUndo;
+      cp.xform[SelectedTriangle].noPlot := newMode;
+      UpdateFlame(true);
+    end;
+  end;
+end;
+
+procedure TEditForm.mnuChaosClearAllClick(Sender: TObject);
+var
+  i: integer;
+  noEdit: boolean;
+begin
+  noEdit := true;
+  for i := 1 to cp.NumXForms do
+    if mnuChaosViewTo.Checked then begin
+      if cp.xform[SelectedTriangle].modWeights[i-1] <> 0 then begin
+        noEdit := false;
+        break;
+      end;
+    end
+    else begin
+      if cp.xform[i-1].modWeights[SelectedTriangle] <> 0 then begin
+        noEdit := false;
+        break;
+      end;
+    end;  
+  if noEdit then exit;
+
+  Mainform.UpdateUndo;
+  for i := 1 to cp.NumXForms do
+    if mnuChaosViewTo.Checked then
+      cp.xform[SelectedTriangle].modWeights[i-1] := 0
+    else
+      cp.xform[i-1].modWeights[SelectedTriangle] := 0;
+  UpdateFlame(true);
+end;
+
+procedure TEditForm.mnuChaosSetAllClick(Sender: TObject);
+var
+  i: integer;
+  noEdit: boolean;
+begin
+  noEdit := true;
+  for i := 1 to cp.NumXForms do
+    if mnuChaosViewTo.Checked then begin
+      if cp.xform[SelectedTriangle].modWeights[i-1] <> 1 then begin
+        noEdit := false;
+        break;
+      end;
+    end
+    else begin
+      if cp.xform[i-1].modWeights[SelectedTriangle] <> 1 then begin
+        noEdit := false;
+        break;
+      end;
+    end;  
+  if noEdit then exit;
+
+  Mainform.UpdateUndo;
+  for i := 1 to cp.NumXForms do
+    if mnuChaosViewTo.Checked then
+      cp.xform[SelectedTriangle].modWeights[i-1] := 1
+    else
+      cp.xform[i-1].modWeights[SelectedTriangle] := 1;
+  UpdateFlame(true);
+end;
+
+procedure TEditForm.mnuLinkPostxformClick(Sender: TObject);
+var
+  i: integer;
+begin
+  if (Transforms < NXFORMS) and (SelectedTriangle <> Transforms) then
+  begin
+    MainForm.UpdateUndo;
+    MainTriangles[Transforms+1] := MainTriangles[Transforms];
+    cp.xform[Transforms+1].Assign(cp.xform[Transforms]);
+
+    MainTriangles[Transforms] := MainTriangles[-1];
+    cp.xform[Transforms].Clear;
+    cp.xform[Transforms].density := 0.5;
+    cp.xform[Transforms].vars[0] := 1;
+
+    for i := 0 to Transforms-1 do begin
+      cp.xform[Transforms].modWeights[i] := cp.xform[SelectedTriangle].modWeights[i];
+      cp.xform[SelectedTriangle].modWeights[i] := 0;
+    end;
+
+    for i := 0 to Transforms do
+      cp.xform[i].modWeights[Transforms] := 0;
+    cp.xform[SelectedTriangle].modWeights[Transforms] := 1;
+
+    cp.xform[Transforms].symmetry := 1;
+    cp.xform[Transforms].noPlot := cp.xform[SelectedTriangle].noPlot;
+    cp.xform[SelectedTriangle].noPlot := true;
+
+    SelectedTriangle := Transforms;
+
+    Inc(Transforms);
+    UpdateXformsList;
+    UpdateFlame(True);
+  end;
+end;
+
+procedure TEditForm.chkXformSoloClick(Sender: TObject);
+begin
+  if chkXformSolo.Checked then begin
+    if (SelectedTriangle < Transforms) then begin
+      cp.soloXform := SelectedTriangle;
+      UpdateFlame(true);
+    end;
+  end
+  else begin
+    cp.soloXform := -1;
+    UpdateFlame(true);
   end;
 end;
 
