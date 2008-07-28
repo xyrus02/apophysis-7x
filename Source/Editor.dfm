@@ -1572,6 +1572,7 @@ object EditForm: TEditForm
                 Height = 17
                 Caption = 'Retrace xform'
                 TabOrder = 2
+                OnClick = chkRetraceClick
               end
             end
           end

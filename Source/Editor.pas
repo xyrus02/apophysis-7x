@@ -359,6 +359,7 @@ type
     procedure mnuChaosSetAllClick(Sender: TObject);
     procedure mnuLinkPostxformClick(Sender: TObject);
     procedure chkXformSoloClick(Sender: TObject);
+    procedure chkRetraceClick(Sender: TObject);
 
   private
     TriangleView: TCustomDrawControl;
@@ -836,6 +837,7 @@ begin
       chkXformInvisible.Checked := noPlot;
       chkXformSolo.Enabled := true;
       chkRetrace.Enabled := not noPlot;
+      chkRetrace.Checked := RetraceXform;
       if cp.soloXform >= 0 then begin
         chkXformSolo.Checked := true;
         chkXformSolo.Caption := Format('Solo transform #%d', [cp.soloXform + 1]);
@@ -1384,7 +1386,7 @@ begin
         assert(trkVarPreviewRange.position > 0);
         assert(trkVarPreviewDensity.position > 0);
 
-        cp.xform[SelectedTriangle].prepare;
+        cp.xform[SelectedTriangle].Prepare;
 
         n := trkVarPreviewRange.position * trkVarPreviewDensity.position * 5;
         d1 := trkVarPreviewDensity.position * 5;
@@ -4383,7 +4385,10 @@ procedure TEditForm.VEVarsDrawCell(Sender: TObject; ACol, ARow: Integer;
 begin
   if (ARow > NRLOCVAR) and not (gdSelected in	State) then
   begin
-    VEVars.canvas.brush.Color := $ffe0e0;
+    if Arow > NumBuiltinVars then
+      VEVars.canvas.brush.Color := $e0ffff
+    else
+      VEVars.canvas.brush.Color := $ffe0e0;
     VEVars.canvas.fillRect(Rect);
     VEVars.canvas.TextOut(Rect.Left+2, Rect.Top+2, VEVars.Cells[ACol,ARow]);
   end;
@@ -4997,6 +5002,20 @@ begin
   else begin
     cp.soloXform := -1;
     UpdateFlame(true);
+  end;
+end;
+
+procedure TEditForm.chkRetraceClick(Sender: TObject);
+var
+  newValue: boolean;
+begin
+  if (SelectedTriangle < Transforms) then begin
+    newValue := chkRetrace.Checked;
+    if cp.xform[SelectedTriangle].RetraceXform <> newValue then begin
+      MainForm.UpdateUndo;
+      cp.xform[SelectedTriangle].RetraceXform := newValue;
+      UpdateFlame(true);
+    end;
   end;
 end;
 

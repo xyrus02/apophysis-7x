@@ -42,7 +42,7 @@ const
   RS_XO = 2;
   RS_VO = 3;
 
-  AppVersionString = 'Apophysis 2.08 beta pre4.5';
+  AppVersionString = 'Apophysis 2.08 beta pre5';
 
 type
   TMouseMoveState = (msUsual, msZoomWindow, msZoomOutWindow, msZoomWindowMove,
@@ -4248,10 +4248,18 @@ begin
 
       v := Attributes.Value('plotmode');
       if v <> '' then begin
-        if v = 'off' then
-          noPlot := true
-        else
-          noPlot := false;  
+        if v = 'off' then begin
+          noPlot := true;
+          RetraceXform := false;
+        end
+        else if v = 'retrace' then begin
+          noPlot := false;
+          RetraceXform := true;
+        end
+        else begin
+          noPlot := false;
+          RetraceXform := false;
+        end;
       end;
 
       for i := 0 to NRVAR - 1 do

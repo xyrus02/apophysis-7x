@@ -39,7 +39,7 @@ type
 
   TXYpoint = record
     x, y: double;
-    skip: boolean;
+    //skip: boolean;
   end;
   PXYpoint = ^TXYpoint;
 
@@ -80,8 +80,9 @@ type
     FFunctionList: array of TCalcFunction;
     FCalcFunctionList: array of TCalcFunction;
 
-    FTx, FTy: double;
-    FPx, FPy: double;
+    FTx, FTy: double; // must remain in this order
+    FPx, FPy: double; // some asm code relies on this
+
     FAngle: double;
     FSinA: double;
     FCosA: double;
@@ -2190,7 +2191,9 @@ begin
     Result := Result + '" ';
   end;
 
-  if noPlot = true then
+  if RetraceXform then
+    Result := Result + 'plotmode="retrace" '
+  else if noPlot then
     Result := Result + 'plotmode="off" ';
 
   Result := Result + '/>';

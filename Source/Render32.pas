@@ -106,7 +106,7 @@ var
   Bucket: PBucket32;
   MapColor: PColorMapColor;
 
-  p: TCPPoint;
+  p, q: TCPPoint;
   xf: TXForm;
 begin
 {$ifndef _ASM_}
@@ -133,22 +133,38 @@ end;
     xf := fcp.xform[0];//random(fcp.NumXForms)];
     for i := 0 to FUSE do begin
       xf := xf.PropTable[Random(PROP_TABLE_SIZE)];
+      if xf.RetraceXform then continue;
       xf.NextPoint(p);
     end;
 
     for i := 0 to SUB_BATCH_SIZE-1 do begin
       xf := xf.PropTable[Random(PROP_TABLE_SIZE)];
-      xf.NextPoint(p);
+      if xf.RetraceXform then begin
+        if xf.noPlot then continue;
 
-      if xf.noPlot then continue;
+        xf.NextPointTo(p, q);
 
-      px := p.x - camX0;
-      if (px < 0) or (px > camW) then continue;
-      py := p.y - camY0;
-      if (py < 0) or (py > camH) then continue;
+        px := q.x - camX0;
+        if (px < 0) or (px > camW) then continue;
+        py := q.y - camY0;
+        if (py < 0) or (py > camH) then continue;
 
-      Bucket := @buckets[Round(bhs * py)][Round(bws * px)];
-      MapColor := @ColorMap[Round(p.c * 255)];
+        Bucket := @buckets[Round(bhs * py)][Round(bws * px)];
+        MapColor := @ColorMap[Round(q.c * 255)];
+      end
+      else begin
+        xf.NextPoint(p);
+
+        if xf.noPlot then continue;
+
+        px := p.x - camX0;
+        if (px < 0) or (px > camW) then continue;
+        py := p.y - camY0;
+        if (py < 0) or (py > camH) then continue;
+
+        Bucket := @buckets[Round(bhs * py)][Round(bws * px)];
+        MapColor := @ColorMap[Round(p.c * 255)];
+      end;
 
       Inc(Bucket.Red,   MapColor.Red);
       Inc(Bucket.Green, MapColor.Green);
@@ -170,7 +186,7 @@ var
   Bucket: PBucket32;
   MapColor: PColorMapColor;
 
-  p: TCPPoint;
+  p, q: TCPPoint;
   xf: TXForm;
 begin
 {$ifndef _ASM_}
@@ -197,22 +213,38 @@ end;
     xf := fcp.xform[0];//random(fcp.NumXForms)];
     for i := 0 to FUSE do begin
       xf := xf.PropTable[Random(PROP_TABLE_SIZE)];
+      if xf.RetraceXform then continue;
       xf.NextPoint(p);
     end;
 
     for i := 0 to SUB_BATCH_SIZE-1 do begin
       xf := xf.PropTable[Random(PROP_TABLE_SIZE)];
-      xf.NextPoint(p);
+      if xf.RetraceXform then begin
+        if xf.noPlot then continue;
 
-      if xf.noPlot then continue;
+        xf.NextPointTo(p, q);
 
-      px := p.x * cosa + p.y * sina + rcX;
-      if (px < 0) or (px > camW) then continue;
-      py := p.y * cosa - p.x * sina + rcY;
-      if (py < 0) or (py > camH) then continue;
+        px := q.x * cosa + q.y * sina + rcX;
+        if (px < 0) or (px > camW) then continue;
+        py := q.y * cosa - q.x * sina + rcY;
+        if (py < 0) or (py > camH) then continue;
 
-      Bucket := @buckets[Round(bhs * py)][Round(bws * px)];
-      MapColor := @ColorMap[Round(p.c * 255)];
+        Bucket := @buckets[Round(bhs * py)][Round(bws * px)];
+        MapColor := @ColorMap[Round(q.c * 255)];
+      end
+      else begin
+        xf.NextPoint(p);
+
+        if xf.noPlot then continue;
+
+        px := p.x * cosa + p.y * sina + rcX;
+        if (px < 0) or (px > camW) then continue;
+        py := p.y * cosa - p.x * sina + rcY;
+        if (py < 0) or (py > camH) then continue;
+
+        Bucket := @buckets[Round(bhs * py)][Round(bws * px)];
+        MapColor := @ColorMap[Round(p.c * 255)];
+      end;
 
       Inc(Bucket.Red,   MapColor.Red);
       Inc(Bucket.Green, MapColor.Green);
@@ -262,16 +294,25 @@ end;
     xf := fcp.xform[0];//random(fcp.NumXForms)];
     for i := 0 to FUSE do begin
       xf := xf.PropTable[Random(PROP_TABLE_SIZE)];
+      if xf.RetraceXform then continue;
       xf.NextPoint(p);
     end;
 
     for i := 0 to SUB_BATCH_SIZE-1 do begin
       xf := xf.PropTable[Random(PROP_TABLE_SIZE)];
-      xf.NextPoint(p);
+      if xf.RetraceXform then begin
+        if xf.noPlot then continue;
 
-      if xf.noPlot then continue;
+        xf.NextPointTo(p, q);
+        finalXform.NextPoint(q);
+      end
+      else begin
+        xf.NextPoint(p);
 
-      finalXform.NextPointTo(p, q);
+        if xf.noPlot then continue;
+
+        finalXform.NextPointTo(p, q);
+      end;
 
       px := q.x - camX0;
       if (px < 0) or (px > camW) then continue;
@@ -328,16 +369,25 @@ end;
     xf := fcp.xform[0];//random(fcp.NumXForms)];
     for i := 0 to FUSE do begin
       xf := xf.PropTable[Random(PROP_TABLE_SIZE)];
+      if xf.RetraceXform then continue;
       xf.NextPoint(p);
     end;
 
     for i := 0 to SUB_BATCH_SIZE-1 do begin
       xf := xf.PropTable[Random(PROP_TABLE_SIZE)];
-      xf.NextPoint(p);
+      if xf.RetraceXform then begin
+        if xf.noPlot then continue;
 
-      if xf.noPlot then continue;
+        xf.NextPointTo(p, q);
+        finalXform.NextPoint(q);
+      end
+      else begin
+        xf.NextPoint(p);
 
-      finalXform.NextPointTo(p, q);
+        if xf.noPlot then continue;
+
+        finalXform.NextPointTo(p, q);
+      end;
 
       px := q.x * cosa + q.y * sina + rcX;
       if (px < 0) or (px > camW) then continue;

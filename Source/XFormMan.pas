@@ -8,6 +8,9 @@ uses
 const
   NRLOCVAR = 30;
 
+var
+  NumBuiltinVars: integer;
+
 function NrVar: integer;
 function Varnames(const index: integer): String;
 procedure RegisterVariation(Variation: TVariationLoader);
@@ -26,7 +29,7 @@ var
   VariationList: TList;
   VariableNames: TStringlist;
   loaderNum : integer;
-  
+
 ///////////////////////////////////////////////////////////////////////////////
 function NrVar: integer;
 begin

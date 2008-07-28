@@ -78,7 +78,7 @@ type
 
 type
   TPointsArray = array of TCPpoint;
-  TPointsXYArray = array of TXYpoint;
+  //TPointsXYArray = array of TXYpoint;
 
   P2Cpoint = ^T2Cpoint;
   T2CPointsArray = array of T2Cpoint;
@@ -129,7 +129,7 @@ type
     jitters: integer;
     gamma_treshold: double;
 
-//    PropTable: array of TXForm;//Integer;
+//    PropTable: array of TXForm;
     FAngle: Double;
     FTwoColorDimensions: Boolean;
 
@@ -155,10 +155,9 @@ type
 
 //    class function interpolate(cp1, cp2: TControlPoint; Time: double): TControlPoint; /// just for now
     procedure InterpolateX(cp1, cp2: TControlPoint; Tm: double);
-//    procedure Iterate_Old(NrPoints: integer; var Points: TPointsArray);
-    procedure IterateXY(NrPoints: integer; var Points: TPointsXYArray);
+//    procedure IterateXY(NrPoints: integer; var Points: TPointsXYArray);
     procedure IterateXYC(NrPoints: integer; var Points: TPointsArray);
-    procedure IterateXYCC(NrPoints: integer; var Points: T2CPointsArray);
+//    procedure IterateXYCC(NrPoints: integer; var Points: T2CPointsArray);
 
     procedure Prepare;
 //    procedure Testiterate(NrPoints: integer; var Points: TPointsArray);
@@ -352,6 +351,7 @@ begin
   end;
 end;
 
+(*
 procedure TControlPoint.IterateXY(NrPoints: integer; var Points: TPointsXYArray);
 var
   i: Integer;
@@ -372,37 +372,38 @@ begin
 
     pPoint := @Points[0];
 
-if UseFinalXform then
-    for i := 0 to NrPoints - 1 do begin
-      xf := xf.PropTable[Random(PROP_TABLE_SIZE)];
-      xf.NextPointXY(px,py);
-      if xf.noPlot then
-        pPoint^.x := MaxDouble // hack
-      else begin
-        pPoint^.X := px;
-        pPoint^.Y := py;
+    if UseFinalXform then
+      for i := 0 to NrPoints - 1 do begin
+        xf := xf.PropTable[Random(PROP_TABLE_SIZE)];
+        xf.NextPointXY(px,py);
+        if xf.noPlot then
+          pPoint^.x := MaxDouble // hack
+        else begin
+          pPoint^.X := px;
+          pPoint^.Y := py;
+        end;
+        finalXform.NextPointXY(pPoint^.X, pPoint^.y);
+        Inc(pPoint);
+      end
+    else
+      for i := 0 to NrPoints - 1 do begin
+        xf := xf.PropTable[Random(PROP_TABLE_SIZE)];
+        xf.NextPointXY(px,py);
+        if xf.noPlot then
+          pPoint^.x := MaxDouble // hack
+        else begin
+          pPoint.X := px;
+          pPoint.Y := py;
+        end;
+        Inc(pPoint);
       end;
-      finalXform.NextPointXY(pPoint^.X, pPoint^.y);
-      Inc(pPoint);
-    end
-else
-    for i := 0 to NrPoints - 1 do begin
-      xf := xf.PropTable[Random(PROP_TABLE_SIZE)];
-      xf.NextPointXY(px,py);
-      if xf.noPlot then
-        pPoint^.x := MaxDouble // hack
-      else begin
-        pPoint.X := px;
-        pPoint.Y := py;
-      end;
-      Inc(pPoint);
-    end
   except
     on EMathError do begin
       exit;
     end;
   end;
 end;
+*)
 
 procedure TControlPoint.IterateXYC(NrPoints: integer; var Points: TPointsArray);
 var
@@ -436,34 +437,52 @@ end;
     xf := xform[0];//random(NumXForms)];
     for i := 0 to FUSE do begin
       xf := xf.PropTable[Random(PROP_TABLE_SIZE)];
+      if xf.RetraceXform then continue;
       xf.NextPoint(p);
     end;
 
     pPoint := @Points[0];
 
-if UseFinalXform then
-    for i := 0 to NrPoints - 1 do begin
-      xf := xf.PropTable[Random(PROP_TABLE_SIZE)];
-      xf.NextPoint(p);
-      if xf.noPlot then
-        pPoint^.x := MaxDouble // hack
-      else
-        finalXform.NextPointTo(p, pPoint^);
-      Inc(pPoint);
-    end
-else
-    for i := 0 to NrPoints - 1 do begin
-      xf := xf.PropTable[Random(PROP_TABLE_SIZE)];
-      xf.NextPoint(p);
-      if xf.noPlot then
-        pPoint^.x := MaxDouble // hack
-      else begin
-        pPoint^.x := p.x;
-        pPoint^.y := p.y;
-        pPoint^.c := p.c;
+    if UseFinalXform then
+      for i := 0 to NrPoints - 1 do begin
+        xf := xf.PropTable[Random(PROP_TABLE_SIZE)];
+        if xf.RetraceXform then begin
+          if xf.noPlot then
+            pPoint^.x := MaxDouble // hack
+          else begin
+            xf.NextPointTo(p, pPoint^);
+            finalXform.NextPoint(pPoint^);
+          end;
+        end
+        else begin
+          xf.NextPoint(p);
+          if xf.noPlot then
+            pPoint^.x := MaxDouble // hack
+          else
+            finalXform.NextPointTo(p, pPoint^);
+        end;
+        Inc(pPoint);
+      end
+    else
+      for i := 0 to NrPoints - 1 do begin
+        xf := xf.PropTable[Random(PROP_TABLE_SIZE)];
+        if xf.RetraceXform then begin
+          if xf.noPlot then
+            pPoint^.x := MaxDouble // hack
+          else
+            xf.NextPointTo(p, pPoint^);
+        end
+        else begin
+          xf.NextPoint(p);
+          if xf.noPlot then
+            pPoint^.x := MaxDouble // hack
+          else begin
+            //pPoint^.x := p.x; pPoint^.y := p.y; pPoint^.c := p.c;
+            pPoint^ := p;
+          end;
+        end;
+        Inc(pPoint);
       end;
-      Inc(pPoint);
-    end
   except
     on EMathError do begin
       exit;
@@ -519,6 +538,7 @@ begin
 end;
 }
 
+{
 procedure TControlPoint.IterateXYCC(NrPoints: integer; var Points: T2CPointsArray);
 var
   i: Integer;
@@ -568,14 +588,14 @@ else
     end;
   end;
 end;
-
+}
 
 function TControlPoint.BlowsUp(NrPoints: integer): boolean;
 var
   i, n: Integer;
   px, py: double;
   minx, maxx, miny, maxy: double;
-  Points: TPointsXYArray;
+  Points: TPointsArray; //TPointsXYArray;
   CurrentPoint: PXYPoint;
 
   xf: TXForm;
@@ -862,7 +882,10 @@ begin
 
     end else if AnsiCompareText(CurrentToken, 'plotmode') = 0 then begin
       Inc(ParsePos);
-      xform[CurrentXForm].noPlot := StrToInt(ParseValues[ParsePos]) <> 0;
+      xform[CurrentXForm].noPlot := (ParseValues[ParsePos] = '1');
+    end else if AnsiCompareText(CurrentToken, 'retrace') = 0 then begin
+      Inc(ParsePos);
+      xform[CurrentXForm].RetraceXform := (ParseValues[ParsePos] = '1');
     end else begin
       OutputDebugString(Pchar('Unknown Token: ' + CurrentToken));
     end;
@@ -1011,7 +1034,7 @@ end;
 
 procedure TControlPoint.CalcBoundbox;
 var
-  Points: TPointsXYArray;
+  Points: TPointsArray; //TPointsXYArray;
   i, j: integer;
   deltax, minx, maxx: double;
   cntminx, cntmaxx: integer;
@@ -1040,7 +1063,7 @@ begin
 
     Prepare;
 
-    IterateXY(SUB_BATCH_SIZE, points);
+    IterateXYC(SUB_BATCH_SIZE, points);
 
     LimitOutSidePoints := Round(0.05 * SUB_BATCH_SIZE);
 
@@ -1127,7 +1150,7 @@ end;
 
 function CalcUPRMagn(const cp: TControlPoint): double;
 var
-  Points: TPointsXYArray;
+  Points: TPointsArray; //TPointsXYArray;
   i, j: integer;
   deltax, minx, maxx: double;
   cntminx, cntmaxx: integer;
@@ -1138,7 +1161,7 @@ var
 begin
   try
     SetLength(Points, SUB_BATCH_SIZE);
-    cp.iterateXY(SUB_BATCH_SIZE, Points);
+    cp.iterateXYC(SUB_BATCH_SIZE, Points);
 
     LimitOutSidePoints := Round(0.05 * SUB_BATCH_SIZE);
 
@@ -1591,6 +1614,7 @@ begin
       sl.Add(s);
 
       sl.Add(Format('plotmode %d', [Ifthen(noPlot, 1, 0)]));
+      sl.Add(Format('retrace %d', [Ifthen(RetraceXform, 1, 0)]));
 
     end;
   DecimalSeparator := OldDecimalSperator;
