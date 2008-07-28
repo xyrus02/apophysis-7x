@@ -1881,7 +1881,7 @@ object AboutForm: TAboutForm
     Top = 24
     Width = 58
     Height = 13
-    Caption = 'version 2.06'
+    Caption = 'version 2.08'
   end
   object Label3: TLabel
     Left = 120
@@ -1971,7 +1971,7 @@ object AboutForm: TAboutForm
     Top = 92
     Width = 110
     Height = 13
-    Caption = 'Copyright '#169' 2005-2007'
+    Caption = 'Copyright '#169' 2005-2008'
   end
   object Label7: TLabel
     Left = 140
