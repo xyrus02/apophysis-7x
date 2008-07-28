@@ -973,7 +973,7 @@ end;
 
 procedure TAdjustForm.txtAngleEnter(Sender: TObject);
 begin
-  EditBoxValue := txtVibrancy.Text;
+  EditBoxValue := txtAngle.Text;
 end;
 
 procedure TAdjustForm.txtAngleKeyPress(Sender: TObject; var Key: Char);
@@ -1938,9 +1938,11 @@ begin
   except
     exit;
   end;
-  MainForm.UpdateUndo;
-  cp.pixels_per_unit := v/100*PreviewImage.Width;
-  UpdateFlame;
+  if v > 0 then begin
+    MainForm.UpdateUndo;
+    cp.pixels_per_unit := v/100*PreviewImage.Width;
+    UpdateFlame;
+  end;
 end;
 
 // -----------------------------------------------------------------------------
