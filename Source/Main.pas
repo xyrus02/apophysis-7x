@@ -42,7 +42,7 @@ const
   RS_XO = 2;
   RS_VO = 3;
 
-  AppVersionString = 'Apophysis 2.08 beta pre5';
+  AppVersionString = 'Apophysis 2.08 beta pre6';
 
 type
   TMouseMoveState = (msUsual, msZoomWindow, msZoomOutWindow, msZoomWindowMove,
@@ -1368,6 +1368,9 @@ begin
 
     if cp1.vibrancy <> 1 then
       parameters := parameters + format('vibrancy="%g" ', [cp1.vibrancy]);
+
+    if cp1.soloXform >= 0 then
+      parameters := parameters + format('soloxform="%d" ', [cp1.soloXform]);
 
     if exporting then parameters := parameters +
       format('estimator_radius="%g" ', [cp1.estimator]) +
@@ -4067,15 +4070,7 @@ begin
   Tokens := TStringList.Create;
  try
 
-  if TagName='xformset' then // unused in this release...
-  begin
-    v := Attributes.Value('enabled');
-    if v <> '' then ParseCP.finalXformEnabled := (StrToInt(v) <> 0)
-    else ParseCP.finalXformEnabled := true;
-
-    inc(activeXformSet);
-  end
-  else if TagName='flame' then
+  if TagName='flame' then
   begin
     v := Attributes.value('name');
     if v <> '' then Parsecp.name := v else Parsecp.name := 'untitled';
@@ -4141,6 +4136,9 @@ begin
       Parsecp.background[1] := 0;
       Parsecp.background[2] := 0;
     end;
+
+    v := Attributes.Value('soloxform');
+    if v <> '' then Parsecp.soloXform := StrToInt(v);
 
     v := Attributes.Value('nick');
     if Trim(v) = '' then v := SheepNick;
@@ -4250,15 +4248,15 @@ begin
       if v <> '' then begin
         if v = 'off' then begin
           noPlot := true;
-          RetraceXform := false;
+          //RetraceXform := false;
         end
-        else if v = 'retrace' then begin
-          noPlot := false;
-          RetraceXform := true;
-        end
+//        else if v = 'retrace' then begin
+//          noPlot := false;
+//          RetraceXform := true;
+//        end
         else begin
           noPlot := false;
-          RetraceXform := false;
+          //RetraceXform := false;
         end;
       end;
 

@@ -422,7 +422,7 @@ object EditForm: TEditForm
           Top = 31
           Width = 170
           Height = 331
-          ActivePage = tabColors
+          ActivePage = tabVariations
           Align = alBottom
           Anchors = [akLeft, akTop, akRight, akBottom]
           MultiLine = True
@@ -1487,7 +1487,7 @@ object EditForm: TEditForm
             end
             object GroupBox2: TGroupBox
               Left = 8
-              Top = 182
+              Top = 168
               Width = 145
               Height = 77
               Caption = 'Variation preview'
@@ -1544,7 +1544,7 @@ object EditForm: TEditForm
               Left = 8
               Top = 104
               Width = 145
-              Height = 73
+              Height = 57
               Caption = 'Transform visibility'
               TabOrder = 2
               object chkXformInvisible: TCheckBox
@@ -1558,21 +1558,12 @@ object EditForm: TEditForm
               end
               object chkXformSolo: TCheckBox
                 Left = 8
-                Top = 48
+                Top = 32
                 Width = 129
                 Height = 17
                 Caption = 'Solo'
                 TabOrder = 1
                 OnClick = chkXformSoloClick
-              end
-              object chkRetrace: TCheckBox
-                Left = 8
-                Top = 32
-                Width = 129
-                Height = 17
-                Caption = 'Retrace xform'
-                TabOrder = 2
-                OnClick = chkRetraceClick
               end
             end
           end

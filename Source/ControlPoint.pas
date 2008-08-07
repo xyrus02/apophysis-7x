@@ -437,7 +437,7 @@ end;
     xf := xform[0];//random(NumXForms)];
     for i := 0 to FUSE do begin
       xf := xf.PropTable[Random(PROP_TABLE_SIZE)];
-      if xf.RetraceXform then continue;
+      //if xf.RetraceXform then continue;
       xf.NextPoint(p);
     end;
 
@@ -446,40 +446,24 @@ end;
     if UseFinalXform then
       for i := 0 to NrPoints - 1 do begin
         xf := xf.PropTable[Random(PROP_TABLE_SIZE)];
-        if xf.RetraceXform then begin
-          if xf.noPlot then
-            pPoint^.x := MaxDouble // hack
-          else begin
-            xf.NextPointTo(p, pPoint^);
-            finalXform.NextPoint(pPoint^);
-          end;
-        end
-        else begin
-          xf.NextPoint(p);
-          if xf.noPlot then
-            pPoint^.x := MaxDouble // hack
-          else
-            finalXform.NextPointTo(p, pPoint^);
-        end;
+        xf.NextPoint(p);
+
+        if xf.noPlot then
+          pPoint^.x := MaxDouble // hack
+        else
+          finalXform.NextPointTo(p, pPoint^);
+
         Inc(pPoint);
       end
     else
       for i := 0 to NrPoints - 1 do begin
         xf := xf.PropTable[Random(PROP_TABLE_SIZE)];
-        if xf.RetraceXform then begin
-          if xf.noPlot then
-            pPoint^.x := MaxDouble // hack
-          else
-            xf.NextPointTo(p, pPoint^);
-        end
+        xf.NextPoint(p);
+        if xf.noPlot then
+          pPoint^.x := MaxDouble // hack
         else begin
-          xf.NextPoint(p);
-          if xf.noPlot then
-            pPoint^.x := MaxDouble // hack
-          else begin
-            //pPoint^.x := p.x; pPoint^.y := p.y; pPoint^.c := p.c;
-            pPoint^ := p;
-          end;
+          //pPoint^.x := p.x; pPoint^.y := p.y; pPoint^.c := p.c;
+          pPoint^ := p;
         end;
         Inc(pPoint);
       end;
@@ -883,9 +867,9 @@ begin
     end else if AnsiCompareText(CurrentToken, 'plotmode') = 0 then begin
       Inc(ParsePos);
       xform[CurrentXForm].noPlot := (ParseValues[ParsePos] = '1');
-    end else if AnsiCompareText(CurrentToken, 'retrace') = 0 then begin
-      Inc(ParsePos);
-      xform[CurrentXForm].RetraceXform := (ParseValues[ParsePos] = '1');
+//    end else if AnsiCompareText(CurrentToken, 'retrace') = 0 then begin
+//      Inc(ParsePos);
+//      xform[CurrentXForm].RetraceXform := (ParseValues[ParsePos] = '1');
     end else begin
       OutputDebugString(Pchar('Unknown Token: ' + CurrentToken));
     end;
@@ -1072,6 +1056,7 @@ begin
     miny := 1E99;
     maxy := -1E99;
     for i := 0 to SUB_BATCH_SIZE - 1 do begin
+      if Points[i].x > 1e200 then continue;
       minx := min(minx, Points[i].x);
       maxx := max(maxx, Points[i].x);
       miny := min(miny, Points[i].y);
@@ -1092,6 +1077,7 @@ begin
       cntminy := 0;
       cntmaxy := 0;
       for i := 0 to SUB_BATCH_SIZE - 1 do begin
+        if Points[i].x > 1e200 then continue;
         px := points[i].x * cosa + points[i].y * sina;
         py := points[i].y * cosa - points[i].x * sina;
         if (Points[i].x < minx) then Inc(cntminx);
@@ -1614,7 +1600,7 @@ begin
       sl.Add(s);
 
       sl.Add(Format('plotmode %d', [Ifthen(noPlot, 1, 0)]));
-      sl.Add(Format('retrace %d', [Ifthen(RetraceXform, 1, 0)]));
+//      sl.Add(Format('retrace %d', [Ifthen(RetraceXform, 1, 0)]));
 
     end;
   DecimalSeparator := OldDecimalSperator;
@@ -1699,6 +1685,7 @@ begin
   zoom := 0;
   for i := 0 to NXFORMS do xform[i].Clear;
   FinalXformEnabled := false;
+  soloxform := -1;
 end;
 
 function TControlPoint.HasFinalXForm: boolean;

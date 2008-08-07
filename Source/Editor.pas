@@ -201,7 +201,6 @@ type
     GroupBox4: TGroupBox;
     chkXformInvisible: TCheckBox;
     chkXformSolo: TCheckBox;
-    chkRetrace: TCheckBox;
 
     procedure ValidateVariable;
     procedure vleVariablesValidate(Sender: TObject; ACol, ARow: Integer; const KeyName, KeyValue: string);
@@ -359,7 +358,7 @@ type
     procedure mnuChaosSetAllClick(Sender: TObject);
     procedure mnuLinkPostxformClick(Sender: TObject);
     procedure chkXformSoloClick(Sender: TObject);
-    procedure chkRetraceClick(Sender: TObject);
+//    procedure chkRetraceClick(Sender: TObject);
 
   private
     TriangleView: TCustomDrawControl;
@@ -836,8 +835,8 @@ begin
       chkXformInvisible.Enabled := true;
       chkXformInvisible.Checked := noPlot;
       chkXformSolo.Enabled := true;
-      chkRetrace.Enabled := not noPlot;
-      chkRetrace.Checked := RetraceXform;
+//      chkRetrace.Enabled := not noPlot;
+//      chkRetrace.Checked := RetraceXform;
       if cp.soloXform >= 0 then begin
         chkXformSolo.Checked := true;
         chkXformSolo.Caption := Format('Solo transform #%d', [cp.soloXform + 1]);
@@ -854,8 +853,8 @@ begin
       chkXformInvisible.Enabled := false;
       chkXformInvisible.Checked := false;
       chkXformSolo.Enabled := false;
-      chkRetrace.Checked := true;
-      chkRetrace.Enabled := false;
+//      chkRetrace.Checked := true;
+//      chkRetrace.Enabled := false;
     end;
     tbEnableFinalXform.Down := EnableFinalXform;
 
@@ -4993,18 +4992,21 @@ end;
 
 procedure TEditForm.chkXformSoloClick(Sender: TObject);
 begin
-  if chkXformSolo.Checked then begin
-    if (SelectedTriangle < Transforms) then begin
-      cp.soloXform := SelectedTriangle;
+  if chkXformSolo.Checked <> (cp.soloXform >=0) then begin
+    if chkXformSolo.Checked then begin
+      if (SelectedTriangle < Transforms) then begin
+        cp.soloXform := SelectedTriangle;
+        UpdateFlame(true);
+      end;
+    end
+    else begin
+      cp.soloXform := -1;
       UpdateFlame(true);
     end;
-  end
-  else begin
-    cp.soloXform := -1;
-    UpdateFlame(true);
   end;
 end;
 
+{
 procedure TEditForm.chkRetraceClick(Sender: TObject);
 var
   newValue: boolean;
@@ -5018,6 +5020,7 @@ begin
     end;
   end;
 end;
+}
 
 end.
 

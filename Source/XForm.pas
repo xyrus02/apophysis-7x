@@ -66,7 +66,8 @@ type
     postXswap: boolean;
 
     noPlot: boolean;
-    RetraceXform: boolean;
+    //RetraceXform: boolean;
+
 //    nx,ny,x,y: double;
 //    script: TatPascalScripter;
 
@@ -234,7 +235,7 @@ begin
     modWeights[i] := 1;
 
   noPlot := false;
-  RetraceXform := false;
+  //RetraceXform := false;
 end;
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -2146,7 +2147,7 @@ begin
     modWeights[i] := xform.modWeights[i];
 
   noPlot := xform.noPlot;
-  RetraceXform := xform.RetraceXform;
+  //RetraceXform := xform.RetraceXform;
 end;
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -2191,9 +2192,10 @@ begin
     Result := Result + '" ';
   end;
 
-  if RetraceXform then
-    Result := Result + 'plotmode="retrace" '
-  else if noPlot then
+//  if RetraceXform then
+//    Result := Result + 'plotmode="retrace" '
+//  else
+  if noPlot then
     Result := Result + 'plotmode="off" ';
 
   Result := Result + '/>';
