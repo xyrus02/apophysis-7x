@@ -3243,6 +3243,7 @@ begin
     DefineProp('Variation', tkFloat, GetTransformVarProc, SetTransformVarProc, nil, false, 1);
     DefineProp('Variable', tkFloat, GetTransformVariProc, SetTransformVariProc, nil, false, 1);
     DefineProp('Chaos', tkFloat, GetTransformChaosProc, SetTransformChaosProc, nil, false, 1);
+    DefineProp('PlotMode', tkInteger, SetTransformPlotModeProc, SetTransformPlotModeProc);
   end;
   Scripter.AddObject('Transform', Transform);
 
