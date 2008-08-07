@@ -93,7 +93,7 @@ uses
 {$R *.RES}
 
 begin
-  if now >= EncodeDate(2008, 8, 18) then begin
+  if now >= EncodeDate(2048, 8, 8) then begin
     ShowMessage('This version has expired. Please go to http://sourceforge.net/project/apophysis and download the latest version.');
     Halt
   end;

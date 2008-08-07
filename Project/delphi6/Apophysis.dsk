@@ -1,70 +1,34 @@
 [Closed Files]
-File_0=SourceModule,'C:\Home\Peter\My Projects\Apophysis\Source\Render32.pas',0,1,114,1,134,0,0
-File_1=SourceModule,'C:\Home\Peter\My Projects\Apophysis\Source\Render.pas',0,1,511,1,530,0,0
-File_2=SourceModule,'C:\Home\Peter\My Projects\Apophysis\Source\FastMM4.pas',0,1,3686,1,3705,0,0
-File_3=SourceModule,'C:\Home\Peter\My Projects\Apophysis\Source\Global.pas',0,1,45,1,66,0,0
-File_4=SourceModule,'C:\Home\Peter\My Projects\Apophysis\Source\Fullscreen.pas',0,1,222,31,193,0,0
-File_5=SourceModule,'C:\Home\Peter\My Projects\Apophysis\Source\varSuperShape.pas',0,1,1,1,1,0,0
-File_6=SourceModule,'C:\Home\Peter\My Projects\Apophysis\Source\BaseVariation.pas',0,1,4,1,1,0,0
-File_7=SourceModule,'C:\Home\Peter\My Projects\Apophysis\Source\varCurl.pas',0,1,22,1,1,0,0
-File_8=SourceModule,'C:\Home\Peter\My Projects\Apophysis\Source\varRings2.pas',0,1,1,1,1,0,0
-File_9=SourceModule,'C:\Home\Peter\My Projects\Apophysis\Source\varFan2.pas',0,1,1,1,1,0,0
+File_0=SourceModule,'C:\Home\Peter\My Projects\Apophysis\Source\varPolarTest.pas',0,1,61,81,71,0,0
+File_1=SourceModule,'C:\Home\Peter\My Projects\Apophysis\Source\BucketFillerThread.pas',0,1,55,18,64,0,0
+File_2=SourceModule,'C:\Home\Peter\My Projects\Apophysis\Source\RenderST.pas',0,1,105,10,116,0,0
+File_3=SourceModule,'C:\Home\Peter\My Projects\Apophysis\Source\RenderThread.pas',0,1,205,1,224,0,0
+File_4=SourceModule,'C:\Home\Peter\My Projects\Apophysis\Source\FormRender.pas',0,1,334,9,346,0,0
+File_5=SourceModule,'C:\Home\Peter\My Projects\Apophysis\Source\varGenericPlugin.pas',0,1,219,32,226,0,0
+File_6=SourceModule,'C:\Home\Peter\My Projects\Apophysis\Source\About.pas',0,1,4,13,20,0,0
+File_7=SourceModule,'C:\Home\Peter\My Projects\ApoLibStuff\pngimage\PngImage.pas',0,1,4260,1,4278,0,0
+File_8=SourceModule,'C:\Home\Peter\My Projects\Apophysis\Source\Render32fMT.pas',0,1,1,1,1,0,0
 
 [Modules]
-Module0=C:\Home\Peter\My Projects\Apophysis\Source\Render32MT.pas
+Module0=C:\Home\Peter\My Projects\Apophysis\Project\delphi7\Apophysis.dpr
 Module1=C:\Home\Peter\My Projects\Apophysis\Source\Render32f.pas
-Module2=C:\Home\Peter\My Projects\Apophysis\Source\Editor.pas
-Module3=C:\Home\Peter\My Projects\Apophysis\Source\ControlPoint.pas
-Module4=C:\Home\Peter\My Projects\Apophysis\Source\XFormMan.pas
-Module5=C:\Home\Peter\My Projects\Apophysis\Source\RenderST.pas
-Module6=C:\Home\Peter\My Projects\Apophysis\Source\XForm.pas
-Module7=C:\Home\Peter\My Projects\Apophysis\Source\BucketFillerThread.pas
-Module8=C:\Home\Peter\My Projects\Apophysis\Source\Render48.pas
-Module9=C:\Home\Peter\My Projects\Apophysis\Source\Render64.pas
-Module10=C:\Home\Peter\My Projects\Apophysis\Source\ScriptForm.pas
-Module11=C:\Home\Peter\My Projects\Apophysis\Source\RenderThread.pas
-Module12=C:\Home\Peter\My Projects\Apophysis\Source\FormRender.pas
-Module13=C:\Home\Peter\My Projects\Apophysis\Source\Main.pas
-Module14=C:\Home\Peter\My Projects\Apophysis\Project\delphi7\Apophysis.dpr
-Count=15
+Module2=C:\Home\Peter\My Projects\Apophysis\Source\Render48.pas
+Module3=C:\Home\Peter\My Projects\Apophysis\Source\Render64.pas
+Module4=C:\Home\Peter\My Projects\Apophysis\Source\Render32.pas
+Module5=C:\Home\Peter\My Projects\Apophysis\Source\XForm.pas
+Module6=C:\Home\Peter\My Projects\Apophysis\Source\ControlPoint.pas
+Module7=C:\Home\Peter\My Projects\Apophysis\Source\ScriptForm.pas
+Module8=C:\Home\Peter\My Projects\Apophysis\Source\Editor.pas
+Module9=C:\Home\Peter\My Projects\Apophysis\Source\Main.pas
+Count=10
 EditWindowCount=1
 
-[C:\Home\Peter\My Projects\Apophysis\Source\Render32MT.pas]
+[C:\Home\Peter\My Projects\Apophysis\Project\delphi7\Apophysis.dpr]
 ModuleType=SourceModule
 FormState=0
 FormOnTop=0
 
 [C:\Home\Peter\My Projects\Apophysis\Source\Render32f.pas]
-ModuleType=SourceModule
-FormState=0
-FormOnTop=0
-
-[C:\Home\Peter\My Projects\Apophysis\Source\Editor.pas]
-ModuleType=SourceModule
-FormState=1
-FormOnTop=0
-
-[C:\Home\Peter\My Projects\Apophysis\Source\ControlPoint.pas]
-ModuleType=SourceModule
-FormState=0
-FormOnTop=0
-
-[C:\Home\Peter\My Projects\Apophysis\Source\XFormMan.pas]
-ModuleType=SourceModule
-FormState=0
-FormOnTop=0
-
-[C:\Home\Peter\My Projects\Apophysis\Source\RenderST.pas]
-ModuleType=SourceModule
-FormState=0
-FormOnTop=0
-
-[C:\Home\Peter\My Projects\Apophysis\Source\XForm.pas]
-ModuleType=SourceModule
-FormState=0
-FormOnTop=0
-
-[C:\Home\Peter\My Projects\Apophysis\Source\BucketFillerThread.pas]
 ModuleType=SourceModule
 FormState=0
 FormOnTop=0
@@ -79,17 +43,27 @@ ModuleType=SourceModule
 FormState=0
 FormOnTop=0
 
+[C:\Home\Peter\My Projects\Apophysis\Source\Render32.pas]
+ModuleType=SourceModule
+FormState=0
+FormOnTop=0
+
+[C:\Home\Peter\My Projects\Apophysis\Source\XForm.pas]
+ModuleType=SourceModule
+FormState=0
+FormOnTop=0
+
+[C:\Home\Peter\My Projects\Apophysis\Source\ControlPoint.pas]
+ModuleType=SourceModule
+FormState=0
+FormOnTop=0
+
 [C:\Home\Peter\My Projects\Apophysis\Source\ScriptForm.pas]
 ModuleType=SourceModule
 FormState=0
 FormOnTop=0
 
-[C:\Home\Peter\My Projects\Apophysis\Source\RenderThread.pas]
-ModuleType=SourceModule
-FormState=0
-FormOnTop=0
-
-[C:\Home\Peter\My Projects\Apophysis\Source\FormRender.pas]
+[C:\Home\Peter\My Projects\Apophysis\Source\Editor.pas]
 ModuleType=SourceModule
 FormState=0
 FormOnTop=0
@@ -99,18 +73,13 @@ ModuleType=SourceModule
 FormState=0
 FormOnTop=0
 
-[C:\Home\Peter\My Projects\Apophysis\Project\delphi7\Apophysis.dpr]
-ModuleType=SourceModule
-FormState=0
-FormOnTop=0
-
 [C:\Program Files\Delphi\Projects\ProjectGroup1.bpg]
 FormState=0
 FormOnTop=0
 
 [EditWindow0]
-ViewCount=15
-CurrentView=10
+ViewCount=10
+CurrentView=0
 View0=0
 View1=1
 View2=2
@@ -121,11 +90,6 @@ View6=6
 View7=7
 View8=8
 View9=9
-View10=10
-View11=11
-View12=12
-View13=13
-View14=14
 MessageView=MessageView@EditWindow0
 Create=1
 Visible=1
@@ -140,64 +104,64 @@ ClientWidth=1404
 ClientHeight=906
 LeftPanelSize=0
 RightPanelSize=0
-BottomPanelSize=205
+BottomPanelSize=345
 BottomPanelClients=MessageView@EditWindow0,WatchWindow
-BottomPanelData=00000400000000007C0500000000000002CD00000000000000010000000000000000000000000100000000BE020000000000000100000000BE020000000000000100000000BE020000000000000100000000BE0200000B0000004D6573736167655669657701000000007C0500000B000000576174636857696E646F77FFFFFFFF
+BottomPanelData=00000400010000000B0000004D657373616765566965777C05000000000000025901000000000000010000000000000000000000000100000000BE020000000000000100000000BE020000000000000100000000BE020000000000000100000000BE020000000000000100000000BE020000000000000100000000BE020000000000000100000000BE020000000000000100000000BE020000000000000100000000BE0200000B0000004D6573736167655669657701000000007C0500000B000000576174636857696E646F77FFFFFFFF
 
 [View0]
 Module=C:\Home\Peter\My Projects\Apophysis\Project\delphi7\Apophysis.dpr
-CursorX=34
+CursorX=33
 CursorY=96
-TopLine=82
+TopLine=71
 LeftCol=1
 
 [View1]
 Module=C:\Home\Peter\My Projects\Apophysis\Source\Main.pas
-CursorX=49
-CursorY=45
-TopLine=19
+CursorX=10
+CursorY=39
+TopLine=33
 LeftCol=1
 
 [View2]
 Module=C:\Home\Peter\My Projects\Apophysis\Source\Editor.pas
-CursorX=34
-CursorY=4982
-TopLine=4978
+CursorX=1
+CursorY=5022
+TopLine=4990
 LeftCol=1
 
 [View3]
-Module=C:\Home\Peter\My Projects\Apophysis\Source\FormRender.pas
-CursorX=9
-CursorY=346
-TopLine=334
+Module=C:\Home\Peter\My Projects\Apophysis\Source\ScriptForm.pas
+CursorX=37
+CursorY=3246
+TopLine=3228
 LeftCol=1
 
 [View4]
-Module=C:\Home\Peter\My Projects\Apophysis\Source\RenderThread.pas
+Module=C:\Home\Peter\My Projects\Apophysis\Source\ControlPoint.pas
 CursorX=1
-CursorY=224
-TopLine=205
+CursorY=1080
+TopLine=1096
 LeftCol=1
 
 [View5]
-Module=C:\Home\Peter\My Projects\Apophysis\Source\ScriptForm.pas
-CursorX=1
-CursorY=2751
-TopLine=2745
+Module=C:\Home\Peter\My Projects\Apophysis\Source\XForm.pas
+CursorX=3
+CursorY=2199
+TopLine=2196
 LeftCol=1
 
 [View6]
-Module=C:\Home\Peter\My Projects\Apophysis\Source\ControlPoint.pas
+Module=C:\Home\Peter\My Projects\Apophysis\Source\Render32.pas
 CursorX=1
-CursorY=32
-TopLine=19
+CursorY=331
+TopLine=314
 LeftCol=1
 
 [View7]
 Module=C:\Home\Peter\My Projects\Apophysis\Source\Render64.pas
-CursorX=1
-CursorY=364
-TopLine=344
+CursorX=14
+CursorY=198
+TopLine=203
 LeftCol=1
 
 [View8]
@@ -214,46 +178,11 @@ CursorY=372
 TopLine=352
 LeftCol=1
 
-[View10]
-Module=C:\Home\Peter\My Projects\Apophysis\Source\Render32MT.pas
-CursorX=27
-CursorY=106
-TopLine=101
-LeftCol=1
-
-[View11]
-Module=C:\Home\Peter\My Projects\Apophysis\Source\BucketFillerThread.pas
-CursorX=18
-CursorY=64
-TopLine=55
-LeftCol=1
-
-[View12]
-Module=C:\Home\Peter\My Projects\Apophysis\Source\XForm.pas
-CursorX=1
-CursorY=1760
-TopLine=1742
-LeftCol=1
-
-[View13]
-Module=C:\Home\Peter\My Projects\Apophysis\Source\RenderST.pas
-CursorX=10
-CursorY=116
-TopLine=105
-LeftCol=1
-
-[View14]
-Module=C:\Home\Peter\My Projects\Apophysis\Source\XFormMan.pas
-CursorX=1
-CursorY=1
-TopLine=68
-LeftCol=1
-
 [Watches]
 Count=7
 Watch0='xf',256,0,18,1,0,'Watches'
 Watch1='result',256,0,18,1,0,'Watches'
-Watch2='parsecp.width',256,0,18,1,0,'Watches'
+Watch2='nrLocvar',256,0,18,1,0,'Watches'
 Watch3='message',256,0,18,1,0,'Watches'
 Watch4='nrThreads',256,0,18,1,0,'Watches'
 Watch5='self',256,0,18,1,0,'Watches'
@@ -265,15 +194,15 @@ WatchShowColumnHeaders=1
 Create=1
 Visible=1
 State=0
-Left=714
+Left=12
 Top=0
-Width=690
-Height=205
+Width=1392
+Height=345
 MaxLeft=-1
 MaxTop=-1
-ClientWidth=690
-ClientHeight=205
-TBDockHeight=205
+ClientWidth=1392
+ClientHeight=345
+TBDockHeight=345
 LRDockWidth=706
 Dockable=1
 
@@ -313,6 +242,22 @@ ClientWidth=231
 ClientHeight=903
 TBDockHeight=305
 LRDockWidth=438
+Dockable=1
+
+[Components]
+Left=240
+Top=237
+Width=301
+Height=678
+Create=1
+Visible=0
+State=0
+MaxLeft=-1
+MaxTop=-1
+ClientWidth=293
+ClientHeight=650
+TBDockHeight=678
+LRDockWidth=301
 Dockable=1
 
 [CPUWindow]
@@ -362,7 +307,7 @@ LRDockWidth=247
 Dockable=1
 SplitPos=93
 ArrangeBy=Name
-SelectedItem=Enabled
+SelectedItem=
 ExpandedItems=CommentStyle,EnabledButtons,HintParameter,LibOptions,NumberStyle,SyntaxStyles
 HiddenCategories=
 
@@ -428,8 +373,8 @@ Column3Width=428
 Create=1
 Visible=0
 State=0
-Left=2
-Top=114
+Left=52
+Top=172
 Width=186
 Height=352
 MaxLeft=-1
@@ -458,17 +403,17 @@ Dockable=1
 
 [MessageView@EditWindow0]
 Create=1
-Visible=1
+Visible=0
 State=0
 Left=12
 Top=0
 Width=686
-Height=205
+Height=345
 MaxLeft=-1
 MaxTop=-1
 ClientWidth=686
-ClientHeight=205
-TBDockHeight=205
+ClientHeight=345
+TBDockHeight=345
 LRDockWidth=443
 Dockable=1
 
