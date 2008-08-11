@@ -1754,6 +1754,7 @@ begin
 
   if viewDragMode then // graph panning
   begin
+    if (fx = oldx) and (fy = oldy) then exit;
     viewDragged := true;
     GcenterX := GcenterX - (fx - oldx);
     GcenterY := GcenterY - (fy - oldy);
