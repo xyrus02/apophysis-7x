@@ -212,8 +212,15 @@ end;
 
 ///////////////////////////////////////////////////////////////////////////////
 function TPluginVariation.ResetVariable(const Name: string) : boolean;
+var
+  dummy: double;
 begin
-  Result := PluginData.PluginVarResetVariable(MyVariation, PChar(Name));
+  if @PluginData.PluginVarResetVariable <> nil then
+    Result := PluginData.PluginVarResetVariable(MyVariation, PChar(Name))
+  else begin
+    dummy := 0;
+    Result := PluginData.PluginVarSetVariable(MyVariation,PChar(Name), dummy);
+  end;
 end;
 
 ///////////////////////////////////////////////////////////////////////////////
