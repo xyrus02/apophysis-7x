@@ -1065,6 +1065,7 @@ begin
       modWeights[Transforms-1] := 1;
     end;
     //
+
     if t = (Transforms - 1) then
     begin
       MainTriangles[t] := MainTriangles[Transforms];
@@ -1079,6 +1080,10 @@ begin
         cp.xform[i].Assign(cp.xform[i + 1]);
       end;
     end;
+
+    if cp.soloXform > t then Dec(cp.soloXform)
+    else if cp.soloXform = t then cp.soloXform := -1;
+
     Dec(Transforms);
     assert(cp.xform[transforms].density = 0); // cp.xform[transforms].density := 0;
   end;
