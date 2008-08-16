@@ -159,6 +159,8 @@ type
     procedure GetFlameBatchesProc(AMachine: TatVirtualMachine);
     procedure GetFlameFinalxformEnabledProc(AMachine: TatVirtualMachine);
     procedure SetFlameFinalxformEnabledProc(AMachine: TatVirtualMachine);
+    procedure GetFlameSoloXformProc(AMachine: TatVirtualMachine);
+    procedure SetFlameSoloXformProc(AMachine: TatVirtualMachine);
     procedure GetFlameAngleProc(AMachine: TatVirtualMachine);
     procedure SetFlameAngleProc(AMachine: TatVirtualMachine);
 
@@ -2392,6 +2394,20 @@ begin
     cp.finalXformEnabled := (GetInputArgAsInteger(0) <> 0);
 end;
 
+procedure TScriptEditor.GetFlameSoloXformProc(AMachine: TatVirtualMachine);
+begin
+  with AMachine do
+    ReturnOutPutArg(cp.soloXform);
+end;
+
+procedure TScriptEditor.SetFlameSoloXformProc(AMachine: TatVirtualMachine);
+begin
+  with AMachine do
+    cp.soloXform := GetInputArgAsInteger(0);
+    if (cp.soloXform < 0) or (cp.soloXform >= NumTransforms) then
+      cp.soloXform := -1;
+end;
+
 procedure TScriptEditor.GetFlameWidthProc(AMachine: TatVirtualMachine);
 begin
   with AMachine do
@@ -3206,7 +3222,7 @@ begin
     DefineProp('Batches', tkInteger, GetFlameBatchesProc, SetFlameBatchesProc);
     DefineProp('FinalXformEnabled', tkInteger, GetFlameFinalxformEnabledProc, SetFlameFinalxformEnabledProc);
     DefineProp('Angle', tkFloat, GetFlameAngleProc, SetFlameAngleProc);
-
+    DefineProp('SoloXform', tkInteger, GetFlameSoloXformProc, SetFlameSoloXformProc);
   end;
   Scripter.AddObject('Flame', Flame);
 
@@ -3243,7 +3259,7 @@ begin
     DefineProp('Variation', tkFloat, GetTransformVarProc, SetTransformVarProc, nil, false, 1);
     DefineProp('Variable', tkFloat, GetTransformVariProc, SetTransformVariProc, nil, false, 1);
     DefineProp('Chaos', tkFloat, GetTransformChaosProc, SetTransformChaosProc, nil, false, 1);
-    DefineProp('PlotMode', tkInteger, SetTransformPlotModeProc, SetTransformPlotModeProc);
+    DefineProp('PlotMode', tkInteger, GetTransformPlotModeProc, SetTransformPlotModeProc);
   end;
   Scripter.AddObject('Transform', Transform);
 
