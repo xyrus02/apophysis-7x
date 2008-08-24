@@ -1564,7 +1564,7 @@ begin
   sl.add(format('finalxformenabled %d', [ifthen(finalxformenabled, 1, 0)]));
   sl.add(format('soloxform %d', [soloXform]));
 
-  for i := 0 to NumXForms+1 do //NXFORMS do
+  for i := 0 to Min(NumXForms+1, NXFORMS) do
     with xform[i] do begin
       //if density = 0 then continue; - FinalXform has weight=0
 
