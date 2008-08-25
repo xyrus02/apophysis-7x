@@ -42,7 +42,7 @@ const
   RS_XO = 2;
   RS_VO = 3;
 
-  AppVersionString = 'Apophysis 2.08 beta';
+  AppVersionString = 'Apophysis 2.08 beta 2 pre2';
 
 type
   TMouseMoveState = (msUsual, msZoomWindow, msZoomOutWindow, msZoomWindowMove,
@@ -368,8 +368,8 @@ function DeleteEntry(Entry, FileName: string): boolean;
 function CleanIdentifier(ident: string): string;
 function CleanUPRTitle(ident: string): string;
 function GradientString(c: TColorMap): string;
-function PackVariations: int64;
-procedure UnpackVariations(v: int64);
+//function PackVariations: int64;
+//procedure UnpackVariations(v: int64);
 //procedure NormalizeWeights(var cp: TControlPoint);
 //procedure EqualizeWeights(var cp: TControlPoint);
 procedure MultMatrix(var s: TMatrix; const m: TMatrix);
@@ -466,6 +466,7 @@ begin
 
 end;
 
+(*
 function PackVariations: int64;
 { Packs the variation options into an integer with Linear as lowest bit }
 var
@@ -486,6 +487,7 @@ begin
   for i := 0 to NRVAR - 1 do
     Variations[i] := boolean(v shr i and 1);
 end;
+*)
 
 function GetWinVersion: TWin32Version;
 { Returns current version of a host Win32 platform }
@@ -2511,14 +2513,18 @@ begin
   Application.OnHelp := ApplicationOnHelp;
   AppPath := ExtractFilePath(Application.ExeName);
   CanDrawOnResize := False;
+
   ReadSettings;
+
   Dte := FormatDateTime('yymmdd', Now);
   if Dte <> RandomDate then
     RandomIndex := 0;
   RandomDate := Dte;
   mnuExit.ShortCut := TextToShortCut('Alt+F4');
-  if VariationOptions = 0 then VariationOptions := 16383; // it shouldn't hapen but just in case;
-  UnpackVariations(VariationOptions);
+
+  //if VariationOptions = 0 then VariationOptions := 16383; // it shouldn't hapen but just in case;
+  //UnpackVariations(VariationOptions);
+
   FillVariantMenu;
 
   tbQualityBox.Text := FloatToStr(defSampleDensity);
@@ -4034,7 +4040,7 @@ begin
 
   Assert(Count = 256, 'only 256 color Colormaps are supported at the moment');
   data := '';
-  for i := 0 to Length(in_data) do
+  for i := 1 to Length(in_data) do
   begin
     c := in_data[i];
     if c in ['0'..'9']+['A'..'F']+['a'..'f'] then data := data + c;
@@ -4070,7 +4076,15 @@ begin
   Tokens := TStringList.Create;
  try
 
-  if TagName='flame' then
+  if TagName='xformset' then // unused in this release...
+  begin
+    v := Attributes.Value('enabled');
+    if v <> '' then ParseCP.finalXformEnabled := (StrToInt(v) <> 0)
+    else ParseCP.finalXformEnabled := true;
+
+    inc(activeXformSet);
+  end
+  else if TagName='flame' then
   begin
     v := Attributes.value('name');
     if v <> '' then Parsecp.name := v else Parsecp.name := 'untitled';

@@ -878,11 +878,13 @@ begin
     if (i >= 0) and (i < NRVAR) then
     begin
       Variations[i] := v;
+{
       vars := PackVariations;
       if vars <> 0 then
         VariationOptions := vars
       else
         VariationOptions := 1;
+}
     end;
 
   end;

@@ -1,6 +1,6 @@
 {
      Apophysis Copyright (C) 2001-2004 Mark Townsend
-     Apophysis Copyright (C) 2005-2006 Ronald Hordijk, Piotr Borys, Peter Sdobnov     
+     Apophysis Copyright (C) 2005-2006 Ronald Hordijk, Piotr Borys, Peter Sdobnov
 
      This program is free software; you can redistribute it and/or modify
      it under the terms of the GNU General Public License as published by
@@ -29,6 +29,7 @@ implementation
 
 uses Windows, SysUtils, Forms, Registry, Global, Dialogs, XFormMan;
 
+(*
 procedure UnpackVariations(v: int64);
 { Unpacks the variation options form an integer }
 var
@@ -37,11 +38,14 @@ begin
   for i := 0 to NRVAR - 1 do
     Variations[i] := boolean(v shr i and 1);
 end;
+*)
 
 procedure ReadSettings;
 var
   Registry: TRegistry;
   DefaultPath: string;
+  i, maxVars: integer;
+  VariationOptions: int64;
 begin
   DefaultPath := ExtractFilePath(Application.Exename);
 //  ShowMessage(DefaultPath);
@@ -312,7 +316,7 @@ begin
       begin
         VariationOptions := VariationOptions or (int64(Registry.ReadInteger('VariationOptions2')) shl 32);
       end;
-      UnpackVariations(VariationOptions);
+//      UnpackVariations(VariationOptions);
 
       if Registry.ValueExists('MinNodes') then
       begin
@@ -581,7 +585,6 @@ begin
         InternalBitsPerSample := 0;
       end;
 
-
     end
     else
     begin
@@ -618,7 +621,7 @@ begin
       SymmetryOrder := 4;
       SymmetryNVars := 12;
       VariationOptions := 262143;
-      UnpackVariations(VariationOptions);
+//      UnpackVariations(VariationOptions);
       MinNodes := 2;
       MaxNodes := 10;
       MinHue := 0;
@@ -654,6 +657,24 @@ begin
       NrTreads := 1;
       UseNrThreads := 1;
       InternalBitsPerSample := 0;
+    end;
+    Registry.CloseKey;
+
+    SetLength(Variations, NRVAR);
+    if Registry.OpenKey('Software\' + APP_NAME + '\Variations', False) then
+    begin
+      for i := 0 to NRVAR-1 do begin
+      if Registry.ValueExists(Varnames(i)) then
+        Variations[i] := Registry.ReadBool(Varnames(i))
+      else
+        Variations[i] := false;
+      end;
+    end
+    else begin
+      if NRVAR >= 64 then maxVars := 63
+      else maxVars := NRVAR-1;
+      for i := 0 to maxVars do
+        Variations[i] := boolean(VariationOptions shr i and 1);
     end;
     Registry.CloseKey;
 
@@ -995,6 +1016,7 @@ end;
 procedure SaveSettings;
 var
   Registry: TRegistry;
+  i: integer;
 begin
   Registry := TRegistry.Create;
   try
@@ -1039,8 +1061,8 @@ begin
       Registry.WriteInteger('SymmetryType', SymmetryType);
       Registry.WriteInteger('SymmetryOrder', SymmetryOrder);
       Registry.WriteInteger('SymmetryNVars', SymmetryNVars);
-      Registry.WriteInteger('VariationOptions', VariationOptions);
-      Registry.WriteInteger('VariationOptions2', VariationOptions shr 32);
+//      Registry.WriteInteger('VariationOptions', VariationOptions);
+//      Registry.WriteInteger('VariationOptions2', VariationOptions shr 32);
       Registry.WriteInteger('ReferenceMode', ReferenceMode);
       Registry.WriteInteger('RotationMode', MainForm_RotationMode);
       Registry.WriteInteger('MinNodes', MinNodes);
@@ -1084,6 +1106,19 @@ begin
       Registry.WriteInteger('UseNrThreads', UseNrThreads);
       Registry.WriteInteger('InternalBitsPerSample', InternalBitsPerSample);
     end;
+    Registry.CloseKey;
+
+    if Registry.OpenKey('\Software\' + APP_NAME + '\Variations', True) then
+    begin
+      for i := 0 to NRVAR-1 do begin
+        if Registry.ValueExists(Varnames(i)) then
+          if Registry.ReadBool(Varnames(i)) = Variations[i] then
+            continue;
+        Registry.WriteBool(Varnames(i), Variations[i]);
+      end;
+    end;
+    Registry.CloseKey;
+
     { Editor }
     if Registry.OpenKey('\Software\' + APP_NAME + '\Forms\Editor', True) then
     begin
@@ -1099,6 +1134,8 @@ begin
       Registry.WriteBool('LockTransformAxis', TransformAxisLock);
       Registry.WriteBool('DoubleClickSetVars', DoubleClickSetVars);
     end;
+    Registry.CloseKey;
+
     { Display }
     if Registry.OpenKey('\Software\' + APP_NAME + '\Display', True) then
     begin
@@ -1113,6 +1150,8 @@ begin
       Registry.WriteFloat('PreviewMediumQuality', prevMediumQuality);
       Registry.WriteFloat('PreviewHighQuality', prevHighQuality);
     end;
+    Registry.CloseKey;
+
     { UPR }
     if Registry.OpenKey('\Software\' + APP_NAME + '\UPR', True) then
     begin
@@ -1125,6 +1164,8 @@ begin
       Registry.WriteInteger('FlameOversample', UPROversample);
       Registry.WriteBool('FlameAdjustDensity', UPRAdjustDensity);
     end;
+    Registry.CloseKey;
+
     if Registry.OpenKey('\Software\' + APP_NAME + '\Render', True) then
     begin
       Registry.WriteString('Path', renderPath);
@@ -1137,6 +1178,8 @@ begin
       Registry.WriteInteger('FileFormat', renderFileFormat);
       Registry.WriteInteger('BitsPerSample', renderBitsPerSample);
     end;
+    Registry.CloseKey;
+
   finally
     Registry.Free;
   end;
