@@ -320,7 +320,10 @@ begin
             filterValue := FFilter[ii, jj];
 
             bucket := GetBucket(bx + jj, by + ii);
-            ls := lsa[Min(1023, bucket.Count)];
+            if bucket.count < 1024 then
+              ls := lsa[bucket.Count]
+            else
+              ls := (k1 * log10(1 + fcp.White_level * bucket.count * k2)) / (fcp.White_level * bucket.count);
 
             fp[0] := fp[0] + filterValue * ls * bucket.Red;
             fp[1] := fp[1] + filterValue * ls * bucket.Green;
@@ -335,7 +338,10 @@ begin
         fp[3] := fcp.white_level * fp[3] / PREFILTER_WHITE;
       end else begin
         bucket := GetBucket(bx, by);
-        ls := lsa[Min(1023, bucket.count)] / PREFILTER_WHITE;
+        if bucket.count < 1024 then
+          ls := lsa[bucket.count] / PREFILTER_WHITE
+        else
+          ls := (k1 * log10(1 + fcp.White_level * bucket.count * k2)) / (fcp.White_level * bucket.count) / PREFILTER_WHITE;
 
         fp[0] := ls * bucket.Red;
         fp[1] := ls * bucket.Green;
