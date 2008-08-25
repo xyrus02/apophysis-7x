@@ -155,8 +155,8 @@ var
   SymmetryType: integer;
   SymmetryOrder: integer;
   SymmetryNVars: integer;
-  Variations: array[0..63] of boolean;
-  VariationOptions: int64;
+  Variations: array of boolean;
+  //VariationOptions: int64;
 
   MainForm_RotationMode: integer;
   PreserveQuality: boolean;

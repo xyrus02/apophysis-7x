@@ -376,7 +376,7 @@ begin
   udSymNVars.Position := SymmetryNVars;
 
   { Variations tab }
-  UnpackVariations(VariationOptions);
+  //UnpackVariations(VariationOptions);
   for i := 0 to NRVAR -1 do
     clbVarEnabled.Checked[i] := Variations[i];
 
@@ -416,22 +416,23 @@ end;
 
 procedure TOptionsForm.btnOKClick(Sender: TObject);
 var
-  v: int64;
+  vars: boolean;
   i: integer;
 begin
 
   { Variations tab }
   { Get option values from controls. Disallow bad values }
-  for i := 0 to NRVAR -1 do
+  vars := false;
+  for i := 0 to NRVAR-1 do begin
     Variations[i] := clbVarEnabled.Checked[i];
+    vars := vars or Variations[i];
+  end;
 
-  v := PackVariations;
-  if v <> 0 then VariationOptions := v
-  else
-  begin
-    Application.MessageBox('You must select at least one variation.', 'Apophysis', 48);
-    Tabs.ActivePage := VariationsPage;
-    Exit;
+  if vars = false then begin
+    //Application.MessageBox('You must select at least one variation.', 'Apophysis', 48);
+    //Tabs.ActivePage := VariationsPage;
+    //Exit;
+    Variations[0] := true;
   end;
 
   { General tab }
