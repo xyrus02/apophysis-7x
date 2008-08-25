@@ -136,6 +136,12 @@ begin
   finally
     Registry.Free;
   end;
+
+  FRenderer.Free; // weirdness!!! :-/
+  FRenderer := nil;
+  Image.Picture.Graphic := nil;
+  FCP.Free;
+  FCP := nil;
 end;
 
 ///////////////////////////////////////////////////////////////////////////////
