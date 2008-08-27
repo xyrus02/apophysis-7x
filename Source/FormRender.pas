@@ -439,6 +439,15 @@ begin
   begin
     path := ExtractFilePath(FileName);
     ext := ExtractFileExt(FileName);
+
+    if Assigned(Renderer) then begin
+      Output.Lines.Add(TimeToStr(Now) + 'Shutting down previous render...');
+      Renderer.Terminate;
+      Renderer.WaitFor;
+      Renderer.Free;
+      Renderer := nil;
+    end;
+
     for iCurrFlame := 0 to MainForm.ListView.Items.Count-1 do
     begin
       MainForm.ListView.ItemIndex := iCurrFlame;
@@ -465,12 +474,6 @@ begin
           Output.Lines.Add('To avoid slowdown (and possible memory problems) use BMP file format instead.');
         end;
 
-      if Assigned(Renderer) then begin
-        //Output.Lines.Add(TimeToStr(Now) + 'Shutting down previous render'); // hmm...?
-        //Renderer.Terminate;
-        Renderer.WaitFor;
-        Renderer.Free;
-      end;
       if not Assigned(Renderer) then
       begin
         // disable screensaver
@@ -494,8 +497,10 @@ begin
 
         if not bRenderAll then exit;
         if iCurrFlame = MainForm.ListView.Items.Count-1 then bRenderAll := false;
+
         Renderer := TRenderThread.Create;
         assert(Renderer <> nil);
+
         Renderer.BitsPerSample := BitsPerSample;
         if chkLimitMem.checked then
           Renderer.MaxMem := MaxMemory;//StrToInt(cbMaxMemory.text);
@@ -507,9 +512,11 @@ begin
         Renderer.Output := Output.Lines;
         Renderer.Resume;
         if bRenderAll then Renderer.WaitFor;
+        while Renderer <> nil do Application.ProcessMessages; // wait for HandleThreadCompletion
+
        except
         Output.Lines.Add(TimeToStr(Now) + ' : Rendering failed!');
-        Application.MessageBox('Error while rendering!', 'Apophysis', 48)
+        //Application.MessageBox('Error while rendering!', 'Apophysis', 48);
        end;
       end;
     end;
@@ -531,11 +538,13 @@ begin
       end;
 
     if Assigned(Renderer) then begin
-      Output.Lines.Add(TimeToStr(Now) + 'Shutting down previous render'); // hmm...?
+      Output.Lines.Add(TimeToStr(Now) + 'Shutting down previous render...');
       Renderer.Terminate;
       Renderer.WaitFor;
       Renderer.Free;
+      Renderer := nil;
     end;
+
     if not Assigned(Renderer) then
     begin
       // disable screensaver
@@ -572,9 +581,10 @@ begin
 
       Renderer.Output := Output.Lines;
       Renderer.Resume;
+
      except
       Output.Lines.Add(TimeToStr(Now) + ' : Rendering failed!');
-      Application.MessageBox('Error while rendering!', 'Apophysis', 48)
+      Application.MessageBox('Error while rendering!', 'Apophysis', 48);
      end;
     end;
   end;
