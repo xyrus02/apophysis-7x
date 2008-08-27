@@ -2213,6 +2213,8 @@ begin
   cp.center[1] := 0;
   txtCenterX.Text := '0';
   txtCenterY.Text := '0';
+  scrollCenterX.Position := 0;
+  scrollCenterY.Position := 0;
 
   UpdateFlame;
 end;
