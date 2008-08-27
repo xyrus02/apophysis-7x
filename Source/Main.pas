@@ -182,7 +182,7 @@ type
     View1: TMenuItem;
     tbShowAlpha: TToolButton;
     tbShowTrace: TToolButton;
-    ToolButton2: TToolButton;
+    tbTraceSeparator: TToolButton;
     mnuRenderAll: TMenuItem;
     procedure tbzoomoutwindowClick(Sender: TObject);
     procedure mnuimageClick(Sender: TObject);
@@ -2594,7 +2594,12 @@ begin
   end;
   if FileExists(AppPath + 'apophysis.rand') then
     DeleteFile(AppPath + 'apophysis.rand');
-  if (defFlameFile = '') or (not FileExists(defFlameFile)) then
+
+  // get filename from command line argument  
+  if ParamCount > 0 then openFile := ParamStr(1)
+  else openFile := defFlameFile;
+
+  if (openFile = '') or (not FileExists(openFile)) then
   begin
     MainCp.Width := Image.Width;
     MainCp.Height := Image.Height;
@@ -2607,8 +2612,7 @@ begin
   end
   else
   begin
-    OpenFile := defFlameFile;
-    if (LowerCase(ExtractFileExt(defFlameFile)) = '.apo') or (LowerCase(ExtractFileExt(defFlameFile)) = '.fla') then
+    if (LowerCase(ExtractFileExt(OpenFile)) = '.apo') or (LowerCase(ExtractFileExt(OpenFile)) = '.fla') then
     begin
       ListFlames(OpenFile, 1);
       OpenFileType := ftFla;
@@ -4206,7 +4210,7 @@ begin
   Tokens := TStringList.Create;
   try
     if (TagName = 'xform') or (TagName = 'finalxform') then
-     if (TagName = 'finalxform') and (FinalXformLoaded) then ShowMessage('ERROR: No xforms allowed after FinalXform!')
+     if {(TagName = 'finalxform') and} (FinalXformLoaded) then ShowMessage('ERROR: No xforms allowed after FinalXform!')
      else
     begin
       if (TagName = 'finalxform') or (activeXformSet > 0) then FinalXformLoaded := true;
@@ -4262,15 +4266,9 @@ begin
       if v <> '' then begin
         if v = 'off' then begin
           noPlot := true;
-          //RetraceXform := false;
         end
-//        else if v = 'retrace' then begin
-//          noPlot := false;
-//          RetraceXform := true;
-//        end
         else begin
           noPlot := false;
-          //RetraceXform := false;
         end;
       end;
 
