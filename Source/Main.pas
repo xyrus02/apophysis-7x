@@ -184,6 +184,8 @@ type
     tbShowTrace: TToolButton;
     tbTraceSeparator: TToolButton;
     mnuRenderAll: TMenuItem;
+    mnuBuiltinVars: TMenuItem;
+    mnuPluginVars: TMenuItem;
     procedure tbzoomoutwindowClick(Sender: TObject);
     procedure mnuimageClick(Sender: TObject);
     procedure mnuExitClick(Sender: TObject);
@@ -1371,6 +1373,9 @@ begin
     if cp1.vibrancy <> 1 then
       parameters := parameters + format('vibrancy="%g" ', [cp1.vibrancy]);
 
+    if cp1.gamma_threshold <> 0 then
+      parameters := parameters + format('gamma_threshold="%g" ', [cp1.gamma_threshold]);
+
     if cp1.soloXform >= 0 then
       parameters := parameters + format('soloxform="%d" ', [cp1.soloXform]);
 
@@ -1378,8 +1383,7 @@ begin
       format('estimator_radius="%g" ', [cp1.estimator]) +
       format('estimator_minimum="%g" ', [cp1.estimator_min]) +
       format('estimator_curve="%g" ', [cp1.estimator_curve]) +
-      format('temporal_samples="%d" ', [cp1.jitters]) +
-      format('gamma_threshold="%g" ', [cp1.gamma_treshold]);
+      format('temporal_samples="%d" ', [cp1.jitters]);
 
     FileList.Add('<flame name="' + CleanXMLName(cp1.name) + '" ' + parameters + '>');
    { Write transform parameters }
@@ -1427,7 +1431,7 @@ begin
     FileList := TStringList.Create;
     try
       FileList.LoadFromFile(filename);
-      if pos(title, FileList.Text) <> 0 then Result := true;
+      if pos('<flame name="' + title + '"', FileList.Text) <> 0 then Result := true;
     finally
       FileList.Free;
     end
@@ -1482,10 +1486,10 @@ begin
       try
         FileList.LoadFromFile(bakname);
 
-        if Pos(title, FileList.Text) <> 0 then
+        if Pos('<flame name="' + title + '"', FileList.Text) <> 0 then
         begin
           i := 0;
-          while Pos('name="' + title + '"', Trim(FileList[i])) = 0 do
+          while Pos('<flame name="' + title + '"', Trim(FileList[i])) = 0 do
             inc(i);
 
           p := 0;
@@ -1526,6 +1530,9 @@ begin
         FileList.SaveToFile(filename);
 
       finally
+        if FileExists(bakname) and not FileExists(filename) then
+          RenameFile(bakname, filename);
+
         FileList.Free;
       end;
     end
@@ -2571,6 +2578,7 @@ begin
   maincp.sample_density := defSampleDensity;
   maincp.spatial_oversample := defOversample;
   maincp.spatial_filter_radius := defFilterRadius;
+  maincp.gamma_threshold := defGammaThreshold;
   inc(MainSeed);
   RandSeed := MainSeed;
 
@@ -3960,7 +3968,7 @@ begin
       cp1.estimator_min := ExportEstimatorMin;
       cp1.estimator_curve := ExportEstimatorCurve;
       cp1.jitters := ExportJitters;
-      cp1.gamma_treshold := ExportGammaTreshold;
+      cp1.gamma_threshold := ExportGammaTreshold;
       FileList.Text := FlameToXML(cp1, true);
       FileList.SaveToFile(ChangeFileExt(ExportDialog.Filename, '.flame'));
       FileList.Clear;
@@ -4105,6 +4113,7 @@ begin
     else
       Parsecp.cmapindex := -1;
     ParseCP.hue_rotation := 1;
+
     v := Attributes.value('hue');
     if v <> '' then Parsecp.hue_rotation := StrToFloat(v);
     v := Attributes.Value('brightness');
@@ -4112,9 +4121,11 @@ begin
     v := Attributes.Value('gamma');
     if v <> '' then Parsecp.gamma := StrToFloat(v);
     v := Attributes.Value('vibrancy');
-
     if v <> '' then Parsecp.vibrancy := StrToFloat(v);
     if (LimitVibrancy) and (Parsecp.vibrancy > 1) then Parsecp.vibrancy := 1;
+    v := Attributes.Value('gamma_threshold');
+    if v <> '' then Parsecp.gamma_threshold := StrToFloat(v)
+    else Parsecp.gamma_threshold := 0;
 
     v := Attributes.Value('zoom');
     if v <> '' then Parsecp.zoom := StrToFloat(v);
@@ -4841,7 +4852,10 @@ begin
     NewMenuItem.GroupIndex := 2;
     NewMenuItem.RadioItem  := True;
     VarMenus[i] := NewMenuItem;
-    mnuvar.Add(NewMenuItem);
+    if i < NumBuiltinVars then
+      mnuBuiltinVars.Add(NewMenuItem)
+    else
+      mnuPluginVars.Add(NewMenuItem);
   end;
 end;
 

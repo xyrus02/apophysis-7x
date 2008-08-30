@@ -96,13 +96,13 @@ var
   EditorBkgColor, ReferenceTriangleColor: integer;
   GridColor1, GridColor2, HelpersColor: integer;
   ExtEditEnabled, TransformAxisLock: boolean;
-  DoubleClickSetVars: boolean;
   ShowAllXforms: boolean;
 
   { Display }
 
   defSampleDensity, defPreviewDensity: Double;
-  defGamma, defBrightness, defVibrancy, defFilterRadius: Double;
+  defGamma, defBrightness, defVibrancy,
+  defFilterRadius, defGammaThreshold: Double;
   defOversample: integer;
 
   { Render }

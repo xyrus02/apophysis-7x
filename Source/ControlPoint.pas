@@ -127,7 +127,7 @@ type
 
     estimator, estimator_min, estimator_curve: double; // density estimator.
     jitters: integer;
-    gamma_treshold: double;
+    gamma_threshold: double;
 
 //    PropTable: array of TXForm;
     FAngle: Double;
@@ -269,7 +269,7 @@ begin
   estimator_min := 0.0;
   estimator_curve := 0.4;
   jitters := 1;
-  gamma_treshold := 0.01;
+  gamma_threshold := defGammaThreshold;
 
   FTwoColorDimensions := False;
 
@@ -437,7 +437,6 @@ end;
     xf := xform[0];//random(NumXForms)];
     for i := 0 to FUSE do begin
       xf := xf.PropTable[Random(PROP_TABLE_SIZE)];
-      //if xf.RetraceXform then continue;
       xf.NextPoint(p);
     end;
 
@@ -866,10 +865,7 @@ begin
 
     end else if AnsiCompareText(CurrentToken, 'plotmode') = 0 then begin
       Inc(ParsePos);
-      xform[CurrentXForm].noPlot := (ParseValues[ParsePos] = '1');
-//    end else if AnsiCompareText(CurrentToken, 'retrace') = 0 then begin
-//      Inc(ParsePos);
-//      xform[CurrentXForm].RetraceXform := (ParseValues[ParsePos] = '1');
+      xform[CurrentXForm].noPlot := (StrToInt(ParseValues[ParsePos]) = 1);
     end else begin
       OutputDebugString(Pchar('Unknown Token: ' + CurrentToken));
     end;
@@ -1600,7 +1596,6 @@ begin
       sl.Add(s);
 
       sl.Add(Format('plotmode %d', [Ifthen(noPlot, 1, 0)]));
-//      sl.Add(Format('retrace %d', [Ifthen(RetraceXform, 1, 0)]));
 
     end;
   DecimalSeparator := OldDecimalSperator;
@@ -1622,6 +1617,7 @@ begin
   Result.nick := nick;
   Result.url := url;
   Result.Transparency := Transparency;
+  Result.gamma_threshold := gamma_threshold;
 
   for i := 0 to NXFORMS - 1 do
     Result.xform[i].assign(xform[i]);
@@ -1653,6 +1649,7 @@ begin
   name := cp1.name;
   nick := cp1.nick;
   url := cp1.url;
+  gamma_threshold := cp1.gamma_threshold;
 
   if KeepSizes then
     AdjustScale(w, h);

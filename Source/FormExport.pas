@@ -146,7 +146,7 @@ begin
   EstimatorMin := 0.0;
   EstimatorCurve := 0.4;
   Jitters := 1;
-  GammaTreshold := 0.01;
+  GammaTreshold := MainCP.gamma_threshold; //0.01;
   GetLocaleFormatSettings(LOCALE_SYSTEM_DEFAULT, FloatFormatSettings);
   txtEstimator.Text := FloatToStr(Estimator, FloatFormatSettings);
   txtEstimatorMin.Text := FloatToStr(EstimatorMin, FloatFormatSettings);
@@ -287,7 +287,7 @@ end;
 
 procedure TExportDialog.txtGammaTresholdChange(Sender: TObject);
 begin
-  GammaTreshold := 0.01;
+  //GammaTreshold := 0.01;
   try
     GammaTreshold := StrToFloat(txtGammaTreshold.Text, FloatFormatSettings);
   except

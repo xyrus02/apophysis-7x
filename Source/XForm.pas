@@ -33,13 +33,11 @@ const
 type
   TCPpoint = record
     x, y, c: double;
-    //invisible: boolean;
   end;
   PCPpoint = ^TCPpoint;
 
   TXYpoint = record
     x, y: double;
-    //skip: boolean;
   end;
   PXYpoint = ^TXYpoint;
 
@@ -66,7 +64,6 @@ type
     postXswap: boolean;
 
     noPlot: boolean;
-    //RetraceXform: boolean;
 
 //    nx,ny,x,y: double;
 //    script: TatPascalScripter;
@@ -1909,9 +1906,6 @@ begin
 
   px := FPx;
   py := FPy;
-
-//  if PlotMode <> keepPlot then
-//    skip := (PlotMode = neverPlot);
 end;
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -2147,7 +2141,6 @@ begin
     modWeights[i] := xform.modWeights[i];
 
   noPlot := xform.noPlot;
-  //RetraceXform := xform.RetraceXform;
 end;
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -2192,10 +2185,7 @@ begin
     Result := Result + '" ';
   end;
 
-//  if RetraceXform then
-//    Result := Result + 'plotmode="retrace" '
-//  else
-  if noPlot then
+  if noPlot = true then
     Result := Result + 'plotmode="off" ';
 
   Result := Result + '/>';

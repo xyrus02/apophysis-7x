@@ -135,6 +135,8 @@ type
     Bevel3: TBevel;
     pnlMasterScale: TPanel;
     editPPU: TEdit;
+    pnlGammaThreshold: TPanel;
+    txtGammaThreshold: TEdit;
     procedure FormCreate(Sender: TObject);
     procedure FormClose(Sender: TObject; var Action: TCloseAction);
     procedure FormDestroy(Sender: TObject);
@@ -264,6 +266,9 @@ type
     procedure PreviewImageMouseUp(Sender: TObject; Button: TMouseButton;
       Shift: TShiftState; X, Y: Integer);
     procedure PreviewImageDblClick(Sender: TObject);
+    procedure txtGammaThresholdKeyPress(Sender: TObject; var Key: Char);
+    procedure txtGammaThresholdEnter(Sender: TObject);
+    procedure txtGammaThresholdExit(Sender: TObject);
 
   private
     Resetting: boolean;
@@ -401,6 +406,8 @@ begin
 
     Resetting := False;
     editPPU.Text := Format('%.6g', [100*cp.pixels_per_unit/PreviewImage.Width]);
+
+    txtGammaThreshold.Text := Format('%.3g', [cp.gamma_threshold]);
   end; //***
   DrawPreview;
 end;
@@ -1938,9 +1945,10 @@ begin
   except
     exit;
   end;
-  if v > 0 then begin
+  v := v/100*PreviewImage.Width;
+  if (v > 0) and (cp.pixels_per_unit <> v) then begin
     MainForm.UpdateUndo;
-    cp.pixels_per_unit := v/100*PreviewImage.Width;
+    cp.pixels_per_unit := v;
     UpdateFlame;
   end;
 end;
@@ -1968,6 +1976,8 @@ begin
     pnlDragValue := cp.brightness
   else if (Sender = pnlVibrancy) then
     pnlDragValue := cp.vibrancy
+  else if (Sender = pnlGammaThreshold) then
+    pnlDragValue := cp.gamma_threshold
   else assert(false);
 
   pnlDragMode := true;
@@ -2040,6 +2050,12 @@ begin
     else if (Sender = pnlVibrancy) then
     begin
       scrollVibrancy.Position := trunc(v * 100);
+    end
+    else if (Sender = pnlGammaThreshold) then
+    begin
+      if v < 0 then v := 0;
+      cp.gamma_threshold := v;
+      txtGammaThreshold.Text := FloattoStr(v);
     end;
     //pEdit^.Text := FloatToStr(v);
     //pEdit.Refresh;
@@ -2097,15 +2113,21 @@ begin
   end
   else if (Sender = pnlGamma) then
   begin
-    scrollGamma.Position := 400;
+    scrollGamma.Position := Round(defGamma * 100);
   end
   else if (Sender = pnlBrightness) then
   begin
-    scrollBrightness.Position := 400;
+    scrollBrightness.Position := Round(defBrightness * 100);
   end
   else if (Sender = pnlVibrancy) then
   begin
-    scrollVibrancy.Position := 100;
+    scrollVibrancy.Position := Round(defVibrancy * 100);
+  end
+  else if (Sender = pnlGammaThreshold) then
+  begin
+    if cp.gamma_threshold = defGammaThreshold then exit;
+    cp.gamma_threshold := defGammaThreshold;
+    txtGammaThreshold.Text := FloatToStr(defGammaThreshold);
   end
   else assert(false);
 
@@ -2217,6 +2239,39 @@ begin
   scrollCenterY.Position := 0;
 
   UpdateFlame;
+end;
+
+procedure TAdjustForm.txtGammaThresholdEnter(Sender: TObject);
+begin
+  EditBoxValue := txtGammaThreshold.Text;
+end;
+
+procedure TAdjustForm.txtGammaThresholdExit(Sender: TObject);
+var
+  v: double;
+begin
+  try
+    v := strtofloat(txtGammaThreshold.Text);
+  except
+    exit;
+  end;
+  if v < 0 then v := 0;
+  if v <> cp.gamma_threshold then begin
+    MainForm.UpdateUndo;
+    cp.gamma_threshold := v;
+    UpdateFlame;
+    EditBoxValue := txtGammaThreshold.Text;
+  end;
+end;
+
+procedure TAdjustForm.txtGammaThresholdKeyPress(Sender: TObject;
+  var Key: Char);
+begin
+  if key=#13 then
+  begin
+    key := #0;
+    txtGammaThresholdExit(Sender);
+  end;
 end;
 
 end.

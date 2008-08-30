@@ -1,6 +1,7 @@
 {
      Apophysis Copyright (C) 2001-2004 Mark Townsend
      Apophysis Copyright (C) 2005-2006 Ronald Hordijk, Piotr Borys, Peter Sdobnov
+     Apophysis Copyright (C) 2007-2008 Piotr Borys, Peter Sdobnov
 
      This program is free software; you can redistribute it and/or modify
      it under the terms of the GNU General Public License as published by
@@ -16,7 +17,10 @@
      along with this program; if not, write to the Free Software
      Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
 }
+
 unit Tracer;
+
+//{$define TRACEFORM_HIDDEN}
 
 interface
 
@@ -70,8 +74,6 @@ procedure TTraceForm.FormCreate(Sender: TObject);
 var
   Registry: TRegistry;
 begin
-  TraceLevel := 0; // Tracer disabled in release version
-
   { Read position from registry }
   Registry := TRegistry.Create;
   try
@@ -87,8 +89,21 @@ begin
       if Registry.ValueExists('Height') then
         self.Height := Registry.ReadInteger('Height');
 
-//      if Registry.ValueExists('TraceLevel') then
-//        TraceLevel := Registry.ReadInteger('TraceLevel');
+{$ifndef TRACEFORM_HIDDEN}
+
+      if Registry.ValueExists('TraceLevel') then
+        TraceLevel := Registry.ReadInteger('TraceLevel')
+      else
+        TraceLevel := 0;
+
+{$else} // Tracer disabled in release version
+
+      TraceLevel := 0;
+      MainForm.tbShowTrace.Visible := false;
+      MainForm.tbTraceSeparator.Visible := false;
+
+{$endif}
+
     end;
     Registry.CloseKey;
   finally
