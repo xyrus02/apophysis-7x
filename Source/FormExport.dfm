@@ -289,9 +289,9 @@ object ExportDialog: TExportDialog
     object Label14: TLabel
       Left = 160
       Top = 16
-      Width = 39
+      Width = 43
       Height = 26
-      Caption = 'Gamma treshold'
+      Caption = 'Gamma threshold'
       WordWrap = True
     end
     object cmbDepth: TComboBox

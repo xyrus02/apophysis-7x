@@ -358,7 +358,8 @@ type
     procedure mnuChaosSetAllClick(Sender: TObject);
     procedure mnuLinkPostxformClick(Sender: TObject);
     procedure chkXformSoloClick(Sender: TObject);
-//    procedure chkRetraceClick(Sender: TObject);
+//    procedure btnInvisibleClick(Sender: TObject);
+//    procedure btnSoloClick(Sender: TObject);
 
   private
     TriangleView: TCustomDrawControl;
@@ -835,8 +836,6 @@ begin
       chkXformInvisible.Enabled := true;
       chkXformInvisible.Checked := noPlot;
       chkXformSolo.Enabled := true;
-//      chkRetrace.Enabled := not noPlot;
-//      chkRetrace.Checked := RetraceXform;
       if cp.soloXform >= 0 then begin
         chkXformSolo.Checked := true;
         chkXformSolo.Caption := Format('Solo transform #%d', [cp.soloXform + 1]);
@@ -1065,7 +1064,6 @@ begin
       modWeights[Transforms-1] := 1;
     end;
     //
-
     if t = (Transforms - 1) then
     begin
       MainTriangles[t] := MainTriangles[Transforms];
@@ -1679,9 +1677,6 @@ begin
     vleVariables.InsertRow(GetVariableNameAt(i), '0', True);
   end;
 
-//  for i:= 0 to NXFORMS - 1 do begin
-//    vleChaos.InsertRow(inttostr(i + 1), '1', True);
-//  end;
   vleChaos.InsertRow('to 1', '1', true);
 
   GraphZoom := 1;
@@ -3326,7 +3321,7 @@ begin
   if Sender = VEVars then
   begin
     v := cp.xform[SelectedTriangle].vars[n];
-    cp.xform[SelectedTriangle].vars[n] := IfThen(DoubleClickSetVars and (v = 0), 1, 0);
+    cp.xform[SelectedTriangle].vars[n] := IfThen(v = 0, 1, 0);
     //VEVars.Values[VarNames(n)] := '0';
     changed := (cp.xform[SelectedTriangle].vars[n] <> v);
   end
@@ -3621,6 +3616,15 @@ begin
     Ord('R'): btnResetPivotClick(Sender);
     Ord('P'): btnPickPivotClick(Sender);
     Ord('T'): tbPostXswapClick(Sender);
+
+    Ord('I'): // Invisible
+      begin
+        chkXformInvisible.Checked := not chkXformInvisible.Checked;
+      end;
+    Ord('S'): // Solo
+      begin
+        chkXformSolo.Checked := not chkXformSolo.Checked;
+      end;
 
     189: // "-"
       begin
@@ -4918,7 +4922,7 @@ begin
         noEdit := false;
         break;
       end;
-    end;  
+    end;
   if noEdit then exit;
 
   Mainform.UpdateUndo;
@@ -4948,7 +4952,7 @@ begin
         noEdit := false;
         break;
       end;
-    end;  
+    end;
   if noEdit then exit;
 
   Mainform.UpdateUndo;
@@ -5013,15 +5017,32 @@ begin
 end;
 
 {
-procedure TEditForm.chkRetraceClick(Sender: TObject);
+procedure TEditForm.btnInvisibleClick(Sender: TObject);
 var
-  newValue: boolean;
+  newMode: boolean;
 begin
-  if (SelectedTriangle < Transforms) then begin
-    newValue := chkRetrace.Checked;
-    if cp.xform[SelectedTriangle].RetraceXform <> newValue then begin
+  if (SelectedTriangle < Transforms) then
+  begin
+    newMode := btnInvisible.Down;
+    if cp.xform[SelectedTriangle].noPlot <> newMode then begin
       MainForm.UpdateUndo;
-      cp.xform[SelectedTriangle].RetraceXform := newValue;
+      cp.xform[SelectedTriangle].noPlot := newMode;
+      UpdateFlame(true);
+    end;
+  end;
+end;
+
+procedure TEditForm.btnSoloClick(Sender: TObject);
+begin
+  if btnSolo.Down <> (cp.soloXform >=0) then begin
+    if btnSolo.Down then begin
+      if (SelectedTriangle < Transforms) then begin
+        cp.soloXform := SelectedTriangle;
+        UpdateFlame(true);
+      end;
+    end
+    else begin
+      cp.soloXform := -1;
       UpdateFlame(true);
     end;
   end;

@@ -79,6 +79,7 @@ begin
       begin
         SavePath := DefaultPath + 'Parameters\My Flames.flame';
       end;
+
       if Registry.ValueExists('SmoothPaletteFile') then
       begin
         defSmoothPaletteFile := Registry.ReadString('SmoothPaletteFIle');
@@ -143,9 +144,11 @@ begin
       begin
         TryLength := 100000;
       end;
+
       if Registry.ValueExists('MinTransforms') then
       begin
         randMinTransforms := Registry.ReadInteger('MinTransforms');
+        if randMinTransforms <= 0 then randMinTransforms := 2;
       end
       else
       begin
@@ -154,14 +157,17 @@ begin
       if Registry.ValueExists('MaxTransforms') then
       begin
         randMaxTransforms := Registry.ReadInteger('MaxTransforms');
+        if randMaxTransforms < randMinTransforms then randMaxTransforms := randMinTransforms;
       end
       else
       begin
-        randMaxTransforms := 3;
+        randMaxTransforms := randMinTransforms + 1;
       end;
+
       if Registry.ValueExists('MutationMinTransforms') then
       begin
         mutantMinTransforms := Registry.ReadInteger('MutationMinTransforms');
+        if mutantMinTransforms <= 0 then mutantMinTransforms := 2;
       end
       else
       begin
@@ -170,11 +176,13 @@ begin
       if Registry.ValueExists('MutationMaxTransforms') then
       begin
         mutantMaxTransforms := Registry.ReadInteger('MutationMaxTransforms');
+        if mutantMaxTransforms < mutantMinTransforms then mutantMinTransforms := mutantMinTransforms;
       end
       else
       begin
-        mutantMaxTransforms := 6;
+        mutantMaxTransforms := mutantMinTransforms + 1;
       end;
+
       if Registry.ValueExists('RandomGradient') then
       begin
         randGradient := Registry.ReadInteger('RandomGradient');
@@ -242,6 +250,7 @@ begin
       if Registry.ValueExists('MutatePreviewQaulity') then
       begin
         MutatePrevQual := Registry.ReadInteger('MutatePreviewQaulity');
+        if MutatePrevQual <= 0 then MutatePrevQual := 1;
       end
       else
       begin
@@ -250,6 +259,7 @@ begin
       if Registry.ValueExists('AdjustPreviewQaulity') then
       begin
         AdjustPrevQual := Registry.ReadInteger('AdjustPreviewQaulity');
+        if AdjustPrevQual <= 0 then AdjustPrevQual := 1;
       end
       else
       begin
@@ -321,6 +331,7 @@ begin
       if Registry.ValueExists('MinNodes') then
       begin
         MinNodes := Registry.ReadInteger('MinNodes');
+        if MinNodes < 2 then MinNodes := 2;
       end
       else
       begin
@@ -353,6 +364,7 @@ begin
       if Registry.ValueExists('MaxNodes') then
       begin
         MaxNodes := Registry.ReadInteger('MaxNodes');
+        if MaxNodes < MinNodes then MaxNodes := MinNodes;
       end
       else
       begin
@@ -361,6 +373,7 @@ begin
       if Registry.ValueExists('MaxHue') then
       begin
         MaxHue := Registry.ReadInteger('MaxHue');
+        if MaxHue < 0 then MaxHue := 0;
       end
       else
       begin
@@ -369,6 +382,7 @@ begin
       if Registry.ValueExists('MaxSat') then
       begin
         MaxSat := Registry.ReadInteger('MaxSat');
+        if MaxSat < 0 then MaxSat := 0;
       end
       else
       begin
@@ -382,9 +396,11 @@ begin
       begin
         randGradientFile := ''
       end;
+
       if Registry.ValueExists('ReferenceMode') then
         ReferenceMode := Registry.ReadInteger('ReferenceMode')
       else ReferenceMode := 0;
+
       if Registry.ValueExists('RotationMode') then
         MainForm_RotationMode := Registry.ReadInteger('RotationMode')
       else MainForm_RotationMode := 0;
@@ -392,6 +408,7 @@ begin
       if Registry.ValueExists('MaxLum') then
       begin
         MaxLum := Registry.ReadInteger('MaxLum');
+        if MaxLum < 0 then MaxLum := 0;
       end
       else
       begin
@@ -400,6 +417,7 @@ begin
       if Registry.ValueExists('BatchSize') then
       begin
         BatchSize := Registry.ReadInteger('BatchSize');
+        if BatchSize <= 0 then BatchSize := 10;
       end
       else
       begin
@@ -432,6 +450,7 @@ begin
       if Registry.ValueExists('ExportWidth') then
       begin
         ExportWidth := Registry.ReadInteger('ExportWidth');
+        if ExportWidth <= 0 then ExportWidth := 640;
       end
       else
       begin
@@ -440,6 +459,7 @@ begin
       if Registry.ValueExists('ExportHeight') then
       begin
         ExportHeight := Registry.ReadInteger('ExportHeight');
+        if ExportHeight <= 0 then ExportHeight := 480;
       end
       else
       begin
@@ -448,6 +468,7 @@ begin
       if Registry.ValueExists('ExportDensity') then
       begin
         ExportDensity := Registry.ReadFloat('ExportDensity');
+        if ExportDensity <= 0 then ExportDensity := 100;
       end
       else
       begin
@@ -456,6 +477,7 @@ begin
       if Registry.ValueExists('ExportOversample') then
       begin
         ExportOversample := Registry.ReadInteger('ExportOversample');
+        if ExportOversample <= 0 then ExportOversample := 2;
       end
       else
       begin
@@ -464,6 +486,7 @@ begin
       if Registry.ValueExists('ExportFilter') then
       begin
         ExportFilter := Registry.ReadFloat('ExportFilter');
+        if ExportFilter <= 0 then ExportFilter := 0.6;
       end
       else
       begin
@@ -472,6 +495,7 @@ begin
       if Registry.ValueExists('ExportBatches') then
       begin
         ExportBatches := Registry.ReadInteger('ExportBatches');
+        if ExportBatches <= 0 then ExportBatches := 3;
       end
       else
       begin
@@ -571,11 +595,13 @@ begin
 
       if Registry.ValueExists('NrTreads') then begin
         NrTreads := Registry.ReadInteger('NrTreads');
+        if NrTreads <= 0 then NrTreads := 1;
       end else begin
         NrTreads := 1;
       end;
       if Registry.ValueExists('UseNrThreads') then begin
         UseNrThreads := Registry.ReadInteger('UseNrThreads');
+        if UseNrThreads <= 0 then UseNrThreads := 1;
       end else begin
         UseNrThreads := 1;
       end;
@@ -720,9 +746,6 @@ begin
       if Registry.ValueExists('LockTransformAxis') then
         TransformAxisLock := Registry.ReadBool('LockTransformAxis')
       else TransformAxisLock := true;
-      if Registry.ValueExists('DoubleClickSetVars') then
-        DoubleClickSetVars := Registry.ReadBool('DoubleClickSetVars')
-      else DoubleClickSetVars := true;
     end
     else begin
       UseTransformColors := false;
@@ -735,7 +758,6 @@ begin
       ReferenceTriangleColor := integer(clGray);
       ExtEditEnabled := true;
       TransformAxisLock := true;
-      DoubleClickSetVars := true;
     end;
     Registry.CloseKey;
 
@@ -952,6 +974,14 @@ begin
       begin
         defFilterRadius := 0.2;
       end;
+      if Registry.ValueExists('GammaThreshold') then
+      begin
+        defGammaThreshold := Registry.ReadFloat('GammaThreshold');
+      end
+      else
+      begin
+        defGammaThreshold := 0.01;
+      end;
       if Registry.ValueExists('Oversample') then
       begin
         defOversample := Registry.ReadInteger('Oversample');
@@ -1001,6 +1031,7 @@ begin
       defVibrancy := 1;
       defFilterRadius := 0.2;
       defOversample := 1;
+      defGammaThreshold := 0.01;
       defPreviewDensity := 0.5;
       prevLowQuality := 0.1;
       prevMediumQuality := 1;
@@ -1132,7 +1163,6 @@ begin
       Registry.WriteInteger('ReferenceTriangleColor', ReferenceTriangleColor);
       Registry.WriteBool('ExtendedEdit', ExtEditEnabled);
       Registry.WriteBool('LockTransformAxis', TransformAxisLock);
-      Registry.WriteBool('DoubleClickSetVars', DoubleClickSetVars);
     end;
     Registry.CloseKey;
 
@@ -1145,6 +1175,7 @@ begin
       Registry.WriteFloat('Vibrancy', defVibrancy);
       Registry.WriteFloat('FilterRadius', defFilterRadius);
       Registry.WriteInteger('Oversample', defOversample);
+      Registry.WriteFloat('GammaThreshold', defGammaThreshold);
       Registry.WriteFloat('PreviewDensity', defPreviewDensity);
       Registry.WriteFloat('PreviewLowQuality', prevLowQuality);
       Registry.WriteFloat('PreviewMediumQuality', prevMediumQuality);

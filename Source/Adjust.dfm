@@ -182,7 +182,7 @@ object AdjustForm: TAdjustForm
     Top = 132
     Width = 388
     Height = 129
-    ActivePage = TabSheet3
+    ActivePage = TabSheet2
     Align = alBottom
     Images = MainForm.Buttons
     TabOrder = 1
@@ -510,6 +510,34 @@ object AdjustForm: TAdjustForm
         OnMouseDown = DragPanelMouseDown
         OnMouseMove = DragPanelMouseMove
         OnMouseUp = DragPanelMouseUp
+      end
+      object pnlGammaThreshold: TPanel
+        Left = 232
+        Top = 76
+        Width = 106
+        Height = 21
+        Cursor = crHandPoint
+        Hint = 'Click and drag to change value'
+        BevelOuter = bvLowered
+        Caption = 'Gamma Threshold'
+        ParentShowHint = False
+        ShowHint = True
+        TabOrder = 11
+        OnDblClick = DragPanelDblClick
+        OnMouseDown = DragPanelMouseDown
+        OnMouseMove = DragPanelMouseMove
+        OnMouseUp = DragPanelMouseUp
+      end
+      object txtGammaThreshold: TEdit
+        Left = 338
+        Top = 76
+        Width = 41
+        Height = 21
+        TabOrder = 12
+        Text = '0'
+        OnEnter = txtGammaThresholdEnter
+        OnExit = txtGammaThresholdExit
+        OnKeyPress = txtGammaThresholdKeyPress
       end
     end
     object TabSheet3: TTabSheet

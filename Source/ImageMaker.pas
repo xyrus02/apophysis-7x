@@ -254,6 +254,7 @@ var
   gutter_width: integer;
   k1, k2: double;
   area: double;
+  frac, funcval: double;
 
   GetBucket: function(x, y: integer): TBucket64 of object;
   bucket: TBucket64;
@@ -266,6 +267,9 @@ begin
     gamma := 1 / fcp.gamma;
   vib := round(fcp.vibrancy * 256.0);
   notvib := 256 - vib;
+
+  if fcp.gamma_threshold <> 0 then
+    funcval := power(fcp.gamma_threshold, gamma - 1); { / fcp.gamma_threshold; }
 
   bgi[0] := round(fcp.background[0]);
   bgi[1] := round(fcp.background[1]);
@@ -352,8 +356,15 @@ begin
       Inc(bx, FOversample);
 
       if fcp.Transparency then begin // -------------------------- Transparency
+        // gamma linearization
         if (fp[3] > 0.0) then begin
-          alpha := power(fp[3], gamma);
+          if fp[3] <= fcp.gamma_threshold then begin
+            frac := fp[3] / fcp.gamma_threshold;
+            alpha := (1 - frac) * fp[3] * funcval + frac * power(fp[3], gamma);
+          end
+          else
+            alpha := power(fp[3], gamma);
+
           ls := vib * alpha / fp[3];
           ai := round(alpha * 256);
           if (ai <= 0) then goto zero_alpha // ignore all if alpha = 0
@@ -399,7 +410,14 @@ zero_alpha:
       end
       else begin // ------------------------------------------- No transparency
         if (fp[3] > 0.0) then begin
-          alpha := power(fp[3], gamma);
+          // gamma linearization
+          if fp[3] <= fcp.gamma_threshold then begin
+            frac := fp[3] / fcp.gamma_threshold;
+            alpha := (1 - frac) * fp[3] * funcval + frac * power(fp[3], gamma);
+          end
+          else
+            alpha := power(fp[3], gamma);
+
           ls := vib * alpha / fp[3];
           ai := round(alpha * 256);
           if (ai < 0) then ai := 0
