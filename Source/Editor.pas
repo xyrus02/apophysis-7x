@@ -1037,7 +1037,7 @@ end;
 
 procedure TEditForm.DeleteTriangle(t: integer);
 var
-  i, j: integer;
+  i, j, nmin, nmax: integer;
 begin
   if (t = Transforms) then
   begin
@@ -1056,6 +1056,37 @@ begin
   if (Transforms <= 1) then exit
   else begin
     MainForm.UpdateUndo;
+    // check for single "to" links
+    for i := 0 to Transforms-1 do
+    with cp.xform[i] do begin
+      nmin := NXFORMS;
+      nmax := -1;
+      for j := 0 to Transforms-1 do
+        if modWeights[j] <> 0 then begin
+          if j < nmin then nmin := j;
+          if j > nmax then nmax := j;
+        end;
+      if (nmin = nmax) and (nmin = t) then begin
+        for j := 0 to Transforms-1 do
+          modWeights[j] := cp.xform[t].modWeights[j];
+      end;
+    end;
+    // check for single "from" links
+    for i := 0 to Transforms-1 do
+    begin
+      if cp.xform[t].modWeights[i] = 0 then continue;
+      nmin := NXFORMS;
+      nmax := -1;
+      for j := 0 to Transforms-1 do
+        if cp.xform[j].modWeights[i] <> 0 then begin
+          if j < nmin then nmin := j;
+          if j > nmax then nmax := j;
+        end;
+      if (nmin = nmax) and (nmin = t) then begin
+        for j := 0 to Transforms-1 do
+          cp.xform[j].modWeights[i] := cp.xform[t].modWeights[i];
+      end;
+    end;
     // delete xform from all probability tables
     for i := 0 to Transforms-1 do
     with cp.xform[i] do begin
