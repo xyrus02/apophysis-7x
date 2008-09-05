@@ -199,6 +199,8 @@ begin
 end;
 
 procedure TRenderForm.HandleThreadCompletion(var Message: TMessage);
+var
+  tryAgain: boolean;
 begin
   Trace2(MsgComplete + IntToStr(message.LParam));
   if not assigned(Renderer) then begin
@@ -212,11 +214,18 @@ begin
 
   EndTime := Now;
 
-  try
-    Renderer.SaveImage(FileName);
-  except
-    Output.Lines.Add(TimeToStr(Now) + ' : Error saving image!');
-  end;
+  repeat
+    tryAgain := false;
+    try
+      Renderer.SaveImage(FileName);
+    except
+      on e: Exception do begin
+        Output.Lines.Add(TimeToStr(Now) + ' : Error saving image!');
+        tryAgain := (Application.MessageBox(PChar('An error occured while saving the image:' + #13#10 + e.Message +
+          #13#10 + 'Check your free disk space and try again.'), 'Error', MB_RETRYCANCEL or MB_ICONERROR) = IDRETRY);
+      end;
+    end;
+  until tryAgain = false;
 
   if PlaySoundOnRenderComplete then
     if RenderCompleteSoundFile <> '' then
