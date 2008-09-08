@@ -74,6 +74,7 @@ type
     chkLimitMem: TCheckBox;
     cbBitsPerSample: TComboBox;
     Output: TMemo;
+    chkThreadPriority: TCheckBox;
     procedure FormCreate(Sender: TObject);
     procedure FormDestroy(Sender: TObject);
     procedure btnRenderClick(Sender: TObject);
@@ -96,6 +97,7 @@ type
     procedure chkMaintainClick(Sender: TObject);
     procedure chkSaveIncompleteRendersClick(Sender: TObject);
     procedure cbBitsPerSampleSelect(Sender: TObject);
+    procedure chkThreadPriorityClick(Sender: TObject);
   private
     StartTime, EndTime, oldElapsed, edt: TDateTime;
     oldProg: double;
@@ -510,6 +512,11 @@ begin
         Renderer := TRenderThread.Create;
         assert(Renderer <> nil);
 
+        if chkThreadPriority.Checked then
+          Renderer.SetPriority(tpLower)
+        else
+          Renderer.SetPriority(tpNormal);
+
         Renderer.BitsPerSample := BitsPerSample;
         if chkLimitMem.checked then
           Renderer.MaxMem := MaxMemory;//StrToInt(cbMaxMemory.text);
@@ -577,6 +584,12 @@ begin
 
       Renderer := TRenderThread.Create;
       assert(Renderer <> nil);
+
+      if chkThreadPriority.Checked then
+        Renderer.SetPriority(tpLower)
+      else
+        Renderer.SetPriority(tpNormal);
+
       Renderer.BitsPerSample := BitsPerSample;
       if chkLimitMem.checked then
         Renderer.MaxMem := MaxMemory;//StrToInt(cbMaxMemory.text);
@@ -640,6 +653,7 @@ begin
   ShowMemoryStatus;
   Ratio := ImageWidth / ImageHeight;
   chkSaveIncompleteRenders.Checked := SaveIncompleteRenders;
+  chkThreadPriority.Checked := LowerRenderPriority;
 end;
 
 procedure TRenderForm.txtWidthChange(Sender: TObject);
@@ -1036,6 +1050,18 @@ begin
   BitsPerSample := cbBitsPerSample.ItemIndex;
 
   ShowMemoryStatus;
+end;
+
+procedure TRenderForm.chkThreadPriorityClick(Sender: TObject);
+begin
+  LowerRenderPriority := chkThreadPriority.Checked;
+
+  if Assigned(Renderer) then begin
+    if LowerRenderPriority then
+      Renderer.SetPriority(tpLower)
+    else
+      Renderer.SetPriority(tpNormal);
+  end;
 end;
 
 end.

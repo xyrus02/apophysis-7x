@@ -49,6 +49,7 @@ type
 
     procedure Pause; override;
     procedure UnPause; override;
+    procedure SetThreadPriority(p: TThreadPriority); override;
 
   end;
 
@@ -96,9 +97,9 @@ begin
 
       Progress(batchcounter / FNumBatches);
       bc := batchcounter;
-     finally
-       LeaveCriticalSection(CriticalSection);
-     end;
+    finally
+      LeaveCriticalSection(CriticalSection);
+    end;
   end;
 
   for i := 0 to High(WorkingThreads) do begin
@@ -165,11 +166,22 @@ begin
     WorkingThreads[i].Resume;
 end;
 
+procedure TBaseMTRenderer.SetThreadPriority(p: TThreadPriority);
+var
+  i: integer;
+begin
+  inherited;
+  
+  for i := 0 to High(WorkingThreads) do
+    WorkingThreads[i].Priority := p;
+end;
+
 ///////////////////////////////////////////////////////////////////////////////
 function TBaseMTRenderer.NewThread: TBucketFillerThread;
 begin
   Result := TBucketFillerThread.Create(fcp);
   assert(Result<>nil);
+  Result.Priority := FThreadPriority;
 
   if FCP.FAngle = 0 then
     Result.AddPointsProc := self.AddPointsToBuckets

@@ -73,6 +73,7 @@ type
     procedure Suspend;
     procedure Resume;
     procedure BreakRender;
+    procedure SetPriority(p: TThreadPriority);
 
 //    procedure GetBucketStats(var Stats: TBucketStats);
     procedure ShowBigStats;
@@ -203,6 +204,7 @@ begin
   end;
 
   FRenderer.SetCP(FCP);
+  FRenderer.SetThreadPriority(self.Priority);
 //  FRenderer.compatibility := compatibility;
   FRenderer.MinDensity := FMinDensity;
   FRenderer.OnProgress := FOnProgress;
@@ -273,6 +275,14 @@ procedure TRenderThread.BreakRender;
 begin
   if assigned(FRenderer) then
     FRenderer.BreakRender;
+end;
+
+procedure TRenderThread.SetPriority(p: TThreadPriority);
+begin
+  Priority := p;
+
+  if assigned(FRenderer) then
+    FRenderer.SetThreadPriority(p);
 end;
 
 ///////////////////////////////////////////////////////////////////////////////
