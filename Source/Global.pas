@@ -151,6 +151,7 @@ var
 
   SaveIncompleteRenders: boolean;
   ShowRenderStats: boolean;
+  LowerRenderPriority: boolean;
 
   SymmetryType: integer;
   SymmetryOrder: integer;

@@ -66,6 +66,7 @@ type
     FCompatibility: integer;
     FNumThreads: integer;
     FNumBatches: integer;//int64;
+    FThreadPriority: TThreadPriority;
 
     FMinDensity: double;
     FMinBatches: integer;
@@ -112,6 +113,7 @@ type
     procedure BreakRender; virtual;
     procedure Pause; virtual;
     procedure UnPause; virtual;
+    procedure SetThreadPriority(p: TThreadPriority); virtual;
 
     function Failed: boolean;
 
@@ -187,6 +189,7 @@ begin
   FNumSlices := 1;
   FSlice := 0;
   FStop := 0; // False;
+  FThreadPriority := tpNormal;
 
   FImageMaker := TImageMaker.Create;
 end;
@@ -240,6 +243,11 @@ begin
   RenderTime := RenderTime + (tNow - PauseTime);
 
   TimeTrace('Resuming render');
+end;
+
+procedure TBaseRenderer.SetThreadPriority(p: TThreadPriority);
+begin
+  FThreadPriority := p;
 end;
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -311,7 +319,7 @@ begin
     strOutput.Add(Format('  Max Count: %2.3f bits', [Abits]));
     strOutput.Add(Format('  Point hit ratio: %2.2f%%', [100.0*(TotalA/TotalSamples)]));
     if RenderTime > 0 then // hmm
-      strOutput.Add(Format('  Average speed: %n points per second', [TotalSamples / (RenderTime * 24 * 60 * 60)]));
+      strOutput.Add(Format('  Average speed: %n iterations per second', [TotalSamples / (RenderTime * 24 * 60 * 60)]));
     strOutput.Add('  Pure rendering time:' + TimeToString(RenderTime));
   end;
 end;
@@ -324,7 +332,7 @@ begin
 
   TotalSamples := int64(FNumBatches) * SUB_BATCH_SIZE; // * fcp.nbatches ?
   if RenderTime > 0 then // hmm
-    strOutput.Add(Format('  Average speed: %n points per second', [TotalSamples / (RenderTime * 24 * 60 * 60)]));
+    strOutput.Add(Format('  Average speed: %n iterations per second', [TotalSamples / (RenderTime * 24 * 60 * 60)]));
   strOutput.Add('  Pure rendering time:' + TimeToString(RenderTime));
 end;
 

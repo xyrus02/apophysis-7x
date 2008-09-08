@@ -556,6 +556,7 @@ begin
         ShowProgress := true;
       end;
 
+      { FormRender }
       if Registry.ValueExists('SaveIncompleteRenders') then begin
         SaveIncompleteRenders := Registry.ReadBool('SaveIncompleteRenders');
       end else begin
@@ -565,6 +566,11 @@ begin
         ShowRenderStats := Registry.ReadBool('ShowRenderStats');
       end else begin
         ShowRenderStats := false;
+      end;
+      if Registry.ValueExists('LowerRenderPriority') then begin
+        LowerRenderPriority := Registry.ReadBool('LowerRenderPriority');
+      end else begin
+        LowerRenderPriority := false;
       end;
 
       if Registry.ValueExists('PNGTransparency') then begin
@@ -675,6 +681,7 @@ begin
 //      ResizeOnLoad := False;
       ShowProgress := true;
       SaveIncompleteRenders := false;
+      LowerRenderPriority := false;
       ShowRenderStats := false;
       PNGTransparency := 1;
       ShowTransparency := False;
@@ -1132,6 +1139,7 @@ begin
 
       Registry.WriteBool('SaveIncompleteRenders', SaveIncompleteRenders);
       Registry.WriteBool('ShowRenderStats', ShowRenderStats);
+      Registry.WriteBool('LowerRenderPriority', LowerRenderPriority);
 
       Registry.WriteInteger('NrTreads', NrTreads);
       Registry.WriteInteger('UseNrThreads', UseNrThreads);
