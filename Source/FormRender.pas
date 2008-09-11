@@ -523,7 +523,7 @@ begin
         Renderer.OnProgress := OnProgress;
         Renderer.TargetHandle := self.Handle;
         Renderer.SetCP(cp);
-        Renderer.Priority := tpLower;
+        //Renderer.Priority := tpLower;
         Renderer.NrThreads := NrTreads;
         Renderer.Output := Output.Lines;
         Renderer.Resume;
@@ -598,7 +598,7 @@ begin
   //    Renderer.Output := Output.Lines;
   //    Renderer.Compatibility := compatibility;
       Renderer.SetCP(cp);
-      Renderer.Priority := tpLower;
+      //Renderer.Priority := tpLower;
       Renderer.NrThreads := NrTreads;
 
       Renderer.Output := Output.Lines;
