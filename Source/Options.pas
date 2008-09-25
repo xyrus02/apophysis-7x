@@ -328,7 +328,7 @@ begin
 
 
   { Editor }
-  rgReferenceMode.ItemIndex := ReferenceMode;
+//  rgReferenceMode.ItemIndex := ReferenceMode;
   chkUseXFormColor.checked := UseTransformColors;
   chkHelpers.Checked := HelpersEnabled;
   chkExtendedEdit.Checked := ExtEditEnabled;
@@ -465,7 +465,7 @@ begin
 
 
   // Editor
-  ReferenceMode := rgReferenceMode.ItemIndex;
+//  ReferenceMode := rgReferenceMode.ItemIndex;
   UseTransformColors := chkUseXFormColor.checked;
   HelpersEnabled := chkHelpers.Checked;
   ShowAllXforms := chkShowAllXforms.Checked;

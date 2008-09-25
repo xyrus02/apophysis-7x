@@ -1069,6 +1069,7 @@ begin
       if (nmin = nmax) and (nmin = t) then begin
         for j := 0 to Transforms-1 do
           modWeights[j] := cp.xform[t].modWeights[j];
+        if noPlot then noPlot := cp.xform[t].noPlot;  
       end;
     end;
     // check for single "from" links
