@@ -550,14 +550,14 @@ end;
 procedure TScriptEditor.GetFixedReference(AMachine: TatVirtualMachine);
 begin
   with AMachine do
-    ReturnOutPutArg(ReferenceMode = 0);
+    ReturnOutPutArg(true); //ReferenceMode = 0);
 end;
 
 procedure TScriptEditor.SetFixedReference(AMachine: TatVirtualMachine);
 begin
-  with AMachine do
-    if GetInputArgAsBoolean(0) then ReferenceMode := 0
-    else ReferenceMode := 1;
+//  with AMachine do
+//    if GetInputArgAsBoolean(0) then ReferenceMode := 0
+//    else ReferenceMode := 1;
 end;
 
 procedure TScriptEditor.GetSampleDensity(AMachine: TatVirtualMachine);

@@ -405,7 +405,7 @@ object OptionsForm: TOptionsForm
       end
       object rgReferenceMode: TRadioGroup
         Left = 160
-        Top = 4
+        Top = 76
         Width = 145
         Height = 69
         Caption = 'Reference Triangle'
@@ -415,10 +415,11 @@ object OptionsForm: TOptionsForm
           'Proportional'
           'Wandering (old-style)')
         TabOrder = 1
+        Visible = False
       end
       object GroupBox21: TGroupBox
         Left = 160
-        Top = 77
+        Top = 4
         Width = 145
         Height = 65
         Caption = 'Editor defaults'
@@ -508,58 +509,58 @@ object OptionsForm: TOptionsForm
         Caption = 'Rendering'
         TabOrder = 0
         object lblSampleDensity: TLabel
-          Left = 56
+          Left = 59
           Top = 19
-          Width = 41
+          Width = 38
           Height = 13
           Alignment = taRightJustify
           Caption = 'Quality:'
         end
         object lblGamma: TLabel
-          Left = 56
+          Left = 58
           Top = 43
-          Width = 41
+          Width = 39
           Height = 13
           Alignment = taRightJustify
           Caption = 'Gamma:'
         end
         object lblBrightness: TLabel
-          Left = 40
+          Left = 43
           Top = 67
-          Width = 57
+          Width = 54
           Height = 13
           Alignment = taRightJustify
           Caption = 'Brightness:'
         end
         object lblVibrancy: TLabel
-          Left = 48
+          Left = 52
           Top = 91
-          Width = 49
+          Width = 45
           Height = 13
           Alignment = taRightJustify
           Caption = 'Vibrancy:'
         end
         object lblOversample: TLabel
-          Left = 32
+          Left = 36
           Top = 139
-          Width = 65
+          Width = 61
           Height = 13
           Alignment = taRightJustify
           Caption = 'Oversample:'
         end
         object lblFilterRadius: TLabel
-          Left = 32
+          Left = 34
           Top = 163
-          Width = 65
+          Width = 63
           Height = 13
           Alignment = taRightJustify
           Caption = 'Filter Radius:'
         end
         object lblGammaThreshold: TLabel
-          Left = 8
+          Left = 10
           Top = 115
-          Width = 89
-          Height = 14
+          Width = 87
+          Height = 13
           Alignment = taRightJustify
           Caption = 'Gamma threshold:'
           WordWrap = True

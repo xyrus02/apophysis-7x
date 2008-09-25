@@ -397,9 +397,9 @@ begin
         randGradientFile := ''
       end;
 
-      if Registry.ValueExists('ReferenceMode') then
-        ReferenceMode := Registry.ReadInteger('ReferenceMode')
-      else ReferenceMode := 0;
+//      if Registry.ValueExists('ReferenceMode') then
+//        ReferenceMode := Registry.ReadInteger('ReferenceMode')
+//      else ReferenceMode := 0;
 
       if Registry.ValueExists('RotationMode') then
         MainForm_RotationMode := Registry.ReadInteger('RotationMode')
@@ -620,7 +620,7 @@ begin
     end
     else
     begin
-      ReferenceMode := 0;
+//      ReferenceMode := 0;
       MainForm_RotationMode := 0;
       EditPrevQual := 1;
       MutatePrevQual := 1;
@@ -1101,7 +1101,7 @@ begin
       Registry.WriteInteger('SymmetryNVars', SymmetryNVars);
 //      Registry.WriteInteger('VariationOptions', VariationOptions);
 //      Registry.WriteInteger('VariationOptions2', VariationOptions shr 32);
-      Registry.WriteInteger('ReferenceMode', ReferenceMode);
+//      Registry.WriteInteger('ReferenceMode', ReferenceMode);
       Registry.WriteInteger('RotationMode', MainForm_RotationMode);
       Registry.WriteInteger('MinNodes', MinNodes);
       Registry.WriteInteger('MinHue', MinHue);
@@ -1139,7 +1139,7 @@ begin
 
       Registry.WriteBool('SaveIncompleteRenders', SaveIncompleteRenders);
       Registry.WriteBool('ShowRenderStats', ShowRenderStats);
-      Registry.WriteBool('LowerRenderPriority', LowerRenderPriority);
+//      Registry.WriteBool('LowerRenderPriority', LowerRenderPriority);
 
       Registry.WriteInteger('NrTreads', NrTreads);
       Registry.WriteInteger('UseNrThreads', UseNrThreads);
