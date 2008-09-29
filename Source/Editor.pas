@@ -201,6 +201,7 @@ type
     GroupBox4: TGroupBox;
     chkXformInvisible: TCheckBox;
     chkXformSolo: TCheckBox;
+    mnuChaosRebuild: TMenuItem;
 
     procedure ValidateVariable;
     procedure vleVariablesValidate(Sender: TObject; ACol, ARow: Integer; const KeyName, KeyValue: string);
@@ -358,6 +359,7 @@ type
     procedure mnuChaosSetAllClick(Sender: TObject);
     procedure mnuLinkPostxformClick(Sender: TObject);
     procedure chkXformSoloClick(Sender: TObject);
+    procedure mnuChaosRebuildClick(Sender: TObject);
 //    procedure btnInvisibleClick(Sender: TObject);
 //    procedure btnSoloClick(Sender: TObject);
 
@@ -836,6 +838,7 @@ begin
       chkXformInvisible.Enabled := true;
       chkXformInvisible.Checked := noPlot;
       chkXformSolo.Enabled := true;
+
       if cp.soloXform >= 0 then begin
         chkXformSolo.Checked := true;
         chkXformSolo.Caption := Format('Solo transform #%d', [cp.soloXform + 1]);
@@ -852,8 +855,6 @@ begin
       chkXformInvisible.Enabled := false;
       chkXformInvisible.Checked := false;
       chkXformSolo.Enabled := false;
-//      chkRetrace.Checked := true;
-//      chkRetrace.Enabled := false;
     end;
     tbEnableFinalXform.Down := EnableFinalXform;
 
@@ -1056,38 +1057,42 @@ begin
   if (Transforms <= 1) then exit
   else begin
     MainForm.UpdateUndo;
-    // check for single "to" links
-    for i := 0 to Transforms-1 do
-    with cp.xform[i] do begin
-      nmin := NXFORMS;
-      nmax := -1;
-      for j := 0 to Transforms-1 do
-        if modWeights[j] <> 0 then begin
-          if j < nmin then nmin := j;
-          if j > nmax then nmax := j;
-        end;
-      if (nmin = nmax) and (nmin = t) then begin
+
+    if RebuildXaosLinks then begin
+      // check for single "to" links
+      for i := 0 to Transforms-1 do
+      with cp.xform[i] do begin
+        nmin := NXFORMS;
+        nmax := -1;
         for j := 0 to Transforms-1 do
-          modWeights[j] := cp.xform[t].modWeights[j];
-        if noPlot then noPlot := cp.xform[t].noPlot;  
+          if modWeights[j] <> 0 then begin
+            if j < nmin then nmin := j;
+            if j > nmax then nmax := j;
+          end;
+        if (nmin = nmax) and (nmin = t) then begin
+          for j := 0 to Transforms-1 do
+            modWeights[j] := cp.xform[t].modWeights[j];
+          if noPlot then noPlot := cp.xform[t].noPlot;
+        end;
+      end;
+      // check for single "from" links
+      for i := 0 to Transforms-1 do
+      begin
+        if cp.xform[t].modWeights[i] = 0 then continue;
+        nmin := NXFORMS;
+        nmax := -1;
+        for j := 0 to Transforms-1 do
+          if cp.xform[j].modWeights[i] <> 0 then begin
+            if j < nmin then nmin := j;
+            if j > nmax then nmax := j;
+          end;
+        if (nmin = nmax) and (nmin = t) then begin
+          for j := 0 to Transforms-1 do
+            cp.xform[j].modWeights[i] := cp.xform[t].modWeights[i];
+        end;
       end;
     end;
-    // check for single "from" links
-    for i := 0 to Transforms-1 do
-    begin
-      if cp.xform[t].modWeights[i] = 0 then continue;
-      nmin := NXFORMS;
-      nmax := -1;
-      for j := 0 to Transforms-1 do
-        if cp.xform[j].modWeights[i] <> 0 then begin
-          if j < nmin then nmin := j;
-          if j > nmax then nmax := j;
-        end;
-      if (nmin = nmax) and (nmin = t) then begin
-        for j := 0 to Transforms-1 do
-          cp.xform[j].modWeights[i] := cp.xform[t].modWeights[i];
-      end;
-    end;
+      
     // delete xform from all probability tables
     for i := 0 to Transforms-1 do
     with cp.xform[i] do begin
@@ -1095,7 +1100,7 @@ begin
         modWeights[j] := modWeights[j+1];
       modWeights[Transforms-1] := 1;
     end;
-    //
+
     if t = (Transforms - 1) then
     begin
       MainTriangles[t] := MainTriangles[Transforms];
@@ -1710,6 +1715,7 @@ begin
   end;
 
   vleChaos.InsertRow('to 1', '1', true);
+  mnuChaosRebuild.Checked := RebuildXaosLinks;
 
   GraphZoom := 1;
 
@@ -5080,6 +5086,12 @@ begin
   end;
 end;
 }
+
+procedure TEditForm.mnuChaosRebuildClick(Sender: TObject);
+begin
+  RebuildXaosLinks := not RebuildXaosLinks;
+  mnuChaosRebuild.Checked := RebuildXaosLinks;
+end;
 
 end.
 

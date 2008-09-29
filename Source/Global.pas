@@ -95,7 +95,7 @@ var
   HelpersEnabled: boolean;
   EditorBkgColor, ReferenceTriangleColor: integer;
   GridColor1, GridColor2, HelpersColor: integer;
-  ExtEditEnabled, TransformAxisLock: boolean;
+  ExtEditEnabled, TransformAxisLock, RebuildXaosLinks: boolean;
   ShowAllXforms: boolean;
 
   { Display }
@@ -355,6 +355,15 @@ begin
     end;
   end;
   Result := str;
+end;
+
+procedure SinCos(const Theta: double; var Sin, Cos: double); // to avoid using 'extended' type
+asm
+    FLD     Theta
+    FSINCOS
+    FSTP    qword ptr [edx]    // Cos
+    FSTP    qword ptr [eax]    // Sin
+    FWAIT
 end;
 
 (*

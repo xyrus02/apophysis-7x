@@ -567,11 +567,11 @@ begin
       end else begin
         ShowRenderStats := false;
       end;
-      if Registry.ValueExists('LowerRenderPriority') then begin
-        LowerRenderPriority := Registry.ReadBool('LowerRenderPriority');
-      end else begin
-        LowerRenderPriority := false;
-      end;
+//      if Registry.ValueExists('LowerRenderPriority') then begin
+//        LowerRenderPriority := Registry.ReadBool('LowerRenderPriority');
+//      end else begin
+//        LowerRenderPriority := false;
+//      end;
 
       if Registry.ValueExists('PNGTransparency') then begin
         PNGTransparency := Registry.ReadInteger('PNGTransparency');
@@ -681,7 +681,7 @@ begin
 //      ResizeOnLoad := False;
       ShowProgress := true;
       SaveIncompleteRenders := false;
-      LowerRenderPriority := false;
+//      LowerRenderPriority := false;
       ShowRenderStats := false;
       PNGTransparency := 1;
       ShowTransparency := False;
@@ -753,6 +753,9 @@ begin
       if Registry.ValueExists('LockTransformAxis') then
         TransformAxisLock := Registry.ReadBool('LockTransformAxis')
       else TransformAxisLock := true;
+      if Registry.ValueExists('RebuildXaosLinks') then
+        RebuildXaosLinks := Registry.ReadBool('RebuildXaosLinks')
+      else RebuildXaosLinks := true;
     end
     else begin
       UseTransformColors := false;
@@ -765,6 +768,7 @@ begin
       ReferenceTriangleColor := integer(clGray);
       ExtEditEnabled := true;
       TransformAxisLock := true;
+      RebuildXaosLinks := true;
     end;
     Registry.CloseKey;
 
@@ -1171,6 +1175,7 @@ begin
       Registry.WriteInteger('ReferenceTriangleColor', ReferenceTriangleColor);
       Registry.WriteBool('ExtendedEdit', ExtEditEnabled);
       Registry.WriteBool('LockTransformAxis', TransformAxisLock);
+      Registry.WriteBool('RebuildXaosLinks', RebuildXaosLinks);
     end;
     Registry.CloseKey;
 

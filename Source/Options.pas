@@ -222,6 +222,7 @@ type
     cbInternalBitsPerSample: TComboBox;
     txtGammaThreshold: TEdit;
     lblGammaThreshold: TLabel;
+    chkXaosRebuild: TCheckBox;
     procedure btnCancelClick(Sender: TObject);
     procedure FormShow(Sender: TObject);
     procedure btnOKClick(Sender: TObject);
@@ -333,6 +334,7 @@ begin
   chkHelpers.Checked := HelpersEnabled;
   chkExtendedEdit.Checked := ExtEditEnabled;
   chkAxisLock.Checked := TransformAxisLock;
+  chkXaosRebuild.Checked := RebuildXaosLinks;
   chkShowAllXforms.Checked := ShowAllXforms;
 
   { Display tab }
@@ -472,6 +474,7 @@ begin
 
   ExtEditEnabled := chkExtendedEdit.Checked;
   TransformAxisLock := chkAxisLock.Checked;
+  RebuildXaosLinks := chkXaosRebuild.Checked;
 
   { Display tab }
   defSampleDensity := StrToFloat(txtSampleDensity.Text);

@@ -405,7 +405,7 @@ object OptionsForm: TOptionsForm
       end
       object rgReferenceMode: TRadioGroup
         Left = 160
-        Top = 76
+        Top = 108
         Width = 145
         Height = 69
         Caption = 'Reference Triangle'
@@ -421,7 +421,7 @@ object OptionsForm: TOptionsForm
         Left = 160
         Top = 4
         Width = 145
-        Height = 65
+        Height = 85
         Caption = 'Editor defaults'
         TabOrder = 2
         object chkAxisLock: TCheckBox
@@ -443,6 +443,16 @@ object OptionsForm: TOptionsForm
           Checked = True
           State = cbChecked
           TabOrder = 1
+        end
+        object chkXaosRebuild: TCheckBox
+          Left = 8
+          Top = 58
+          Width = 129
+          Height = 17
+          Caption = 'Rebuild xaos links'
+          Checked = True
+          State = cbChecked
+          TabOrder = 2
         end
       end
     end
