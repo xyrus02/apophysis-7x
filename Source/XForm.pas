@@ -232,7 +232,6 @@ begin
     modWeights[i] := 1;
 
   noPlot := false;
-  //RetraceXform := false;
 end;
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -2137,7 +2136,7 @@ begin
     end;
   end;
 
-  for i := 0 to 100 do
+  for i := 0 to High(modWeights) do
     modWeights[i] := xform.modWeights[i];
 
   noPlot := xform.noPlot;
