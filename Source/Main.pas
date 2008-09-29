@@ -42,7 +42,7 @@ const
   RS_XO = 2;
   RS_VO = 3;
 
-  AppVersionString = 'Apophysis 2.08 beta 2 pre2';
+  AppVersionString = 'Apophysis 2.08 beta 2 pre5+';
 
 type
   TMouseMoveState = (msUsual, msZoomWindow, msZoomOutWindow, msZoomWindowMove,
@@ -2578,7 +2578,7 @@ begin
   maincp.sample_density := defSampleDensity;
   maincp.spatial_oversample := defOversample;
   maincp.spatial_filter_radius := defFilterRadius;
-  maincp.gamma_threshold := defGammaThreshold;
+  maincp.gammaThreshRelative := defGammaThreshold;
   inc(MainSeed);
   RandSeed := MainSeed;
 
