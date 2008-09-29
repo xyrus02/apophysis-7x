@@ -511,19 +511,19 @@ begin
 
         Renderer := TRenderThread.Create;
         assert(Renderer <> nil);
-
+{
         if chkThreadPriority.Checked then
           Renderer.SetPriority(tpLower)
         else
           Renderer.SetPriority(tpNormal);
-
+}
         Renderer.BitsPerSample := BitsPerSample;
         if chkLimitMem.checked then
           Renderer.MaxMem := MaxMemory;//StrToInt(cbMaxMemory.text);
         Renderer.OnProgress := OnProgress;
         Renderer.TargetHandle := self.Handle;
         Renderer.SetCP(cp);
-        //Renderer.Priority := tpLower;
+        Renderer.Priority := tpLower;
         Renderer.NrThreads := NrTreads;
         Renderer.Output := Output.Lines;
         Renderer.Resume;
@@ -584,12 +584,12 @@ begin
 
       Renderer := TRenderThread.Create;
       assert(Renderer <> nil);
-
+{
       if chkThreadPriority.Checked then
         Renderer.SetPriority(tpLower)
       else
         Renderer.SetPriority(tpNormal);
-
+}
       Renderer.BitsPerSample := BitsPerSample;
       if chkLimitMem.checked then
         Renderer.MaxMem := MaxMemory;//StrToInt(cbMaxMemory.text);
@@ -598,7 +598,7 @@ begin
   //    Renderer.Output := Output.Lines;
   //    Renderer.Compatibility := compatibility;
       Renderer.SetCP(cp);
-      //Renderer.Priority := tpLower;
+      Renderer.Priority := tpLower;
       Renderer.NrThreads := NrTreads;
 
       Renderer.Output := Output.Lines;
@@ -1056,12 +1056,14 @@ procedure TRenderForm.chkThreadPriorityClick(Sender: TObject);
 begin
   LowerRenderPriority := chkThreadPriority.Checked;
 
+{
   if Assigned(Renderer) then begin
     if LowerRenderPriority then
       Renderer.SetPriority(tpLower)
     else
       Renderer.SetPriority(tpNormal);
   end;
+}
 end;
 
 end.

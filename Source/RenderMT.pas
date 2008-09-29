@@ -172,8 +172,8 @@ var
 begin
   inherited;
   
-  for i := 0 to High(WorkingThreads) do
-    WorkingThreads[i].Priority := p;
+  //for i := 0 to High(WorkingThreads) do
+  //  WorkingThreads[i].Priority := p;
 end;
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -181,7 +181,7 @@ function TBaseMTRenderer.NewThread: TBucketFillerThread;
 begin
   Result := TBucketFillerThread.Create(fcp);
   assert(Result<>nil);
-  Result.Priority := FThreadPriority;
+  //Result.Priority := FThreadPriority;
 
   if FCP.FAngle = 0 then
     Result.AddPointsProc := self.AddPointsToBuckets

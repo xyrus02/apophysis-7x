@@ -1973,7 +1973,6 @@ procedure TOperationLibrary.DeleteTransformProc(AMachine: TatVirtualMachine);
 var
   i, j: integer;
 begin
-  if NumTransforms > 0 then
   try
     // I'm not sure, but *maybe* this will help scripts not to screw up finalXform
     if ActiveTransform = NumTransforms then
@@ -1984,30 +1983,28 @@ begin
       scriptEditor.cp.finalXformEnabled := false;
       exit;
     end;
-    if ActiveTransform = (NumTransforms - 1) then
-    { Last triangle...just reduce number}
-    begin
+    if NumTransforms <= 1 then exit;
+
+    // delete xform from all probability tables
+    for i := 0 to NumTransforms-1 do
+    with scriptEditor.cp.xform[i] do begin
+      for j := ActiveTransform to NumTransforms-1 do
+        modWeights[j] := modWeights[j+1];
+      modWeights[NumTransforms-1] := 1;
+    end;
+    //
+
+    with scriptEditor.cp do begin
+      if ActiveTransform = (NumTransforms - 1) then
+        Dec(ActiveTransform)
+      else begin
+        for i := ActiveTransform to NumTransforms - 2 do
+          xform[i].Assign(xform[i + 1]);
+      end;
       Dec(NumTransforms);
-      ActiveTransform := NumTransforms - 1;
-//      scriptEditor.cp.xform[NumTransforms].density := 0;
-      scriptEditor.cp.xform[NumTransforms].Assign(scriptEditor.cp.xform[NumTransforms+1]);
-    end
-    else
-    begin
-      for i := ActiveTransform to NumTransforms - 2 do
-        scriptEditor.cp.xform[i].Assign(scriptEditor.cp.xform[i + 1]);
-{      begin
-    //  copy higher transforms down
-        ScriptEditor.cp.xform[i].density := ScriptEditor.cp.xform[i + 1].density;
-        ScriptEditor.cp.xform[i].color := ScriptEditor.cp.xform[i + 1].color;
-        ScriptEditor.cp.xform[i].symmetry := ScriptEditor.cp.xform[i + 1].symmetry;
-        for j := 0 to NRVAR - 1 do
-          ScriptEditor.cp.xform[i].vars[j] := ScriptEditor.cp.xform[i + 1].vars[j];
-      end;}
-      NumTransforms := NumTransforms - 1;
-//      ScriptEditor.cp.xform[Numtransforms].density := 0;
-      scriptEditor.cp.xform[NumTransforms].Assign(scriptEditor.cp.xform[NumTransforms+1]);
-    end
+      xform[NumTransforms].Assign(xform[NumTransforms+1]);
+      xform[NumTransforms+1].Clear;
+    end;
   except
     begin
       Application.ProcessMessages;
@@ -2024,23 +2021,17 @@ var
 begin
   try
     if NumTransforms < NXFORMS then
+    with ScriptEditor.cp do
     begin
       old := ActiveTransform;
       ActiveTransform := NumTransforms;
       inc(NumTransforms);
-      ScriptEditor.cp.xform[NumTransforms].Assign(ScriptEditor.cp.xform[ActiveTransform]); // final xform
-      ScriptEditor.cp.xform[ActiveTransform].Assign(ScriptEditor.cp.xform[old]);
-{
-      ScriptEditor.cp.xform[ActiveTransform].c[0, 1] := ScriptEditor.cp.xform[old].c[0, 1];
-      ScriptEditor.cp.xform[ActiveTransform].c[1, 0] := ScriptEditor.cp.xform[old].c[1, 0];
-      ScriptEditor.cp.xform[ActiveTransform].c[1, 1] := ScriptEditor.cp.xform[old].c[1, 1];
-      ScriptEditor.cp.xform[ActiveTransform].c[2, 0] := ScriptEditor.cp.xform[old].c[2, 0];
-      ScriptEditor.cp.xform[ActiveTransform].c[2, 1] := ScriptEditor.cp.xform[old].c[2, 1];
-      ScriptEditor.cp.xform[ActiveTransform].color := ScriptEditor.cp.xform[old].color;
-      ScriptEditor.cp.xform[ActiveTransform].density := ScriptEditor.cp.xform[old].density;
-      for i := 0 to NRVAR - 1 do
-        ScriptEditor.cp.xform[ActiveTransform].vars[i] := ScriptEditor.cp.xform[old].vars[i]
-}
+      xform[NumTransforms].Assign(xform[ActiveTransform]); // final xform
+      xform[ActiveTransform].Assign(xform[old]);
+
+      for i := 0 to NumTransforms-1 do
+        xform[i].modWeights[ActiveTransform] := xform[i].modWeights[old];
+      xform[ActiveTransform].modWeights[ActiveTransform] := xform[old].modWeights[old];
     end
     else raise EFormatInvalid.Create('Too many transforms.');
   except on E: EFormatInvalid do
