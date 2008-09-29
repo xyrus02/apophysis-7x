@@ -3084,6 +3084,12 @@ object EditForm: TEditForm
       RadioItem = True
       OnClick = mnuChaosViewFromClick
     end
+    object mnuChaosRebuild: TMenuItem
+      Caption = 'Rebuild xaos links'
+      Checked = True
+      Hint = 'Rebuild xaos links when deleting transforms'
+      OnClick = mnuChaosRebuildClick
+    end
     object N9: TMenuItem
       Caption = '-'
     end
