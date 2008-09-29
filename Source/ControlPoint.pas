@@ -98,7 +98,7 @@ type
     cmap: TColorMap;
     cmapindex: integer;
     time: double;
-    brightness: double; // 1.0 = normal
+    Fbrightness: double; // 1.0 = normal
     contrast: double; // 1.0 = normal
     gamma: double;
     Width: integer;
@@ -138,6 +138,11 @@ type
     
     function getppux: double;
     function getppuy: double;
+
+    function GetBrightness: double;
+    procedure SetBrightness(br: double);
+    function GetRelativeGammaThreshold: double;
+    procedure SetRelativeGammaThreshold(gtr: double);
 
   public
     procedure SaveToStringlist(sl: TStringlist);
@@ -193,6 +198,13 @@ type
 
     property ppux: double read getppux;
     property ppuy: double read getppuy;
+
+    property brightness: double
+      read GetBrightness
+      write SetBrightness;
+    property gammaThreshRelative: double
+      read GetRelativeGammaThreshold
+      write SetRelativeGammaThreshold;
   end;
 
 function add_symmetry_to_control_point(var cp: TControlPoint; sym: integer): integer;
@@ -257,7 +269,7 @@ begin
   gamma := 1;
   vibrancy := 1;
   contrast := 1;
-  brightness := 1;
+  Fbrightness := 1;
 
   sample_density := 50;
   zoom := 0;
@@ -269,7 +281,7 @@ begin
   estimator_min := 0.0;
   estimator_curve := 0.4;
   jitters := 1;
-  gamma_threshold := defGammaThreshold;
+  gamma_threshold := 0.01;
 
   FTwoColorDimensions := False;
 
@@ -684,6 +696,9 @@ begin
     end else if AnsiCompareText(CurrentToken, 'vibrancy') = 0 then begin
       Inc(ParsePos);
       vibrancy := StrToFloat(ParseValues[ParsePos]);
+    end else if AnsiCompareText(CurrentToken, 'gamma_threshold') = 0 then begin
+      Inc(ParsePos);
+      gamma_threshold := StrToFloat(ParseValues[ParsePos]);
     end else if AnsiCompareText(CurrentToken, 'hue_rotation') = 0 then begin
       Inc(ParsePos);
       hue_rotation := StrToFloat(ParseValues[ParsePos]);
@@ -1410,10 +1425,11 @@ begin
 
   Result.cmapindex := -1;
 
-  Result.brightness := c0 * cp1.brightness + c1 * cp2.brightness;
+  Result.Fbrightness := c0 * cp1.Fbrightness + c1 * cp2.Fbrightness;
   Result.contrast := c0 * cp1.contrast + c1 * cp2.contrast;
   Result.gamma := c0 * cp1.gamma + c1 * cp2.gamma;
   Result.vibrancy := c0 * cp1.vibrancy + c1 * cp2.vibrancy;
+  Result.gamma_threshold := c0 * cp1.gamma_threshold + c1 * cp2.gamma_threshold;
   Result.width := cp1.width;
   Result.height := cp1.height;
   Result.spatial_oversample := Round(c0 * cp1.spatial_oversample + c1 * cp2.spatial_oversample);
@@ -1555,8 +1571,8 @@ begin
 //  sl.add(format('nbatches %d white_level %d background %f %f %f', - changed to integers - mt
   sl.add(format('nbatches %d white_level %d background %d %d %d',
     [nbatches, white_level, background[0], background[1], background[2]]));
-  sl.add(format('brightness %f gamma %f vibrancy %f hue_rotation %f cmap_inter %d',
-    [brightness * BRIGHT_ADJUST, gamma, vibrancy, hue_rotation, cmap_inter]));
+  sl.add(format('brightness %f gamma %f vibrancy %f gamma_threshold %f hue_rotation %f cmap_inter %d',
+    [Fbrightness * BRIGHT_ADJUST, gamma, vibrancy, gamma_threshold, hue_rotation, cmap_inter]));
   sl.add(format('finalxformenabled %d', [ifthen(finalxformenabled, 1, 0)]));
   sl.add(format('soloxform %d', [soloXform]));
 
@@ -1900,10 +1916,34 @@ begin
   result := pixels_per_unit * power(2, zoom)
 end;
 
-///////////////////////////////////////////////////////////////////////////////
 function TControlPoint.getppuy: double;
 begin
   result := pixels_per_unit * power(2, zoom)
+end;
+
+///////////////////////////////////////////////////////////////////////////////
+function TControlPoint.GetBrightness: double;
+begin
+  Result := Fbrightness;
+end;
+
+procedure TControlPoint.SetBrightness(br: double);
+begin
+  if br > 0 then begin
+    if Fbrightness <> 0 then gamma_threshold := (gamma_threshold / Fbrightness) * br;
+    Fbrightness := br;
+  end;
+end;
+
+///////////////////////////////////////////////////////////////////////////////
+function TControlPoint.GetRelativeGammaThreshold: double;
+begin
+  Result := gamma_threshold / Fbrightness;
+end;
+
+procedure TControlPoint.SetRelativeGammaThreshold(gtr: double);
+begin
+  gamma_threshold := gtr * Fbrightness;
 end;
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -1968,6 +2008,7 @@ var
 begin
   top := 0; bottom := 0; right := 0; left := 0;
   Result := NumXForms;
+{
   if ReferenceMode > 0 then
   begin
     for i := 0 to Result-1 do
@@ -2016,6 +2057,7 @@ begin
     end;
   end
   else
+}
   begin
     Triangles[-1].x[0] := 1; Triangles[-1].y[0] := 0; // "x"
     Triangles[-1].x[1] := 0; Triangles[-1].y[1] := 0; // "0"
