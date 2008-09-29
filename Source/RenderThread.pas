@@ -204,7 +204,7 @@ begin
   end;
 
   FRenderer.SetCP(FCP);
-  FRenderer.SetThreadPriority(self.Priority);
+//  FRenderer.SetThreadPriority(self.Priority);
 //  FRenderer.compatibility := compatibility;
   FRenderer.MinDensity := FMinDensity;
   FRenderer.OnProgress := FOnProgress;
