@@ -407,7 +407,7 @@ begin
     Resetting := False;
     editPPU.Text := Format('%.6g', [100*cp.pixels_per_unit/PreviewImage.Width]);
 
-    txtGammaThreshold.Text := Format('%.3g', [cp.gamma_threshold]);
+    txtGammaThreshold.Text := Format('%.3g', [cp.gammaThreshRelative]);
   end; //***
   DrawPreview;
 end;
@@ -623,17 +623,7 @@ begin
   if ((key = #13) and (EditBoxValue <> txtZoom.Text)) then
   begin
     key := #0;
-    try
-      v := Trunc(StrToFloat(txtZoom.Text) * 1000);
-      if v > scrollZoom.Max then v := scrollZoom.Max;
-      if v < scrollZoom.Min then v := scrollZoom.Min;
-      if v <> ScrollZoom.Position then begin
-        ScrollZoom.Position := v;
-        UpdateFlame;
-        EditBoxValue := txtZoom.Text;
-      end;
-    except on EConvertError do
-    end;
+    txtZoomExit(sender);
   end;
 end;
 
@@ -651,7 +641,7 @@ begin
       UpdateFlame;
     end;
   except on EConvertError do
-      txtZoom.Text := FloatToStr(cp.zoom)
+    txtZoom.Text := FloatToStr(cp.zoom)
   end;
 end;
 
@@ -667,15 +657,7 @@ begin
   if ((key = #13) and (EditBoxValue <> txtCenterX.Text)) then
   begin
     key := #0;
-    try
-      v := Trunc(StrToFloat(txtCenterX.Text) * 1000);
-      if v > scrollCenterX.Max then v := scrollCenterX.Max;
-      if v < scrollCenterX.Min then v := scrollCenterX.Min;
-      ScrollCenterX.Position := v;
-      UpdateFlame;
-      EditBoxValue := txtCenterX.Text;
-    except on EConvertError do
-    end;
+    txtCenterXExit(sender);
   end;
 end;
 
@@ -691,7 +673,7 @@ begin
     ScrollCenterX.Position := v;
     UpdateFlame;
   except on EConvertError do
-      txtCenterX.Text := FloatToStr(cp.center[0]);
+    txtCenterX.Text := FloatToStr(cp.center[0]);
   end;
 end;
 
@@ -707,15 +689,7 @@ begin
   if ((key = #13) and (EditBoxValue <> txtCenterY.Text)) then
   begin
     key := #0;
-    try
-      v := Trunc(StrToFloat(txtCenterY.Text) * 1000);
-      if v > ScrollCenterY.Max then v := ScrollCenterY.Max;
-      if v < ScrollCenterY.Min then v := ScrollCenterY.Min;
-      ScrollCenterY.Position := v;
-      UpdateFlame;
-      EditBoxValue := txtCenterY.Text;
-    except on EConvertError do
-    end;
+    txtCenterYExit(sender);
   end;
 end;
 
@@ -731,7 +705,7 @@ begin
     ScrollCenterY.Position := v;
     UpdateFlame;
   except on EConvertError do
-      txtCenterY.Text := FloatToStr(cp.center[1]);
+    txtCenterY.Text := FloatToStr(cp.center[1]);
   end;
 end;
 
@@ -752,7 +726,7 @@ begin
     ScrollGamma.Position := v;
     UpdateFlame;
   except on EConvertError do
-      txtGamma.Text := FloatToStr(cp.gamma);
+    txtGamma.Text := FloatToStr(cp.gamma);
   end;
 end;
 
@@ -763,15 +737,7 @@ begin
   if ((key = #13) and (txtGamma.Text <> EditBoxValue)) then
   begin
     key := #0;
-    try
-      v := Trunc(StrToFloat(txtGamma.Text) * 100);
-      if v > scrollGamma.Max then v := scrollGamma.Max;
-      if v < scrollGamma.Min then v := scrollGamma.Min;
-      ScrollGamma.Position := v;
-      UpdateFlame;
-      EditBoxValue := txtGamma.Text;
-    except on EConvertError do
-    end;
+    txtGammaExit(sender);
   end;
 end;
 
@@ -792,7 +758,7 @@ begin
     ScrollBrightness.Position := v;
     UpdateFlame;
   except on EConvertError do
-      txtBrightness.Text := FloatToStr(cp.brightness);
+    txtBrightness.Text := FloatToStr(cp.brightness);
   end;
 end;
 
@@ -804,15 +770,7 @@ begin
   if ((key = #13) and (txtBrightness.Text <> EditBoxValue)) then
   begin
     key := #0;
-    try
-      v := Trunc(StrToFloat(txtBrightness.Text) * 100);
-      if v > scrollBrightness.Max then v := scrollBrightness.Max;
-      if v < scrollBrightness.Min then v := scrollBrightness.Min;
-      ScrollBrightness.Position := v;
-      UpdateFlame;
-      EditBoxValue := txtBrightness.Text;
-    except on EConvertError do
-    end;
+    txtBrightnessExit(sender);
   end;
 end;
 
@@ -828,15 +786,7 @@ begin
   if ((key = #13) and (txtVibrancy.Text <> EditBoxValue)) then
   begin
     key := #0;
-    try
-      v := Trunc(StrToFloat(txtVibrancy.Text) * 100);
-      if v > scrollVibrancy.Max then v := scrollVibrancy.Max;
-      if v < scrollVibrancy.Min then v := scrollVibrancy.Min;
-      ScrollVibrancy.Position := v;
-      UpdateFlame;
-      EditBoxValue := txtVibrancy.Text;
-    except on EConvertError do
-    end;
+    txtVibrancyExit(sender);
   end;
 end;
 
@@ -1977,7 +1927,7 @@ begin
   else if (Sender = pnlVibrancy) then
     pnlDragValue := cp.vibrancy
   else if (Sender = pnlGammaThreshold) then
-    pnlDragValue := cp.gamma_threshold
+    pnlDragValue := cp.gammaThreshRelative
   else assert(false);
 
   pnlDragMode := true;
@@ -2054,8 +2004,8 @@ begin
     else if (Sender = pnlGammaThreshold) then
     begin
       if v < 0 then v := 0;
-      cp.gamma_threshold := v;
-      txtGammaThreshold.Text := FloattoStr(v);
+      cp.gammaThreshRelative := v;
+      txtGammaThreshold.Text := FloattoStr(cp.gammaThreshRelative);
     end;
     //pEdit^.Text := FloatToStr(v);
     //pEdit.Refresh;
@@ -2125,8 +2075,8 @@ begin
   end
   else if (Sender = pnlGammaThreshold) then
   begin
-    if cp.gamma_threshold = defGammaThreshold then exit;
-    cp.gamma_threshold := defGammaThreshold;
+    if cp.gammaThreshRelative = defGammaThreshold then exit;
+    cp.gammaThreshRelative := defGammaThreshold;
     txtGammaThreshold.Text := FloatToStr(defGammaThreshold);
   end
   else assert(false);
@@ -2256,9 +2206,10 @@ begin
     exit;
   end;
   if v < 0 then v := 0;
-  if v <> cp.gamma_threshold then begin
+  if v <> cp.gammaThreshRelative then begin
     MainForm.UpdateUndo;
-    cp.gamma_threshold := v;
+    cp.gammaThreshRelative := v;
+    txtGammaThreshold.Text := FloatToStr(cp.gammaThreshRelative);
     UpdateFlame;
     EditBoxValue := txtGammaThreshold.Text;
   end;

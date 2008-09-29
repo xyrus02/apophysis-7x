@@ -418,7 +418,9 @@ object AdjustForm: TAdjustForm
         Height = 15
         LargeChange = 100
         Max = 10000
+        Min = 1
         PageSize = 0
+        Position = 100
         TabOrder = 2
         OnChange = scrollBrightnessChange
         OnScroll = scrollBrightnessScroll
