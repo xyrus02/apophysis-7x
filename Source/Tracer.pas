@@ -20,7 +20,7 @@
 
 unit Tracer;
 
-//{$define TRACEFORM_HIDDEN}
+{$define TRACEFORM_HIDDEN}
 
 interface
 
