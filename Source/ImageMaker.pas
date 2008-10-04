@@ -308,7 +308,7 @@ begin
   for i := 0 to fcp.Height - 1 do begin
     bx := 0;
 
-    if (i and $7 = 0) and assigned(FOnProgress) then FOnProgress(i / fcp.Height);
+    if (i and $3f = 0) and assigned(FOnProgress) then FOnProgress(i / fcp.Height);
 
     AlphaRow := PByteArray(FAlphaBitmap.scanline[YOffset + i]);
     Row := PRGBArray(FBitmap.scanline[YOffset + i]);
