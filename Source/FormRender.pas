@@ -317,7 +317,7 @@ begin
        Trunc(Remaining * 24 * 60 * 60 * 100) mod 100]);
   end;
   StatusBar.Panels[2].text := 'Slice ' + IntToStr(Renderer.Slice + 1) + ' of ' + IntToStr(Renderer.nrSlices);
-  Application.ProcessMessages;
+  //Application.ProcessMessages;
 end;
 
 procedure TRenderForm.FormCreate(Sender: TObject);
