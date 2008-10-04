@@ -11,6 +11,11 @@ type
   TVariationPDJ = class(TBaseVariation)
   private
     FA,FB,FC,FD: double;
+
+    procedure CalcABC0;
+    procedure CalcAB00;
+    procedure CalcA000;
+
   public
     constructor Create;
 
@@ -23,7 +28,7 @@ type
     function SetVariable(const Name: string; var value: double): boolean; override;
     function GetVariable(const Name: string; var value: double): boolean; override;
 
-
+    procedure GetCalcFunction(var f: TCalcFunction); override;
     procedure CalcFunction; override;
   end;
 
@@ -33,6 +38,21 @@ uses
   Math;
 
 { TVariationPDJ }
+
+///////////////////////////////////////////////////////////////////////////////
+procedure TVariationPDJ.GetCalcFunction(var f: TCalcFunction);
+begin
+  if FD = 0 then begin
+    if FC = 0 then begin
+      if FB = 0 then
+        f := CalcA000
+      else
+        f := CalcAB00;
+    end
+    else f := CalcABC0;
+  end
+  else f := CalcFunction;
+end;
 
 ///////////////////////////////////////////////////////////////////////////////
 procedure TVariationPDJ.CalcFunction;
@@ -71,12 +91,98 @@ asm
 end;
 
 ///////////////////////////////////////////////////////////////////////////////
+procedure TVariationPDJ.CalcABC0;
+{$ifndef _ASM_}
+begin
+  FPx^ := FPx^ + vvar * (sin(FA * FTy^) - cos(FB * FTx^));
+  FPy^ := FPy^ + vvar * (sin(FC * FTx^) - 1);
+{$else}
+asm
+    fld     qword ptr [eax + vvar]
+    mov     edx, [eax + FTx]
+    fld     qword ptr [edx + 8] // FTy
+    fld     qword ptr [edx]     // FTx
+
+    fld     st(1)
+    fmul    qword ptr [eax + Fa]
+    fsin
+    fld     st(1)
+    fmul    qword ptr [eax + Fb]
+    fcos
+    fsubp   st(1), st
+    fmul    st, st(3)
+    fadd    qword ptr [edx + 16] // FPx
+    fstp    qword ptr [edx + 16]
+
+    fmul    qword ptr [eax + Fc]
+    fsin
+    fstp    st(1)
+    fld1
+    fsubp   st(1), st
+    fmulp
+    fadd    qword ptr [edx + 24] // FPy
+    fstp    qword ptr [edx + 24]
+{$endif}
+end;
+
+///////////////////////////////////////////////////////////////////////////////
+procedure TVariationPDJ.CalcAB00;
+{$ifndef _ASM_}
+begin
+  FPx^ := FPx^ + vvar * (sin(FA * FTy^) - cos(FB * FTx^));
+  FPy^ := FPy^ - vvar;
+{$else}
+asm
+    fld     qword ptr [eax + vvar]
+    mov     edx, [eax + FTx]
+    fld     qword ptr [edx + 8] // FTy
+    fmul    qword ptr [eax + Fa]
+    fsin
+    fld     qword ptr [edx]     // FTx
+    fmul    qword ptr [eax + Fb]
+    fcos
+    fsubp   st(1), st
+    fmul    st, st(1)
+    fadd    qword ptr [edx + 16] // FPx
+    fstp    qword ptr [edx + 16]
+
+    fsubr   qword ptr [edx + 24] // FPy
+    fstp    qword ptr [edx + 24]
+{$endif}
+end;
+
+///////////////////////////////////////////////////////////////////////////////
+procedure TVariationPDJ.CalcA000;
+{$ifndef _ASM_}
+begin
+  FPx^ := FPx^ + vvar * (sin(FA * FTy^) - 1);
+  FPy^ := FPy^ - vvar;
+{$else}
+asm
+    fld     qword ptr [eax + vvar]
+    mov     edx, [eax + FTx]
+    fld     qword ptr [edx + 8] // FTy
+    fmul    qword ptr [eax + Fa]
+    fsin
+    fld1
+    fsubp   st(1), st
+    fmul    st, st(1)
+
+    fadd    qword ptr [edx + 16] // FPx
+    fstp    qword ptr [edx + 16]
+
+    fsubr   qword ptr [edx + 24] // FPy
+    fstp    qword ptr [edx + 24]
+{$endif}
+end;
+
+///////////////////////////////////////////////////////////////////////////////
 constructor TVariationPDJ.Create;
 begin
-  FA := 6 * Random - 3;
-  FB := 6 * Random - 3;
-  FC := 6 * Random - 3;
-  FD := 6 * Random - 3;
+  FA := PI * (2 * Random - 1);
+  FB := PI * (2 * Random - 1);
+  FC := PI * (2 * Random - 1);
+  FD := PI * (2 * Random - 1);
 end;
 
 ///////////////////////////////////////////////////////////////////////////////
