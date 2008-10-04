@@ -42,7 +42,7 @@ const
   RS_XO = 2;
   RS_VO = 3;
 
-  AppVersionString = 'Apophysis 2.08 beta 2 pre5+';
+  AppVersionString = 'Apophysis 2.08 beta [thread test 2]';
 
 type
   TMouseMoveState = (msUsual, msZoomWindow, msZoomOutWindow, msZoomWindowMove,
@@ -881,7 +881,7 @@ begin
       Trunc((Remaining * 24 * 60 - Trunc(Remaining * 24 * 60)) * 60),
       Trunc((Remaining * 24 * 60 * 60 - Trunc(Remaining * 24 * 60 * 60)) * 100)]);
   StatusBar.Panels[2].Text := MainCp.name;
-  Application.ProcessMessages;
+  //Application.ProcessMessages;
 end;
 
 procedure TMainForm.UpdateUndo;
@@ -3612,12 +3612,12 @@ end;
 
 procedure TMainForm.FormActivate(Sender: TObject);
 begin
-  if Assigned(Renderer) then Renderer.Priority := tpNormal;
+  if Assigned(Renderer) then Renderer.Priority := tpLower; //tpNormal;
 end;
 
 procedure TMainForm.FormDeactivate(Sender: TObject);
 begin
-  if Assigned(Renderer) then Renderer.Priority := tpLower;
+  if Assigned(Renderer) then Renderer.Priority := tpLowest; //tpLower;
 end;
 
 procedure TMainForm.mnuCalculateColorsClick(Sender: TObject);

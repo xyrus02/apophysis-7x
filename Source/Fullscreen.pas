@@ -216,7 +216,7 @@ begin
  finally
   Canvas.Unlock;
  end;
-  Application.ProcessMessages;
+  //Application.ProcessMessages;
 end;
 
 procedure TFullscreenForm.hideTaskbar;

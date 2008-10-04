@@ -113,7 +113,7 @@ begin
   ProgressBar.Position := round(100 * prog);
   Elapsed := Now - StartTime;
 //  if prog > 0 then Remainder := Elapsed * (1/prog - 1);
-  Application.ProcessMessages;
+  //Application.ProcessMessages;
 end;
 
 procedure TScriptRenderForm.FormDestroy(Sender: TObject);
