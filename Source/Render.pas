@@ -121,7 +121,7 @@ type
     procedure ShowSmallStats;
 
     property OnProgress: TOnProgress
-        read FOnProgress
+//      read FOnProgress
        write FOnProgress;
     property MaxMem : integer
         read FMaxMem
@@ -341,7 +341,7 @@ function TBaseRenderer.GetImage: TBitmap;
 begin
   if FStop > 0 then begin
     assert(false);
-    FImageMaker.OnProgress := OnProgress;
+    FImageMaker.OnProgress := FOnProgress;
     FImageMaker.CreateImage;
   end;
   Result := FImageMaker.GetImage;
@@ -373,7 +373,7 @@ begin
   FImageMaker.SetCP(FCP);
   FImageMaker.Init;
 
-  FImageMaker.OnProgress := OnProgress;
+  FImageMaker.OnProgress := FOnProgress;
   FImageMaker.CreateImage;
 end;
 
@@ -382,7 +382,7 @@ procedure TBaseRenderer.SaveImage(const FileName: String);
 begin
   if FStop > 0 then begin
     TimeTrace(Format('Creating image with quality = %f', [fcp.actual_density]));
-    FImageMaker.OnProgress := OnProgress;
+    FImageMaker.OnProgress := FOnProgress;
     FImageMaker.CreateImage;
   end;
   TimeTrace('Saving image');
@@ -578,7 +578,7 @@ begin
     else
       TimeTrace(Format('Creating image with quality = %f', [fcp.actual_density]));
 
-    FImageMaker.OnProgress := OnProgress;
+    FImageMaker.OnProgress := FOnProgress;
     FImageMaker.CreateImage;
   end;
 end;
@@ -661,7 +661,7 @@ begin
 
     if FStop = 0 then begin
       TimeTrace('Creating image');
-      FImageMaker.OnProgress := OnProgress;
+      FImageMaker.OnProgress := FOnProgress;
       FImageMaker.CreateImage(Slice * fcp.height);
     end;
   end;
