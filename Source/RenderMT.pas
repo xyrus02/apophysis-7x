@@ -104,6 +104,8 @@ begin
 
   for i := 0 to High(WorkingThreads) do begin
     WorkingThreads[i].Terminate;
+    WorkingThreads[i].WaitFor;
+    WorkingThreads[i].Free;
   end;
   SetLength(WorkingThreads, 0);
 
@@ -128,7 +130,7 @@ var
 begin
   for i := 0 to High(WorkingThreads) do
     WorkingThreads[i].Terminate;
-  SetLength(WorkingThreads, 0); //?
+  //SetLength(WorkingThreads, 0); //?
 
   inherited; //  FStop := 1;
 end;
@@ -143,7 +145,7 @@ begin
 
   for i := 0 to High(WorkingThreads) do
     WorkingThreads[i].Terminate;
-  SetLength(WorkingThreads, 0); //?
+  //SetLength(WorkingThreads, 0); //?
 end;
 
 procedure TBaseMTRenderer.Pause;
@@ -167,11 +169,11 @@ begin
 end;
 
 procedure TBaseMTRenderer.SetThreadPriority(p: TThreadPriority);
-var
-  i: integer;
+//var
+//  i: integer;
 begin
   inherited;
-  
+
   //for i := 0 to High(WorkingThreads) do
   //  WorkingThreads[i].Priority := p;
 end;
@@ -181,7 +183,7 @@ function TBaseMTRenderer.NewThread: TBucketFillerThread;
 begin
   Result := TBucketFillerThread.Create(fcp);
   assert(Result<>nil);
-  //Result.Priority := FThreadPriority;
+  Result.Priority := tpLower; //FThreadPriority;
 
   if FCP.FAngle = 0 then
     Result.AddPointsProc := self.AddPointsToBuckets

@@ -31,11 +31,13 @@ type
 
 implementation
 
+//uses SysUtils, FormRender;
+
 ///////////////////////////////////////////////////////////////////////////////
 constructor TBucketFillerThread.Create(cp: TControlPoint);
 begin
   inherited Create(True);
-  Self.FreeOnTerminate := True;
+  //Self.FreeOnTerminate := True;
 
   Fcp := cp.Clone;
 
@@ -58,6 +60,7 @@ var
   bc: integer;
 begin
   inherited;
+  //RenderForm.Output.Lines.Add(' . . . > Filler thread #' + IntToStr(ThreadID) + ' Started');
 
   bc := 0;
   while (not Terminated) and (bc < Nrbatches) do begin
@@ -74,6 +77,7 @@ begin
       LeaveCriticalSection(CriticalSection);
     end;
   end;
+  //RenderForm.Output.Lines.Add(' . . . > Filler thread #' + IntToStr(ThreadID) + ' Finished');
 end;
 
 ///////////////////////////////////////////////////////////////////////////////
