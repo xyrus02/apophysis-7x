@@ -63,7 +63,7 @@ type
     procedure GetBucketStats(var Stats: TBucketStats);
 
     property OnProgress: TOnProgress
-        read FOnProgress
+//      read FOnProgress
        write FOnProgress;
   end;
 

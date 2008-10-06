@@ -80,7 +80,7 @@ type
     procedure ShowSmallStats;
 
     property OnProgress: TOnProgress
-        read FOnProgress
+//      read FOnProgress
        write FOnProgress;
 
     property Slice: integer
