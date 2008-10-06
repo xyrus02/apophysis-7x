@@ -151,13 +151,12 @@ var
 
   SaveIncompleteRenders: boolean;
   ShowRenderStats: boolean;
-  LowerRenderPriority: boolean;
+  //LowerRenderPriority: boolean;
 
   SymmetryType: integer;
   SymmetryOrder: integer;
   SymmetryNVars: integer;
   Variations: array of boolean;
-  //VariationOptions: int64;
 
   MainForm_RotationMode: integer;
   PreserveQuality: boolean;

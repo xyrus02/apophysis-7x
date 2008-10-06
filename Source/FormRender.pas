@@ -653,7 +653,7 @@ begin
   ShowMemoryStatus;
   Ratio := ImageWidth / ImageHeight;
   chkSaveIncompleteRenders.Checked := SaveIncompleteRenders;
-  chkThreadPriority.Checked := LowerRenderPriority;
+//  chkThreadPriority.Checked := LowerRenderPriority;
 end;
 
 procedure TRenderForm.txtWidthChange(Sender: TObject);
@@ -1054,9 +1054,9 @@ end;
 
 procedure TRenderForm.chkThreadPriorityClick(Sender: TObject);
 begin
+{
   LowerRenderPriority := chkThreadPriority.Checked;
 
-{
   if Assigned(Renderer) then begin
     if LowerRenderPriority then
       Renderer.SetPriority(tpLower)
