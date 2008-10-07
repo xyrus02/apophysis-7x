@@ -42,7 +42,7 @@ const
   RS_XO = 2;
   RS_VO = 3;
 
-  AppVersionString = 'Apophysis 2.08 beta [thread test 2]';
+  AppVersionString = 'Apophysis 2.08 beta 2 pre6+';
 
 type
   TMouseMoveState = (msUsual, msZoomWindow, msZoomOutWindow, msZoomWindowMove,
@@ -333,7 +333,8 @@ type
 
     VarMenus: array of TMenuItem;
 
-    procedure LoadXMLFlame(filename, name: string);
+    procedure LoadXMLFlame(filename, name: string); overload;
+    procedure LoadXMLFlame(filename: string; index: integer); overload;
     procedure DisableFavorites;
     procedure EnableFavorites;
     procedure ParseXML(var cp1: TControlPoint; const params: PCHAR);
@@ -387,7 +388,7 @@ var
 
   MainCp: TControlPoint;
   ParseCp: TControlPoint;
-
+  mainCPindex: integer;
 
 implementation
 
@@ -2515,6 +2516,7 @@ begin
   MainSeed := Random(1234567890);
   maincp := TControlPoint.Create;
   ParseCp := TControlPoint.create;
+  mainCPindex := -1;
   OpenFileType := ftXML;
   Application.OnHint := DisplayHint;
   Application.OnHelp := ApplicationOnHelp;
@@ -2837,6 +2839,78 @@ begin
   end;
 end;
 
+procedure TMainForm.LoadXMLFlame(filename: string; index: integer);
+var
+  i, p: integer;
+  FileStrings: TStringList;
+  ParamStrings: TStringList;
+  Tokens: TStringList;
+  flameindex: integer;
+begin
+  FileStrings := TStringList.Create;
+  ParamStrings := TStringList.Create;
+
+  try
+    FileStrings.LoadFromFile(filename);
+    flameindex := 0;
+    for i := 0 to FileStrings.Count - 1 do
+    begin
+      pname := '';
+      ptime := '';
+      p := Pos('<flame ', LowerCase(FileStrings[i]));
+      if (p <> 0) then
+      begin
+        if (flameIndex <> index) then begin
+          inc(flameIndex);
+          continue;
+        end;
+        MainForm.ListXMLScanner.LoadFromBuffer(PCHAR(FileStrings[i]));
+        MainForm.ListXMLScanner.Execute;
+        ParamStrings.Add(FileStrings[i]);
+        Break;
+      end;
+    end;
+    repeat
+      inc(i);
+      ParamStrings.Add(FileStrings[i]);
+    until pos('</flame>', Lowercase(FileStrings[i])) <> 0;
+
+    ScriptEditor.Stopped := True;
+    StopThread;
+    ParseXML(MainCp, PCHAR(PAramStrings.Text));
+
+    mnuSaveUndo.Enabled := false;
+    mnuUndo.Enabled := False;
+    mnuPopUndo.Enabled := False;
+    mnuRedo.enabled := False;
+    mnuPopRedo.enabled := False;
+    EditForm.mnuUndo.Enabled := False;
+    EditForm.mnuRedo.enabled := False;
+    EditForm.tbUndo.enabled := false;
+    EditForm.tbRedo.enabled := false;
+    AdjustForm.btnUndo.enabled := false;
+    AdjustForm.btnRedo.enabled := false;
+    btnUndo.Enabled := false;
+    btnRedo.enabled := false;
+
+    Transforms := MainCp.TrianglesFromCP(MainTriangles);
+
+    UndoIndex := 0;
+    UndoMax := 0;
+    if fileExists(AppPath + 'apophysis.undo') then DeleteFile(AppPath + 'apophysis.undo');
+    Statusbar.Panels[2].Text := Maincp.name;
+    RedrawTimer.Enabled := True;
+    Application.ProcessMessages;
+
+    EditForm.SelectedTriangle := 0; // (?)
+
+    UpdateWindows;
+  finally
+    FileStrings.free;
+    ParamStrings.free;
+  end;
+end;
+
 procedure TMainForm.ResizeImage;
 var
   pw, ph: integer;
@@ -2873,15 +2947,19 @@ var
   s: string;
   Palette: TcolorMap;
 begin
-  if (ListView.SelCount <> 0) and
-    (Trim(ListView.Selected.Caption) <> Trim(maincp.name)) then
+  if (Change = ctState) and (Item.Selected = true) and (Item.Index <> mainCPindex) then
+    //(ListView.SelCount <> 0) and
+    //(Trim(ListView.Selected.Caption) <> Trim(maincp.name)) then
   begin
+    assert(ListView.Selected = Item);
+    mainCPindex := Item.Index;
+
     RedrawTimer.Enabled := False; //?
     StopThread;
 
     if OpenFileType = ftXML then
     begin
-      LoadXMLFlame(OpenFile, ListView.Selected.caption);
+      LoadXMLFlame(OpenFile, ListView.Selected.Index);
     end
     else
     begin
@@ -3080,9 +3158,16 @@ begin
 end;
 
 procedure TMainForm.ResetLocation;
+var
+  i: integer;
+label
+  skip;
 begin
+  for i := 0 to mainCP.NumXForms-1 do
+    if mainCP.xform[i].noPlot = false then goto skip;
+  exit;
+skip:
   maincp.zoom := 0;
-  //maincp.FAngle := 0;
   //maincp.Width := Image.Width;
   //maincp.Height := Image.Height;
   maincp.CalcBoundBox;
