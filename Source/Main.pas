@@ -2947,9 +2947,8 @@ var
   s: string;
   Palette: TcolorMap;
 begin
-  if (Change = ctState) and (Item.Selected = true) and (Item.Index <> mainCPindex) then
-    //(ListView.SelCount <> 0) and
-    //(Trim(ListView.Selected.Caption) <> Trim(maincp.name)) then
+  if ((ListView.SelCount <> 0) and (Trim(ListView.Selected.Caption) <> Trim(mainCP.name))) or
+    ((Change = ctState) and (Item.Selected = true) and (Item.Index <> mainCPindex)) then
   begin
     assert(ListView.Selected = Item);
     mainCPindex := Item.Index;
