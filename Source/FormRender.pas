@@ -1,6 +1,7 @@
 {
      Apophysis Copyright (C) 2001-2004 Mark Townsend
      Apophysis Copyright (C) 2005-2006 Ronald Hordijk, Piotr Boris, Peter Sdobnov
+     Apophysis Copyright (C) 2007-2008 Piotr Borys, Peter Sdobnov
 
      This program is free software; you can redistribute it and/or modify
      it under the terms of the GNU General Public License as published by
@@ -16,6 +17,7 @@
      along with this program; if not, write to the Free Software
      Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
 }
+
 unit FormRender;
 
 interface
@@ -511,12 +513,15 @@ begin
 
         Renderer := TRenderThread.Create;
         assert(Renderer <> nil);
-{
-        if chkThreadPriority.Checked then
-          Renderer.SetPriority(tpLower)
-        else
-          Renderer.SetPriority(tpNormal);
-}
+
+        if chkThreadPriority.Visible then
+        begin
+          if chkThreadPriority.Checked then
+            Renderer.SetPriority(tpLower)
+          else
+            Renderer.SetPriority(tpNormal);
+        end;
+
         Renderer.BitsPerSample := BitsPerSample;
         if chkLimitMem.checked then
           Renderer.MaxMem := MaxMemory;//StrToInt(cbMaxMemory.text);
@@ -584,12 +589,15 @@ begin
 
       Renderer := TRenderThread.Create;
       assert(Renderer <> nil);
-{
-      if chkThreadPriority.Checked then
-        Renderer.SetPriority(tpLower)
-      else
-        Renderer.SetPriority(tpNormal);
-}
+
+      if chkThreadPriority.Visible then
+      begin
+        if chkThreadPriority.Checked then
+          Renderer.SetPriority(tpLower)
+        else
+          Renderer.SetPriority(tpNormal);
+      end;
+
       Renderer.BitsPerSample := BitsPerSample;
       if chkLimitMem.checked then
         Renderer.MaxMem := MaxMemory;//StrToInt(cbMaxMemory.text);
@@ -653,7 +661,7 @@ begin
   ShowMemoryStatus;
   Ratio := ImageWidth / ImageHeight;
   chkSaveIncompleteRenders.Checked := SaveIncompleteRenders;
-//  chkThreadPriority.Checked := LowerRenderPriority;
+  chkThreadPriority.Checked := LowerRenderPriority;
 end;
 
 procedure TRenderForm.txtWidthChange(Sender: TObject);
@@ -1054,16 +1062,13 @@ end;
 
 procedure TRenderForm.chkThreadPriorityClick(Sender: TObject);
 begin
-{
   LowerRenderPriority := chkThreadPriority.Checked;
-
   if Assigned(Renderer) then begin
     if LowerRenderPriority then
       Renderer.SetPriority(tpLower)
     else
       Renderer.SetPriority(tpNormal);
   end;
-}
 end;
 
 end.

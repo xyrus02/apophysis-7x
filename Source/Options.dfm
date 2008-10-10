@@ -1219,7 +1219,7 @@ object OptionsForm: TOptionsForm
           Height = 21
           HelpContext = 1036
           TabOrder = 6
-          Text = '0'
+          Text = '1'
           OnChange = txtMinLumChange
         end
         object txtMaxLum: TEdit
@@ -1303,6 +1303,8 @@ object OptionsForm: TOptionsForm
           Height = 21
           HelpContext = 1036
           Associate = txtMinLum
+          Min = 1
+          Position = 1
           TabOrder = 14
         end
         object udMaxLum: TUpDown
