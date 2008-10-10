@@ -2899,7 +2899,6 @@ object MainForm: TMainForm
       Caption = 'Variation'
       object mnuVRandom: TMenuItem
         Caption = 'Random'
-        Checked = True
         GroupIndex = 2
         RadioItem = True
         ShortCut = 122
