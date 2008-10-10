@@ -42,7 +42,7 @@ const
   RS_XO = 2;
   RS_VO = 3;
 
-  AppVersionString = 'Apophysis 2.08 beta 2 pre6+';
+  AppVersionString = 'Apophysis 2.08 beta 2';
 
 type
   TMouseMoveState = (msUsual, msZoomWindow, msZoomOutWindow, msZoomWindowMove,
@@ -4947,7 +4947,7 @@ end;
 
 procedure TMainForm.VariantMenuClick(Sender: TObject);
 begin
-  TMenuItem(Sender).Checked := True;
+  //TMenuItem(Sender).Checked := True;
   UpdateUndo;
   Variation := TVariation(TMenuItem(Sender).Tag);
   SetVariation(maincp);
