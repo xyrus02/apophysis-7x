@@ -1,6 +1,7 @@
 {
      Apophysis Copyright (C) 2001-2004 Mark Townsend
      Apophysis Copyright (C) 2005-2006 Ronald Hordijk, Piotr Borys, Peter Sdobnov
+     Apophysis Copyright (C) 2007-2008 Piotr Borys, Peter Sdobnov
 
      This program is free software; you can redistribute it and/or modify
      it under the terms of the GNU General Public License as published by
@@ -16,6 +17,7 @@
      along with this program; if not, write to the Free Software
      Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
 }
+
 unit Regstry;
 
 interface
@@ -408,7 +410,7 @@ begin
       if Registry.ValueExists('MaxLum') then
       begin
         MaxLum := Registry.ReadInteger('MaxLum');
-        if MaxLum < 0 then MaxLum := 0;
+        if MaxLum <= 0 then MaxLum := 100;
       end
       else
       begin
@@ -541,15 +543,7 @@ begin
       begin
         SheepServer := 'http://v2d5.sheepserver.net/';
       end;
-{      if Registry.ValueExists('ResizeOnLoad') then
-      begin
-        ResizeOnLoad := Registry.ReadBool('ResizeOnLoad');
-      end
-      else
-      begin
-        ResizeOnLoad := False;
-      end;
-}      if Registry.ValueExists('ShowProgress') then
+      if Registry.ValueExists('ShowProgress') then
       begin
         ShowProgress := Registry.ReadBool('ShowProgress');
       end else begin
@@ -567,11 +561,11 @@ begin
       end else begin
         ShowRenderStats := false;
       end;
-//      if Registry.ValueExists('LowerRenderPriority') then begin
-//        LowerRenderPriority := Registry.ReadBool('LowerRenderPriority');
-//      end else begin
-//        LowerRenderPriority := false;
-//      end;
+      if Registry.ValueExists('LowerRenderPriority') then begin
+        LowerRenderPriority := Registry.ReadBool('LowerRenderPriority');
+      end else begin
+        LowerRenderPriority := false;
+      end;
 
       if Registry.ValueExists('PNGTransparency') then begin
         PNGTransparency := Registry.ReadInteger('PNGTransparency');
@@ -678,10 +672,9 @@ begin
       SheepPW := '';
       flam3Path := DefaultPath + 'flam3.exe';
       SheepServer := 'http://v2d5.sheepserver.net/';
-//      ResizeOnLoad := False;
       ShowProgress := true;
       SaveIncompleteRenders := false;
-//      LowerRenderPriority := false;
+      LowerRenderPriority := false;
       ShowRenderStats := false;
       PNGTransparency := 1;
       ShowTransparency := False;
@@ -1130,7 +1123,6 @@ begin
       Registry.WriteString('Renderer', flam3Path);
       Registry.WriteString('Server', SheepServer);
       Registry.WriteString('Pass', SheepPW);
-//      Registry.WriteBool('ResizeOnLoad', ResizeOnLoad);
       Registry.WriteBool('ShowProgress', ShowProgress);
       Registry.WriteBool('KeepBackground', KeepBackground);
       Registry.WriteBool('PreserveQuality', PreserveQuality);
@@ -1143,7 +1135,7 @@ begin
 
       Registry.WriteBool('SaveIncompleteRenders', SaveIncompleteRenders);
       Registry.WriteBool('ShowRenderStats', ShowRenderStats);
-//      Registry.WriteBool('LowerRenderPriority', LowerRenderPriority);
+      Registry.WriteBool('LowerRenderPriority', LowerRenderPriority);
 
       Registry.WriteInteger('NrTreads', NrTreads);
       Registry.WriteInteger('UseNrThreads', UseNrThreads);

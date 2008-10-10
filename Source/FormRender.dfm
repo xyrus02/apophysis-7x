@@ -568,9 +568,7 @@ object RenderForm: TRenderForm
     Width = 73
     Height = 17
     Caption = 'Low priority'
-    Enabled = False
     TabOrder = 10
-    Visible = False
     OnClick = chkThreadPriorityClick
   end
   object SaveDialog: TSaveDialog

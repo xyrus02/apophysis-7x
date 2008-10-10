@@ -279,7 +279,7 @@ end;
 
 procedure TRenderThread.SetPriority(p: TThreadPriority);
 begin
-  Priority := p;
+  //! Priority := p;
 
   if assigned(FRenderer) then
     FRenderer.SetThreadPriority(p);
