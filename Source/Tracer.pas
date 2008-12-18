@@ -95,12 +95,18 @@ begin
         TraceLevel := Registry.ReadInteger('TraceLevel')
       else
         TraceLevel := 0;
+      MainForm.tbShowTrace.Visible := true;
+      MainForm.tbShowTrace.Enabled := true;
+      MainForm.tbTraceSeparator.Visible := true;
+      MainForm.tbTraceSeparator.Enabled := true;
 
 {$else} // Tracer disabled in release version
 
       TraceLevel := 0;
       MainForm.tbShowTrace.Visible := false;
+      MainForm.tbShowTrace.Enabled := false;
       MainForm.tbTraceSeparator.Visible := false;
+      MainForm.tbTraceSeparator.Enabled := false;
 
 {$endif}
 
