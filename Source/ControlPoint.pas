@@ -473,7 +473,6 @@ end;
         if xf.noPlot then
           pPoint^.x := MaxDouble // hack
         else begin
-          //pPoint^.x := p.x; pPoint^.y := p.y; pPoint^.c := p.c;
           pPoint^ := p;
         end;
         Inc(pPoint);
@@ -1435,6 +1434,7 @@ begin
   Result.spatial_oversample := Round(c0 * cp1.spatial_oversample + c1 * cp2.spatial_oversample);
   Result.center[0] := c0 * cp1.center[0] + c1 * cp2.center[0];
   Result.center[1] := c0 * cp1.center[1] + c1 * cp2.center[1];
+  Result.FAngle := c0 * cp1.FAngle + c1 * cp2.FAngle;
   Result.pixels_per_unit := c0 * cp1.pixels_per_unit + c1 * cp2.pixels_per_unit;
 //  Result.background[0] := c0 * cp1.background[0] + c1 * cp2.background[0];
 //  Result.background[1] := c0 * cp1.background[1] + c1 * cp2.background[1];
@@ -1938,7 +1938,10 @@ end;
 ///////////////////////////////////////////////////////////////////////////////
 function TControlPoint.GetRelativeGammaThreshold: double;
 begin
-  Result := gamma_threshold / Fbrightness;
+  if Fbrightness <> 0 then
+    Result := gamma_threshold / Fbrightness
+  else
+    Result := gamma_threshold;  
 end;
 
 procedure TControlPoint.SetRelativeGammaThreshold(gtr: double);

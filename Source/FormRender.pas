@@ -419,7 +419,8 @@ begin
   begin
     MaxMemory := StrToIntDef(cbMaxMemory.text, 0);
     if MaxMemory * 1024*1024 < ImageWidth * (int64(ImageHeight) * 4 + oversample) then begin
-      Application.MessageBox('Invalid maximum memory value', 'Apophysis', 16);
+      // Must be enough memory to hold the final image (RGBA)
+      Application.MessageBox('Maximum memory value is too small', 'Apophysis', 16);
       exit;
     end;
   end;
