@@ -63,7 +63,7 @@ type
     procedure GetBucketStats(var Stats: TBucketStats);
 
     property OnProgress: TOnProgress
-        read FOnProgress
+//      read FOnProgress
        write FOnProgress;
   end;
 
@@ -254,6 +254,7 @@ var
   gutter_width: integer;
   k1, k2: double;
   area: double;
+  frac, funcval: double;
 
   GetBucket: function(x, y: integer): TBucket64 of object;
   bucket: TBucket64;
@@ -266,6 +267,9 @@ begin
     gamma := 1 / fcp.gamma;
   vib := round(fcp.vibrancy * 256.0);
   notvib := 256 - vib;
+
+  if fcp.gamma_threshold <> 0 then
+    funcval := power(fcp.gamma_threshold, gamma - 1); { / fcp.gamma_threshold; }
 
   bgi[0] := round(fcp.background[0]);
   bgi[1] := round(fcp.background[1]);
@@ -304,7 +308,7 @@ begin
   for i := 0 to fcp.Height - 1 do begin
     bx := 0;
 
-    if (i and $7 = 0) and assigned(FOnProgress) then FOnProgress(i / fcp.Height);
+    if (i and $3f = 0) and assigned(FOnProgress) then FOnProgress(i / fcp.Height);
 
     AlphaRow := PByteArray(FAlphaBitmap.scanline[YOffset + i]);
     Row := PRGBArray(FBitmap.scanline[YOffset + i]);
@@ -320,7 +324,10 @@ begin
             filterValue := FFilter[ii, jj];
 
             bucket := GetBucket(bx + jj, by + ii);
-            ls := lsa[Min(1023, bucket.Count)];
+            if bucket.count < 1024 then
+              ls := lsa[bucket.Count]
+            else
+              ls := (k1 * log10(1 + fcp.White_level * bucket.count * k2)) / (fcp.White_level * bucket.count);
 
             fp[0] := fp[0] + filterValue * ls * bucket.Red;
             fp[1] := fp[1] + filterValue * ls * bucket.Green;
@@ -335,7 +342,10 @@ begin
         fp[3] := fcp.white_level * fp[3] / PREFILTER_WHITE;
       end else begin
         bucket := GetBucket(bx, by);
-        ls := lsa[Min(1023, bucket.count)] / PREFILTER_WHITE;
+        if bucket.count < 1024 then
+          ls := lsa[bucket.count] / PREFILTER_WHITE
+        else
+          ls := (k1 * log10(1 + fcp.White_level * bucket.count * k2)) / (fcp.White_level * bucket.count) / PREFILTER_WHITE;
 
         fp[0] := ls * bucket.Red;
         fp[1] := ls * bucket.Green;
@@ -346,8 +356,15 @@ begin
       Inc(bx, FOversample);
 
       if fcp.Transparency then begin // -------------------------- Transparency
+        // gamma linearization
         if (fp[3] > 0.0) then begin
-          alpha := power(fp[3], gamma);
+          if fp[3] <= fcp.gamma_threshold then begin
+            frac := fp[3] / fcp.gamma_threshold;
+            alpha := (1 - frac) * fp[3] * funcval + frac * power(fp[3], gamma);
+          end
+          else
+            alpha := power(fp[3], gamma);
+
           ls := vib * alpha / fp[3];
           ai := round(alpha * 256);
           if (ai <= 0) then goto zero_alpha // ignore all if alpha = 0
@@ -393,7 +410,14 @@ zero_alpha:
       end
       else begin // ------------------------------------------- No transparency
         if (fp[3] > 0.0) then begin
-          alpha := power(fp[3], gamma);
+          // gamma linearization
+          if fp[3] <= fcp.gamma_threshold then begin
+            frac := fp[3] / fcp.gamma_threshold;
+            alpha := (1 - frac) * fp[3] * funcval + frac * power(fp[3], gamma);
+          end
+          else
+            alpha := power(fp[3], gamma);
+
           ls := vib * alpha / fp[3];
           ai := round(alpha * 256);
           if (ai < 0) then ai := 0

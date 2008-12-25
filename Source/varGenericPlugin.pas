@@ -150,8 +150,13 @@ end;
 
 procedure TPluginVariation.Prepare;
 begin
-  PluginData.PluginVarInit(MyVariation, Pointer(FPx), Pointer(FPy), Pointer(FTx), Pointer(FTy), vvar);
-  PluginData.PluginVarPrepare(MyVariation);
+  with PluginData do begin
+    if @PluginVarInit3D <> nil then
+      PluginVarInit3D(MyVariation, Pointer(FPX), Pointer(FPy), Pointer(FPz), Pointer(FTx), Pointer(FTy), Pointer(FTz), vvar)
+    else
+      PluginVarInit(MyVariation, Pointer(FPX), Pointer(FPy), Pointer(FTx), Pointer(FTy), vvar);
+    PluginVarPrepare(MyVariation);
+  end;
 end;
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -212,8 +217,15 @@ end;
 
 ///////////////////////////////////////////////////////////////////////////////
 function TPluginVariation.ResetVariable(const Name: string) : boolean;
+var
+  dummy: double;
 begin
-  Result := PluginData.PluginVarResetVariable(MyVariation, PChar(Name));
+  if @PluginData.PluginVarResetVariable <> nil then
+    Result := PluginData.PluginVarResetVariable(MyVariation, PChar(Name))
+  else begin
+    dummy := 0;
+    Result := PluginData.PluginVarSetVariable(MyVariation,PChar(Name), dummy);
+  end;
 end;
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -225,12 +237,12 @@ var
 begin
   NumBuiltinVars := NRLOCVAR + GetNrRegisteredVariations;
   // Try to find regular files matching *.dll in the plugins dir
-  if FindFirst('.\Plugins\*.dll', faAnyFile, searchResult) = 0 then
+  if FindFirst('.\Plugins3D\*.dll', faAnyFile, searchResult) = 0 then
   begin
     repeat
       with PluginData do begin
         //Load DLL and initialize plugins!
-        PluginHandle := LoadLibrary(PChar('.\Plugins\'+searchResult.Name));
+        PluginHandle := LoadLibrary(PChar('.\Plugins3D\'+searchResult.Name));
         if PluginHandle<>0 then begin
           @PluginVarGetName := GetProcAddress(PluginHandle,'PluginVarGetName');
           if @PluginVarGetName = nil then begin  // Must not be a valid plugin!

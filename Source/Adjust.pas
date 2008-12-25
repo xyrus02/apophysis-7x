@@ -133,8 +133,20 @@ type
     pnlVibrancy: TPanel;
     chkResizeMain: TCheckBox;
     Bevel3: TBevel;
+    pnlPitch: TPanel;
+    pnlYaw: TPanel;
+    pnlDOF: TPanel;
+    pnlPersp: TPanel;
+    txtPitch: TEdit;
+    txtYaw: TEdit;
+    txtDOF: TEdit;
+    txtPersp: TEdit;
     pnlMasterScale: TPanel;
     editPPU: TEdit;
+    pnlZpos: TPanel;
+    txtZpos: TEdit;
+    pnlGammaThreshold: TPanel;
+    txtGammaThreshold: TEdit;
     procedure FormCreate(Sender: TObject);
     procedure FormClose(Sender: TObject; var Action: TCloseAction);
     procedure FormDestroy(Sender: TObject);
@@ -256,7 +268,17 @@ type
       Shift: TShiftState; X, Y: Integer);
     procedure DragPanelDblClick(Sender: TObject);
     procedure FormActivate(Sender: TObject);
-
+    procedure txtCamEnter(Sender: TObject);
+    procedure txtCamPitchExit(Sender: TObject);
+    procedure txtCamPitchKeyPress(Sender: TObject; var Key: Char);
+    procedure txtCamYawExit(Sender: TObject);
+    procedure txtCamYawKeyPress(Sender: TObject; var Key: Char);
+    procedure txtCamDistExit(Sender: TObject);
+    procedure txtCamDistKeyPress(Sender: TObject; var Key: Char);
+    procedure txtCamZposExit(Sender: TObject);
+    procedure txtCamZposKeyPress(Sender: TObject; var Key: Char);
+    procedure txtCamDofExit(Sender: TObject);
+    procedure txtCamDofKeyPress(Sender: TObject; var Key: Char);
     procedure PreviewImageMouseDown(Sender: TObject; Button: TMouseButton;
       Shift: TShiftState; X, Y: Integer);
     procedure PreviewImageMouseMove(Sender: TObject; Shift: TShiftState; X,
@@ -264,6 +286,9 @@ type
     procedure PreviewImageMouseUp(Sender: TObject; Button: TMouseButton;
       Shift: TShiftState; X, Y: Integer);
     procedure PreviewImageDblClick(Sender: TObject);
+    procedure txtGammaThresholdKeyPress(Sender: TObject; var Key: Char);
+    procedure txtGammaThresholdEnter(Sender: TObject);
+    procedure txtGammaThresholdExit(Sender: TObject);
 
   private
     Resetting: boolean;
@@ -280,7 +305,7 @@ type
 
     camDragMode, camDragged, camMM: boolean;
     camDragPos, camDragOld: TPoint;
-    camDragValueX, camDragValueY, camSin, camCos: double;
+    camDragValueX, camDragValueY: double;
 
   private // gradient stuff
     Palette, BackupPal: TColorMap;
@@ -401,6 +426,15 @@ begin
 
     Resetting := False;
     editPPU.Text := Format('%.6g', [100*cp.pixels_per_unit/PreviewImage.Width]);
+
+    txtGammaThreshold.Text := Format('%.3g', [cp.gammaThreshRelative]);
+
+    // 3d camera
+    txtPitch.Text := Format('%.6g', [cp.cameraPitch * 180 / PI]);
+    txtYaw.Text :=   Format('%.6g', [cp.cameraYaw * 180 / PI]);
+    txtPersp.Text := Format('%.6g', [cp.cameraPersp]);
+    txtZpos.Text :=  Format('%.6g', [cp.cameraZpos]);
+    txtDOF.Text :=   Format('%.6g', [cp.cameraDof]);
   end; //***
   DrawPreview;
 end;
@@ -616,17 +650,7 @@ begin
   if ((key = #13) and (EditBoxValue <> txtZoom.Text)) then
   begin
     key := #0;
-    try
-      v := Trunc(StrToFloat(txtZoom.Text) * 1000);
-      if v > scrollZoom.Max then v := scrollZoom.Max;
-      if v < scrollZoom.Min then v := scrollZoom.Min;
-      if v <> ScrollZoom.Position then begin
-        ScrollZoom.Position := v;
-        UpdateFlame;
-        EditBoxValue := txtZoom.Text;
-      end;
-    except on EConvertError do
-    end;
+    txtZoomExit(sender);
   end;
 end;
 
@@ -644,7 +668,7 @@ begin
       UpdateFlame;
     end;
   except on EConvertError do
-      txtZoom.Text := FloatToStr(cp.zoom)
+    txtZoom.Text := FloatToStr(cp.zoom)
   end;
 end;
 
@@ -660,15 +684,7 @@ begin
   if ((key = #13) and (EditBoxValue <> txtCenterX.Text)) then
   begin
     key := #0;
-    try
-      v := Trunc(StrToFloat(txtCenterX.Text) * 1000);
-      if v > scrollCenterX.Max then v := scrollCenterX.Max;
-      if v < scrollCenterX.Min then v := scrollCenterX.Min;
-      ScrollCenterX.Position := v;
-      UpdateFlame;
-      EditBoxValue := txtCenterX.Text;
-    except on EConvertError do
-    end;
+    txtCenterXExit(sender);
   end;
 end;
 
@@ -684,7 +700,7 @@ begin
     ScrollCenterX.Position := v;
     UpdateFlame;
   except on EConvertError do
-      txtCenterX.Text := FloatToStr(cp.center[0]);
+    txtCenterX.Text := FloatToStr(cp.center[0]);
   end;
 end;
 
@@ -700,15 +716,7 @@ begin
   if ((key = #13) and (EditBoxValue <> txtCenterY.Text)) then
   begin
     key := #0;
-    try
-      v := Trunc(StrToFloat(txtCenterY.Text) * 1000);
-      if v > ScrollCenterY.Max then v := ScrollCenterY.Max;
-      if v < ScrollCenterY.Min then v := ScrollCenterY.Min;
-      ScrollCenterY.Position := v;
-      UpdateFlame;
-      EditBoxValue := txtCenterY.Text;
-    except on EConvertError do
-    end;
+    txtCenterYExit(sender);
   end;
 end;
 
@@ -724,7 +732,7 @@ begin
     ScrollCenterY.Position := v;
     UpdateFlame;
   except on EConvertError do
-      txtCenterY.Text := FloatToStr(cp.center[1]);
+    txtCenterY.Text := FloatToStr(cp.center[1]);
   end;
 end;
 
@@ -745,7 +753,7 @@ begin
     ScrollGamma.Position := v;
     UpdateFlame;
   except on EConvertError do
-      txtGamma.Text := FloatToStr(cp.gamma);
+    txtGamma.Text := FloatToStr(cp.gamma);
   end;
 end;
 
@@ -756,15 +764,7 @@ begin
   if ((key = #13) and (txtGamma.Text <> EditBoxValue)) then
   begin
     key := #0;
-    try
-      v := Trunc(StrToFloat(txtGamma.Text) * 100);
-      if v > scrollGamma.Max then v := scrollGamma.Max;
-      if v < scrollGamma.Min then v := scrollGamma.Min;
-      ScrollGamma.Position := v;
-      UpdateFlame;
-      EditBoxValue := txtGamma.Text;
-    except on EConvertError do
-    end;
+    txtGammaExit(sender);
   end;
 end;
 
@@ -785,7 +785,7 @@ begin
     ScrollBrightness.Position := v;
     UpdateFlame;
   except on EConvertError do
-      txtBrightness.Text := FloatToStr(cp.brightness);
+    txtBrightness.Text := FloatToStr(cp.brightness);
   end;
 end;
 
@@ -797,15 +797,7 @@ begin
   if ((key = #13) and (txtBrightness.Text <> EditBoxValue)) then
   begin
     key := #0;
-    try
-      v := Trunc(StrToFloat(txtBrightness.Text) * 100);
-      if v > scrollBrightness.Max then v := scrollBrightness.Max;
-      if v < scrollBrightness.Min then v := scrollBrightness.Min;
-      ScrollBrightness.Position := v;
-      UpdateFlame;
-      EditBoxValue := txtBrightness.Text;
-    except on EConvertError do
-    end;
+    txtBrightnessExit(sender);
   end;
 end;
 
@@ -821,15 +813,7 @@ begin
   if ((key = #13) and (txtVibrancy.Text <> EditBoxValue)) then
   begin
     key := #0;
-    try
-      v := Trunc(StrToFloat(txtVibrancy.Text) * 100);
-      if v > scrollVibrancy.Max then v := scrollVibrancy.Max;
-      if v < scrollVibrancy.Min then v := scrollVibrancy.Min;
-      ScrollVibrancy.Position := v;
-      UpdateFlame;
-      EditBoxValue := txtVibrancy.Text;
-    except on EConvertError do
-    end;
+    txtVibrancyExit(sender);
   end;
 end;
 
@@ -1938,9 +1922,10 @@ begin
   except
     exit;
   end;
-  if v > 0 then begin
+  v := v/100*PreviewImage.Width;
+  if (v > 0) and (cp.pixels_per_unit <> v) then begin
     MainForm.UpdateUndo;
-    cp.pixels_per_unit := v/100*PreviewImage.Width;
+    cp.pixels_per_unit := v;
     UpdateFlame;
   end;
 end;
@@ -1968,6 +1953,19 @@ begin
     pnlDragValue := cp.brightness
   else if (Sender = pnlVibrancy) then
     pnlDragValue := cp.vibrancy
+  // 3d camera controls
+  else if (Sender = pnlPitch) then
+    pnlDragValue := cp.cameraPitch * 180.0 / PI
+  else if (Sender = pnlYaw) then
+    pnlDragValue := cp.cameraYaw * 180.0 / PI
+  else if (Sender = pnlPersp) then
+    pnlDragValue := cp.cameraPersp
+  else if (Sender = pnlZpos) then
+    pnlDragValue := cp.cameraZpos
+  else if (Sender = pnlDOF) then
+    pnlDragValue := cp.cameraDOF
+  else if (Sender = pnlGammaThreshold) then
+    pnlDragValue := cp.gammaThreshRelative
   else assert(false);
 
   pnlDragMode := true;
@@ -2000,6 +1998,9 @@ begin
     else if GetKeyState(VK_CONTROL) < 0 then sc := 10000
     else if GetKeyState(VK_SHIFT) < 0 then sc := 100
     else sc := 1000;
+
+    if (Sender = pnlPitch) or (Sender = pnlYaw) then sc := sc / 50
+    else if Sender = pnlPersp then sc := sc * 10;
 
     v := Round6(pnlDragValue + pnlDragPos / sc);
 
@@ -2040,6 +2041,40 @@ begin
     else if (Sender = pnlVibrancy) then
     begin
       scrollVibrancy.Position := trunc(v * 100);
+    end
+    else if (Sender = pnlPitch) then // 3d camera controls
+    begin
+      v := v - 360*Trunc(v/360);
+      cp.cameraPitch := v * PI / 180.0;
+      txtPitch.Text := FloatToStr(v);
+    end
+    else if (Sender = pnlYaw) then
+    begin
+      v := v - 360*Trunc(v/360);
+      cp.cameraYaw := v * PI / 180.0;
+      txtYaw.Text := FloatToStr(v);
+    end
+    else if (Sender = pnlPersp) then
+    begin
+      cp.cameraPersp := v;
+      txtPersp.Text := FloatToStr(v);
+    end
+    else if (Sender = pnlZpos) then
+    begin
+      cp.cameraZpos := v;
+      txtZpos.Text := FloatToStr(v);
+    end
+    else if (Sender = pnlDOF) then
+    begin
+      if v < 0 then v := 0;
+      cp.cameraDOF := v;
+      txtDOF.Text := FloatToStr(v);
+    end
+    else if (Sender = pnlGammaThreshold) then
+    begin
+      if v < 0 then v := 0;
+      cp.gammaThreshRelative := v;
+      txtGammaThreshold.Text := FloattoStr(cp.gammaThreshRelative);
     end;
     //pEdit^.Text := FloatToStr(v);
     //pEdit.Refresh;
@@ -2097,15 +2132,48 @@ begin
   end
   else if (Sender = pnlGamma) then
   begin
-    scrollGamma.Position := 400;
+    scrollGamma.Position := Round(defGamma * 100);
   end
   else if (Sender = pnlBrightness) then
   begin
-    scrollBrightness.Position := 400;
+    scrollBrightness.Position := Round(defBrightness * 100);
   end
   else if (Sender = pnlVibrancy) then
   begin
-    scrollVibrancy.Position := 100;
+    scrollVibrancy.Position := Round(defVibrancy * 100);
+  end
+  // 3d camera controls
+  else if (Sender = pnlPitch) then
+  begin
+    cp.cameraPitch := 0;
+    txtPitch.Text := '0';
+  end
+  else if (Sender = pnlYaw) then
+  begin
+    cp.cameraYaw := 0;
+    txtYaw.Text := '0';
+  end
+  else if (Sender = pnlPersp) then
+  begin
+    if cp.cameraPersp = 0 then cp.cameraPersp := 0.125
+    else cp.cameraPersp := 0;
+    txtPersp.Text := FloatToStr(cp.cameraPersp);
+  end
+  else if (Sender = pnlZpos) then
+  begin
+    cp.cameraZpos := 0;
+    txtZpos.Text := '0';
+  end
+  else if (Sender = pnlDOF) then
+  begin
+    cp.cameraDOF := 0;
+    txtDOF.Text := '0';
+  end
+  else if (Sender = pnlGammaThreshold) then
+  begin
+    if cp.gammaThreshRelative = defGammaThreshold then exit;
+    cp.gammaThreshRelative := defGammaThreshold;
+    txtGammaThreshold.Text := FloatToStr(defGammaThreshold);
   end
   else assert(false);
 
@@ -2125,21 +2193,136 @@ end;
 
 ///////////////////////////////////////////////////////////////////////////////
 
+procedure TAdjustForm.txtCamEnter(Sender: TObject);
+begin
+  EditBoxValue := (Sender as TEdit).Text;
+end;
+
+procedure TAdjustForm.txtCamPitchExit(Sender: TObject);
+var
+  v: double;
+begin
+  if (EditBoxValue <> txtPitch.Text) then
+  try
+    v := StrToFloat(txtPitch.Text);
+    v := v - 360*Trunc(v/360);
+    txtPitch.Text := FloatToStr(v);
+    cp.cameraPitch := v * PI / 180;
+    UpdateFlame;
+  except on EConvertError do
+    txtPitch.Text := FloatToStr(cp.cameraPitch / PI * 180);
+  end;
+end;
+
+procedure TAdjustForm.txtCamPitchKeyPress(Sender: TObject; var Key: Char);
+begin
+  if ((key = #13) and (EditBoxValue <> (Sender as TEdit).Text)) then
+  begin
+    key := #0;
+    txtCamPitchExit(Sender);
+  end;
+end;
+
+procedure TAdjustForm.txtCamYawExit(Sender: TObject);
+var
+  v: double;
+begin
+  if (EditBoxValue <> txtYaw.Text) then
+  try
+    v := StrToFloat(txtYaw.Text);
+    v := v - 360*Trunc(v/360);
+    txtYaw.Text := FloatToStr(v);
+    cp.cameraYaw := v * PI / 180;
+    UpdateFlame;
+  except on EConvertError do
+    txtYaw.Text := FloatToStr(cp.cameraYaw / PI * 180);
+  end;
+end;
+
+procedure TAdjustForm.txtCamYawKeyPress(Sender: TObject; var Key: Char);
+begin
+  if ((key = #13) and (EditBoxValue <> (Sender as TEdit).Text)) then
+  begin
+    key := #0;
+    txtCamYawExit(Sender);
+  end;
+end;
+
+procedure TAdjustForm.txtCamDistExit(Sender: TObject);
+begin
+  if (EditBoxValue <> txtPersp.Text) then
+  try
+    cp.cameraPersp := StrToFloat(txtPersp.Text);
+    UpdateFlame;
+  except on EConvertError do
+      txtPersp.Text := FloatToStr(cp.cameraPersp);
+  end;
+end;
+
+procedure TAdjustForm.txtCamDistKeyPress(Sender: TObject; var Key: Char);
+begin
+  if ((key = #13) and (EditBoxValue <> (Sender as TEdit).Text)) then
+  begin
+    key := #0;
+    txtCamDistExit(Sender);
+  end;
+end;
+
+procedure TAdjustForm.txtCamZposExit(Sender: TObject);
+begin
+  if (EditBoxValue <> txtZpos.Text) then
+  try
+    cp.cameraZpos := StrToFloat(txtZpos.Text);
+    txtZpos.Text := FloatToStr(cp.cameraZpos);
+    UpdateFlame;
+  except on EConvertError do
+    txtZpos.Text := FloatToStr(cp.cameraZpos);
+  end;
+end;
+
+procedure TAdjustForm.txtCamZposKeyPress(Sender: TObject; var Key: Char);
+begin
+  if ((key = #13) and (EditBoxValue <> (Sender as TEdit).Text)) then
+  begin
+    key := #0;
+    txtCamZposExit(Sender);
+  end;
+end;
+
+procedure TAdjustForm.txtCamDofExit(Sender: TObject);
+begin
+  if (EditBoxValue <> txtDof.Text) then
+  try
+    cp.cameraDOF := StrToFloat(txtDof.Text);
+    txtDof.Text := FloatToStr(cp.cameraDOF);
+    UpdateFlame;
+  except on EConvertError do
+    txtDof.Text := FloatToStr(cp.cameraDOF);
+  end;
+end;
+
+procedure TAdjustForm.txtCamDofKeyPress(Sender: TObject; var Key: Char);
+begin
+  if ((key = #13) and (EditBoxValue <> (Sender as TEdit).Text)) then
+  begin
+    key := #0;
+    txtCamDofExit(Sender);
+  end;
+end;
+
 procedure TAdjustForm.PreviewImageMouseDown(Sender: TObject;
   Button: TMouseButton; Shift: TShiftState; X, Y: Integer);
 begin
   if Button <> mbLeft then exit;
 
-  camDragValueX := cp.Center[0];
-  camDragValueY := cp.Center[1];
+  camDragValueY := cp.cameraPitch * 180.0 / PI;
+  camDragValueX := cp.cameraYaw * 180.0 / PI;
 
   camDragMode := true;
   camDragPos.x := 0;
   camDragPos.y := 0;
   camDragOld.x := x;
   camDragOld.y := y;
-  camSin := sin(cp.FAngle);
-  camCos := cos(cp.FAngle);
   camMM := false;
   //SetCaptureControl(TControl(Sender));
 
@@ -2164,22 +2347,15 @@ begin
     Inc(camDragPos.x, x - camDragOld.x);
     Inc(camDragPos.y, y - camDragOld.y);
 
-    if GetKeyState(VK_MENU) < 0 then sc := 1000
-    else if GetKeyState(VK_CONTROL) < 0 then sc := 100
-    else if GetKeyState(VK_SHIFT) < 0 then sc := 1
-    else sc := 10;
+    vx := Round6(camDragValueX + camDragPos.x / 10);
+    vy := Round6(camDragValueY - camDragPos.y / 10);
 
-    sc := sc * cp.pixels_per_unit;
-
-    vx := Round6(camDragValueX - (camDragPos.x * camCos - camDragPos.y * camSin) / sc);
-    vy := Round6(camDragValueY - (camDragPos.x * camSin + camDragPos.y * camCos) / sc);
-
-    cp.center[0] := vx;
-    txtCenterX.Text := FloatToStr(vx);
-    txtCenterX.Refresh;
-    cp.center[1] := vy;
-    txtCenterY.Text := FloatToStr(vy);
-    txtCenterY.Refresh;
+    cp.cameraPitch := vy * PI / 180.0;
+    txtPitch.Text := FloatToStr(vy);
+    txtPitch.Refresh;
+    cp.cameraYaw := vx * PI / 180.0;
+    txtYaw.Text := FloatToStr(vx);
+    txtYaw.Refresh;
 
     SetCursorPos(MousePos.x, MousePos.y); // hmmm
     pnlMM:=true;
@@ -2209,12 +2385,50 @@ end;
 
 procedure TAdjustForm.PreviewImageDblClick(Sender: TObject);
 begin
-  cp.center[0] := 0;
-  cp.center[1] := 0;
-  txtCenterX.Text := '0';
-  txtCenterY.Text := '0';
+  cp.cameraPitch := 0;
+  txtPitch.Text := '0';
+  cp.cameraYaw := 0;
+  txtYaw.Text := '0';
+//  cp.cameraZpos := 0;
+//  txtZpos.Text := '0';
+  scrollCenterX.Position := 0;
+  scrollCenterY.Position := 0;
 
   UpdateFlame;
+end;
+
+procedure TAdjustForm.txtGammaThresholdEnter(Sender: TObject);
+begin
+  EditBoxValue := txtGammaThreshold.Text;
+end;
+
+procedure TAdjustForm.txtGammaThresholdExit(Sender: TObject);
+var
+  v: double;
+begin
+  try
+    v := strtofloat(txtGammaThreshold.Text);
+  except
+    exit;
+  end;
+  if v < 0 then v := 0;
+  if v <> cp.gammaThreshRelative then begin
+    MainForm.UpdateUndo;
+    cp.gammaThreshRelative := v;
+    txtGammaThreshold.Text := FloatToStr(cp.gammaThreshRelative);
+    UpdateFlame;
+    EditBoxValue := txtGammaThreshold.Text;
+  end;
+end;
+
+procedure TAdjustForm.txtGammaThresholdKeyPress(Sender: TObject;
+  var Key: Char);
+begin
+  if key=#13 then
+  begin
+    key := #0;
+    txtGammaThresholdExit(Sender);
+  end;
 end;
 
 end.

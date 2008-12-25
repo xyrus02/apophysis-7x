@@ -1,6 +1,6 @@
 {
      Apophysis Copyright (C) 2001-2004 Mark Townsend
-     Apophysis Copyright (C) 2005-2006 Ronald Hordijk, Piotr Borys, Peter Sdobnov     
+     Apophysis Copyright (C) 2005-2006 Ronald Hordijk, Piotr Borys, Peter Sdobnov
 
      This program is free software; you can redistribute it and/or modify
      it under the terms of the GNU General Public License as published by
@@ -29,6 +29,7 @@ implementation
 
 uses Windows, SysUtils, Forms, Registry, Global, Dialogs, XFormMan;
 
+(*
 procedure UnpackVariations(v: int64);
 { Unpacks the variation options form an integer }
 var
@@ -37,11 +38,14 @@ begin
   for i := 0 to NRVAR - 1 do
     Variations[i] := boolean(v shr i and 1);
 end;
+*)
 
 procedure ReadSettings;
 var
   Registry: TRegistry;
   DefaultPath: string;
+  i, maxVars: integer;
+  VariationOptions: int64;
 begin
   DefaultPath := ExtractFilePath(Application.Exename);
 //  ShowMessage(DefaultPath);
@@ -51,14 +55,17 @@ begin
     { Defaults }
     if Registry.OpenKey('Software\' + APP_NAME + '\Defaults', False) then
     begin
-      if Registry.ValueExists('DefaultFlameFile') then
+      if Registry.ValueExists('DefaultFlameFile3D') then
       begin
-        defFlameFile := Registry.ReadString('DefaultFlameFile');
+        defFlameFile := Registry.ReadString('DefaultFlameFile3D');
       end
-      else
-      begin
-        defFlameFile := '';
+      else begin
+        if Registry.ValueExists('DefaultFlameFile') then
+          defFlameFile := Registry.ReadString('DefaultFlameFile')
+        else
+          defFlameFile := '';
       end;
+
       if Registry.ValueExists('GradientFile') then
       begin
         GradientFile := Registry.ReadString('GradientFile');
@@ -67,14 +74,18 @@ begin
       begin
         GradientFile := ''
       end;
-      if Registry.ValueExists('SavePath') then
+
+      if Registry.ValueExists('SavePath3D') then
       begin
-        SavePath := Registry.ReadString('SavePath');
+        SavePath := Registry.ReadString('SavePath3D');
       end
-      else
-      begin
-        SavePath := DefaultPath + 'Parameters\My Flames.flame';
+      else begin
+        if Registry.ValueExists('SavePath') then
+          SavePath := Registry.ReadString('SavePath')
+        else
+          SavePath := DefaultPath + 'Parameters\My 3D Flames.flame';
       end;
+
       if Registry.ValueExists('SmoothPaletteFile') then
       begin
         defSmoothPaletteFile := Registry.ReadString('SmoothPaletteFIle');
@@ -139,9 +150,11 @@ begin
       begin
         TryLength := 100000;
       end;
+
       if Registry.ValueExists('MinTransforms') then
       begin
         randMinTransforms := Registry.ReadInteger('MinTransforms');
+        if randMinTransforms <= 0 then randMinTransforms := 2;
       end
       else
       begin
@@ -150,14 +163,17 @@ begin
       if Registry.ValueExists('MaxTransforms') then
       begin
         randMaxTransforms := Registry.ReadInteger('MaxTransforms');
+        if randMaxTransforms < randMinTransforms then randMaxTransforms := randMinTransforms;
       end
       else
       begin
-        randMaxTransforms := 3;
+        randMaxTransforms := randMinTransforms + 1;
       end;
+
       if Registry.ValueExists('MutationMinTransforms') then
       begin
         mutantMinTransforms := Registry.ReadInteger('MutationMinTransforms');
+        if mutantMinTransforms <= 0 then mutantMinTransforms := 2;
       end
       else
       begin
@@ -166,11 +182,13 @@ begin
       if Registry.ValueExists('MutationMaxTransforms') then
       begin
         mutantMaxTransforms := Registry.ReadInteger('MutationMaxTransforms');
+        if mutantMaxTransforms < mutantMinTransforms then mutantMinTransforms := mutantMinTransforms;
       end
       else
       begin
-        mutantMaxTransforms := 6;
+        mutantMaxTransforms := mutantMinTransforms + 1;
       end;
+
       if Registry.ValueExists('RandomGradient') then
       begin
         randGradient := Registry.ReadInteger('RandomGradient');
@@ -179,6 +197,12 @@ begin
       begin
         randGradient := 0;
       end;
+
+      if Registry.ValueExists('ParameterFolder3D') then
+      begin
+        ParamFolder := Registry.ReadString('ParameterFolder3D');
+      end
+      else
       if Registry.ValueExists('ParameterFolder') then
       begin
         ParamFolder := Registry.ReadString('ParameterFolder');
@@ -187,6 +211,7 @@ begin
       begin
         ParamFolder := DefaultPath + 'Parameters\';
       end;
+
       if Registry.ValueExists('UPRPath') then
       begin
         UPRPath := Registry.ReadString('UPRPath');
@@ -195,6 +220,7 @@ begin
       begin
         UPRPath := DefaultPath;
       end;
+
       if Registry.ValueExists('ImageFolder') then
       begin
         ImageFolder := Registry.ReadString('ImageFolder');
@@ -203,6 +229,7 @@ begin
       begin
         ImageFolder := DefaultPath;
       end;
+
       if Registry.ValueExists('UPRWidth') then
       begin
         UPRWidth := Registry.ReadInteger('UPRWidth');
@@ -219,6 +246,7 @@ begin
       begin
         UPRHeight := 480;
       end;
+
       if Registry.ValueExists('BrowserPath') then
       begin
         BrowserPath := Registry.ReadString('BrowserPath');
@@ -238,6 +266,7 @@ begin
       if Registry.ValueExists('MutatePreviewQaulity') then
       begin
         MutatePrevQual := Registry.ReadInteger('MutatePreviewQaulity');
+        if MutatePrevQual <= 0 then MutatePrevQual := 1;
       end
       else
       begin
@@ -246,6 +275,7 @@ begin
       if Registry.ValueExists('AdjustPreviewQaulity') then
       begin
         AdjustPrevQual := Registry.ReadInteger('AdjustPreviewQaulity');
+        if AdjustPrevQual <= 0 then AdjustPrevQual := 1;
       end
       else
       begin
@@ -257,7 +287,7 @@ begin
       end
       else
       begin
-        RandomPrefix := 'Apophysis-'
+        RandomPrefix := 'Apo3D-'
       end;
       if Registry.ValueExists('RandomDate') then
       begin
@@ -312,11 +342,12 @@ begin
       begin
         VariationOptions := VariationOptions or (int64(Registry.ReadInteger('VariationOptions2')) shl 32);
       end;
-      UnpackVariations(VariationOptions);
+//      UnpackVariations(VariationOptions);
 
       if Registry.ValueExists('MinNodes') then
       begin
         MinNodes := Registry.ReadInteger('MinNodes');
+        if MinNodes < 2 then MinNodes := 2;
       end
       else
       begin
@@ -349,6 +380,7 @@ begin
       if Registry.ValueExists('MaxNodes') then
       begin
         MaxNodes := Registry.ReadInteger('MaxNodes');
+        if MaxNodes < MinNodes then MaxNodes := MinNodes;
       end
       else
       begin
@@ -357,6 +389,7 @@ begin
       if Registry.ValueExists('MaxHue') then
       begin
         MaxHue := Registry.ReadInteger('MaxHue');
+        if MaxHue < 0 then MaxHue := 0;
       end
       else
       begin
@@ -365,6 +398,7 @@ begin
       if Registry.ValueExists('MaxSat') then
       begin
         MaxSat := Registry.ReadInteger('MaxSat');
+        if MaxSat < 0 then MaxSat := 0;
       end
       else
       begin
@@ -378,9 +412,11 @@ begin
       begin
         randGradientFile := ''
       end;
-      if Registry.ValueExists('ReferenceMode') then
-        ReferenceMode := Registry.ReadInteger('ReferenceMode')
-      else ReferenceMode := 0;
+
+//      if Registry.ValueExists('ReferenceMode') then
+//        ReferenceMode := Registry.ReadInteger('ReferenceMode')
+//      else ReferenceMode := 0;
+
       if Registry.ValueExists('RotationMode') then
         MainForm_RotationMode := Registry.ReadInteger('RotationMode')
       else MainForm_RotationMode := 0;
@@ -388,6 +424,7 @@ begin
       if Registry.ValueExists('MaxLum') then
       begin
         MaxLum := Registry.ReadInteger('MaxLum');
+        if MaxLum <= 0 then MaxLum := 100;
       end
       else
       begin
@@ -396,6 +433,7 @@ begin
       if Registry.ValueExists('BatchSize') then
       begin
         BatchSize := Registry.ReadInteger('BatchSize');
+        if BatchSize <= 0 then BatchSize := 10;
       end
       else
       begin
@@ -428,6 +466,7 @@ begin
       if Registry.ValueExists('ExportWidth') then
       begin
         ExportWidth := Registry.ReadInteger('ExportWidth');
+        if ExportWidth <= 0 then ExportWidth := 640;
       end
       else
       begin
@@ -436,6 +475,7 @@ begin
       if Registry.ValueExists('ExportHeight') then
       begin
         ExportHeight := Registry.ReadInteger('ExportHeight');
+        if ExportHeight <= 0 then ExportHeight := 480;
       end
       else
       begin
@@ -444,6 +484,7 @@ begin
       if Registry.ValueExists('ExportDensity') then
       begin
         ExportDensity := Registry.ReadFloat('ExportDensity');
+        if ExportDensity <= 0 then ExportDensity := 100;
       end
       else
       begin
@@ -452,6 +493,7 @@ begin
       if Registry.ValueExists('ExportOversample') then
       begin
         ExportOversample := Registry.ReadInteger('ExportOversample');
+        if ExportOversample <= 0 then ExportOversample := 2;
       end
       else
       begin
@@ -460,6 +502,7 @@ begin
       if Registry.ValueExists('ExportFilter') then
       begin
         ExportFilter := Registry.ReadFloat('ExportFilter');
+        if ExportFilter <= 0 then ExportFilter := 0.6;
       end
       else
       begin
@@ -468,6 +511,7 @@ begin
       if Registry.ValueExists('ExportBatches') then
       begin
         ExportBatches := Registry.ReadInteger('ExportBatches');
+        if ExportBatches <= 0 then ExportBatches := 3;
       end
       else
       begin
@@ -513,21 +557,14 @@ begin
       begin
         SheepServer := 'http://v2d5.sheepserver.net/';
       end;
-{      if Registry.ValueExists('ResizeOnLoad') then
-      begin
-        ResizeOnLoad := Registry.ReadBool('ResizeOnLoad');
-      end
-      else
-      begin
-        ResizeOnLoad := False;
-      end;
-}      if Registry.ValueExists('ShowProgress') then
+      if Registry.ValueExists('ShowProgress') then
       begin
         ShowProgress := Registry.ReadBool('ShowProgress');
       end else begin
         ShowProgress := true;
       end;
 
+      { FormRender }
       if Registry.ValueExists('SaveIncompleteRenders') then begin
         SaveIncompleteRenders := Registry.ReadBool('SaveIncompleteRenders');
       end else begin
@@ -537,6 +574,11 @@ begin
         ShowRenderStats := Registry.ReadBool('ShowRenderStats');
       end else begin
         ShowRenderStats := false;
+      end;
+      if Registry.ValueExists('LowerRenderPriority') then begin
+        LowerRenderPriority := Registry.ReadBool('LowerRenderPriority');
+      end else begin
+        LowerRenderPriority := false;
       end;
 
       if Registry.ValueExists('PNGTransparency') then begin
@@ -567,11 +609,13 @@ begin
 
       if Registry.ValueExists('NrTreads') then begin
         NrTreads := Registry.ReadInteger('NrTreads');
+        if NrTreads <= 0 then NrTreads := 1;
       end else begin
         NrTreads := 1;
       end;
       if Registry.ValueExists('UseNrThreads') then begin
         UseNrThreads := Registry.ReadInteger('UseNrThreads');
+        if UseNrThreads <= 0 then UseNrThreads := 1;
       end else begin
         UseNrThreads := 1;
       end;
@@ -581,18 +625,17 @@ begin
         InternalBitsPerSample := 0;
       end;
 
-
     end
     else
     begin
-      ReferenceMode := 0;
+//      ReferenceMode := 0;
       MainForm_RotationMode := 0;
       EditPrevQual := 1;
       MutatePrevQual := 1;
       AdjustPrevQual := 1;
       GradientFile := '';
       defFlameFile := '';
-      SavePath := DefaultPath + 'Parameters\My Flames.flame';
+      SavePath := DefaultPath + 'Parameters\My 3D Flames.flame';
       defSmoothPaletteFile := DefaultPath + 'smooth.ugr';
       ConfirmDelete := True;
       ConfirmExit := True;
@@ -611,14 +654,14 @@ begin
       ParamFolder := DefaultPath + 'Parameters\';
       UPRWidth := 640;
       UPRHeight := 480;
-      RandomPrefix := 'Apophysis-';
+      RandomPrefix := 'Apo3D-';
       RandomIndex := 0;
       RandomDate := '';
       SymmetryType := 0;
       SymmetryOrder := 4;
       SymmetryNVars := 12;
       VariationOptions := 262143;
-      UnpackVariations(VariationOptions);
+//      UnpackVariations(VariationOptions);
       MinNodes := 2;
       MaxNodes := 10;
       MinHue := 0;
@@ -643,9 +686,9 @@ begin
       SheepPW := '';
       flam3Path := DefaultPath + 'flam3.exe';
       SheepServer := 'http://v2d5.sheepserver.net/';
-//      ResizeOnLoad := False;
       ShowProgress := true;
       SaveIncompleteRenders := false;
+      LowerRenderPriority := false;
       ShowRenderStats := false;
       PNGTransparency := 1;
       ShowTransparency := False;
@@ -654,6 +697,24 @@ begin
       NrTreads := 1;
       UseNrThreads := 1;
       InternalBitsPerSample := 0;
+    end;
+    Registry.CloseKey;
+
+    SetLength(Variations, NRVAR);
+    if Registry.OpenKey('Software\' + APP_NAME + '\Variations', False) then
+    begin
+      for i := 0 to NRVAR-1 do begin
+      if Registry.ValueExists(Varnames(i)) then
+        Variations[i] := Registry.ReadBool(Varnames(i))
+      else
+        Variations[i] := false;
+      end;
+    end
+    else begin
+      if NRVAR >= 64 then maxVars := 63
+      else maxVars := NRVAR-1;
+      for i := 0 to maxVars do
+        Variations[i] := boolean(VariationOptions shr i and 1);
     end;
     Registry.CloseKey;
 
@@ -699,9 +760,9 @@ begin
       if Registry.ValueExists('LockTransformAxis') then
         TransformAxisLock := Registry.ReadBool('LockTransformAxis')
       else TransformAxisLock := true;
-      if Registry.ValueExists('DoubleClickSetVars') then
-        DoubleClickSetVars := Registry.ReadBool('DoubleClickSetVars')
-      else DoubleClickSetVars := true;
+      if Registry.ValueExists('RebuildXaosLinks') then
+        RebuildXaosLinks := Registry.ReadBool('RebuildXaosLinks')
+      else RebuildXaosLinks := true;
     end
     else begin
       UseTransformColors := false;
@@ -714,7 +775,7 @@ begin
       ReferenceTriangleColor := integer(clGray);
       ExtEditEnabled := true;
       TransformAxisLock := true;
-      DoubleClickSetVars := true;
+      RebuildXaosLinks := true;
     end;
     Registry.CloseKey;
 
@@ -931,6 +992,14 @@ begin
       begin
         defFilterRadius := 0.2;
       end;
+      if Registry.ValueExists('GammaThreshold') then
+      begin
+        defGammaThreshold := Registry.ReadFloat('GammaThreshold');
+      end
+      else
+      begin
+        defGammaThreshold := 0.01;
+      end;
       if Registry.ValueExists('Oversample') then
       begin
         defOversample := Registry.ReadInteger('Oversample');
@@ -980,6 +1049,7 @@ begin
       defVibrancy := 1;
       defFilterRadius := 0.2;
       defOversample := 1;
+      defGammaThreshold := 0.01;
       defPreviewDensity := 0.5;
       prevLowQuality := 0.1;
       prevMediumQuality := 1;
@@ -995,6 +1065,7 @@ end;
 procedure SaveSettings;
 var
   Registry: TRegistry;
+  i: integer;
 begin
   Registry := TRegistry.Create;
   try
@@ -1017,10 +1088,10 @@ begin
       Registry.WriteInteger('MutationMinTransforms', mutantMinTransforms);
       Registry.WriteInteger('MutationMaxTransforms', mutantMaxTransforms);
       Registry.WriteInteger('RandomGradient', randGradient);
-      Registry.WriteString('ParameterFolder', ParamFolder);
+      Registry.WriteString('ParameterFolder3D', ParamFolder);
       Registry.WriteString('UPRPath', UPRPath);
       Registry.WriteString('ImageFolder', ImageFolder);
-      Registry.WriteString('SavePath', SavePath);
+      Registry.WriteString('SavePath3D', SavePath);
       Registry.WriteInteger('UPRWidth', UPRWidth);
       Registry.WriteInteger('UPRHeight', UPRHeight);
       Registry.WriteString('BrowserPath', BrowserPath);
@@ -1030,7 +1101,7 @@ begin
       Registry.WriteString('RandomPrefix', RandomPrefix);
       Registry.WriteString('RandomDate', RandomDate);
       Registry.WriteInteger('RandomIndex', RandomIndex);
-      Registry.WriteString('DefaultFlameFile', defFlameFile);
+      Registry.WriteString('DefaultFlameFile3D', defFlameFile);
       Registry.WriteString('SmoothPalettePath', SmoothPalettePath);
       Registry.WriteString('GradientFile', GradientFile);
       Registry.WriteInteger('TryLength', TryLength);
@@ -1039,9 +1110,9 @@ begin
       Registry.WriteInteger('SymmetryType', SymmetryType);
       Registry.WriteInteger('SymmetryOrder', SymmetryOrder);
       Registry.WriteInteger('SymmetryNVars', SymmetryNVars);
-      Registry.WriteInteger('VariationOptions', VariationOptions);
-      Registry.WriteInteger('VariationOptions2', VariationOptions shr 32);
-      Registry.WriteInteger('ReferenceMode', ReferenceMode);
+//      Registry.WriteInteger('VariationOptions', VariationOptions);
+//      Registry.WriteInteger('VariationOptions2', VariationOptions shr 32);
+//      Registry.WriteInteger('ReferenceMode', ReferenceMode);
       Registry.WriteInteger('RotationMode', MainForm_RotationMode);
       Registry.WriteInteger('MinNodes', MinNodes);
       Registry.WriteInteger('MinHue', MinHue);
@@ -1066,7 +1137,6 @@ begin
       Registry.WriteString('Renderer', flam3Path);
       Registry.WriteString('Server', SheepServer);
       Registry.WriteString('Pass', SheepPW);
-//      Registry.WriteBool('ResizeOnLoad', ResizeOnLoad);
       Registry.WriteBool('ShowProgress', ShowProgress);
       Registry.WriteBool('KeepBackground', KeepBackground);
       Registry.WriteBool('PreserveQuality', PreserveQuality);
@@ -1079,11 +1149,25 @@ begin
 
       Registry.WriteBool('SaveIncompleteRenders', SaveIncompleteRenders);
       Registry.WriteBool('ShowRenderStats', ShowRenderStats);
+      Registry.WriteBool('LowerRenderPriority', LowerRenderPriority);
 
       Registry.WriteInteger('NrTreads', NrTreads);
       Registry.WriteInteger('UseNrThreads', UseNrThreads);
       Registry.WriteInteger('InternalBitsPerSample', InternalBitsPerSample);
     end;
+    Registry.CloseKey;
+
+    if Registry.OpenKey('\Software\' + APP_NAME + '\Variations', True) then
+    begin
+      for i := 0 to NRVAR-1 do begin
+        if Registry.ValueExists(Varnames(i)) then
+          if Registry.ReadBool(Varnames(i)) = Variations[i] then
+            continue;
+        Registry.WriteBool(Varnames(i), Variations[i]);
+      end;
+    end;
+    Registry.CloseKey;
+
     { Editor }
     if Registry.OpenKey('\Software\' + APP_NAME + '\Forms\Editor', True) then
     begin
@@ -1097,8 +1181,10 @@ begin
       Registry.WriteInteger('ReferenceTriangleColor', ReferenceTriangleColor);
       Registry.WriteBool('ExtendedEdit', ExtEditEnabled);
       Registry.WriteBool('LockTransformAxis', TransformAxisLock);
-      Registry.WriteBool('DoubleClickSetVars', DoubleClickSetVars);
+      Registry.WriteBool('RebuildXaosLinks', RebuildXaosLinks);
     end;
+    Registry.CloseKey;
+
     { Display }
     if Registry.OpenKey('\Software\' + APP_NAME + '\Display', True) then
     begin
@@ -1108,11 +1194,14 @@ begin
       Registry.WriteFloat('Vibrancy', defVibrancy);
       Registry.WriteFloat('FilterRadius', defFilterRadius);
       Registry.WriteInteger('Oversample', defOversample);
+      Registry.WriteFloat('GammaThreshold', defGammaThreshold);
       Registry.WriteFloat('PreviewDensity', defPreviewDensity);
       Registry.WriteFloat('PreviewLowQuality', prevLowQuality);
       Registry.WriteFloat('PreviewMediumQuality', prevMediumQuality);
       Registry.WriteFloat('PreviewHighQuality', prevHighQuality);
     end;
+    Registry.CloseKey;
+
     { UPR }
     if Registry.OpenKey('\Software\' + APP_NAME + '\UPR', True) then
     begin
@@ -1125,6 +1214,8 @@ begin
       Registry.WriteInteger('FlameOversample', UPROversample);
       Registry.WriteBool('FlameAdjustDensity', UPRAdjustDensity);
     end;
+    Registry.CloseKey;
+
     if Registry.OpenKey('\Software\' + APP_NAME + '\Render', True) then
     begin
       Registry.WriteString('Path', renderPath);
@@ -1137,6 +1228,8 @@ begin
       Registry.WriteInteger('FileFormat', renderFileFormat);
       Registry.WriteInteger('BitsPerSample', renderBitsPerSample);
     end;
+    Registry.CloseKey;
+
   finally
     Registry.Free;
   end;

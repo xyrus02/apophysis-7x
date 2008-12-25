@@ -20,7 +20,7 @@ object ScriptEditor: TScriptEditor
   TextHeight = 13
   object Splitter1: TSplitter
     Left = 0
-    Top = 250
+    Top = 245
     Width = 531
     Height = 4
     Cursor = crVSplit
@@ -30,7 +30,7 @@ object ScriptEditor: TScriptEditor
     Left = 508
     Top = 0
     Width = 23
-    Height = 250
+    Height = 245
     Align = alRight
     AutoSize = True
     Caption = 'ToolBar'
@@ -96,7 +96,7 @@ object ScriptEditor: TScriptEditor
   end
   object StatusBar: TStatusBar
     Left = 0
-    Top = 343
+    Top = 338
     Width = 531
     Height = 19
     Anchors = [akLeft, akRight]
@@ -106,7 +106,7 @@ object ScriptEditor: TScriptEditor
     Left = 0
     Top = 0
     Width = 508
-    Height = 250
+    Height = 245
     Align = alClient
     BevelInner = bvLowered
     BevelOuter = bvLowered
@@ -116,7 +116,7 @@ object ScriptEditor: TScriptEditor
       Left = 2
       Top = 2
       Width = 504
-      Height = 246
+      Height = 241
       Cursor = crIBeam
       PopupMenu = PopupMenu
       ActiveLineSettings.ShowActiveLine = False
@@ -198,7 +198,7 @@ object ScriptEditor: TScriptEditor
   end
   object Console: TMemo
     Left = 0
-    Top = 254
+    Top = 249
     Width = 531
     Height = 89
     Align = alBottom

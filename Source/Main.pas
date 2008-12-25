@@ -2,6 +2,8 @@
      Apophysis Copyright (C) 2001-2004 Mark Townsend
      Apophysis Copyright (C) 2005-2006 Ronald Hordijk, Piotr Borys, Peter Sdobnov
      Apophysis Copyright (C) 2007-2008 Piotr Borys, Peter Sdobnov
+     
+     Apophysis "3D hack" Copyright (C) 2007-2008 Peter Sdobnov
 
      This program is free software; you can redistribute it and/or modify
      it under the terms of the GNU General Public License as published by
@@ -42,7 +44,10 @@ const
   RS_XO = 2;
   RS_VO = 3;
 
-  AppVersionString = 'Apophysis 2.08 beta';
+  AppVersionString = 'Apophysis 2.08 3D hack';
+
+  randFilename = 'apophysis3D.rand';
+  undoFilename = 'apophysis3D.undo';
 
 type
   TMouseMoveState = (msUsual, msZoomWindow, msZoomOutWindow, msZoomWindowMove,
@@ -182,8 +187,10 @@ type
     View1: TMenuItem;
     tbShowAlpha: TToolButton;
     tbShowTrace: TToolButton;
-    ToolButton2: TToolButton;
+    tbTraceSeparator: TToolButton;
     mnuRenderAll: TMenuItem;
+    mnuBuiltinVars: TMenuItem;
+    mnuPluginVars: TMenuItem;
     procedure tbzoomoutwindowClick(Sender: TObject);
     procedure mnuimageClick(Sender: TObject);
     procedure mnuExitClick(Sender: TObject);
@@ -368,8 +375,8 @@ function DeleteEntry(Entry, FileName: string): boolean;
 function CleanIdentifier(ident: string): string;
 function CleanUPRTitle(ident: string): string;
 function GradientString(c: TColorMap): string;
-function PackVariations: int64;
-procedure UnpackVariations(v: int64);
+//function PackVariations: int64;
+//procedure UnpackVariations(v: int64);
 //procedure NormalizeWeights(var cp: TControlPoint);
 //procedure EqualizeWeights(var cp: TControlPoint);
 procedure MultMatrix(var s: TMatrix; const m: TMatrix);
@@ -466,6 +473,7 @@ begin
 
 end;
 
+(*
 function PackVariations: int64;
 { Packs the variation options into an integer with Linear as lowest bit }
 var
@@ -486,6 +494,7 @@ begin
   for i := 0 to NRVAR - 1 do
     Variations[i] := boolean(v shr i and 1);
 end;
+*)
 
 function GetWinVersion: TWin32Version;
 { Returns current version of a host Win32 platform }
@@ -882,7 +891,7 @@ end;
 
 procedure TMainForm.UpdateUndo;
 begin
-  SaveFlame(MainCp, Format('%.4d-', [UndoIndex]) + MainCp.name, AppPath + 'apophysis.undo');
+  SaveFlame(MainCp, Format('%.4d-', [UndoIndex]) + MainCp.name, AppPath + undoFilename);
   Inc(UndoIndex);
   UndoMax := UndoIndex; //Inc(UndoMax);
   mnuSaveUndo.Enabled := true;
@@ -1353,6 +1362,18 @@ begin
     if cp1.zoom <> 0 then
       parameters := parameters + format('zoom="%g" ', [cp1.zoom]);
 
+// 3d
+    if cp1.cameraPitch <> 0 then
+      parameters := parameters + format('cam_pitch="%g" ', [cp1.cameraPitch]);
+    if cp1.cameraYaw <> 0 then
+      parameters := parameters + format('cam_yaw="%g" ', [cp1.cameraYaw]);
+    if cp1.cameraPersp <> 0 then
+      parameters := parameters + format('cam_perspective="%g" ', [cp1.cameraPersp]);
+    if cp1.cameraZpos <> 0 then
+      parameters := parameters + format('cam_zpos="%g" ', [cp1.cameraZpos]);
+    if cp1.cameraDOF <> 0 then
+      parameters := parameters + format('cam_dof="%g" ', [cp1.cameraDOF]);
+//
     parameters := parameters + format(
              'oversample="%d" filter="%g" quality="%g" ',
              [cp1.spatial_oversample,
@@ -1369,6 +1390,9 @@ begin
     if cp1.vibrancy <> 1 then
       parameters := parameters + format('vibrancy="%g" ', [cp1.vibrancy]);
 
+    if cp1.gamma_threshold <> 0 then
+      parameters := parameters + format('gamma_threshold="%g" ', [cp1.gamma_threshold]);
+
     if cp1.soloXform >= 0 then
       parameters := parameters + format('soloxform="%d" ', [cp1.soloXform]);
 
@@ -1376,8 +1400,7 @@ begin
       format('estimator_radius="%g" ', [cp1.estimator]) +
       format('estimator_minimum="%g" ', [cp1.estimator_min]) +
       format('estimator_curve="%g" ', [cp1.estimator_curve]) +
-      format('temporal_samples="%d" ', [cp1.jitters]) +
-      format('gamma_threshold="%g" ', [cp1.gamma_treshold]);
+      format('temporal_samples="%d" ', [cp1.jitters]);
 
     FileList.Add('<flame name="' + CleanXMLName(cp1.name) + '" ' + parameters + '>');
    { Write transform parameters }
@@ -1425,7 +1448,7 @@ begin
     FileList := TStringList.Create;
     try
       FileList.LoadFromFile(filename);
-      if pos(title, FileList.Text) <> 0 then Result := true;
+      if pos('<flame name="' + title + '"', FileList.Text) <> 0 then Result := true;
     finally
       FileList.Free;
     end
@@ -1480,10 +1503,10 @@ begin
       try
         FileList.LoadFromFile(bakname);
 
-        if Pos(title, FileList.Text) <> 0 then
+        if Pos('<flame name="' + title + '"', FileList.Text) <> 0 then
         begin
           i := 0;
-          while Pos('name="' + title + '"', Trim(FileList[i])) = 0 do
+          while Pos('<flame name="' + title + '"', Trim(FileList[i])) = 0 do
             inc(i);
 
           p := 0;
@@ -1524,6 +1547,9 @@ begin
         FileList.SaveToFile(filename);
 
       finally
+        if FileExists(bakname) and not FileExists(filename) then
+          RenameFile(bakname, filename);
+
         FileList.Free;
       end;
     end
@@ -1926,8 +1952,8 @@ begin
   inc(MainSeed);
   RandSeed := MainSeed;
   try
-    AssignFile(F, AppPath + 'apophysis.rand');
-    OpenFile := AppPath + 'apophysis.rand';
+    AssignFile(F, AppPath + randFilename);
+    OpenFile := AppPath + randFilename;
     ReWrite(F);
     WriteLn(F, '<random_batch>');
     for i := 0 to BatchSize - 1 do
@@ -1955,7 +1981,7 @@ begin
   except
     on EInOutError do Application.MessageBox('Error creating batch', PChar(APP_NAME), 16);
   end;
-  RandFile := AppPath + 'apophysis.rand';
+  RandFile := AppPath + randFilename;
   MainCp.name := '';
 end;
 
@@ -2141,7 +2167,7 @@ begin
   inc(MainSeed);
   RandSeed := MainSeed;
   RandomBatch;
-  OpenFile := AppPath + 'apophysis.rand';
+  OpenFile := AppPath + randFilename;
   OpenFileType := ftXML;
   MainForm.Caption := AppVersionString + ' - Random Batch';
   ListXML(OpenFile, 1);
@@ -2448,8 +2474,8 @@ var
   i: integer;
   s: string;
 begin
-  if not FileExists(AppPath + 'favorites') then exit;
-  Favorites.LoadFromFile(AppPath + 'favorites');
+  if not FileExists(AppPath + scriptFavsFilename) then exit;
+  Favorites.LoadFromFile(AppPath + scriptFavsFilename);
   if Trim(Favorites.Text) = '' then exit;
   if Favorites.count <> 0 then
   begin
@@ -2511,14 +2537,18 @@ begin
   Application.OnHelp := ApplicationOnHelp;
   AppPath := ExtractFilePath(Application.ExeName);
   CanDrawOnResize := False;
+
   ReadSettings;
+
   Dte := FormatDateTime('yymmdd', Now);
   if Dte <> RandomDate then
     RandomIndex := 0;
   RandomDate := Dte;
   mnuExit.ShortCut := TextToShortCut('Alt+F4');
-  if VariationOptions = 0 then VariationOptions := 16383; // it shouldn't hapen but just in case;
-  UnpackVariations(VariationOptions);
+
+  //if VariationOptions = 0 then VariationOptions := 16383; // it shouldn't hapen but just in case;
+  //UnpackVariations(VariationOptions);
+
   FillVariantMenu;
 
   tbQualityBox.Text := FloatToStr(defSampleDensity);
@@ -2565,6 +2595,7 @@ begin
   maincp.sample_density := defSampleDensity;
   maincp.spatial_oversample := defOversample;
   maincp.spatial_filter_radius := defFilterRadius;
+  maincp.gammaThreshRelative := defGammaThreshold;
   inc(MainSeed);
   RandSeed := MainSeed;
 
@@ -2586,23 +2617,27 @@ begin
     GetCMap(cmap_index, 1, maincp.cmap);
     DefaultPalette := maincp.cmap;
   end;
-  if FileExists(AppPath + 'apophysis.rand') then
-    DeleteFile(AppPath + 'apophysis.rand');
-  if (defFlameFile = '') or (not FileExists(defFlameFile)) then
+  if FileExists(AppPath + randFilename) then
+    DeleteFile(AppPath + randFilename);
+
+  // get filename from command line argument  
+  if ParamCount > 0 then openFile := ParamStr(1)
+  else openFile := defFlameFile;
+
+  if (openFile = '') or (not FileExists(openFile)) then
   begin
     MainCp.Width := Image.Width;
     MainCp.Height := Image.Height;
     RandomBatch;
     MainForm.Caption := AppVersionString + ' - Random Batch';
-    OpenFile := AppPath + 'apophysis.rand';
+    OpenFile := AppPath + randFilename;
     ListXML(OpenFile, 1);
     OpenFileType := ftXML;
     if batchsize = 1 then DrawFlame;
   end
   else
   begin
-    OpenFile := defFlameFile;
-    if (LowerCase(ExtractFileExt(defFlameFile)) = '.apo') or (LowerCase(ExtractFileExt(defFlameFile)) = '.fla') then
+    if (LowerCase(ExtractFileExt(OpenFile)) = '.apo') or (LowerCase(ExtractFileExt(OpenFile)) = '.fla') then
     begin
       ListFlames(OpenFile, 1);
       OpenFileType := ftFla;
@@ -2676,8 +2711,8 @@ begin
   end;
   Application.ProcessMessages;
   CanDrawOnResize := False;
-  if FileExists('apophysis.rand') then DeleteFile('apophysis.rand');
-  if FileExists('apophysis.undo') then DeleteFile('apophysis.undo');
+  if FileExists(randFilename) then DeleteFile(randFilename);
+  if FileExists(undoFilename) then DeleteFile(undoFilename);
   SaveSettings;
 end;
 
@@ -2805,7 +2840,7 @@ begin
 
     UndoIndex := 0;
     UndoMax := 0;
-    if fileExists(AppPath + 'apophysis.undo') then DeleteFile(AppPath + 'apophysis.undo');
+    if fileExists(AppPath + undoFilename) then DeleteFile(AppPath + undoFilename);
     Statusbar.Panels[2].Text := Maincp.name;
     RedrawTimer.Enabled := True;
     Application.ProcessMessages;
@@ -2957,7 +2992,7 @@ begin
         if SavedPal then maincp.cmap := Palette;
         UndoIndex := 0;
         UndoMax := 0;
-        if fileExists(AppPath + 'apophysis.undo') then DeleteFile(AppPath + 'apophysis.undo');
+        if fileExists(AppPath + undoFilename) then DeleteFile(AppPath + undoFilename);
         maincp.name := ListView.Selected.Caption;
         Statusbar.Panels[2].Text := maincp.name;
         RedrawTimer.Enabled := True;
@@ -3334,10 +3369,10 @@ end;
 procedure TMainForm.Undo;
 begin
   if UndoIndex = UndoMax then
-    SaveFlame(maincp, Format('%.4d-', [UndoIndex]) + maincp.name, AppPath + 'apophysis.undo');
+    SaveFlame(maincp, Format('%.4d-', [UndoIndex]) + maincp.name, AppPath + undoFilename);
   StopThread;
   Dec(UndoIndex);
-  LoadUndoFlame(UndoIndex, AppPath + 'apophysis.undo');
+  LoadUndoFlame(UndoIndex, AppPath + undoFilename);
   mnuRedo.Enabled := True;
   mnuPopRedo.Enabled := True;
   btnRedo.Enabled := True;
@@ -3367,7 +3402,7 @@ begin
 
   assert(UndoIndex <= UndoMax, 'Undo list index out of range!');
 
-  LoadUndoFlame(UndoIndex, AppPath + 'apophysis.undo');
+  LoadUndoFlame(UndoIndex, AppPath + undoFilename);
   mnuUndo.Enabled := True;
   mnuPopUndo.Enabled := True;
   btnUndo.Enabled := True;
@@ -3557,7 +3592,7 @@ end;
 
 procedure TMainForm.mnuSaveUndoClick(Sender: TObject);
 begin
-  if FileExists(AppPath + 'apophysis.undo') then
+  if FileExists(AppPath + undoFilename) then
   begin
     SaveDialog.DefaultExt := 'apo';
     SaveDialog.Filter := 'Apophysis Parameters (*.apo)|*.apo';
@@ -3565,14 +3600,14 @@ begin
     if SaveDialog.Execute then
     begin
       if FileExists(SaveDialog.Filename) then DeleteFile(SaveDialog.Filename);
-      CopyFile(PChar(AppPath + 'apophysis.undo'), PChar(SaveDialog.Filename), False);
+      CopyFile(PChar(AppPath + undoFilename), PChar(SaveDialog.Filename), False);
     end;
   end;
 end;
 
 procedure TMainForm.mnuExportBatchClick(Sender: TObject);
 begin
-  if FileExists(AppPath + 'apophysis.rand') then
+  if FileExists(AppPath + randFilename) then
   begin
     SaveDialog.DefaultExt := 'apo';
     SaveDialog.Filter := 'Parameter files (*.apo)|*.apo';
@@ -3580,7 +3615,7 @@ begin
     if SaveDialog.Execute then
     begin
       if FileExists(SaveDialog.Filename) then DeleteFile(SaveDialog.Filename);
-      CopyFile(PChar(AppPath + 'apophysis.rand'), PChar(SaveDialog.Filename), False);
+      CopyFile(PChar(AppPath + randFilename), PChar(SaveDialog.Filename), False);
     end;
   end;
 end;
@@ -3950,7 +3985,7 @@ begin
       cp1.estimator_min := ExportEstimatorMin;
       cp1.estimator_curve := ExportEstimatorCurve;
       cp1.jitters := ExportJitters;
-      cp1.gamma_treshold := ExportGammaTreshold;
+      cp1.gamma_threshold := ExportGammaTreshold;
       FileList.Text := FlameToXML(cp1, true);
       FileList.SaveToFile(ChangeFileExt(ExportDialog.Filename, '.flame'));
       FileList.Clear;
@@ -4034,7 +4069,7 @@ begin
 
   Assert(Count = 256, 'only 256 color Colormaps are supported at the moment');
   data := '';
-  for i := 0 to Length(in_data) do
+  for i := 1 to Length(in_data) do
   begin
     c := in_data[i];
     if c in ['0'..'9']+['A'..'F']+['a'..'f'] then data := data + c;
@@ -4070,7 +4105,15 @@ begin
   Tokens := TStringList.Create;
  try
 
-  if TagName='flame' then
+  if TagName='xformset' then // unused in this release...
+  begin
+    v := Attributes.Value('enabled');
+    if v <> '' then ParseCP.finalXformEnabled := (StrToInt(v) <> 0)
+    else ParseCP.finalXformEnabled := true;
+
+    inc(activeXformSet);
+  end
+  else if TagName='flame' then
   begin
     v := Attributes.value('name');
     if v <> '' then Parsecp.name := v else Parsecp.name := 'untitled';
@@ -4087,6 +4130,7 @@ begin
     else
       Parsecp.cmapindex := -1;
     ParseCP.hue_rotation := 1;
+
     v := Attributes.value('hue');
     if v <> '' then Parsecp.hue_rotation := StrToFloat(v);
     v := Attributes.Value('brightness');
@@ -4094,9 +4138,11 @@ begin
     v := Attributes.Value('gamma');
     if v <> '' then Parsecp.gamma := StrToFloat(v);
     v := Attributes.Value('vibrancy');
-
     if v <> '' then Parsecp.vibrancy := StrToFloat(v);
     if (LimitVibrancy) and (Parsecp.vibrancy > 1) then Parsecp.vibrancy := 1;
+    v := Attributes.Value('gamma_threshold');
+    if v <> '' then Parsecp.gamma_threshold := StrToFloat(v)
+    else Parsecp.gamma_threshold := 0;
 
     v := Attributes.Value('zoom');
     if v <> '' then Parsecp.zoom := StrToFloat(v);
@@ -4106,6 +4152,21 @@ begin
     if v <> '' then Parsecp.FAngle := -PI * StrToFloat(v)/180;
     v := Attributes.Value('angle');
     if v <> '' then Parsecp.FAngle := StrToFloat(v);
+
+    // 3d
+    v := Attributes.Value('cam_pitch');
+    if v <> '' then Parsecp.cameraPitch := StrToFloat(v);
+    v := Attributes.Value('cam_yaw');
+    if v <> '' then Parsecp.cameraYaw := StrToFloat(v);
+    v := Attributes.Value('cam_dist');
+    if v <> '' then Parsecp.cameraPersp := 1/StrToFloat(v);
+    v := Attributes.Value('cam_perspective');
+    if v <> '' then Parsecp.cameraPersp := StrToFloat(v);
+    v := Attributes.Value('cam_zpos');
+    if v <> '' then Parsecp.cameraZpos := StrToFloat(v);
+    v := Attributes.Value('cam_dof');
+    if v <> '' then Parsecp.cameraDOF := abs(StrToFloat(v));
+    //
 
     try
       v := Attributes.Value('center');
@@ -4192,7 +4253,7 @@ begin
   Tokens := TStringList.Create;
   try
     if (TagName = 'xform') or (TagName = 'finalxform') then
-     if (TagName = 'finalxform') and (FinalXformLoaded) then ShowMessage('ERROR: No xforms allowed after FinalXform!')
+     if {(TagName = 'finalxform') and} (FinalXformLoaded) then ShowMessage('ERROR: No xforms allowed after FinalXform!')
      else
     begin
       if (TagName = 'finalxform') or (activeXformSet > 0) then FinalXformLoaded := true;
@@ -4248,15 +4309,9 @@ begin
       if v <> '' then begin
         if v = 'off' then begin
           noPlot := true;
-          //RetraceXform := false;
         end
-//        else if v = 'retrace' then begin
-//          noPlot := false;
-//          RetraceXform := true;
-//        end
         else begin
           noPlot := false;
-          //RetraceXform := false;
         end;
       end;
 
@@ -4829,7 +4884,10 @@ begin
     NewMenuItem.GroupIndex := 2;
     NewMenuItem.RadioItem  := True;
     VarMenus[i] := NewMenuItem;
-    mnuvar.Add(NewMenuItem);
+    if i < NumBuiltinVars then
+      mnuBuiltinVars.Add(NewMenuItem)
+    else
+      mnuPluginVars.Add(NewMenuItem);
   end;
 end;
 

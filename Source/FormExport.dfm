@@ -291,7 +291,7 @@ object ExportDialog: TExportDialog
       Top = 16
       Width = 39
       Height = 26
-      Caption = 'Gamma treshold'
+      Caption = 'Gamma threshold'
       WordWrap = True
     end
     object cmbDepth: TComboBox
@@ -403,13 +403,17 @@ object ExportDialog: TExportDialog
       ParentFont = False
     end
     object Label15: TLabel
-      Left = 34
+      Left = 8
       Top = 28
-      Width = 340
-      Height = 13
+      Width = 393
+      Height = 45
       Alignment = taCenter
       Anchors = [akLeft, akRight]
-      Caption = 'To render your fractals properly using the "export" function,'
+      AutoSize = False
+      Caption = 
+        'Fractals created with this 3D-hacked version of Apophysis are no' +
+        't supported by the external renderer! To render 2D-only fractals' +
+        ', download the latest version of FLAM3 from http://www.flam3.com'
       Color = clBackground
       Font.Charset = DEFAULT_CHARSET
       Font.Color = clYellow
@@ -418,41 +422,7 @@ object ExportDialog: TExportDialog
       Font.Style = [fsBold]
       ParentColor = False
       ParentFont = False
-    end
-    object Label13: TLabel
-      Left = 46
-      Top = 44
-      Width = 316
-      Height = 13
-      Alignment = taCenter
-      Anchors = [akLeft, akRight]
-      Caption = 'You need to download the latest version of FLAM3 from'
-      Font.Charset = DEFAULT_CHARSET
-      Font.Color = clYellow
-      Font.Height = -11
-      Font.Name = 'MS Sans Serif'
-      Font.Style = [fsBold]
-      ParentFont = False
-    end
-    object lblFlam3Link: TLabel
-      Left = 141
-      Top = 60
-      Width = 127
-      Height = 13
-      Cursor = crHandPoint
-      Hint = 'http://www.flam3.com'
-      Alignment = taCenter
-      Anchors = [akLeft, akRight]
-      Caption = 'http://www.flam3.com'
-      Font.Charset = DEFAULT_CHARSET
-      Font.Color = clBlue
-      Font.Height = -11
-      Font.Name = 'MS Sans Serif'
-      Font.Style = [fsBold, fsUnderline]
-      ParentFont = False
-      ParentShowHint = False
-      ShowHint = True
-      OnClick = lblFlam3LinkClick
+      WordWrap = True
     end
   end
   object SaveDialog: TSaveDialog

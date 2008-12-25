@@ -32,14 +32,12 @@ const
 
 type
   TCPpoint = record
-    x, y, c: double;
-    //invisible: boolean;
+    x, y, z, c: double;
   end;
   PCPpoint = ^TCPpoint;
 
   TXYpoint = record
     x, y: double;
-    //skip: boolean;
   end;
   PXYpoint = ^TXYpoint;
 
@@ -65,8 +63,8 @@ type
     p00, p01, p10, p11, p20, p21: double;// :-)
     postXswap: boolean;
 
+    autoZscale: boolean; // for 3d editing
     noPlot: boolean;
-    //RetraceXform: boolean;
 
 //    nx,ny,x,y: double;
 //    script: TatPascalScripter;
@@ -84,6 +82,8 @@ type
     FTx, FTy: double; // must remain in this order
     FPx, FPy: double; // some asm code relies on this
 
+    FTz, FPz: double; // 3d hack
+
     FAngle: double;
     FSinA: double;
     FCosA: double;
@@ -91,14 +91,17 @@ type
     colorC1, colorC2: double;
 
     // precalculated constants for some variations
-    waves_f1, waves_f2,
-    rings_dx,
-    fan_dx, fan_dx2,
-    cosine_var2,
+//    waves_f1, waves_f2,
+//    rings_dx,
+//    fan_dx, fan_dx2,
+//    cosine_var2,
     polar_vpi, disc_vpi: double;
 
     gauss_rnd: array [0..3] of double;
     gauss_N: integer;
+
+    rx_sin, rx_cos, ry_sin, ry_cos: double;
+    px_sin, px_cos, py_sin, py_cos: double;
 
     FRegVariations: array of TBaseVariation;
 
@@ -108,36 +111,51 @@ type
     procedure DoPostTransform;
     procedure DoInvalidOperation;
 
-    procedure Linear;              // var[0]
+    procedure Linear3D;            // var[0]
     procedure Sinusoidal;          // var[1]
     procedure Spherical;           // var[2]
     procedure Swirl;               // var[3]
     procedure Horseshoe;           // var[4]
     procedure Polar;               // var[5]
-    procedure FoldedHandkerchief;  // var[6]
-    procedure Heart;               // var[7]
-    procedure Disc;                // var[8]
-    procedure Spiral;              // var[9]
-    procedure hyperbolic;          // var[10]
-    procedure Square;              // var[11]
-    procedure Ex;                  // var[12]
-    procedure Julia;               // var[13]
-    procedure Bent;                // var[14]
-    procedure Waves;               // var[15]
-    procedure Fisheye;             // var[16]
-    procedure Popcorn;             // var[17]
-    procedure Exponential;         // var[18]
-    procedure Power;               // var[19]
-    procedure Cosine;              // var[20]
-    procedure Rings;               // var[21]
-    procedure Fan;                 // var[22]
-    procedure Eyefish;             // var[23]
-    procedure Bubble;              // var[24]
-    procedure Cylinder;            // var[25]
-    procedure Noise;               // var[26]
-    procedure Blur;                // var[27]
-    procedure Gaussian;            // var[28]
-    procedure PreBlur;	           // var[29]
+//    procedure FoldedHandkerchief;  // var[6]
+//    procedure Heart;               // var[7]
+    procedure Disc;                // var[6]
+    procedure Spiral;              // var[7]
+    procedure hyperbolic;          // var[8]
+    procedure Square;              // var[9]
+//    procedure Ex;                  // var[12]
+//    procedure Julia;               // var[13]
+//    procedure Bent;                // var[14]
+//    procedure Waves;               // var[15]
+//    procedure Fisheye;             // var[16]
+//    procedure Popcorn;             // var[17]
+//    procedure Exponential;         // var[11]
+//    procedure Power;               // var[19]
+//    procedure Cosine;              // var[20]
+//    procedure Rings;               // var[21]
+//    procedure Fan;                 // var[22]
+    procedure Eyefish;
+    procedure Bubble;
+    procedure Cylinder;
+    procedure Noise;
+    procedure Blur;
+    procedure Gaussian;
+    procedure ZBlur;
+    procedure Blur3D;
+
+    procedure PreBlur;
+    procedure PreZScale;
+    procedure PreZTranslate;
+    procedure PreRotateX;
+    procedure PreRotateY;
+
+    procedure Linear;
+    procedure ZScale;
+    procedure ZTranslate;
+    procedure ZCone;
+
+    procedure PostRotateX;
+    procedure PostRotateY;      
 
     function Mul33(const M1, M2: TMatrix): TMatrix;
     function Identity: TMatrix;
@@ -212,6 +230,7 @@ begin
   color := 0;
   symmetry := 0;
   postXswap := false;
+  autoZscale := false;
 
   c[0, 0] := 1;
   c[0, 1] := 0;
@@ -235,7 +254,6 @@ begin
     modWeights[i] := 1;
 
   noPlot := false;
-  //RetraceXform := false;
 end;
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -259,8 +277,10 @@ begin
   for i := 0 to High(FRegVariations) do begin
     FRegVariations[i].FPX := @FPX;
     FRegVariations[i].FPY := @FPY;
+    FRegVariations[i].FPz := @FPz;
     FRegVariations[i].FTX := @FTX;
     FRegVariations[i].FTY := @FTY;
+    FRegVariations[i].FTz := @FTz;
 
     FRegVariations[i].vvar := vars[i + NRLOCVAR];
     FRegVariations[i].Prepare;
@@ -269,11 +289,9 @@ begin
 
   SetLength(FCalcFunctionList, NrVar + 2);
 
-  CalculateAngle := (vars[5] <> 0.0) or (vars[6] <> 0.0) or (vars[7] <> 0.0) or
-                    (vars[8] <> 0.0) or (vars[12] <> 0.0) or (vars[13] <> 0.0) or
-                    (vars[21] <> 0.0) or (vars[22] <> 0.0) or (vars[27] <> 0.0);
+  CalculateAngle := (vars[6] <> 0.0) or (vars[7] <> 0.0);
 //  CalculateLength := False;
-  CalculateSinCos := (vars[9] <> 0.0) or (vars[11] <> 0.0) or (vars[19] <> 0.0) or (vars[21] <> 0.0);
+  CalculateSinCos := (vars[8] <> 0.0) or (vars[10] <> 0.0);
 
   // Pre- variations
   for i := 0 to NrVar - 1 do begin
@@ -313,23 +331,33 @@ begin
     end;
   end;
 
-  waves_f1 := 1 / (sqr(c20) + EPS);
-  waves_f2 := 1 / (sqr(c21) + EPS);
+//  waves_f1 := 1 / (sqr(c20) + EPS);
+//  waves_f2 := 1 / (sqr(c21) + EPS);
 
-  rings_dx := sqr(c20) + EPS;
-  fan_dx := PI * (sqr(c20) + EPS);
-  fan_dx2 := fan_dx/2;
+//  rings_dx := sqr(c20) + EPS;
+//  fan_dx := PI * (sqr(c20) + EPS);
+//  fan_dx2 := fan_dx/2;
 
-  cosine_var2 := vars[20]/2;
+//  cosine_var2 := vars[20]/2;
 
-  polar_vpi := vars[5]/pi;
-  disc_vpi := vars[8]/pi;
+  polar_vpi := vars[6]/pi;
+  disc_vpi := vars[7]/pi;
 
   gauss_rnd[0] := random;
   gauss_rnd[1] := random;
   gauss_rnd[2] := random;
   gauss_rnd[3] := random;
   gauss_N := 0;
+
+  rx_sin := sin(vars[22] * pi/2);
+  rx_cos := cos(vars[22] * pi/2);
+  ry_sin := sin(vars[23] * pi/2);
+  ry_cos := cos(vars[23] * pi/2);
+
+  px_sin := sin(vars[27] * pi/2);
+  px_cos := cos(vars[27] * pi/2);
+  py_sin := sin(vars[28] * pi/2);
+  py_cos := cos(vars[28] * pi/2);
 
   if (p[0,0]<>1) or (p[0,1]<>0) or(p[1,0]<>0) or (p[1,1]<>1) or (p[2,0]<>0) or (p[2,1]<>0) then
   begin
@@ -500,21 +528,50 @@ begin
 end;
 
 //--0--////////////////////////////////////////////////////////////////////////
-procedure TXForm.Linear;
+procedure TXForm.Linear3D;
 {$ifndef _ASM_}
 begin
   FPx := FPx + vars[0] * FTx;
   FPy := FPy + vars[0] * FTy;
+  FPz := FPz + vars[0] * FTz;
 {$else}
 asm
     mov     edx, [eax + vars]
     fld     qword ptr [edx]
+
+    fld     qword ptr [eax + FTz]
+    fmul    st, st(1)
+    fadd    qword ptr [eax + FPz]
+    fstp    qword ptr [eax + FPz]
+
     fld     qword ptr [eax + FTx]
     fmul    st, st(1)
-    fld     qword ptr [eax + FTy]
-    fmulp   st(2), st
     fadd    qword ptr [eax + FPx]
     fstp    qword ptr [eax + FPx]
+    fld     qword ptr [eax + FTy]
+    fmulp
+    fadd    qword ptr [eax + FPy]
+    fstp    qword ptr [eax + FPy]
+    fwait
+{$endif}
+end;
+
+///////////////////////////////////////////////////////////////////////////////
+procedure TXForm.Linear;
+{$ifndef _ASM_}
+begin
+  FPx := FPx + vars[1] * FTx;
+  FPy := FPy + vars[1] * FTy;
+{$else}
+asm
+    mov     edx, [eax + vars]
+    fld     qword ptr [edx + 1*8]
+    fld     qword ptr [eax + FTx]
+    fmul    st, st(1)
+    fadd    qword ptr [eax + FPx]
+    fstp    qword ptr [eax + FPx]
+    fld     qword ptr [eax + FTy]
+    fmulp
     fadd    qword ptr [eax + FPy]
     fstp    qword ptr [eax + FPy]
     fwait
@@ -525,12 +582,12 @@ end;
 procedure TXForm.Sinusoidal;
 {$ifndef _ASM_}
 begin
-  FPx := FPx + vars[1] * sin(FTx);
-  FPy := FPy + vars[1] * sin(FTy);
+  FPx := FPx + vars[2] * sin(FTx);
+  FPy := FPy + vars[2] * sin(FTy);
 {$else}
 asm
     mov     edx, [eax + vars]
-    fld     qword ptr [edx + 1*8]
+    fld     qword ptr [edx + 2*8]
     fld     qword ptr [eax + FTx]
     fsin
     fmul    st, st(1)
@@ -551,7 +608,7 @@ procedure TXForm.Spherical;
 var
   r: double;
 begin
-  r := vars[2] / (sqr(FTx) + sqr(FTy) + EPS);
+  r := vars[3] / (sqr(FTx) + sqr(FTy) + EPS);
   FPx := FPx + FTx * r;
   FPy := FPy + FTy * r;
 {$else}
@@ -565,7 +622,7 @@ asm
     faddp
     fadd    qword ptr [EPS]
     mov     edx, [eax + vars]
-    fdivr   qword ptr [edx + 2*8]
+    fdivr   qword ptr [edx + 3*8]
     fmul    st(2), st
     fmulp
     fadd    qword ptr [eax + FPx]
@@ -590,12 +647,12 @@ var
   sinr, cosr: double;
 begin
   SinCos(sqr(FTx) + sqr(FTy), sinr, cosr);
-  FPx := FPx + vars[3] * (sinr * FTx - cosr * FTy);
-  FPy := FPy + vars[3] * (cosr * FTx + sinr * FTy);
+  FPx := FPx + vars[4] * (sinr * FTx - cosr * FTy);
+  FPy := FPy + vars[4] * (cosr * FTx + sinr * FTy);
 {$else}
 asm
     mov     edx, [eax + vars]
-    fld     qword ptr [edx + 3*8]
+    fld     qword ptr [edx + 4*8]
     fld     qword ptr [eax + FTy]
     fld     qword ptr [eax + FTx]
     fld     st(1)
@@ -632,7 +689,7 @@ procedure TXForm.Horseshoe;
 var
   r: double;
 begin
-  r := vars[4] / (sqrt(sqr(FTx) + sqr(FTy)) + EPS);
+  r := vars[5] / (sqrt(sqr(FTx) + sqr(FTy)) + EPS);
   FPx := FPx + (FTx - FTy) * (FTx + FTy) * r;
   FPy := FPy + (2*FTx*FTy) * r;
 {$else}
@@ -647,7 +704,7 @@ asm
     fsqrt
     fadd    qword ptr [EPS]
     mov     edx, [eax + vars]
-    fdivr   qword ptr [edx + 4*8]
+    fdivr   qword ptr [edx + 5*8]
     fld     st(2)
     fadd    st, st(2)
     fld     st(3)
@@ -680,7 +737,7 @@ begin
 }
 begin
   FPx := FPx + polar_vpi * FAngle; //vars[5] * FAngle / PI;
-  FPy := FPy + vars[5] * (sqrt(sqr(FTx) + sqr(FTy)) - 1.0);
+  FPy := FPy + vars[6] * (sqrt(sqr(FTx) + sqr(FTy)) - 1.0);
 {$else}
 asm
     fld     qword ptr [eax + FAngle]
@@ -696,13 +753,14 @@ asm
     fld1
     fsubp   st(1), st
     mov     edx, [eax + vars]
-    fmul    qword ptr [edx + 5*8]
+    fmul    qword ptr [edx + 6*8]
     fadd    qword ptr [eax + FPy]
     fstp    qword ptr [eax + FPy]
     fwait
 {$endif}
 end;
 
+(*
 //--6--////////////////////////////////////////////////////////////////////////
 procedure TXForm.FoldedHandkerchief;
 {$ifndef _ASM_}
@@ -773,22 +831,23 @@ asm
     fwait
 {$endif}
 end;
+*)
 
-//--8--////////////////////////////////////////////////////////////////////////
+//--6--////////////////////////////////////////////////////////////////////////
 procedure TXForm.Disc;
 {$ifndef _ASM_}
 var
   r, sinr, cosr: double;
 begin
   SinCos(PI * sqrt(sqr(FTx) + sqr(FTy)), sinr, cosr);
-  r := disc_vpi * FAngle; //r := vars[8] * FAngle / PI;
+  r := disc_vpi * FAngle; //vars[7] * FAngle / PI;
   FPx := FPx + sinr * r;
   FPy := FPy + cosr * r;
 {$else}
 asm
     fld     qword ptr [eax + disc_vpi]
 //    mov     edx, [eax + vars]
-//    fld     qword ptr [edx + 8*8]
+//    fld     qword ptr [edx + 7*8]
     fmul    qword ptr [eax + FAngle]
 //    fldpi
 //    fdivp   st(1), st
@@ -811,7 +870,7 @@ asm
 {$endif}
 end;
 
-//--9--////////////////////////////////////////////////////////////////////////
+//--7--////////////////////////////////////////////////////////////////////////
 procedure TXForm.Spiral;
 {$ifndef _ASM_}
 var
@@ -819,13 +878,13 @@ var
 begin
   r := Flength + 1E-6;
   SinCos(r, sinr, cosr);
-  r := vars[9] / r;
+  r := vars[8] / r;
   FPx := FPx + (FCosA + sinr) * r;
   FPy := FPy + (FsinA - cosr) * r;
 {$else}
 asm
     mov     edx, [eax + vars]
-    fld     qword ptr [edx + 9*8]
+    fld     qword ptr [edx + 8*8]
     fld     qword ptr [eax + FLength]
     fadd    qword ptr [EPS]
     fdiv    st(1), st
@@ -856,12 +915,12 @@ begin
 // --Z-- Yikes!!! SOMEONE SHOULD GO BACK TO SCHOOL!!!!!!!
 // Now watch and learn how to do this WITHOUT calculating sin and cos:
 begin
-  FPx := FPx + vars[10] * FTx / (sqr(FTx) + sqr(FTy) + EPS);
-  FPy := FPy + vars[10] * FTy;
+  FPx := FPx + vars[9] * FTx / (sqr(FTx) + sqr(FTy) + EPS);
+  FPy := FPy + vars[9] * FTy;
 {$else}
 asm
     mov     edx, [eax + vars]
-    fld     qword ptr [edx + 10*8]
+    fld     qword ptr [edx + 9*8]
     fld     qword ptr [eax + FTy]
     fld     qword ptr [eax + FTx]
     fld     st(1)
@@ -888,12 +947,12 @@ var
   sinr, cosr: double;
 begin
   SinCos(FLength, sinr, cosr);
-  FPx := FPx + vars[11] * FSinA * cosr;
-  FPy := FPy + vars[11] * FCosA * sinr;
+  FPx := FPx + vars[10] * FSinA * cosr;
+  FPy := FPy + vars[10] * FCosA * sinr;
 {$else}
 asm
     mov     edx, [eax + vars]
-    fld     qword ptr [edx + 11*8]
+    fld     qword ptr [edx + 10*8]
     fld     qword ptr [eax + FLength]
     fsincos
     fmul    qword ptr [eax + FSinA]
@@ -908,6 +967,7 @@ asm
 {$endif}
 end;
 
+(*
 //--12--///////////////////////////////////////////////////////////////////////
 procedure TXForm.Ex;
 {$ifndef _ASM_}
@@ -1075,6 +1135,17 @@ end;
 //--15--///////////////////////////////////////////////////////////////////////
 procedure TXForm.Waves;
 {$ifndef _ASM_}
+{
+var
+  dx,dy,nx,ny: double;
+begin
+  dx := c20;
+  dy := c21;
+  nx := FTx + c10 * sin(FTy / ((dx * dx) + EPS));
+  ny := FTy + c11 * sin(FTx / ((dy * dy) + EPS));
+  FPx := FPx + vars[15] * nx;
+  FPy := FPy + vars[15] * ny;
+}
 begin
   //FPx := FPx + vars[15] * (FTx + c10 * sin(FTy / (sqr(c20) + EPS)));
   //FPy := FPy + vars[15] * (FTy + c11 * sin(FTx / (sqr(c21) + EPS)));
@@ -1476,20 +1547,21 @@ asm
     fwait
 {$endif}
 end;
+*)
 
-//--23--///////////////////////////////////////////////////////////////////////
+///////////////////////////////////////////////////////////////////////////////
 procedure TXForm.Eyefish;
 {$ifndef _ASM_}
 var
   r: double;
 begin
-  r := 2 * vars[23] / (sqrt(sqr(FTx) + sqr(FTy)) + 1);
+  r := 2 * vars[11] / (sqrt(sqr(FTx) + sqr(FTy)) + 1);
   FPx := FPx + r * FTx;
   FPy := FPy + r * FTy;
 {$else}
 asm
     mov     edx, [eax + vars]
-    fld     qword ptr [edx + 23*8]
+    fld     qword ptr [edx + 11*8]
     fadd    st, st
     fld     qword ptr [eax + FTy]
     fld     qword ptr [eax + FTx]
@@ -1512,16 +1584,26 @@ asm
 {$endif}
 end;
 
-//--24--///////////////////////////////////////////////////////////////////////
+///////////////////////////////////////////////////////////////////////////////
 procedure TXForm.Bubble;
 {$ifndef _ASM_}
 var
   r: double;
 begin
-  r := vars[24] / ((sqr(FTx) + sqr(FTy))/4 + 1);
+  r := (sqr(FTx) + sqr(FTy))/4 + 1;
+  FPz := FPz + vars[12] * (2 / r - 1);
+
+  r := vars[12] / r;
 
   FPx := FPx + r * FTx;
   FPy := FPy + r * FTy;
+{
+  t := 4 / (sqr(FTx) + sqr(FTy) + 4);
+
+  FPx := FPx + FTx * t * vars[26];
+  FPy := FPy + FTy * t * vars[26];
+  FPz := FPz + (2 * t - 1) * vars[26];
+}
 {$else}
 asm
     fld     qword ptr [eax + FTy]
@@ -1530,15 +1612,28 @@ asm
     fmul    st, st
     fld     st(1)
     fmul    st, st
-    fadd
+    faddp
     fld1
     fadd    st, st
     fadd    st, st
     fdivp   st(1), st
-    fld1
-    fadd
+
     mov     edx, [eax + vars]
-    fdivr   qword ptr [edx + 24*8]
+    fld     qword ptr [edx + 12*8]
+
+    fld1
+    fadd    st(2), st
+    fdivr   st(2), st
+
+    fld     st(2)
+    fadd    st, st
+    fsubrp  st(1), st
+    fmul    st, st(1)
+    fadd    qword ptr [eax + FPz]
+    fstp    qword ptr [eax + FPz]
+
+    fmulp
+
     fmul    st(2), st
     fmulp
     fadd    qword ptr [eax + FPx]
@@ -1549,18 +1644,22 @@ asm
 {$endif}
 end;
 
-//--25--///////////////////////////////////////////////////////////////////////
+///////////////////////////////////////////////////////////////////////////////
 procedure TXForm.Cylinder;
 {$ifndef _ASM_}
 begin
-  FPx := FPx + vars[25] * sin(FTx);
-  FPy := FPy + vars[25] * FTy;
+  FPx := FPx + vars[13] * sin(FTx);
+  FPy := FPy + vars[13] * FTy;
+  FPz := FPz + vars[13] * cos(FTx);
 {$else}
 asm
     mov     edx, [eax + vars]
-    fld     qword ptr [edx + 25*8]
+    fld     qword ptr [edx + 13*8]
     fld     qword ptr [eax + FTx]
-    fsin
+    fsincos
+    fmul    st, st(2)
+    fadd    qword ptr [eax + FPz]
+    fstp    qword ptr [eax + FPz]
     fld     qword ptr [eax + FTy]
     fmul    st, st(2)
     fadd    qword ptr [eax + FPy]
@@ -1572,20 +1671,20 @@ asm
 {$endif}
 end;
 
-//--26--///////////////////////////////////////////////////////////////////////
+///////////////////////////////////////////////////////////////////////////////
 procedure TXForm.Noise;
 {$ifndef _ASM_}
 var
   r, sinr, cosr: double;
 begin
   SinCos(random * 2*pi, sinr, cosr);
-  r := vars[26] * random;
+  r := vars[14] * random;
   FPx := FPx + FTx * r * cosr;
   FPy := FPy + FTy * r * sinr;
 {$else}
 asm
     mov     edx, [ebx + vars]
-    fld     qword ptr [edx + 26*8]
+    fld     qword ptr [edx + 14*8]
     call    System.@RandExt
     fmulp
     call    System.@RandExt
@@ -1605,20 +1704,20 @@ asm
 {$endif}
 end;
 
-//--27--///////////////////////////////////////////////////////////////////////
+///////////////////////////////////////////////////////////////////////////////
 procedure TXForm.Blur;
 {$ifndef _ASM_}
 var
   r, sina, cosa: double;
 begin
   SinCos(random * 2*pi, sina, cosa);
-  r := vars[27] * random;
+  r := vars[15] * random;
   FPx := FPx + r * cosa;
   FPy := FPy + r * sina;
 {$else}
 asm
     mov     edx, [ebx + vars]
-    fld     qword ptr [edx + 27*8]
+    fld     qword ptr [edx + 15*8]
     call    System.@RandExt
     fmulp
     call    System.@RandExt
@@ -1636,14 +1735,17 @@ asm
 {$endif}
 end;
 
-//--28--///////////////////////////////////////////////////////////////////////
+///////////////////////////////////////////////////////////////////////////////
 procedure TXForm.Gaussian;
 {$ifndef _ASM_}
 var
   r, sina, cosa: double;
 begin
   SinCos(random * 2*pi, sina, cosa);
-  r := vars[28] * (random + random + random + random - 2);
+  r := vars[16] * (gauss_rnd[0] + gauss_rnd[1] + gauss_rnd[2] + gauss_rnd[3] - 2);
+  gauss_rnd[gauss_N] := random;
+  gauss_N := (gauss_N+1) and $3;
+
   FPx := FPx + r * cosa;
   FPy := FPy + r * sina;
 {$else}
@@ -1656,7 +1758,7 @@ asm
     fadd    st,st
     fsubp   st(1),st
     mov     edx, [ebx + vars]
-    fmul    qword ptr [edx + 28*8]
+    fmul    qword ptr [edx + 16*8]
     call    System.@RandExt
     mov     edx, [ebx + gauss_N]
     fst     qword ptr [ebx + gauss_rnd + edx*8]
@@ -1678,14 +1780,61 @@ asm
 {$endif}
 end;
 
-//--29--///////////////////////////////////////////////////////////////////////
+///////////////////////////////////////////////////////////////////////////////
+procedure TXForm.ZBlur;
+{$ifndef _ASM_}
+begin
+  FPz := FPz + vars[17] * (gauss_rnd[0] + gauss_rnd[1] + gauss_rnd[2] + gauss_rnd[3] - 2);
+  gauss_rnd[gauss_N] := random;
+  gauss_N := (gauss_N+1) and $3;
+{$else}
+asm
+    fld     qword ptr [ebx + gauss_rnd]
+    fadd    qword ptr [ebx + gauss_rnd+8]
+    fadd    qword ptr [ebx + gauss_rnd+16]
+    fadd    qword ptr [ebx + gauss_rnd+24]
+    fld1
+    fadd    st,st
+    fsubp   st(1),st
+    mov     edx, [ebx + vars]
+    fmul    qword ptr [edx + 17*8]
+    call    System.@RandExt
+    mov     edx, [ebx + gauss_N]
+    fstp    qword ptr [ebx + gauss_rnd + edx*8]
+    inc     edx
+    and     edx,$03
+    mov     [eax + gauss_N], edx
+
+    fadd    qword ptr [ebx + FPz]
+    fstp    qword ptr [ebx + FPz]
+    fwait
+{$endif}
+end;
+
+///////////////////////////////////////////////////////////////////////////////
+procedure TXForm.Blur3D;
+var
+  r, sina, cosa, sinb, cosb: double;
+begin
+  SinCos(random * 2*pi, sina, cosa);
+  r := vars[18] * (gauss_rnd[0] + gauss_rnd[1] + gauss_rnd[2] + gauss_rnd[3] - 2);
+  gauss_rnd[gauss_N] := random;
+  gauss_N := (gauss_N+1) and $3;
+
+  SinCos(random * pi, sinb, cosb);
+  FPx := FPx + r * sinb * cosa;
+  FPy := FPy + r * sinb * sina;
+  FPz := FPz + r * cosb;
+end;
+
+///////////////////////////////////////////////////////////////////////////////
 procedure TXForm.PreBlur;
 {$ifndef _ASM_}
 var
   r, sina, cosa: double;
 begin
   SinCos(random * 2*pi, sina, cosa);
-  r := vars[29] * (gauss_rnd[0] + gauss_rnd[1] + gauss_rnd[2] + gauss_rnd[3] - 2);
+  r := vars[19] * (gauss_rnd[0] + gauss_rnd[1] + gauss_rnd[2] + gauss_rnd[3] - 2);
   gauss_rnd[gauss_N] := random;
   gauss_N := (gauss_N+1) and $3;
 
@@ -1701,7 +1850,7 @@ asm
     fadd    st,st
     fsubp   st(1),st
     mov     edx, [ebx + vars]
-    fmul    qword ptr [edx + 29*8]
+    fmul    qword ptr [edx + 19*8]
     call    System.@RandExt
     mov     edx, [ebx + gauss_N]
     fst     qword ptr [ebx + gauss_rnd + edx*8]
@@ -1722,6 +1871,103 @@ asm
     fwait
 {$endif}
 end;
+
+
+///////////////////////////////////////////////////////////////////////////////
+procedure TXForm.PreZScale;
+begin
+  FTz := FTz * vars[20];
+end;
+
+///////////////////////////////////////////////////////////////////////////////
+procedure TXForm.PreZTranslate;
+begin
+  FTz := FTz + vars[21];
+end;
+
+///////////////////////////////////////////////////////////////////////////////
+procedure TXForm.PreRotateX;
+var
+  z: double;
+begin
+    z := rx_cos * FTz - rx_sin * FTy;
+  FTy := rx_sin * FTz + rx_cos * FTy;
+  FTz := z;
+end;
+
+///////////////////////////////////////////////////////////////////////////////
+procedure TXForm.PreRotateY;
+var
+  x: double;
+begin
+    x := ry_cos * FTx - ry_sin * FTz;
+  FTz := ry_sin * FTx + ry_cos * FTz;
+  FTx := x;
+end;
+
+///////////////////////////////////////////////////////////////////////////////
+procedure TXForm.ZScale;
+{$ifndef _ASM_}
+begin
+  FPz := FPz + vars[24] * FTz;
+{$else}
+asm
+    fld     qword ptr [eax + FTz]
+    mov     edx, [ebx + vars]
+    fmul    qword ptr [edx + 24*8]
+    fadd    qword ptr [ebx + FPz]
+    fstp    qword ptr [ebx + FPz]
+    fwait
+{$endif}
+end;
+
+///////////////////////////////////////////////////////////////////////////////
+procedure TXForm.ZTranslate;
+begin
+  FPz := FPz + vars[25];
+end;
+
+///////////////////////////////////////////////////////////////////////////////
+procedure TXForm.ZCone;
+{$ifndef _ASM_}
+begin
+  FPz := FPz + vars[26] * sqrt(sqr(FTx) + sqr(FTy));
+{$else}
+asm
+    fld     qword ptr [eax + FTx]
+    fmul    st,st
+    fld     qword ptr [eax + FTy]
+    fmul    st,st
+    faddp
+    fsqrt
+    mov     edx, [ebx + vars]
+    fmul    qword ptr [edx + 26*8]
+    fadd    qword ptr [ebx + FPz]
+    fstp    qword ptr [ebx + FPz]
+    fwait
+{$endif}
+end;
+
+///////////////////////////////////////////////////////////////////////////////
+procedure TXForm.PostRotateX;
+var
+  z: double;
+begin
+    z := px_cos * FPz - px_sin * FPy;
+  FPy := px_sin * FPz + px_cos * FPy;
+  FPz := z;
+end;
+
+///////////////////////////////////////////////////////////////////////////////
+procedure TXForm.PostRotateY;
+var
+  x: double;
+begin
+    x := py_cos * FPx - py_sin * FPz;
+  FPz := py_sin * FPx + py_cos * FPz;
+  FPx := x;
+end;
+
 
 //***************************************************************************//
 
@@ -1762,15 +2008,18 @@ begin
 
   FTx := c00 * CPpoint.x + c10 * CPpoint.y + c20;
   FTy := c01 * CPpoint.x + c11 * CPpoint.y + c21;
+  FTz := CPpoint.z;
 
   Fpx := 0;
   Fpy := 0;
+  Fpz := 0;
 
   for i:= 0 to FNrFunctions-1 do
     FCalcFunctionList[i];
 
   CPpoint.x := FPx;
   CPpoint.y := FPy;
+  CPPoint.z := FPz;
 end;
 
 procedure TXForm.NextPointTo(var CPpoint, ToPoint: TCPpoint);
@@ -1781,15 +2030,18 @@ begin
 
   FTx := c00 * CPpoint.x + c10 * CPpoint.y + c20;
   FTy := c01 * CPpoint.x + c11 * CPpoint.y + c21;
+  FTz := CPpoint.z;
 
   Fpx := 0;
   Fpy := 0;
+  Fpz := 0;
 
   for i:= 0 to FNrFunctions-1 do
     FCalcFunctionList[i];
 
   ToPoint.x := FPx;
   ToPoint.y := FPy;
+  ToPoint.z := FPz; //?
 end;
 
 {
@@ -1900,6 +2152,7 @@ var
 begin
   FTx := c00 * px + c10 * py + c20;
   FTy := c01 * px + c11 * py + c21;
+  FTz := 0;
 
   Fpx := 0;
   Fpy := 0;
@@ -1909,9 +2162,6 @@ begin
 
   px := FPx;
   py := FPy;
-
-//  if PlotMode <> keepPlot then
-//    skip := (PlotMode = neverPlot);
 end;
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -2065,36 +2315,51 @@ begin
   SetLength(FFunctionList, NrVar + Length(FRegVariations));
 
   //fixed
-  FFunctionList[0] := Linear;
-  FFunctionList[1] := Sinusoidal;
-  FFunctionList[2] := Spherical;
-  FFunctionList[3] := Swirl;
-  FFunctionList[4] := Horseshoe;
-  FFunctionList[5] := Polar;
-  FFunctionList[6] := FoldedHandkerchief;
-  FFunctionList[7] := Heart;
-  FFunctionList[8] := Disc;
-  FFunctionList[9] := Spiral;
-  FFunctionList[10] := Hyperbolic;
-  FFunctionList[11] := Square;
-  FFunctionList[12] := Ex;
-  FFunctionList[13] := Julia;
-  FFunctionList[14] := Bent;
-  FFunctionList[15] := Waves;
-  FFunctionList[16] := Fisheye;
-  FFunctionList[17] := Popcorn;
-  FFunctionList[18] := Exponential;
-  FFunctionList[19] := Power;
-  FFunctionList[20] := Cosine;
-  FFunctionList[21] := Rings;
-  FFunctionList[22] := Fan;
-  FFunctionList[23] := Eyefish;
-  FFunctionList[24] := Bubble;
-  FFunctionList[25] := Cylinder;
-  FFunctionList[26] := Noise;
-  FFunctionList[27] := Blur;
-  FFunctionList[28] := Gaussian;
-  FFunctionList[29] := PreBlur;
+  FFunctionList[0] := Linear3D;
+  FFunctionList[1] := Linear;
+  FFunctionList[2] := Sinusoidal;
+  FFunctionList[3] := Spherical;
+  FFunctionList[4] := Swirl;
+  FFunctionList[5] := Horseshoe;
+  FFunctionList[6] := Polar;
+//  FFunctionList[6] := FoldedHandkerchief;
+//  FFunctionList[7] := Heart;
+  FFunctionList[7] := Disc;
+  FFunctionList[8] := Spiral;
+  FFunctionList[9] := Hyperbolic;
+  FFunctionList[10] := Square;
+//  FFunctionList[12] := Ex;
+//  FFunctionList[13] := Julia;
+//  FFunctionList[14] := Bent;
+//  FFunctionList[15] := Waves;
+//  FFunctionList[16] := Fisheye;
+//  FFunctionList[17] := Popcorn;
+//  FFunctionList[18] := Exponential;
+//  FFunctionList[19] := Power;
+//  FFunctionList[20] := Cosine;
+//  FFunctionList[21] := Rings;
+//  FFunctionList[22] := Fan;
+  FFunctionList[11] := Eyefish;
+  FFunctionList[12] := Bubble;
+  FFunctionList[13] := Cylinder;
+  FFunctionList[14] := Noise;
+  FFunctionList[15] := Blur;
+  FFunctionList[16] := Gaussian;
+  FFunctionList[17] := ZBlur;
+  FFunctionList[18] := Blur3D;
+
+  FFunctionList[19] := PreBlur;
+  FFunctionList[20] := PreZScale; // vars[20] used in ControlPoint.pas
+  FFunctionList[21] := PreZTranslate;
+  FFunctionList[22] := PreRotateX;
+  FFunctionList[23] := PreRotateY;
+
+  FFunctionList[24] := ZScale;
+  FFunctionList[25] := ZTranslate;
+  FFunctionList[26] := ZCone;
+
+  FFunctionList[27] := PostRotateX;
+  FFunctionList[28] := PostRotateY;
 
   //registered
 //  for i := 0 to High(FRegVariations) do
@@ -2134,6 +2399,7 @@ begin
   Orientationtype := XForm.Orientationtype;
 
   postXswap := Xform.postXswap;
+  autoZscale := Xform.autoZscale;
 
   for i := 0 to High(FRegVariations)  do begin
     for j := 0 to FRegVariations[i].GetNrVariables - 1 do begin
@@ -2143,11 +2409,10 @@ begin
     end;
   end;
 
-  for i := 0 to 100 do
+  for i := 0 to High(modWeights) do
     modWeights[i] := xform.modWeights[i];
 
   noPlot := xform.noPlot;
-  //RetraceXform := xform.RetraceXform;
 end;
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -2192,10 +2457,7 @@ begin
     Result := Result + '" ';
   end;
 
-//  if RetraceXform then
-//    Result := Result + 'plotmode="retrace" '
-//  else
-  if noPlot then
+  if noPlot = true then
     Result := Result + 'plotmode="off" ';
 
   Result := Result + '/>';

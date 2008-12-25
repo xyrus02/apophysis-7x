@@ -31,7 +31,7 @@ object MainForm: TMainForm
     Left = 160
     Top = 28
     Width = 4
-    Height = 435
+    Height = 430
   end
   object ToolBar: TToolBar
     Left = 0
@@ -72,7 +72,6 @@ object MainForm: TMainForm
       Left = 69
       Top = 0
       Width = 8
-      Caption = 'ToolButton9'
       ImageIndex = 8
       Style = tbsSeparator
     end
@@ -98,7 +97,6 @@ object MainForm: TMainForm
       Left = 123
       Top = 0
       Width = 8
-      Caption = 'ToolButton1'
       ImageIndex = 18
       Style = tbsSeparator
     end
@@ -142,7 +140,6 @@ object MainForm: TMainForm
       Left = 217
       Top = 0
       Width = 8
-      Caption = 'ToolButton3'
       ImageIndex = 8
       Style = tbsSeparator
     end
@@ -190,7 +187,6 @@ object MainForm: TMainForm
       Left = 340
       Top = 0
       Width = 8
-      Caption = 'ToolButton4'
       ImageIndex = 14
       Style = tbsSeparator
     end
@@ -222,7 +218,6 @@ object MainForm: TMainForm
       Left = 417
       Top = 0
       Width = 8
-      Caption = 'ToolButton5'
       ImageIndex = 42
       Style = tbsSeparator
     end
@@ -247,7 +242,6 @@ object MainForm: TMainForm
       Left = 471
       Top = 0
       Width = 8
-      Caption = 'ToolButton6'
       ImageIndex = 42
       Style = tbsSeparator
     end
@@ -292,11 +286,11 @@ object MainForm: TMainForm
       Style = tbsCheck
       OnClick = tbRotateClick
     end
-    object ToolButton2: TToolButton
+    object tbTraceSeparator: TToolButton
       Left = 571
       Top = 0
       Width = 8
-      Caption = 'ToolButton2'
+      Enabled = False
       ImageIndex = 39
       Style = tbsSeparator
       Visible = False
@@ -306,6 +300,7 @@ object MainForm: TMainForm
       Top = 0
       Hint = 'Show trace window'
       Caption = 'tbShowTrace'
+      Enabled = False
       ImageIndex = 38
       Visible = False
       OnClick = tbShowTraceClick
@@ -315,7 +310,7 @@ object MainForm: TMainForm
     Left = 0
     Top = 28
     Width = 160
-    Height = 435
+    Height = 430
     Align = alLeft
     Columns = <
       item
@@ -336,7 +331,7 @@ object MainForm: TMainForm
     Left = 164
     Top = 28
     Width = 557
-    Height = 435
+    Height = 430
     Align = alClient
     BevelInner = bvLowered
     BevelOuter = bvNone
@@ -347,7 +342,7 @@ object MainForm: TMainForm
       Left = 1
       Top = 1
       Width = 555
-      Height = 433
+      Height = 428
       Align = alClient
       Anchors = []
       Center = True
@@ -361,7 +356,7 @@ object MainForm: TMainForm
   end
   object StatusBar: TStatusBar
     Left = 0
-    Top = 463
+    Top = 458
     Width = 721
     Height = 19
     Panels = <
@@ -2698,6 +2693,8 @@ object MainForm: TMainForm
       end
       object mnuExportFLame: TMenuItem
         Caption = 'Export Flame...'
+        Enabled = False
+        Hint = 'Disabled in this "3D hack" version'
         ShortCut = 16472
         OnClick = mnuExportFLameClick
       end
@@ -2908,7 +2905,6 @@ object MainForm: TMainForm
       Caption = 'Variation'
       object mnuVRandom: TMenuItem
         Caption = 'Random'
-        Checked = True
         GroupIndex = 2
         RadioItem = True
         ShortCut = 122
@@ -2916,6 +2912,14 @@ object MainForm: TMainForm
       end
       object N8: TMenuItem
         Caption = '-'
+        GroupIndex = 2
+      end
+      object mnuBuiltinVars: TMenuItem
+        Caption = 'Built-in'
+        GroupIndex = 2
+      end
+      object mnuPluginVars: TMenuItem
+        Caption = 'Plugins'
         GroupIndex = 2
       end
     end

@@ -2081,6 +2081,19 @@ object AboutForm: TAboutForm
     Height = 11
     Shape = bsBottomLine
   end
+  object Label16: TLabel
+    Left = 264
+    Top = 8
+    Width = 63
+    Height = 13
+    Caption = '3D hacked'
+    Font.Charset = DEFAULT_CHARSET
+    Font.Color = clWindowText
+    Font.Height = -11
+    Font.Name = 'MS Sans Serif'
+    Font.Style = [fsBold]
+    ParentFont = False
+  end
   object btnOK: TButton
     Left = 256
     Top = 292

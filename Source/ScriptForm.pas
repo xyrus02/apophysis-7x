@@ -25,7 +25,11 @@ uses
   ExtCtrls, StdCtrls, ControlPoint, Buttons, ComCtrls, ToolWin, Menus,
   atScript, atPascal, AdvMemo, Advmps, XFormMan, XForm, GradientHlpr, cmap;
 
-const NCPS = 10;
+const
+  NCPS = 10;
+
+  scriptFavsFilename = 'favorites3D';
+
 type
   TOptions = class
   public
@@ -159,8 +163,20 @@ type
     procedure GetFlameBatchesProc(AMachine: TatVirtualMachine);
     procedure GetFlameFinalxformEnabledProc(AMachine: TatVirtualMachine);
     procedure SetFlameFinalxformEnabledProc(AMachine: TatVirtualMachine);
+    procedure GetFlameSoloXformProc(AMachine: TatVirtualMachine);
+    procedure SetFlameSoloXformProc(AMachine: TatVirtualMachine);
     procedure GetFlameAngleProc(AMachine: TatVirtualMachine);
     procedure SetFlameAngleProc(AMachine: TatVirtualMachine);
+    procedure GetFlamePitchProc(AMachine: TatVirtualMachine);
+    procedure SetFlamePitchProc(AMachine: TatVirtualMachine);
+    procedure GetFlameYawProc(AMachine: TatVirtualMachine);
+    procedure SetFlameYawProc(AMachine: TatVirtualMachine);
+    procedure GetFlameCamZposProc(AMachine: TatVirtualMachine);
+    procedure SetFlameCamZposProc(AMachine: TatVirtualMachine);
+    procedure GetFlamePerspectiveProc(AMachine: TatVirtualMachine);
+    procedure SetFlamePerspectiveProc(AMachine: TatVirtualMachine);
+    procedure GetFlameDOFProc(AMachine: TatVirtualMachine);
+    procedure SetFlameDOFProc(AMachine: TatVirtualMachine);
 
     { Transform interface }
     procedure GetTransformAProc(AMachine: TatVirtualMachine);
@@ -548,14 +564,14 @@ end;
 procedure TScriptEditor.GetFixedReference(AMachine: TatVirtualMachine);
 begin
   with AMachine do
-    ReturnOutPutArg(ReferenceMode = 0);
+    ReturnOutPutArg(true); //ReferenceMode = 0);
 end;
 
 procedure TScriptEditor.SetFixedReference(AMachine: TatVirtualMachine);
 begin
-  with AMachine do
-    if GetInputArgAsBoolean(0) then ReferenceMode := 0
-    else ReferenceMode := 1;
+//  with AMachine do
+//    if GetInputArgAsBoolean(0) then ReferenceMode := 0
+//    else ReferenceMode := 1;
 end;
 
 procedure TScriptEditor.GetSampleDensity(AMachine: TatVirtualMachine);
@@ -876,11 +892,13 @@ begin
     if (i >= 0) and (i < NRVAR) then
     begin
       Variations[i] := v;
+{
       vars := PackVariations;
       if vars <> 0 then
         VariationOptions := vars
       else
         VariationOptions := 1;
+}
     end;
 
   end;
@@ -1969,7 +1987,6 @@ procedure TOperationLibrary.DeleteTransformProc(AMachine: TatVirtualMachine);
 var
   i, j: integer;
 begin
-  if NumTransforms > 0 then
   try
     // I'm not sure, but *maybe* this will help scripts not to screw up finalXform
     if ActiveTransform = NumTransforms then
@@ -1980,30 +1997,28 @@ begin
       scriptEditor.cp.finalXformEnabled := false;
       exit;
     end;
-    if ActiveTransform = (NumTransforms - 1) then
-    { Last triangle...just reduce number}
-    begin
+    if NumTransforms <= 1 then exit;
+
+    // delete xform from all probability tables
+    for i := 0 to NumTransforms-1 do
+    with scriptEditor.cp.xform[i] do begin
+      for j := ActiveTransform to NumTransforms-1 do
+        modWeights[j] := modWeights[j+1];
+      modWeights[NumTransforms-1] := 1;
+    end;
+    //
+
+    with scriptEditor.cp do begin
+      if ActiveTransform = (NumTransforms - 1) then
+        Dec(ActiveTransform)
+      else begin
+        for i := ActiveTransform to NumTransforms - 2 do
+          xform[i].Assign(xform[i + 1]);
+      end;
       Dec(NumTransforms);
-      ActiveTransform := NumTransforms - 1;
-//      scriptEditor.cp.xform[NumTransforms].density := 0;
-      scriptEditor.cp.xform[NumTransforms].Assign(scriptEditor.cp.xform[NumTransforms+1]);
-    end
-    else
-    begin
-      for i := ActiveTransform to NumTransforms - 2 do
-        scriptEditor.cp.xform[i].Assign(scriptEditor.cp.xform[i + 1]);
-{      begin
-    //  copy higher transforms down
-        ScriptEditor.cp.xform[i].density := ScriptEditor.cp.xform[i + 1].density;
-        ScriptEditor.cp.xform[i].color := ScriptEditor.cp.xform[i + 1].color;
-        ScriptEditor.cp.xform[i].symmetry := ScriptEditor.cp.xform[i + 1].symmetry;
-        for j := 0 to NRVAR - 1 do
-          ScriptEditor.cp.xform[i].vars[j] := ScriptEditor.cp.xform[i + 1].vars[j];
-      end;}
-      NumTransforms := NumTransforms - 1;
-//      ScriptEditor.cp.xform[Numtransforms].density := 0;
-      scriptEditor.cp.xform[NumTransforms].Assign(scriptEditor.cp.xform[NumTransforms+1]);
-    end
+      xform[NumTransforms].Assign(xform[NumTransforms+1]);
+      xform[NumTransforms+1].Clear;
+    end;
   except
     begin
       Application.ProcessMessages;
@@ -2020,23 +2035,17 @@ var
 begin
   try
     if NumTransforms < NXFORMS then
+    with ScriptEditor.cp do
     begin
       old := ActiveTransform;
       ActiveTransform := NumTransforms;
       inc(NumTransforms);
-      ScriptEditor.cp.xform[NumTransforms].Assign(ScriptEditor.cp.xform[ActiveTransform]); // final xform
-      ScriptEditor.cp.xform[ActiveTransform].Assign(ScriptEditor.cp.xform[old]);
-{
-      ScriptEditor.cp.xform[ActiveTransform].c[0, 1] := ScriptEditor.cp.xform[old].c[0, 1];
-      ScriptEditor.cp.xform[ActiveTransform].c[1, 0] := ScriptEditor.cp.xform[old].c[1, 0];
-      ScriptEditor.cp.xform[ActiveTransform].c[1, 1] := ScriptEditor.cp.xform[old].c[1, 1];
-      ScriptEditor.cp.xform[ActiveTransform].c[2, 0] := ScriptEditor.cp.xform[old].c[2, 0];
-      ScriptEditor.cp.xform[ActiveTransform].c[2, 1] := ScriptEditor.cp.xform[old].c[2, 1];
-      ScriptEditor.cp.xform[ActiveTransform].color := ScriptEditor.cp.xform[old].color;
-      ScriptEditor.cp.xform[ActiveTransform].density := ScriptEditor.cp.xform[old].density;
-      for i := 0 to NRVAR - 1 do
-        ScriptEditor.cp.xform[ActiveTransform].vars[i] := ScriptEditor.cp.xform[old].vars[i]
-}
+      xform[NumTransforms].Assign(xform[ActiveTransform]); // final xform
+      xform[ActiveTransform].Assign(xform[old]);
+
+      for i := 0 to NumTransforms-1 do
+        xform[i].modWeights[ActiveTransform] := xform[i].modWeights[old];
+      xform[ActiveTransform].modWeights[ActiveTransform] := xform[old].modWeights[old];
     end
     else raise EFormatInvalid.Create('Too many transforms.');
   except on E: EFormatInvalid do
@@ -2392,6 +2401,20 @@ begin
     cp.finalXformEnabled := (GetInputArgAsInteger(0) <> 0);
 end;
 
+procedure TScriptEditor.GetFlameSoloXformProc(AMachine: TatVirtualMachine);
+begin
+  with AMachine do
+    ReturnOutPutArg(cp.soloXform);
+end;
+
+procedure TScriptEditor.SetFlameSoloXformProc(AMachine: TatVirtualMachine);
+begin
+  with AMachine do
+    cp.soloXform := GetInputArgAsInteger(0);
+    if (cp.soloXform < 0) or (cp.soloXform >= NumTransforms) then
+      cp.soloXform := -1;
+end;
+
 procedure TScriptEditor.GetFlameWidthProc(AMachine: TatVirtualMachine);
 begin
   with AMachine do
@@ -2548,6 +2571,66 @@ procedure TScriptEditor.SetFlameAngleProc(AMachine: TatVirtualMachine);
 begin
   with AMachine do
     cp.FAngle := GetInputArgAsFloat(0);
+end;
+
+procedure TScriptEditor.GetFlamePitchProc(AMachine: TatVirtualMachine);
+begin
+  with AMachine do
+    ReturnOutPutArg(cp.cameraPitch);
+end;
+
+procedure TScriptEditor.SetFlamePitchProc(AMachine: TatVirtualMachine);
+begin
+  with AMachine do
+    cp.cameraPitch := GetInputArgAsFloat(0);
+end;
+
+procedure TScriptEditor.GetFlameYawProc(AMachine: TatVirtualMachine);
+begin
+  with AMachine do
+    ReturnOutPutArg(cp.cameraYaw);
+end;
+
+procedure TScriptEditor.SetFlameYawProc(AMachine: TatVirtualMachine);
+begin
+  with AMachine do
+    cp.cameraYaw := GetInputArgAsFloat(0);
+end;
+
+procedure TScriptEditor.GetFlameCamZposProc(AMachine: TatVirtualMachine);
+begin
+  with AMachine do
+    ReturnOutPutArg(cp.cameraZpos);
+end;
+
+procedure TScriptEditor.SetFlameCamZposProc(AMachine: TatVirtualMachine);
+begin
+  with AMachine do
+    cp.cameraZpos := GetInputArgAsFloat(0);
+end;
+
+procedure TScriptEditor.GetFlamePerspectiveProc(AMachine: TatVirtualMachine);
+begin
+  with AMachine do
+    ReturnOutPutArg(cp.cameraPersp);
+end;
+
+procedure TScriptEditor.SetFlamePerspectiveProc(AMachine: TatVirtualMachine);
+begin
+  with AMachine do
+    cp.cameraPersp := GetInputArgAsFloat(0);
+end;
+
+procedure TScriptEditor.GetFlameDOFProc(AMachine: TatVirtualMachine);
+begin
+  with AMachine do
+    ReturnOutPutArg(cp.cameraDOF);
+end;
+
+procedure TScriptEditor.SetFlameDOFProc(AMachine: TatVirtualMachine);
+begin
+  with AMachine do
+    cp.cameraDOF := GetInputArgAsFloat(0);
 end;
 
 { *************************** Transform interface **************************** }
@@ -3206,7 +3289,12 @@ begin
     DefineProp('Batches', tkInteger, GetFlameBatchesProc, SetFlameBatchesProc);
     DefineProp('FinalXformEnabled', tkInteger, GetFlameFinalxformEnabledProc, SetFlameFinalxformEnabledProc);
     DefineProp('Angle', tkFloat, GetFlameAngleProc, SetFlameAngleProc);
-
+    DefineProp('Pitch', tkFloat, GetFlamePitchProc, SetFlamePitchProc);
+    DefineProp('Yaw', tkFloat, GetFlameYawProc, SetFlameYawProc);
+    DefineProp('Perspective', tkFloat, GetFlamePerspectiveProc, SetFlamePerspectiveProc);
+    DefineProp('Z', tkFloat, GetFlameCamZposProc, SetFlameCamZposProc);
+    DefineProp('DOF', tkFloat, GetFlameDOFProc, SetFlameDOFProc);
+    DefineProp('SoloXform', tkInteger, GetFlameSoloXformProc, SetFlameSoloXformProc);
   end;
   Scripter.AddObject('Flame', Flame);
 
@@ -3243,7 +3331,7 @@ begin
     DefineProp('Variation', tkFloat, GetTransformVarProc, SetTransformVarProc, nil, false, 1);
     DefineProp('Variable', tkFloat, GetTransformVariProc, SetTransformVariProc, nil, false, 1);
     DefineProp('Chaos', tkFloat, GetTransformChaosProc, SetTransformChaosProc, nil, false, 1);
-    DefineProp('PlotMode', tkInteger, SetTransformPlotModeProc, SetTransformPlotModeProc);
+    DefineProp('PlotMode', tkInteger, GetTransformPlotModeProc, SetTransformPlotModeProc);
   end;
   Scripter.AddObject('Transform', Transform);
 
@@ -3723,7 +3811,7 @@ begin
       There := true;
   if there then exit;
   Favorites.Add(Script);
-  Favorites.SaveToFile(AppPath + 'favorites');
+  Favorites.SaveToFile(AppPath + scriptFavsFilename);
 end;
 
 procedure TScriptEditor.FormShortCut(var Msg: TWMKey; var Handled: Boolean);

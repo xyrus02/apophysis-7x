@@ -14,7 +14,7 @@ const
 {$define _ASM_}
 
 //                                 z
-//  The formula is:  z' = ------------------- , where z = complex (x + i*y)
+//  The formula is: f(z) = ------------------- , where z = complex (x + i*y)
 //                        c2*(z^2) + c1*z + 1
 
 type

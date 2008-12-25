@@ -1,7 +1,7 @@
 {
      Apophysis Copyright (C) 2001-2004 Mark Townsend
      Apophysis Copyright (C) 2005-2006 Ronald Hordijk, Piotr Boris, Peter Sdobnov     
-     Apophysis Copyright (C) 2007 Piotr Borys, Peter Sdobnov
+     Apophysis Copyright (C) 2007-2008 Piotr Borys, Peter Sdobnov
 
      This program is free software; you can redistribute it and/or modify
      it under the terms of the GNU General Public License as published by
@@ -49,6 +49,7 @@ type
     Label15: TLabel;
     Bevel2: TBevel;
     Bevel3: TBevel;
+    Label16: TLabel;
     procedure btnOKClick(Sender: TObject);
     procedure FormShow(Sender: TObject);
     procedure lblCreditClick(Sender: TObject);

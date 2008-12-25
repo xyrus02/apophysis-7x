@@ -562,6 +562,17 @@ object RenderForm: TRenderForm
       end
     end
   end
+  object chkThreadPriority: TCheckBox
+    Left = 176
+    Top = 358
+    Width = 73
+    Height = 17
+    Caption = 'Low priority'
+    Enabled = False
+    TabOrder = 10
+    Visible = False
+    OnClick = chkThreadPriorityClick
+  end
   object SaveDialog: TSaveDialog
     Left = 136
     Top = 360

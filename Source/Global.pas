@@ -95,14 +95,14 @@ var
   HelpersEnabled: boolean;
   EditorBkgColor, ReferenceTriangleColor: integer;
   GridColor1, GridColor2, HelpersColor: integer;
-  ExtEditEnabled, TransformAxisLock: boolean;
-  DoubleClickSetVars: boolean;
+  ExtEditEnabled, TransformAxisLock, RebuildXaosLinks: boolean;
   ShowAllXforms: boolean;
 
   { Display }
 
   defSampleDensity, defPreviewDensity: Double;
-  defGamma, defBrightness, defVibrancy, defFilterRadius: Double;
+  defGamma, defBrightness, defVibrancy,
+  defFilterRadius, defGammaThreshold: Double;
   defOversample: integer;
 
   { Render }
@@ -151,12 +151,13 @@ var
 
   SaveIncompleteRenders: boolean;
   ShowRenderStats: boolean;
+  LowerRenderPriority: boolean;
 
   SymmetryType: integer;
   SymmetryOrder: integer;
   SymmetryNVars: integer;
-  Variations: array[0..63] of boolean;
-  VariationOptions: int64;
+  Variations: array of boolean;
+  //VariationOptions: int64;
 
   MainForm_RotationMode: integer;
   PreserveQuality: boolean;
@@ -164,7 +165,7 @@ var
   { For random gradients }
 
   MinNodes, MaxNodes, MinHue, MaxHue, MinSat, MaxSat, MinLum, MaxLum: integer;
-  ReferenceMode: integer;//FixedReference: boolean;
+  //ReferenceMode: integer;
   BatchSize: Integer;
   Compatibility: integer; //0 = original, 1 = Drave's
   Favorites: TStringList;
@@ -354,6 +355,15 @@ begin
     end;
   end;
   Result := str;
+end;
+
+procedure SinCos(const Theta: double; var Sin, Cos: double); // to avoid using 'extended' type
+asm
+    FLD     Theta
+    FSINCOS
+    FSTP    qword ptr [edx]    // Cos
+    FSTP    qword ptr [eax]    // Sin
+    FWAIT
 end;
 
 (*

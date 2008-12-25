@@ -1391,22 +1391,17 @@ object EditForm: TEditForm
               OnExit = PostCoefValidate
               OnKeyPress = PostCoefKeypress
             end
-            object chkPreserve: TCheckBox
+            object chkAutoZscale: TCheckBox
               Left = 8
               Top = 257
               Width = 145
               Height = 17
-              Hint = 
-                'Keep this checked if you don'#39't want all weights to be recalculat' +
-                'ed to screw up all your flame :-)'
               Alignment = taLeftJustify
-              Caption = 'Preserve weights'
-              Checked = True
+              Caption = 'Auto calculate pre_zscale'
               ParentShowHint = False
               ShowHint = True
-              State = cbChecked
               TabOrder = 14
-              Visible = False
+              OnClick = chkAutoZscaleClick
             end
           end
           object tabColors: TTabSheet
@@ -1487,7 +1482,7 @@ object EditForm: TEditForm
             end
             object GroupBox2: TGroupBox
               Left = 8
-              Top = 168
+              Top = 182
               Width = 145
               Height = 77
               Caption = 'Variation preview'
@@ -3083,6 +3078,13 @@ object EditForm: TEditForm
       Caption = 'View as "&from"'
       RadioItem = True
       OnClick = mnuChaosViewFromClick
+    end
+    object mnuChaosRebuild: TMenuItem
+      Caption = 'Rebuild xaos links'
+      Checked = True
+      Hint = 'Rebuild xaos links when deleting transforms'
+      Visible = False
+      OnClick = mnuChaosRebuildClick
     end
     object N9: TMenuItem
       Caption = '-'

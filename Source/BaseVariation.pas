@@ -15,6 +15,7 @@ type
     vvar:  double;
     FTx, FTy: ^double;
     FPx, FPy: ^double;
+    FTz, FPz: ^double;
 
     class function GetName: string; virtual; abstract;
     class function GetInstance: TBaseVariation; virtual; abstract;

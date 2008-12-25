@@ -6,8 +6,7 @@ uses
   BaseVariation;
 
 const
-  NRLOCVAR = 30;
-
+  NRLOCVAR = 29;
 var
   NumBuiltinVars: integer;
 
@@ -40,36 +39,51 @@ end;
 function Varnames(const index: integer): String;
 const
   cvarnames: array[0..NRLOCVAR-1] of string = (
+    'linear3D',
     'linear',
     'sinusoidal',
     'spherical',
     'swirl',
     'horseshoe',
     'polar',
-    'handkerchief',
-    'heart',
+//    'handkerchief',
+//    'heart',
     'disc',
     'spiral',
     'hyperbolic',
     'diamond',
-    'ex',
-    'julia',
-    'bent',
-    'waves',
-    'fisheye',
-    'popcorn',
-    'exponential',
-    'power',
-    'cosine',
-    'rings',
-    'fan',
+//    'ex',
+//    'julia',
+//    'bent',
+//    'waves',
+//    'fisheye',
+//    'popcorn',
+//    'exponential',
+//    'power',
+//    'cosine',
+//    'rings',
+//    'fan',
     'eyefish',
     'bubble',
     'cylinder',
     'noise',
     'blur',
     'gaussian_blur',
-    'pre_blur'
+    'zblur',
+    'blur3D',
+
+    'pre_blur',
+    'pre_zscale',
+    'pre_ztranslate',
+    'pre_rotate_x',
+    'pre_rotate_y',
+
+    'zscale',
+    'ztranslate',
+    'zcone',
+
+    'post_rotate_x',
+    'post_rotate_y'
     );
 begin
   if Index < NRLOCVAR then

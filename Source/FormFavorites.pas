@@ -92,7 +92,7 @@ end;
 procedure TFavoritesForm.btnOKClick(Sender: TObject);
 begin
   ModalResult := mrOK;
-  Faves.SaveToFile(AppPath + 'favorites');
+  Faves.SaveToFile(AppPath + scriptFavsFilename);
 end;
 
 procedure TFavoritesForm.FormCreate(Sender: TObject);

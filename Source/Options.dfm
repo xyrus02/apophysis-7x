@@ -51,8 +51,8 @@ object OptionsForm: TOptionsForm
       HelpContext = 1
       Caption = 'General'
       object chkConfirmDel: TCheckBox
-        Left = 8
-        Top = 183
+        Left = 144
+        Top = 127
         Width = 97
         Height = 17
         HelpContext = 1005
@@ -61,7 +61,7 @@ object OptionsForm: TOptionsForm
       end
       object JPEG: TGroupBox
         Left = 8
-        Top = 124
+        Top = 118
         Width = 121
         Height = 55
         Caption = 'JPEG Quality'
@@ -219,13 +219,51 @@ object OptionsForm: TOptionsForm
           TabOrder = 2
         end
       end
-      object GroupBox18: TGroupBox
+      object chkOldPaletteFormat: TCheckBox
+        Left = 144
+        Top = 148
+        Width = 121
+        Height = 29
+        Caption = 'Save gradient in old file format'
+        TabOrder = 4
+        WordWrap = True
+      end
+      object chkConfirmExit: TCheckBox
+        Left = 144
+        Top = 183
+        Width = 81
+        Height = 17
+        HelpContext = 1005
+        Caption = 'Confirm exit'
+        TabOrder = 5
+      end
+      object chkConfirmStopRender: TCheckBox
+        Left = 144
+        Top = 210
+        Width = 121
+        Height = 17
+        Caption = 'Confirm stop render'
+        TabOrder = 6
+      end
+      object rgTransparency: TRadioGroup
         Left = 8
-        Top = 64
+        Top = 176
         Width = 121
         Height = 57
+        Caption = 'PNG Transparency'
+        ItemIndex = 0
+        Items.Strings = (
+          'Disabled'
+          'Enabled')
+        TabOrder = 7
+      end
+      object GroupBox18: TGroupBox
+        Left = 8
+        Top = 61
+        Width = 121
+        Height = 55
         Caption = 'Internal buffer depth'
-        TabOrder = 4
+        TabOrder = 8
         object cbInternalBitsPerSample: TComboBox
           Left = 16
           Top = 20
@@ -240,32 +278,6 @@ object OptionsForm: TOptionsForm
             '48-bit integer'
             '64-bit integer')
         end
-      end
-      object chkOldPaletteFormat: TCheckBox
-        Left = 8
-        Top = 204
-        Width = 121
-        Height = 29
-        Caption = 'Save gradient in old file format'
-        TabOrder = 5
-        WordWrap = True
-      end
-      object chkConfirmExit: TCheckBox
-        Left = 136
-        Top = 183
-        Width = 81
-        Height = 17
-        HelpContext = 1005
-        Caption = 'Confirm exit'
-        TabOrder = 6
-      end
-      object chkConfirmStopRender: TCheckBox
-        Left = 136
-        Top = 210
-        Width = 121
-        Height = 17
-        Caption = 'Confirm stop render'
-        TabOrder = 7
       end
     end
     object EditorPage: TTabSheet
@@ -393,7 +405,7 @@ object OptionsForm: TOptionsForm
       end
       object rgReferenceMode: TRadioGroup
         Left = 160
-        Top = 4
+        Top = 108
         Width = 145
         Height = 69
         Caption = 'Reference Triangle'
@@ -403,12 +415,13 @@ object OptionsForm: TOptionsForm
           'Proportional'
           'Wandering (old-style)')
         TabOrder = 1
+        Visible = False
       end
       object GroupBox21: TGroupBox
         Left = 160
-        Top = 77
+        Top = 4
         Width = 145
-        Height = 65
+        Height = 85
         Caption = 'Editor defaults'
         TabOrder = 2
         object chkAxisLock: TCheckBox
@@ -431,17 +444,16 @@ object OptionsForm: TOptionsForm
           State = cbChecked
           TabOrder = 1
         end
-      end
-      object rgDoubleClickVars: TRadioGroup
-        Left = 160
-        Top = 144
-        Width = 273
-        Height = 57
-        Caption = 'Double-click on variation'
-        Items.Strings = (
-          'Reset value to zero'
-          'Reset value to zero, if zero set to "1"')
-        TabOrder = 3
+        object chkXaosRebuild: TCheckBox
+          Left = 8
+          Top = 58
+          Width = 129
+          Height = 17
+          Caption = 'Rebuild xaos links'
+          Checked = True
+          State = cbChecked
+          TabOrder = 2
+        end
       end
     end
     object DisplayPage: TTabSheet
@@ -507,105 +519,116 @@ object OptionsForm: TOptionsForm
         Caption = 'Rendering'
         TabOrder = 0
         object lblSampleDensity: TLabel
-          Left = 40
+          Left = 59
           Top = 19
           Width = 38
           Height = 13
+          Alignment = taRightJustify
           Caption = 'Quality:'
         end
         object lblGamma: TLabel
-          Left = 40
+          Left = 58
           Top = 43
           Width = 39
           Height = 13
+          Alignment = taRightJustify
           Caption = 'Gamma:'
         end
         object lblBrightness: TLabel
-          Left = 24
+          Left = 43
           Top = 67
           Width = 54
           Height = 13
+          Alignment = taRightJustify
           Caption = 'Brightness:'
         end
         object lblVibrancy: TLabel
-          Left = 32
+          Left = 52
           Top = 91
           Width = 45
           Height = 13
+          Alignment = taRightJustify
           Caption = 'Vibrancy:'
         end
         object lblOversample: TLabel
-          Left = 16
-          Top = 115
+          Left = 36
+          Top = 139
           Width = 61
           Height = 13
+          Alignment = taRightJustify
           Caption = 'Oversample:'
         end
         object lblFilterRadius: TLabel
-          Left = 16
-          Top = 139
+          Left = 34
+          Top = 163
           Width = 63
           Height = 13
+          Alignment = taRightJustify
           Caption = 'Filter Radius:'
         end
+        object lblGammaThreshold: TLabel
+          Left = 10
+          Top = 115
+          Width = 87
+          Height = 13
+          Alignment = taRightJustify
+          Caption = 'Gamma threshold:'
+          WordWrap = True
+        end
         object txtSampleDensity: TEdit
-          Left = 88
+          Left = 104
           Top = 16
-          Width = 65
+          Width = 49
           Height = 21
           HelpContext = 1006
           TabOrder = 0
         end
         object txtGamma: TEdit
-          Left = 88
+          Left = 104
           Top = 40
-          Width = 65
+          Width = 49
           Height = 21
           HelpContext = 1007
           TabOrder = 1
         end
         object txtBrightness: TEdit
-          Left = 88
+          Left = 104
           Top = 64
-          Width = 65
+          Width = 49
           Height = 21
           HelpContext = 1008
           TabOrder = 2
         end
         object txtVibrancy: TEdit
-          Left = 88
+          Left = 104
           Top = 88
-          Width = 65
+          Width = 49
           Height = 21
           HelpContext = 1009
           TabOrder = 3
         end
         object txtOversample: TEdit
-          Left = 88
-          Top = 112
-          Width = 65
+          Left = 104
+          Top = 136
+          Width = 49
           Height = 21
           HelpContext = 1010
           TabOrder = 4
         end
         object txtFilterRadius: TEdit
-          Left = 88
-          Top = 136
-          Width = 65
+          Left = 104
+          Top = 160
+          Width = 49
           Height = 21
           HelpContext = 1011
           TabOrder = 5
         end
-        object rgTransparency: TRadioGroup
-          Left = 8
-          Top = 160
-          Width = 153
-          Height = 61
-          Caption = 'PNG Transparency'
-          ItemIndex = 0
-          Items.Strings = (
-            'Disabled'
-            'Enabled')
+        object txtGammaThreshold: TEdit
+          Left = 104
+          Top = 112
+          Width = 49
+          Height = 21
+          HelpContext = 1011
           TabOrder = 6
         end
       end
@@ -739,7 +762,6 @@ object OptionsForm: TOptionsForm
           Height = 21
           Associate = txtMaxXforms
           Min = 2
-          Max = 100
           Position = 6
           TabOrder = 3
         end
@@ -1197,7 +1219,7 @@ object OptionsForm: TOptionsForm
           Height = 21
           HelpContext = 1036
           TabOrder = 6
-          Text = '0'
+          Text = '1'
           OnChange = txtMinLumChange
         end
         object txtMaxLum: TEdit
@@ -1281,6 +1303,8 @@ object OptionsForm: TOptionsForm
           Height = 21
           HelpContext = 1036
           Associate = txtMinLum
+          Min = 1
+          Position = 1
           TabOrder = 14
         end
         object udMaxLum: TUpDown

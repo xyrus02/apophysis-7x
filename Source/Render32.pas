@@ -106,7 +106,7 @@ var
   Bucket: PBucket32;
   MapColor: PColorMapColor;
 
-  p: TCPPoint;
+  p, q: TCPPoint;
   xf: TXForm;
 begin
 {$ifndef _ASM_}
@@ -142,9 +142,12 @@ end;
 
       if xf.noPlot then continue;
 
-      px := p.x - camX0;
+      q := p;
+      fcp.ProjectionFunc(@q); // 3d hack
+
+      px := q.x - camX0;
       if (px < 0) or (px > camW) then continue;
-      py := p.y - camY0;
+      py := q.y - camY0;
       if (py < 0) or (py > camH) then continue;
 
       Bucket := @buckets[Round(bhs * py)][Round(bws * px)];
@@ -170,7 +173,7 @@ var
   Bucket: PBucket32;
   MapColor: PColorMapColor;
 
-  p: TCPPoint;
+  p, q: TCPPoint;
   xf: TXForm;
 begin
 {$ifndef _ASM_}
@@ -206,9 +209,12 @@ end;
 
       if xf.noPlot then continue;
 
-      px := p.x * cosa + p.y * sina + rcX;
+      q := p;
+      fcp.ProjectionFunc(@q); // 3d hack
+
+      px := q.x * cosa + q.y * sina + rcX;
       if (px < 0) or (px > camW) then continue;
-      py := p.y * cosa - p.x * sina + rcY;
+      py := q.y * cosa - q.x * sina + rcY;
       if (py < 0) or (py > camH) then continue;
 
       Bucket := @buckets[Round(bhs * py)][Round(bws * px)];
@@ -272,6 +278,8 @@ end;
       if xf.noPlot then continue;
 
       finalXform.NextPointTo(p, q);
+
+      fcp.ProjectionFunc(@q); // 3d hack
 
       px := q.x - camX0;
       if (px < 0) or (px > camW) then continue;
@@ -338,6 +346,8 @@ end;
       if xf.noPlot then continue;
 
       finalXform.NextPointTo(p, q);
+
+      fcp.ProjectionFunc(@q); // 3d hack
 
       px := q.x * cosa + q.y * sina + rcX;
       if (px < 0) or (px > camW) then continue;

@@ -51,11 +51,12 @@ object AdjustForm: TAdjustForm
   PixelsPerInch = 96
   TextHeight = 13
   object lblOffset: TLabel
-    Left = 381
-    Top = 120
-    Width = 3
-    Height = 13
+    Left = 61
+    Top = 8
+    Width = 44
+    Height = 17
     Alignment = taRightJustify
+    AutoSize = False
   end
   object btnUndo: TSpeedButton
     Left = 6
@@ -154,9 +155,14 @@ object AdjustForm: TAdjustForm
     Top = 5
     Width = 162
     Height = 122
+    Cursor = crCross
     BevelOuter = bvLowered
     Color = clAppWorkSpace
     TabOrder = 0
+    OnDblClick = PreviewImageDblClick
+    OnMouseDown = PreviewImageMouseDown
+    OnMouseMove = PreviewImageMouseMove
+    OnMouseUp = PreviewImageMouseUp
     DesignSize = (
       162
       122)
@@ -165,7 +171,6 @@ object AdjustForm: TAdjustForm
       Top = 1
       Width = 160
       Height = 120
-      Cursor = crCross
       Anchors = []
       Center = True
       IncrementalDisplay = True
@@ -181,7 +186,7 @@ object AdjustForm: TAdjustForm
     Top = 132
     Width = 388
     Height = 129
-    ActivePage = TabSheet2
+    ActivePage = TabSheet1
     Align = alBottom
     Images = MainForm.Buttons
     TabOrder = 1
@@ -510,6 +515,34 @@ object AdjustForm: TAdjustForm
         OnMouseMove = DragPanelMouseMove
         OnMouseUp = DragPanelMouseUp
       end
+      object pnlGammaThreshold: TPanel
+        Left = 232
+        Top = 76
+        Width = 106
+        Height = 21
+        Cursor = crHandPoint
+        Hint = 'Click and drag to change value'
+        BevelOuter = bvLowered
+        Caption = 'Gamma Threshold'
+        ParentShowHint = False
+        ShowHint = True
+        TabOrder = 11
+        OnDblClick = DragPanelDblClick
+        OnMouseDown = DragPanelMouseDown
+        OnMouseMove = DragPanelMouseMove
+        OnMouseUp = DragPanelMouseUp
+      end
+      object txtGammaThreshold: TEdit
+        Left = 338
+        Top = 76
+        Width = 41
+        Height = 21
+        TabOrder = 12
+        Text = '0'
+        OnEnter = txtGammaThresholdEnter
+        OnExit = txtGammaThresholdExit
+        OnKeyPress = txtGammaThresholdKeyPress
+      end
     end
     object TabSheet3: TTabSheet
       Caption = 'Gradient'
@@ -529,6 +562,44 @@ object AdjustForm: TAdjustForm
         Hint = 'Click for menu'
         Caption = 'Rotate'
         Flat = True
+        Glyph.Data = {
+          5E040000424D5E04000000000000360400002800000005000000050000000100
+          08000000000028000000120B0000120B0000000100000000000000000000FFFF
+          FF00DEDAD800FFFFFF0000000000000000000000000000000000000000000000
+          0000000000000000000000000000000000000000000000000000000000000000
+          0000000000000000000000000000000000000000000000000000000000000000
+          0000000000000000000000000000000000000000000000000000000000000000
+          0000000000000000000000000000000000000000000000000000000000000000
+          0000000000000000000000000000000000000000000000000000000000000000
+          0000000000000000000000000000000000000000000000000000000000000000
+          0000000000000000000000000000000000000000000000000000000000000000
+          0000000000000000000000000000000000000000000000000000000000000000
+          0000000000000000000000000000000000000000000000000000000000000000
+          0000000000000000000000000000000000000000000000000000000000000000
+          0000000000000000000000000000000000000000000000000000000000000000
+          0000000000000000000000000000000000000000000000000000000000000000
+          0000000000000000000000000000000000000000000000000000000000000000
+          0000000000000000000000000000000000000000000000000000000000000000
+          0000000000000000000000000000000000000000000000000000000000000000
+          0000000000000000000000000000000000000000000000000000000000000000
+          0000000000000000000000000000000000000000000000000000000000000000
+          0000000000000000000000000000000000000000000000000000000000000000
+          0000000000000000000000000000000000000000000000000000000000000000
+          0000000000000000000000000000000000000000000000000000000000000000
+          0000000000000000000000000000000000000000000000000000000000000000
+          0000000000000000000000000000000000000000000000000000000000000000
+          0000000000000000000000000000000000000000000000000000000000000000
+          0000000000000000000000000000000000000000000000000000000000000000
+          0000000000000000000000000000000000000000000000000000000000000000
+          0000000000000000000000000000000000000000000000000000000000000000
+          0000000000000000000000000000000000000000000000000000000000000000
+          0000000000000000000000000000000000000000000000000000000000000000
+          0000000000000000000000000000000000000000000000000000000000000000
+          0000000000000000000000000000000000000000000000000000000000000000
+          0000000000000000000000000000000000000000000000000000020202020200
+          0000020200020200000002000000020000000000000000000000020202020200
+          0000}
+        Layout = blGlyphRight
         ParentShowHint = False
         ShowHint = True
         OnClick = btnMenuClick
@@ -1006,16 +1077,16 @@ object AdjustForm: TAdjustForm
       end
     end
   end
-  object pnlMasterScale: TPanel
+  object pnlPitch: TPanel
     Left = 280
-    Top = 106
-    Width = 57
+    Top = 10
+    Width = 65
     Height = 21
     Cursor = crHandPoint
     Hint = 'Click and drag to change value'
     Alignment = taLeftJustify
     BevelOuter = bvLowered
-    Caption = ' Scale'
+    Caption = ' Pitch'
     ParentShowHint = False
     ShowHint = True
     TabOrder = 2
@@ -1024,14 +1095,166 @@ object AdjustForm: TAdjustForm
     OnMouseMove = DragPanelMouseMove
     OnMouseUp = DragPanelMouseUp
   end
-  object editPPU: TEdit
-    Left = 336
-    Top = 106
-    Width = 49
+  object pnlYaw: TPanel
+    Left = 280
+    Top = 34
+    Width = 65
     Height = 21
+    Cursor = crHandPoint
+    Hint = 'Click and drag to change value'
+    Alignment = taLeftJustify
+    BevelOuter = bvLowered
+    Caption = ' Yaw'
+    ParentShowHint = False
+    ShowHint = True
     TabOrder = 3
+    OnDblClick = DragPanelDblClick
+    OnMouseDown = DragPanelMouseDown
+    OnMouseMove = DragPanelMouseMove
+    OnMouseUp = DragPanelMouseUp
+  end
+  object pnlDOF: TPanel
+    Left = 4
+    Top = 106
+    Width = 57
+    Height = 21
+    Cursor = crHandPoint
+    Hint = 'Click and drag to change value'
+    Alignment = taLeftJustify
+    BevelOuter = bvLowered
+    Caption = ' DOF'
+    ParentShowHint = False
+    ShowHint = True
+    TabOrder = 4
+    OnDblClick = DragPanelDblClick
+    OnMouseDown = DragPanelMouseDown
+    OnMouseMove = DragPanelMouseMove
+    OnMouseUp = DragPanelMouseUp
+  end
+  object pnlPersp: TPanel
+    Left = 280
+    Top = 82
+    Width = 65
+    Height = 21
+    Cursor = crHandPoint
+    Hint = 'Click and drag to change value'
+    Alignment = taLeftJustify
+    BevelOuter = bvLowered
+    Caption = ' Perspective'
+    Font.Charset = DEFAULT_CHARSET
+    Font.Color = clWindowText
+    Font.Height = -11
+    Font.Name = 'MS Sans Serif'
+    Font.Style = []
+    ParentFont = False
+    ParentShowHint = False
+    ShowHint = True
+    TabOrder = 5
+    OnDblClick = DragPanelDblClick
+    OnMouseDown = DragPanelMouseDown
+    OnMouseMove = DragPanelMouseMove
+    OnMouseUp = DragPanelMouseUp
+  end
+  object txtPitch: TEdit
+    Left = 344
+    Top = 10
+    Width = 41
+    Height = 21
+    TabOrder = 8
+    Text = '0'
+    OnEnter = txtCamEnter
+    OnExit = txtCamPitchExit
+    OnKeyPress = txtCamPitchKeyPress
+  end
+  object txtYaw: TEdit
+    Left = 344
+    Top = 34
+    Width = 41
+    Height = 21
+    TabOrder = 9
+    Text = '0'
+    OnEnter = txtCamEnter
+    OnExit = txtCamYawExit
+    OnKeyPress = txtCamYawKeyPress
+  end
+  object txtDOF: TEdit
+    Left = 61
+    Top = 106
+    Width = 48
+    Height = 21
+    TabOrder = 6
+    Text = '0'
+    OnEnter = txtCamEnter
+    OnExit = txtCamDofExit
+    OnKeyPress = txtCamDofKeyPress
+  end
+  object txtPersp: TEdit
+    Left = 344
+    Top = 82
+    Width = 41
+    Height = 21
+    TabOrder = 10
+    Text = '0'
+    OnEnter = txtCamEnter
+    OnExit = txtCamDistExit
+    OnKeyPress = txtCamDistKeyPress
+  end
+  object pnlMasterScale: TPanel
+    Left = 280
+    Top = 106
+    Width = 65
+    Height = 21
+    Cursor = crHandPoint
+    Hint = 'Click and drag to change value'
+    Alignment = taLeftJustify
+    BevelOuter = bvLowered
+    Caption = ' Scale'
+    ParentShowHint = False
+    ShowHint = True
+    TabOrder = 12
+    OnDblClick = DragPanelDblClick
+    OnMouseDown = DragPanelMouseDown
+    OnMouseMove = DragPanelMouseMove
+    OnMouseUp = DragPanelMouseUp
+  end
+  object editPPU: TEdit
+    Left = 344
+    Top = 106
+    Width = 41
+    Height = 21
+    TabOrder = 7
+    Text = '0'
     OnExit = editPPUValidate
     OnKeyPress = editPPUKeyPress
+  end
+  object pnlZpos: TPanel
+    Left = 280
+    Top = 58
+    Width = 65
+    Height = 21
+    Cursor = crHandPoint
+    Hint = 'Click and drag to change value'
+    Alignment = taLeftJustify
+    BevelOuter = bvLowered
+    Caption = ' Height'
+    ParentShowHint = False
+    ShowHint = True
+    TabOrder = 13
+    OnDblClick = DragPanelDblClick
+    OnMouseDown = DragPanelMouseDown
+    OnMouseMove = DragPanelMouseMove
+    OnMouseUp = DragPanelMouseUp
+  end
+  object txtZpos: TEdit
+    Left = 344
+    Top = 58
+    Width = 41
+    Height = 21
+    TabOrder = 11
+    Text = '0'
+    OnEnter = txtCamEnter
+    OnExit = txtCamDistExit
+    OnKeyPress = txtCamDistKeyPress
   end
   object QualityPopup: TPopupMenu
     Images = MainForm.Buttons

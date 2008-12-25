@@ -136,6 +136,12 @@ begin
   finally
     Registry.Free;
   end;
+
+  FRenderer.Free; // weirdness!!! :-/
+  FRenderer := nil;
+  Image.Picture.Graphic := nil;
+  FCP.Free;
+  FCP := nil;
 end;
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -208,6 +214,8 @@ end;
 
 ///////////////////////////////////////////////////////////////////////////////
 procedure TfrmPostProcess.btnApplyClick(Sender: TObject);
+var
+  temp: double;
 begin
   TryStrToFloat(txtFilterRadius.Text, FCP.spatial_filter_radius);
   if FCP.spatial_filter_radius > 2 then begin
@@ -245,7 +253,8 @@ begin
     txtContrast.Text := FloatTostr(0.01);
   end;
 
-  TryStrToFloat(txtBrightness.Text, FCP.brightness);
+  if TryStrToFloat(txtBrightness.Text, temp) then FCP.brightness := temp;
+  //TryStrToFloat(txtBrightness.Text, FCP.brightness);
   if FCP.brightness > 100 then begin
     FCP.brightness := 100;
     txtBrightness.Text := '100';
@@ -406,9 +415,15 @@ begin
   end
   else if (Sender = pnlBrightness) then
   begin
+{
     pValue := @fcp.brightness;
     pDefaultValue := @Brightness;
     pEdit := @txtBrightness;
+}
+    if fcp.brightness = Brightness then exit;
+    fcp.brightness := Brightness;
+    txtBrightness.Text := FloatToStr(fcp.brightness);
+
   end
   else if (Sender = pnlContrast) then
   begin

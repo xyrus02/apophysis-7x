@@ -200,20 +200,16 @@ type
     chkPlaysound: TCheckBox;
     btnPlay: TSpeedButton;
     Label44: TLabel;
-    GroupBox18: TGroupBox;
-    cbInternalBitsPerSample: TComboBox;
     GroupBox20: TGroupBox;
     chkShowTransparency: TCheckBox;
     chkExtendMainPreview: TCheckBox;
     Label48: TLabel;
-    rgTransparency: TRadioGroup;
     cbExtendPercent: TComboBox;
     chkShowRenderStats: TCheckBox;
     rgRotationMode: TRadioGroup;
     GroupBox21: TGroupBox;
     chkAxisLock: TCheckBox;
     chkExtendedEdit: TCheckBox;
-    rgDoubleClickVars: TRadioGroup;
     chkOldPaletteFormat: TCheckBox;
     rgZoomingMode: TRadioGroup;
     chkShowAllXforms: TCheckBox;
@@ -221,6 +217,12 @@ type
     btnGradientsFile: TSpeedButton;
     chkConfirmExit: TCheckBox;
     chkConfirmStopRender: TCheckBox;
+    rgTransparency: TRadioGroup;
+    GroupBox18: TGroupBox;
+    cbInternalBitsPerSample: TComboBox;
+    txtGammaThreshold: TEdit;
+    lblGammaThreshold: TLabel;
+    chkXaosRebuild: TCheckBox;
     procedure btnCancelClick(Sender: TObject);
     procedure FormShow(Sender: TObject);
     procedure btnOKClick(Sender: TObject);
@@ -327,13 +329,12 @@ begin
 
 
   { Editor }
-  rgReferenceMode.ItemIndex := ReferenceMode;
+//  rgReferenceMode.ItemIndex := ReferenceMode;
   chkUseXFormColor.checked := UseTransformColors;
   chkHelpers.Checked := HelpersEnabled;
   chkExtendedEdit.Checked := ExtEditEnabled;
   chkAxisLock.Checked := TransformAxisLock;
-  if DoubleClickSetVars then rgDoubleClickVars.ItemIndex := 1
-  else rgDoubleClickVars.ItemIndex := 0;
+  chkXaosRebuild.Checked := RebuildXaosLinks;
   chkShowAllXforms.Checked := ShowAllXforms;
 
   { Display tab }
@@ -343,6 +344,8 @@ begin
   txtVibrancy.Text := FloatToStr(defVibrancy);
   txtOversample.Text := IntToStr(defOversample);
   txtFilterRadius.Text := FloatToStr(defFilterRadius);
+  txtGammaThreshold.Text := FloatToStr(defGammaThreshold);
+
   txtLowQuality.Text := FloatToStr(prevLowQuality);
   txtMediumQuality.Text := FloatToStr(prevMediumQuality);
   txtHighQuality.Text := FloatToStr(prevHighQuality);
@@ -376,7 +379,7 @@ begin
   udSymNVars.Position := SymmetryNVars;
 
   { Variations tab }
-  UnpackVariations(VariationOptions);
+  //UnpackVariations(VariationOptions);
   for i := 0 to NRVAR -1 do
     clbVarEnabled.Checked[i] := Variations[i];
 
@@ -416,22 +419,23 @@ end;
 
 procedure TOptionsForm.btnOKClick(Sender: TObject);
 var
-  v: int64;
+  vars: boolean;
   i: integer;
 begin
 
   { Variations tab }
   { Get option values from controls. Disallow bad values }
-  for i := 0 to NRVAR -1 do
+  vars := false;
+  for i := 0 to NRVAR-1 do begin
     Variations[i] := clbVarEnabled.Checked[i];
+    vars := vars or Variations[i];
+  end;
 
-  v := PackVariations;
-  if v <> 0 then VariationOptions := v
-  else
-  begin
-    Application.MessageBox('You must select at least one variation.', 'Apophysis', 48);
-    Tabs.ActivePage := VariationsPage;
-    Exit;
+  if vars = false then begin
+    //Application.MessageBox('You must select at least one variation.', 'Apophysis', 48);
+    //Tabs.ActivePage := VariationsPage;
+    //Exit;
+    Variations[0] := true;
   end;
 
   { General tab }
@@ -463,14 +467,14 @@ begin
 
 
   // Editor
-  ReferenceMode := rgReferenceMode.ItemIndex;
+//  ReferenceMode := rgReferenceMode.ItemIndex;
   UseTransformColors := chkUseXFormColor.checked;
   HelpersEnabled := chkHelpers.Checked;
   ShowAllXforms := chkShowAllXforms.Checked;
 
   ExtEditEnabled := chkExtendedEdit.Checked;
   TransformAxisLock := chkAxisLock.Checked;
-  DoubleClickSetVars := rgDoubleClickVars.ItemIndex <> 0;
+  RebuildXaosLinks := chkXaosRebuild.Checked;
 
   { Display tab }
   defSampleDensity := StrToFloat(txtSampleDensity.Text);
@@ -484,6 +488,8 @@ begin
   if defVibrancy < 0 then defVibrancy := 0.1;
   defFilterRadius := StrToFloat(txtFilterRadius.Text);
   if defFilterRadius <= 0 then defFilterRadius := 0.1;
+  defGammaThreshold := StrToFloat(txtGammaThreshold.Text);
+  if defGammaThreshold < 0 then defGammaThreshold := 0;
   defOversample := StrToInt(txtOversample.Text);
   if defOversample > 4 then defOversample := 4;
   if defOversample < 1 then defOversample := 1;
@@ -491,10 +497,10 @@ begin
   if prevLowQuality > 100 then prevLowQuality := 100;
   if prevLowQuality < 0.01 then prevLowQuality := 0.01;
   prevMediumQuality := StrToFloat(txtMediumQuality.Text);
-  if prevMediumQuality > 100 then prevMediumQuality := 100;
+  if prevMediumQuality > 1000 then prevMediumQuality := 1000;
   if prevMediumQuality < 0.01 then prevMediumQuality := 0.01;
   prevHighQuality := StrToFloat(txtHighQuality.Text);
-  if prevHighQuality > 100 then prevHighQuality := 100;
+  if prevHighQuality > 10000 then prevHighQuality := 10000;
   if prevHighQuality < 0.01 then prevHighQuality := 0.01;
 
   MainPreviewScale := 1 + 0.02 * StrToFloatDef(cbExtendPercent.Text, 0);

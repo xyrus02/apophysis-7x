@@ -74,6 +74,7 @@ type
     chkLimitMem: TCheckBox;
     cbBitsPerSample: TComboBox;
     Output: TMemo;
+    chkThreadPriority: TCheckBox;
     procedure FormCreate(Sender: TObject);
     procedure FormDestroy(Sender: TObject);
     procedure btnRenderClick(Sender: TObject);
@@ -96,6 +97,7 @@ type
     procedure chkMaintainClick(Sender: TObject);
     procedure chkSaveIncompleteRendersClick(Sender: TObject);
     procedure cbBitsPerSampleSelect(Sender: TObject);
+    procedure chkThreadPriorityClick(Sender: TObject);
   private
     StartTime, EndTime, oldElapsed, edt: TDateTime;
     oldProg: double;
@@ -199,6 +201,8 @@ begin
 end;
 
 procedure TRenderForm.HandleThreadCompletion(var Message: TMessage);
+var
+  tryAgain: boolean;
 begin
   Trace2(MsgComplete + IntToStr(message.LParam));
   if not assigned(Renderer) then begin
@@ -212,11 +216,18 @@ begin
 
   EndTime := Now;
 
-  try
-    Renderer.SaveImage(FileName);
-  except
-    Output.Lines.Add(TimeToStr(Now) + ' : Error saving image!');
-  end;
+  repeat
+    tryAgain := false;
+    try
+      Renderer.SaveImage(FileName);
+    except
+      on e: Exception do begin
+        Output.Lines.Add(TimeToStr(Now) + ' : Error saving image!');
+        tryAgain := (Application.MessageBox(PChar('An error occured while saving the image:' + #13#10 + e.Message +
+          #13#10 + 'Check your free disk space and try again.'), 'Error', MB_RETRYCANCEL or MB_ICONERROR) = IDRETRY);
+      end;
+    end;
+  until tryAgain = false;
 
   if PlaySoundOnRenderComplete then
     if RenderCompleteSoundFile <> '' then
@@ -406,7 +417,8 @@ begin
   begin
     MaxMemory := StrToIntDef(cbMaxMemory.text, 0);
     if MaxMemory * 1024*1024 < ImageWidth * (int64(ImageHeight) * 4 + oversample) then begin
-      Application.MessageBox('Invalid maximum memory value', 'Apophysis', 16);
+      // Must be enough memory to hold the final image (RGBA)
+      Application.MessageBox('Maximum memory value is too small', 'Apophysis', 16);
       exit;
     end;
   end;
@@ -439,6 +451,15 @@ begin
   begin
     path := ExtractFilePath(FileName);
     ext := ExtractFileExt(FileName);
+
+    if Assigned(Renderer) then begin
+      Output.Lines.Add(TimeToStr(Now) + 'Shutting down previous render...');
+      Renderer.Terminate;
+      Renderer.WaitFor;
+      Renderer.Free;
+      Renderer := nil;
+    end;
+
     for iCurrFlame := 0 to MainForm.ListView.Items.Count-1 do
     begin
       MainForm.ListView.ItemIndex := iCurrFlame;
@@ -465,12 +486,6 @@ begin
           Output.Lines.Add('To avoid slowdown (and possible memory problems) use BMP file format instead.');
         end;
 
-      if Assigned(Renderer) then begin
-        //Output.Lines.Add(TimeToStr(Now) + 'Shutting down previous render'); // hmm...?
-        //Renderer.Terminate;
-        Renderer.WaitFor;
-        Renderer.Free;
-      end;
       if not Assigned(Renderer) then
       begin
         // disable screensaver
@@ -483,7 +498,7 @@ begin
         cp.Transparency := (PNGTransparency <> 0) and (UpperCase(ExtractFileExt(FileName)) = '.PNG');
         renderPath := ExtractFilePath(Filename);
         if chkSave.checked then
-          MainForm.SaveXMLFlame(cp, ExtractFileName(FileName), renderPath + 'renders.flame');
+          MainForm.SaveXMLFlame(cp, ExtractFileName(FileName), renderPath + 'renders3D.flame');
 
         oldProg:=0;
         oldElapsed:=0;
@@ -494,8 +509,15 @@ begin
 
         if not bRenderAll then exit;
         if iCurrFlame = MainForm.ListView.Items.Count-1 then bRenderAll := false;
+
         Renderer := TRenderThread.Create;
         assert(Renderer <> nil);
+{
+        if chkThreadPriority.Checked then
+          Renderer.SetPriority(tpLower)
+        else
+          Renderer.SetPriority(tpNormal);
+}
         Renderer.BitsPerSample := BitsPerSample;
         if chkLimitMem.checked then
           Renderer.MaxMem := MaxMemory;//StrToInt(cbMaxMemory.text);
@@ -507,9 +529,11 @@ begin
         Renderer.Output := Output.Lines;
         Renderer.Resume;
         if bRenderAll then Renderer.WaitFor;
+        while Renderer <> nil do Application.ProcessMessages; // wait for HandleThreadCompletion
+
        except
         Output.Lines.Add(TimeToStr(Now) + ' : Rendering failed!');
-        Application.MessageBox('Error while rendering!', 'Apophysis', 48)
+        //Application.MessageBox('Error while rendering!', 'Apophysis', 48);
        end;
       end;
     end;
@@ -531,11 +555,13 @@ begin
       end;
 
     if Assigned(Renderer) then begin
-      Output.Lines.Add(TimeToStr(Now) + 'Shutting down previous render'); // hmm...?
+      Output.Lines.Add(TimeToStr(Now) + 'Shutting down previous render...');
       Renderer.Terminate;
       Renderer.WaitFor;
       Renderer.Free;
+      Renderer := nil;
     end;
+
     if not Assigned(Renderer) then
     begin
       // disable screensaver
@@ -548,7 +574,7 @@ begin
       cp.Transparency := (PNGTransparency <> 0) and (UpperCase(ExtractFileExt(FileName)) = '.PNG');
       renderPath := ExtractFilePath(Filename);
       if chkSave.checked then
-        MainForm.SaveXMLFlame(cp, ExtractFileName(FileName), renderPath + 'renders.flame');
+        MainForm.SaveXMLFlame(cp, ExtractFileName(FileName), renderPath + 'renders3D.flame');
 
       oldProg:=0;
       oldElapsed:=0;
@@ -559,6 +585,12 @@ begin
 
       Renderer := TRenderThread.Create;
       assert(Renderer <> nil);
+{
+      if chkThreadPriority.Checked then
+        Renderer.SetPriority(tpLower)
+      else
+        Renderer.SetPriority(tpNormal);
+}
       Renderer.BitsPerSample := BitsPerSample;
       if chkLimitMem.checked then
         Renderer.MaxMem := MaxMemory;//StrToInt(cbMaxMemory.text);
@@ -572,9 +604,10 @@ begin
 
       Renderer.Output := Output.Lines;
       Renderer.Resume;
+
      except
       Output.Lines.Add(TimeToStr(Now) + ' : Rendering failed!');
-      Application.MessageBox('Error while rendering!', 'Apophysis', 48)
+      Application.MessageBox('Error while rendering!', 'Apophysis', 48);
      end;
     end;
   end;
@@ -621,6 +654,7 @@ begin
   ShowMemoryStatus;
   Ratio := ImageWidth / ImageHeight;
   chkSaveIncompleteRenders.Checked := SaveIncompleteRenders;
+  chkThreadPriority.Checked := LowerRenderPriority;
 end;
 
 procedure TRenderForm.txtWidthChange(Sender: TObject);
@@ -1017,6 +1051,20 @@ begin
   BitsPerSample := cbBitsPerSample.ItemIndex;
 
   ShowMemoryStatus;
+end;
+
+procedure TRenderForm.chkThreadPriorityClick(Sender: TObject);
+begin
+  LowerRenderPriority := chkThreadPriority.Checked;
+
+{
+  if Assigned(Renderer) then begin
+    if LowerRenderPriority then
+      Renderer.SetPriority(tpLower)
+    else
+      Renderer.SetPriority(tpNormal);
+  end;
+}
 end;
 
 end.

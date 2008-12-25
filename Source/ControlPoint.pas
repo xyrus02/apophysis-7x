@@ -78,7 +78,7 @@ type
 
 type
   TPointsArray = array of TCPpoint;
-  //TPointsXYArray = array of TXYpoint;
+  TPointsXYArray = array of TXYpoint;
 
   P2Cpoint = ^T2Cpoint;
   T2CPointsArray = array of T2Cpoint;
@@ -92,13 +92,17 @@ type
 
     Transparency: boolean;
 
+    cameraPitch, cameraYaw, cameraPersp, cameraDOF: double;
+    cameraZpos: double;
+    ProjectionFunc: procedure(pPoint: PCPPoint) of object;
+
     xform: array[0..NXFORMS] of TXForm;
 
     variation: TVariation;
     cmap: TColorMap;
     cmapindex: integer;
     time: double;
-    brightness: double; // 1.0 = normal
+    Fbrightness: double; // 1.0 = normal
     contrast: double; // 1.0 = normal
     gamma: double;
     Width: integer;
@@ -127,7 +131,7 @@ type
 
     estimator, estimator_min, estimator_curve: double; // density estimator.
     jitters: integer;
-    gamma_treshold: double;
+    gamma_threshold: double;
 
 //    PropTable: array of TXForm;
     FAngle: Double;
@@ -135,9 +139,25 @@ type
 
   private
     invalidXform: TXForm;
-    
+
+    CameraMatrix: array[0..2, 0..2] of double;
+    DofCoef: double;
+    gauss_rnd: array [0..3] of double;
+    gauss_N: integer;
+
+    procedure ProjectNone(pPoint: PCPPoint);
+    procedure ProjectPitch(pPoint: PCPPoint);
+    procedure ProjectPitchYaw(pPoint: PCPPoint);
+    procedure ProjectPitchDOF(pPoint: PCPPoint);
+    procedure ProjectPitchYawDOF(pPoint: PCPPoint);
+
     function getppux: double;
     function getppuy: double;
+
+    function GetBrightness: double;
+    procedure SetBrightness(br: double);
+    function GetRelativeGammaThreshold: double;
+    procedure SetRelativeGammaThreshold(gtr: double);
 
   public
     procedure SaveToStringlist(sl: TStringlist);
@@ -155,7 +175,8 @@ type
 
 //    class function interpolate(cp1, cp2: TControlPoint; Time: double): TControlPoint; /// just for now
     procedure InterpolateX(cp1, cp2: TControlPoint; Tm: double);
-//    procedure IterateXY(NrPoints: integer; var Points: TPointsXYArray);
+//    procedure Iterate_Old(NrPoints: integer; var Points: TPointsArray);
+    procedure IterateXY(NrPoints: integer; var Points: TPointsXYArray);
     procedure IterateXYC(NrPoints: integer; var Points: TPointsArray);
 //    procedure IterateXYCC(NrPoints: integer; var Points: T2CPointsArray);
 
@@ -193,6 +214,13 @@ type
 
     property ppux: double read getppux;
     property ppuy: double read getppuy;
+
+    property brightness: double
+      read GetBrightness
+      write SetBrightness;
+    property gammaThreshRelative: double
+      read GetRelativeGammaThreshold
+      write SetRelativeGammaThreshold;
   end;
 
 function add_symmetry_to_control_point(var cp: TControlPoint; sym: integer): integer;
@@ -257,7 +285,7 @@ begin
   gamma := 1;
   vibrancy := 1;
   contrast := 1;
-  brightness := 1;
+  Fbrightness := 1;
 
   sample_density := 50;
   zoom := 0;
@@ -269,12 +297,18 @@ begin
   estimator_min := 0.0;
   estimator_curve := 0.4;
   jitters := 1;
-  gamma_treshold := 0.01;
+  gamma_threshold := 0.01;
 
   FTwoColorDimensions := False;
 
   finalXformEnabled := false;
   Transparency := false;
+
+  cameraPitch := 0;
+  cameraYaw := 0;
+  cameraPersp := 0;
+  cameraZpos := 0;
+  cameraDOF := 0;
 end;
 
 destructor TControlPoint.Destroy;
@@ -349,9 +383,40 @@ begin
         xform[k].PropTable[i] := invalidXform;
     end;
   end;
+
+  // 3D camera precalc
+
+  CameraMatrix[0, 0] := cos(-CameraYaw);
+  CameraMatrix[1, 0] := -sin(-CameraYaw);
+  CameraMatrix[2, 0] := 0;
+  CameraMatrix[0, 1] := cos(CameraPitch) * sin(-CameraYaw);
+  CameraMatrix[1, 1] := cos(CameraPitch) * cos(-CameraYaw);
+  CameraMatrix[2, 1] := -sin(CameraPitch);
+  CameraMatrix[0, 2] := sin(CameraPitch) * sin(-CameraYaw);
+  CameraMatrix[1, 2] := sin(CameraPitch) * cos(-CameraYaw);
+  CameraMatrix[2, 2] := cos(CameraPitch);
+  DofCoef := 0.1 * CameraDOF;
+  gauss_rnd[0] := random;
+  gauss_rnd[1] := random;
+  gauss_rnd[2] := random;
+  gauss_rnd[3] := random;
+  gauss_N := 0;
+
+  if (CameraDOF <> 0) then begin
+    if (CameraYaw <> 0) then
+      ProjectionFunc := ProjectPitchYawDOF
+    else
+      ProjectionFunc := ProjectPitchDOF;
+  end
+  else if (CameraPitch <> 0) or (CameraYaw <> 0) then begin
+    if (CameraYaw <> 0) then
+      ProjectionFunc := ProjectPitchYaw
+    else
+      ProjectionFunc := ProjectPitch;
+  end
+  else ProjectionFunc := ProjectNone;
 end;
 
-(*
 procedure TControlPoint.IterateXY(NrPoints: integer; var Points: TPointsXYArray);
 var
   i: Integer;
@@ -403,7 +468,6 @@ begin
     end;
   end;
 end;
-*)
 
 procedure TControlPoint.IterateXYC(NrPoints: integer; var Points: TPointsArray);
 var
@@ -437,7 +501,6 @@ end;
     xf := xform[0];//random(NumXForms)];
     for i := 0 to FUSE do begin
       xf := xf.PropTable[Random(PROP_TABLE_SIZE)];
-      //if xf.RetraceXform then continue;
       xf.NextPoint(p);
     end;
 
@@ -452,7 +515,7 @@ end;
           pPoint^.x := MaxDouble // hack
         else
           finalXform.NextPointTo(p, pPoint^);
-
+        ProjectionFunc(pPoint);
         Inc(pPoint);
       end
     else
@@ -462,9 +525,9 @@ end;
         if xf.noPlot then
           pPoint^.x := MaxDouble // hack
         else begin
-          //pPoint^.x := p.x; pPoint^.y := p.y; pPoint^.c := p.c;
           pPoint^ := p;
-        end;
+          ProjectionFunc(pPoint);
+        end;  
         Inc(pPoint);
       end;
   except
@@ -474,53 +537,166 @@ end;
   end;
 end;
 
-///////////////////////////////////////////////////////////////////////////////
-{
-procedure TControlPoint.Testiterate(NrPoints: integer; var Points: TPointsArray);
+procedure TControlPoint.ProjectNone(pPoint: PCPPoint);
 var
-  i: Integer;
-  px, py, pc, pt: double;
-  CurrentPoint: PCPPoint;
+  zr: double;
 begin
+  zr := 1 - cameraPersp * (pPoint^.z - CameraZpos);
 
-  PreparePropTable;
-
-  for i := 0 to NXFORMS - 1 do
-    xform[i].prepare;
-
-  for i := 0 to NrPoints - 1 do begin
-    px := 4 * (-1 + 2 * random);
-    py := 4 * (-1 + 2 * random);
-
-    pc := 0.1 + 0.5 * sqrt(sqr(px/4)+ sqr(py/4)) ;
-    if abs(px)< 0.02 then
-      pc := 1 ;
-    if abs(py)< 0.02 then
-      pc := 1 ;
-    if abs(frac(px))< 0.01 then
-      pc := 1 ;
-    if abs(frac(py))< 0.01 then
-      pc := 1 ;
-    if abs(sqrt(sqr(px/4)+ sqr(py/4)) - 0.9) < 0.02 then
-      pc := 0;
-    try
-
-      PropTable[Random(PROP_TABLE_SIZE)].NextPoint(px,py,pt);
-    except
-      on EMathError do begin
-        exit;
-      end;
-    end;
-    // store points
-    if i >= 0 then begin
-      CurrentPoint := @Points[i];
-      CurrentPoint.X := px;
-      CurrentPoint.Y := py;
-      CurrentPoint.C := pc;
-    end
-  end;
+  pPoint^.x := pPoint^.x / zr;
+  pPoint^.y := pPoint^.y / zr;
 end;
+
+procedure TControlPoint.ProjectPitch(pPoint: PCPPoint);
+var
+  y, z, zr: double;
+begin
+  z := pPoint^.z - CameraZpos;
+  y := CameraMatrix[1,1]*pPoint^.y + CameraMatrix[2,1]*z;
+  zr := 1 - cameraPersp *
+    (CameraMatrix[1,2]*pPoint^.y + CameraMatrix[2,2]*z);
+
+  pPoint^.x := pPoint^.x / zr;
+  pPoint^.y := y / zr;
+end;
+
+procedure TControlPoint.ProjectPitchYaw(pPoint: PCPPoint);
+var
+  x, y, z, zr: double;
+begin
+  z := pPoint^.z - CameraZpos;
+  x := CameraMatrix[0,0]*pPoint^.x + CameraMatrix[1,0]*pPoint^.y;
+  y := CameraMatrix[0,1]*pPoint^.x + CameraMatrix[1,1]*pPoint^.y + CameraMatrix[2,1]*z;
+  zr := 1 - cameraPersp *
+    (CameraMatrix[0,2]*pPoint^.x + CameraMatrix[1,2]*pPoint^.y + CameraMatrix[2,2]*z);
+
+  pPoint^.x := x / zr;
+  pPoint^.y := y / zr;
+end;
+
+procedure TControlPoint.ProjectPitchDOF(pPoint: PCPPoint);
+var
+  x, y, z, zr, dr: double;
+  dsin, dcos: double;
+begin
+  z := pPoint^.z - CameraZpos;
+  y := CameraMatrix[1,1]*pPoint^.y + CameraMatrix[2,1]*z;
+  z := CameraMatrix[1,2]*pPoint^.y + CameraMatrix[2,2]*z;
+  zr := 1 - cameraPersp * z;
+
+{$define GAUSSIAN_DOF}
+{$ifdef GAUSSIAN_DOF}
+  asm
+    fld     qword ptr [eax + gauss_rnd]
+    fadd    qword ptr [eax + gauss_rnd+8]
+    fadd    qword ptr [eax + gauss_rnd+16]
+    fadd    qword ptr [eax + gauss_rnd+24]
+    fld1
+    fadd    st, st
+    fsubp   st(1),st
+    fmul    qword ptr [eax + dofCoef]
+    fmul    qword ptr [z]
+    fstp    qword ptr [dr]
+    call    System.@RandExt
+    mov     edx, [eax + gauss_N]
+    fst     qword ptr [eax + gauss_rnd + edx*8]
+    inc     edx
+    and     edx,$03
+    mov     [eax + gauss_N], edx
+    fadd    st, st
+    fldpi
+    fmulp
+    fsincos
+    fstp    qword ptr [dcos]
+    fstp    qword ptr [dsin]
+  end;
+{$else}
+  sincos(random*2*pi, dsin, dcos);
+  dr := random * dofCoef * z;
+{
+  asm
+    fld     qword ptr [z]
+    fmul    st, st
+    fmul    qword ptr [eax + dofCoef]
+    fldpi
+    fadd    st, st
+    call    System.@RandExt
+    fmulp
+    fsincos
+    fstp    qword ptr [dcos]
+    fstp    qword ptr [dsin]
+    call    System.@RandExt
+    fmulp
+    fstp    qword ptr [dr]
+  end;
 }
+{$endif}
+
+  pPoint^.x := (pPoint^.x + dr*dcos) / zr;
+  pPoint^.y := (y + dr*dsin) / zr;
+end;
+
+procedure TControlPoint.ProjectPitchYawDOF(pPoint: PCPPoint);
+var
+  x, y, z, zr, dr: double;
+  dsin, dcos: double;
+begin
+  z := pPoint^.z - CameraZpos;
+  x := CameraMatrix[0,0]*pPoint^.x + CameraMatrix[1,0]*pPoint^.y;
+  y := CameraMatrix[0,1]*pPoint^.x + CameraMatrix[1,1]*pPoint^.y + CameraMatrix[2,1]*z;
+  z := CameraMatrix[0,2]*pPoint^.x + CameraMatrix[1,2]*pPoint^.y + CameraMatrix[2,2]*z;
+  zr := 1 - cameraPersp * z;
+
+{$ifdef GAUSSIAN_DOF}
+  asm
+    fld     qword ptr [eax + gauss_rnd]
+    fadd    qword ptr [eax + gauss_rnd+8]
+    fadd    qword ptr [eax + gauss_rnd+16]
+    fadd    qword ptr [eax + gauss_rnd+24]
+    fld1
+    fadd    st, st
+    fsubp   st(1),st
+    fmul    qword ptr [eax + dofCoef]
+    fmul    qword ptr [z]
+    fstp    qword ptr [dr]
+    call    System.@RandExt
+    mov     edx, [eax + gauss_N]
+    fst     qword ptr [eax + gauss_rnd + edx*8]
+    inc     edx
+    and     edx,$03
+    mov     [eax + gauss_N], edx
+    fadd    st, st
+    fldpi
+    fmulp
+    fsincos
+    fstp    qword ptr [dcos]
+    fstp    qword ptr [dsin]
+  end;
+{$else}
+  sincos(random*2*pi, dsin, dcos);
+  dr := random * dofCoef * z;
+{
+  asm
+    fld     qword ptr [z]
+    fmul    st, st
+    fmul    qword ptr [eax + dofCoef]
+    fldpi
+    fadd    st, st
+    call    System.@RandExt
+    fmulp
+    fsincos
+    fstp    qword ptr [dcos]
+    fstp    qword ptr [dsin]
+    call    System.@RandExt
+    fmulp
+    fstp    qword ptr [dr]
+  end;
+}
+{$endif}
+
+  pPoint^.x := (x + dr*dcos) / zr;
+  pPoint^.y := (y + dr*dsin) / zr;
+end;
 
 {
 procedure TControlPoint.IterateXYCC(NrPoints: integer; var Points: T2CPointsArray);
@@ -579,7 +755,7 @@ var
   i, n: Integer;
   px, py: double;
   minx, maxx, miny, maxy: double;
-  Points: TPointsArray; //TPointsXYArray;
+  Points: TPointsXYArray;
   CurrentPoint: PXYPoint;
 
   xf: TXForm;
@@ -675,7 +851,24 @@ begin
       zoom := StrToFloat(ParseValues[ParsePos]); // mt
     end else if AnsiCompareText(CurrentToken, 'angle') = 0 then begin
       Inc(ParsePos);
-      FAngle := StrToFloat(ParseValues[ParsePos]); 
+      FAngle := StrToFloat(ParseValues[ParsePos]);
+// 3d camera stuff
+    end else if AnsiCompareText(CurrentToken, 'cam_pitch') = 0 then begin
+      Inc(ParsePos);
+      cameraPitch := StrToFloat(ParseValues[ParsePos]);
+    end else if AnsiCompareText(CurrentToken, 'cam_yaw') = 0 then begin
+      Inc(ParsePos);
+      cameraYaw := StrToFloat(ParseValues[ParsePos]);
+    end else if AnsiCompareText(CurrentToken, 'cam_persp') = 0 then begin
+      Inc(ParsePos);
+      cameraPersp := StrToFloat(ParseValues[ParsePos]);
+    end else if AnsiCompareText(CurrentToken, 'cam_zpos') = 0 then begin
+      Inc(ParsePos);
+      cameraZpos := StrToFloat(ParseValues[ParsePos]);
+    end else if AnsiCompareText(CurrentToken, 'cam_dof') = 0 then begin
+      Inc(ParsePos);
+      cameraDOF := abs(StrToFloat(ParseValues[ParsePos]));
+// end 3d
     end else if AnsiCompareText(CurrentToken, 'contrast') = 0 then begin
       Inc(ParsePos);
       contrast := StrToFloat(ParseValues[ParsePos]);
@@ -685,6 +878,9 @@ begin
     end else if AnsiCompareText(CurrentToken, 'vibrancy') = 0 then begin
       Inc(ParsePos);
       vibrancy := StrToFloat(ParseValues[ParsePos]);
+    end else if AnsiCompareText(CurrentToken, 'gamma_threshold') = 0 then begin
+      Inc(ParsePos);
+      gamma_threshold := StrToFloat(ParseValues[ParsePos]);
     end else if AnsiCompareText(CurrentToken, 'hue_rotation') = 0 then begin
       Inc(ParsePos);
       hue_rotation := StrToFloat(ParseValues[ParsePos]);
@@ -810,6 +1006,9 @@ begin
     end else if AnsiCompareText(CurrentToken, 'postxswap') = 0 then begin
       Inc(ParsePos);
       xform[CurrentXForm].postXswap := (ParseValues[ParsePos] = '1');
+    end else if AnsiCompareText(CurrentToken, 'autozscale') = 0 then begin
+      Inc(ParsePos);
+      xform[CurrentXForm].autoZscale := (ParseValues[ParsePos] = '1');
     end else if AnsiCompareText(CurrentToken, 'vars') = 0 then begin
       for i := 0 to NRVAR - 1 do begin
         xform[CurrentXForm].vars[i] := 0;
@@ -866,10 +1065,7 @@ begin
 
     end else if AnsiCompareText(CurrentToken, 'plotmode') = 0 then begin
       Inc(ParsePos);
-      xform[CurrentXForm].noPlot := (ParseValues[ParsePos] = '1');
-//    end else if AnsiCompareText(CurrentToken, 'retrace') = 0 then begin
-//      Inc(ParsePos);
-//      xform[CurrentXForm].RetraceXform := (ParseValues[ParsePos] = '1');
+      xform[CurrentXForm].noPlot := (StrToInt(ParseValues[ParsePos]) = 1);
     end else begin
       OutputDebugString(Pchar('Unknown Token: ' + CurrentToken));
     end;
@@ -1018,7 +1214,7 @@ end;
 
 procedure TControlPoint.CalcBoundbox;
 var
-  Points: TPointsArray; //TPointsXYArray;
+  Points: TPointsXYArray;
   i, j: integer;
   deltax, minx, maxx: double;
   cntminx, cntmaxx: integer;
@@ -1047,7 +1243,7 @@ begin
 
     Prepare;
 
-    IterateXYC(SUB_BATCH_SIZE, points);
+    IterateXY(SUB_BATCH_SIZE, points);
 
     LimitOutSidePoints := Round(0.05 * SUB_BATCH_SIZE);
 
@@ -1136,7 +1332,7 @@ end;
 
 function CalcUPRMagn(const cp: TControlPoint): double;
 var
-  Points: TPointsArray; //TPointsXYArray;
+  Points: TPointsXYArray;
   i, j: integer;
   deltax, minx, maxx: double;
   cntminx, cntmaxx: integer;
@@ -1147,7 +1343,7 @@ var
 begin
   try
     SetLength(Points, SUB_BATCH_SIZE);
-    cp.iterateXYC(SUB_BATCH_SIZE, Points);
+    cp.iterateXY(SUB_BATCH_SIZE, Points);
 
     LimitOutSidePoints := Round(0.05 * SUB_BATCH_SIZE);
 
@@ -1414,15 +1610,17 @@ begin
 
   Result.cmapindex := -1;
 
-  Result.brightness := c0 * cp1.brightness + c1 * cp2.brightness;
+  Result.Fbrightness := c0 * cp1.Fbrightness + c1 * cp2.Fbrightness;
   Result.contrast := c0 * cp1.contrast + c1 * cp2.contrast;
   Result.gamma := c0 * cp1.gamma + c1 * cp2.gamma;
   Result.vibrancy := c0 * cp1.vibrancy + c1 * cp2.vibrancy;
+  Result.gamma_threshold := c0 * cp1.gamma_threshold + c1 * cp2.gamma_threshold;
   Result.width := cp1.width;
   Result.height := cp1.height;
   Result.spatial_oversample := Round(c0 * cp1.spatial_oversample + c1 * cp2.spatial_oversample);
   Result.center[0] := c0 * cp1.center[0] + c1 * cp2.center[0];
   Result.center[1] := c0 * cp1.center[1] + c1 * cp2.center[1];
+  Result.FAngle := c0 * cp1.FAngle + c1 * cp2.FAngle;
   Result.pixels_per_unit := c0 * cp1.pixels_per_unit + c1 * cp2.pixels_per_unit;
 //  Result.background[0] := c0 * cp1.background[0] + c1 * cp2.background[0];
 //  Result.background[1] := c0 * cp1.background[1] + c1 * cp2.background[1];
@@ -1551,6 +1749,13 @@ begin
     sl.add(format('cmap %d', [cmapindex]));
   sl.add(format('zoom %g', [zoom])); // mt
   sl.add(format('angle %g', [FAngle]));
+
+  sl.add(format('cam_pitch %g', [cameraPitch]));
+  sl.add(format('cam_yaw %g', [cameraYaw]));
+  sl.add(format('cam_persp %g', [cameraPersp]));
+  sl.add(format('cam_zpos %g', [cameraZpos]));
+  sl.add(format('cam_dof %g', [cameraDOF]));
+
   sl.add(format('image_size %d %d center %g %g pixels_per_unit %f',
     [Width, Height, center[0], center[1], pixels_per_unit]));
   sl.add(format('spatial_oversample %d spatial_filter_radius %f',
@@ -1559,12 +1764,12 @@ begin
 //  sl.add(format('nbatches %d white_level %d background %f %f %f', - changed to integers - mt
   sl.add(format('nbatches %d white_level %d background %d %d %d',
     [nbatches, white_level, background[0], background[1], background[2]]));
-  sl.add(format('brightness %f gamma %f vibrancy %f hue_rotation %f cmap_inter %d',
-    [brightness * BRIGHT_ADJUST, gamma, vibrancy, hue_rotation, cmap_inter]));
+  sl.add(format('brightness %f gamma %f vibrancy %f gamma_threshold %f hue_rotation %f cmap_inter %d',
+    [Fbrightness * BRIGHT_ADJUST, gamma, vibrancy, gamma_threshold, hue_rotation, cmap_inter]));
   sl.add(format('finalxformenabled %d', [ifthen(finalxformenabled, 1, 0)]));
   sl.add(format('soloxform %d', [soloXform]));
 
-  for i := 0 to NumXForms+1 do //NXFORMS do
+  for i := 0 to Min(NumXForms+1, NXFORMS) do
     with xform[i] do begin
       //if density = 0 then continue; - FinalXform has weight=0
 
@@ -1592,7 +1797,10 @@ begin
         sl.Add('postxswap 1')
       else
         sl.Add('postxswap 0');
-
+      if autoZscale then
+        sl.Add('autozscale 1')
+      else
+        sl.Add('autozscale 0');
       s := 'chaos';
       for j := 0 to NumXForms+1 do begin
         s := s + format(' %g', [modWeights[j]]);
@@ -1600,7 +1808,6 @@ begin
       sl.Add(s);
 
       sl.Add(Format('plotmode %d', [Ifthen(noPlot, 1, 0)]));
-//      sl.Add(Format('retrace %d', [Ifthen(RetraceXform, 1, 0)]));
 
     end;
   DecimalSeparator := OldDecimalSperator;
@@ -1622,6 +1829,7 @@ begin
   Result.nick := nick;
   Result.url := url;
   Result.Transparency := Transparency;
+  Result.gamma_threshold := gamma_threshold;
 
   for i := 0 to NXFORMS - 1 do
     Result.xform[i].assign(xform[i]);
@@ -1653,6 +1861,7 @@ begin
   name := cp1.name;
   nick := cp1.nick;
   url := cp1.url;
+  gamma_threshold := cp1.gamma_threshold;
 
   if KeepSizes then
     AdjustScale(w, h);
@@ -1903,10 +2112,37 @@ begin
   result := pixels_per_unit * power(2, zoom)
 end;
 
-///////////////////////////////////////////////////////////////////////////////
 function TControlPoint.getppuy: double;
 begin
   result := pixels_per_unit * power(2, zoom)
+end;
+
+///////////////////////////////////////////////////////////////////////////////
+function TControlPoint.GetBrightness: double;
+begin
+  Result := Fbrightness;
+end;
+
+procedure TControlPoint.SetBrightness(br: double);
+begin
+  if br > 0 then begin
+    if Fbrightness <> 0 then gamma_threshold := (gamma_threshold / Fbrightness) * br;
+    Fbrightness := br;
+  end;
+end;
+
+///////////////////////////////////////////////////////////////////////////////
+function TControlPoint.GetRelativeGammaThreshold: double;
+begin
+  if Fbrightness <> 0 then
+    Result := gamma_threshold / Fbrightness
+  else
+    Result := gamma_threshold;  
+end;
+
+procedure TControlPoint.SetRelativeGammaThreshold(gtr: double);
+begin
+  gamma_threshold := gtr * Fbrightness;
 end;
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -1971,6 +2207,7 @@ var
 begin
   top := 0; bottom := 0; right := 0; left := 0;
   Result := NumXForms;
+{
   if ReferenceMode > 0 then
   begin
     for i := 0 to Result-1 do
@@ -2019,6 +2256,7 @@ begin
     end;
   end
   else
+}
   begin
     Triangles[-1].x[0] := 1; Triangles[-1].y[0] := 0; // "x"
     Triangles[-1].x[1] := 0; Triangles[-1].y[1] := 0; // "0"
@@ -2101,30 +2339,39 @@ end;
 procedure TControlPoint.GetFromTriangles(const Triangles: TTriangles; const t: integer);
 var
   i: integer;
+  v: double;
 begin
   for i := 0 to t do
-   if xform[i].postXswap then
-   begin
-    solve3(Triangles[-1].x[0], -Triangles[-1].y[0], Triangles[i].x[0],
-           Triangles[-1].x[1], -Triangles[-1].y[1], Triangles[i].x[1],
-           Triangles[-1].x[2], -Triangles[-1].y[2], Triangles[i].x[2],
-           xform[i].p[0][0],    xform[i].p[1][0],   xform[i].p[2][0]);
+    if xform[i].postXswap then
+    begin
+      solve3(Triangles[-1].x[0], -Triangles[-1].y[0], Triangles[i].x[0],
+             Triangles[-1].x[1], -Triangles[-1].y[1], Triangles[i].x[1],
+             Triangles[-1].x[2], -Triangles[-1].y[2], Triangles[i].x[2],
+             xform[i].p[0][0],    xform[i].p[1][0],   xform[i].p[2][0]);
 
-    solve3(Triangles[-1].x[0], -Triangles[-1].y[0], -Triangles[i].y[0],
-           Triangles[-1].x[1], -Triangles[-1].y[1], -Triangles[i].y[1],
-           Triangles[-1].x[2], -Triangles[-1].y[2], -Triangles[i].y[2],
-           xform[i].p[0][1],    xform[i].p[1][1],    xform[i].p[2][1]);
-   end
-   else begin
-    solve3(Triangles[-1].x[0], -Triangles[-1].y[0], Triangles[i].x[0],
-           Triangles[-1].x[1], -Triangles[-1].y[1], Triangles[i].x[1],
-           Triangles[-1].x[2], -Triangles[-1].y[2], Triangles[i].x[2],
-           xform[i].c[0][0],    xform[i].c[1][0],   xform[i].c[2][0]);
+      solve3(Triangles[-1].x[0], -Triangles[-1].y[0], -Triangles[i].y[0],
+             Triangles[-1].x[1], -Triangles[-1].y[1], -Triangles[i].y[1],
+             Triangles[-1].x[2], -Triangles[-1].y[2], -Triangles[i].y[2],
+             xform[i].p[0][1],    xform[i].p[1][1],    xform[i].p[2][1]);
+    end
+    else begin
+      solve3(Triangles[-1].x[0], -Triangles[-1].y[0], Triangles[i].x[0],
+             Triangles[-1].x[1], -Triangles[-1].y[1], Triangles[i].x[1],
+             Triangles[-1].x[2], -Triangles[-1].y[2], Triangles[i].x[2],
+             xform[i].c[0][0],    xform[i].c[1][0],   xform[i].c[2][0]);
 
-    solve3(Triangles[-1].x[0], -Triangles[-1].y[0], -Triangles[i].y[0],
-           Triangles[-1].x[1], -Triangles[-1].y[1], -Triangles[i].y[1],
-           Triangles[-1].x[2], -Triangles[-1].y[2], -Triangles[i].y[2],
-           xform[i].c[0][1],    xform[i].c[1][1],    xform[i].c[2][1]);
+      solve3(Triangles[-1].x[0], -Triangles[-1].y[0], -Triangles[i].y[0],
+             Triangles[-1].x[1], -Triangles[-1].y[1], -Triangles[i].y[1],
+             Triangles[-1].x[2], -Triangles[-1].y[2], -Triangles[i].y[2],
+             xform[i].c[0][1],    xform[i].c[1][1],    xform[i].c[2][1]);
+      if xform[i].autoZscale then with xform[i] do begin
+        v := c[0][0]*c[1][1] - c[0][1]*c[1][0];
+        //n := GetVariationIndex('pre_zscale');
+        if v = 1 then
+          vars[20] := 0 // pre_zscale not needed
+        else
+          vars[20] := sign(v) * sqrt(abs(v));
+      end;
    end;
   FinalXformEnabled := EnableFinalXform;
 end;

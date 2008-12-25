@@ -3,6 +3,8 @@
      Apophysis Copyright (C) 2005-2006 Ronald Hordijk, Piotr Borys, Peter Sdobnov
      Apophysis Copyright (C) 2007-2008 Piotr Borys, Peter Sdobnov
 
+     Apophysis "3D hack" Copyright (C) 2007-2008 Peter Sdobnov
+
      This program is free software; you can redistribute it and/or modify
      it under the terms of the GNU General Public License as published by
      the Free Software Foundation; either version 2 of the License, or
@@ -174,7 +176,7 @@ type
     tbRotate90CCW: TToolButton;
     tbRotate90CW: TToolButton;
     lblTransform: TLabel;
-    chkPreserve: TCheckBox;
+    chkAutoZscale: TCheckBox;
     bvlCoefs: TBevel;
     bvlPostCoefs: TBevel;
     tbPostXswap: TToolButton;
@@ -201,6 +203,7 @@ type
     GroupBox4: TGroupBox;
     chkXformInvisible: TCheckBox;
     chkXformSolo: TCheckBox;
+    mnuChaosRebuild: TMenuItem;
 
     procedure ValidateVariable;
     procedure vleVariablesValidate(Sender: TObject; ACol, ARow: Integer; const KeyName, KeyValue: string);
@@ -343,7 +346,7 @@ type
     procedure tbPostXswapClick(Sender: TObject);
     procedure btnCopyTriangleClick(Sender: TObject);
     procedure btnPasteTriangleClick(Sender: TObject);
-
+    procedure chkAutoZscaleClick(Sender: TObject);
     procedure ValidateChaos;
     procedure vleChaosExit(Sender: TObject);
     procedure vleChaosKeyPress(Sender: TObject; var Key: Char);
@@ -358,7 +361,9 @@ type
     procedure mnuChaosSetAllClick(Sender: TObject);
     procedure mnuLinkPostxformClick(Sender: TObject);
     procedure chkXformSoloClick(Sender: TObject);
-//    procedure chkRetraceClick(Sender: TObject);
+    procedure mnuChaosRebuildClick(Sender: TObject);
+//    procedure btnInvisibleClick(Sender: TObject);
+//    procedure btnSoloClick(Sender: TObject);
 
   private
     TriangleView: TCustomDrawControl;
@@ -803,29 +808,8 @@ begin
       btnResetCoefs.Font.Style := [fsBold];
       btnResetPostCoefs.Font.Style := [];
     end;
-{
-    btnXpost.Enabled := postXswap;
-    btnYpost.Enabled := postXswap;
-    btnOpost.Enabled := postXswap;
-    txtPost00.Enabled  := postXswap;
-    txtPost01.Enabled  := postXswap;
-    txtPost10.Enabled  := postXswap;
-    txtPost11.Enabled  := postXswap;
-    txtPost20.Enabled  := postXswap;
-    txtPost21.Enabled  := postXswap;
-    btnResetPostCoefs.Enabled := postXswap;
 
-    btnXcoefs.Enabled := not postXswap;
-    btnYcoefs.Enabled := not postXswap;
-    btnOcoefs.Enabled := not postXswap;
-    txtA.Enabled  := not postXswap;
-    txtB.Enabled  := not postXswap;
-    txtC.Enabled  := not postXswap;
-    txtD.Enabled  := not postXswap;
-    txtE.Enabled  := not postXswap;
-    txtF.Enabled  := not postXswap;
-    btnResetCoefs.Enabled := not postXswap;
-}
+    chkAutoZscale.Checked := autoZscale;
 
     if SelectedTriangle < Transforms then
     begin
@@ -835,8 +819,7 @@ begin
       chkXformInvisible.Enabled := true;
       chkXformInvisible.Checked := noPlot;
       chkXformSolo.Enabled := true;
-//      chkRetrace.Enabled := not noPlot;
-//      chkRetrace.Checked := RetraceXform;
+
       if cp.soloXform >= 0 then begin
         chkXformSolo.Checked := true;
         chkXformSolo.Caption := Format('Solo transform #%d', [cp.soloXform + 1]);
@@ -853,8 +836,6 @@ begin
       chkXformInvisible.Enabled := false;
       chkXformInvisible.Checked := false;
       chkXformSolo.Enabled := false;
-//      chkRetrace.Checked := true;
-//      chkRetrace.Enabled := false;
     end;
     tbEnableFinalXform.Down := EnableFinalXform;
 
@@ -1038,7 +1019,7 @@ end;
 
 procedure TEditForm.DeleteTriangle(t: integer);
 var
-  i, j: integer;
+  i, j, nmin, nmax: integer;
 begin
   if (t = Transforms) then
   begin
@@ -1057,6 +1038,42 @@ begin
   if (Transforms <= 1) then exit
   else begin
     MainForm.UpdateUndo;
+
+    if RebuildXaosLinks then begin
+      // check for single "to" links
+      for i := 0 to Transforms-1 do
+      with cp.xform[i] do begin
+        nmin := NXFORMS;
+        nmax := -1;
+        for j := 0 to Transforms-1 do
+          if modWeights[j] <> 0 then begin
+            if j < nmin then nmin := j;
+            if j > nmax then nmax := j;
+          end;
+        if (nmin = nmax) and (nmin = t) then begin
+          for j := 0 to Transforms-1 do
+            modWeights[j] := cp.xform[t].modWeights[j];
+          if noPlot then noPlot := cp.xform[t].noPlot;
+        end;
+      end;
+      // check for single "from" links
+      for i := 0 to Transforms-1 do
+      begin
+        if cp.xform[t].modWeights[i] = 0 then continue;
+        nmin := NXFORMS;
+        nmax := -1;
+        for j := 0 to Transforms-1 do
+          if cp.xform[j].modWeights[i] <> 0 then begin
+            if j < nmin then nmin := j;
+            if j > nmax then nmax := j;
+          end;
+        if (nmin = nmax) and (nmin = t) then begin
+          for j := 0 to Transforms-1 do
+            cp.xform[j].modWeights[i] := cp.xform[t].modWeights[i];
+        end;
+      end;
+    end;
+      
     // delete xform from all probability tables
     for i := 0 to Transforms-1 do
     with cp.xform[i] do begin
@@ -1064,7 +1081,7 @@ begin
         modWeights[j] := modWeights[j+1];
       modWeights[Transforms-1] := 1;
     end;
-    //
+
     if t = (Transforms - 1) then
     begin
       MainTriangles[t] := MainTriangles[Transforms];
@@ -1079,6 +1096,10 @@ begin
         cp.xform[i].Assign(cp.xform[i + 1]);
       end;
     end;
+
+    if cp.soloXform > t then Dec(cp.soloXform)
+    else if cp.soloXform = t then cp.soloXform := -1;
+
     Dec(Transforms);
     assert(cp.xform[transforms].density = 0); // cp.xform[transforms].density := 0;
   end;
@@ -1532,10 +1553,8 @@ begin
           for i:= NRVAR - 1 downto 0 do
             if cp.xform[mouseOverTriangle].vars[i] <> 0 then
             begin
-              str := Varnames(i);
-              if str='julian' then str := str + ' ' + cp.xform[mouseOverTriangle].GetVariableStr('julian_power'); // hack
-              ax := Width-foc_ofs*2 - TextWidth(str);
-              TextOut(ax, ay, str);
+              ax := Width-foc_ofs*2 - TextWidth(Varnames(i));
+              TextOut(ax, ay, Varnames(i));
               Inc(ay, font.Height);
             end;
 //        brush.Style := bsSolid;
@@ -1674,10 +1693,8 @@ begin
     vleVariables.InsertRow(GetVariableNameAt(i), '0', True);
   end;
 
-//  for i:= 0 to NXFORMS - 1 do begin
-//    vleChaos.InsertRow(inttostr(i + 1), '1', True);
-//  end;
   vleChaos.InsertRow('to 1', '1', true);
+  mnuChaosRebuild.Checked := RebuildXaosLinks;
 
   GraphZoom := 1;
 
@@ -1754,6 +1771,7 @@ begin
 
   if viewDragMode then // graph panning
   begin
+    if (fx = oldx) and (fy = oldy) then exit;
     viewDragged := true;
     GcenterX := GcenterX - (fx - oldx);
     GcenterY := GcenterY - (fy - oldy);
@@ -3320,7 +3338,7 @@ begin
   if Sender = VEVars then
   begin
     v := cp.xform[SelectedTriangle].vars[n];
-    cp.xform[SelectedTriangle].vars[n] := IfThen(DoubleClickSetVars and (v = 0), 1, 0);
+    cp.xform[SelectedTriangle].vars[n] := IfThen(v = 0, 1, 0);
     //VEVars.Values[VarNames(n)] := '0';
     changed := (cp.xform[SelectedTriangle].vars[n] <> v);
   end
@@ -3615,6 +3633,15 @@ begin
     Ord('R'): btnResetPivotClick(Sender);
     Ord('P'): btnPickPivotClick(Sender);
     Ord('T'): tbPostXswapClick(Sender);
+
+    Ord('I'): // Invisible
+      begin
+        chkXformInvisible.Checked := not chkXformInvisible.Checked;
+      end;
+    Ord('S'): // Solo
+      begin
+        chkXformSolo.Checked := not chkXformSolo.Checked;
+      end;
 
     189: // "-"
       begin
@@ -4773,6 +4800,13 @@ begin
   end;
 end;
 
+procedure TEditForm.chkAutoZscaleClick(Sender: TObject);
+begin
+  MainForm.UpdateUndo;
+  cp.xform[SelectedTriangle].autoZscale := chkAutoZscale.Checked;
+  UpdateFlame(True);
+end;
+
 // --------------------------------------------------------------- Chaos Editor
 
 procedure TEditForm.ValidateChaos;
@@ -4912,7 +4946,7 @@ begin
         noEdit := false;
         break;
       end;
-    end;  
+    end;
   if noEdit then exit;
 
   Mainform.UpdateUndo;
@@ -4942,7 +4976,7 @@ begin
         noEdit := false;
         break;
       end;
-    end;  
+    end;
   if noEdit then exit;
 
   Mainform.UpdateUndo;
@@ -5006,21 +5040,11 @@ begin
   end;
 end;
 
-{
-procedure TEditForm.chkRetraceClick(Sender: TObject);
-var
-  newValue: boolean;
+procedure TEditForm.mnuChaosRebuildClick(Sender: TObject);
 begin
-  if (SelectedTriangle < Transforms) then begin
-    newValue := chkRetrace.Checked;
-    if cp.xform[SelectedTriangle].RetraceXform <> newValue then begin
-      MainForm.UpdateUndo;
-      cp.xform[SelectedTriangle].RetraceXform := newValue;
-      UpdateFlame(true);
-    end;
-  end;
+  RebuildXaosLinks := not RebuildXaosLinks;
+  mnuChaosRebuild.Checked := RebuildXaosLinks;
 end;
-}
 
 end.
 
