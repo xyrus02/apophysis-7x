@@ -44,6 +44,9 @@ const
 
   AppVersionString = 'Apophysis 2.08 beta 2';
 
+  randFilename = 'apophysis.rand';
+  undoFilename = 'apophysis.undo';
+
 type
   TMouseMoveState = (msUsual, msZoomWindow, msZoomOutWindow, msZoomWindowMove,
                      msZoomOutWindowMove, msDrag, msDragMove, msRotate, msRotateMove);
@@ -887,7 +890,7 @@ end;
 
 procedure TMainForm.UpdateUndo;
 begin
-  SaveFlame(MainCp, Format('%.4d-', [UndoIndex]) + MainCp.name, AppPath + 'apophysis.undo');
+  SaveFlame(MainCp, Format('%.4d-', [UndoIndex]) + MainCp.name, AppPath + undoFilename);
   Inc(UndoIndex);
   UndoMax := UndoIndex; //Inc(UndoMax);
   mnuSaveUndo.Enabled := true;
@@ -1936,8 +1939,8 @@ begin
   inc(MainSeed);
   RandSeed := MainSeed;
   try
-    AssignFile(F, AppPath + 'apophysis.rand');
-    OpenFile := AppPath + 'apophysis.rand';
+    AssignFile(F, AppPath + randFilename);
+    OpenFile := AppPath + randFilename;
     ReWrite(F);
     WriteLn(F, '<random_batch>');
     for i := 0 to BatchSize - 1 do
@@ -1965,7 +1968,7 @@ begin
   except
     on EInOutError do Application.MessageBox('Error creating batch', PChar(APP_NAME), 16);
   end;
-  RandFile := AppPath + 'apophysis.rand';
+  RandFile := AppPath + randFilename;
   MainCp.name := '';
 end;
 
@@ -2151,7 +2154,7 @@ begin
   inc(MainSeed);
   RandSeed := MainSeed;
   RandomBatch;
-  OpenFile := AppPath + 'apophysis.rand';
+  OpenFile := AppPath + randFilename;
   OpenFileType := ftXML;
   MainForm.Caption := AppVersionString + ' - Random Batch';
   ListXML(OpenFile, 1);
@@ -2602,8 +2605,8 @@ begin
     GetCMap(cmap_index, 1, maincp.cmap);
     DefaultPalette := maincp.cmap;
   end;
-  if FileExists(AppPath + 'apophysis.rand') then
-    DeleteFile(AppPath + 'apophysis.rand');
+  if FileExists(AppPath + randFilename) then
+    DeleteFile(AppPath + randFilename);
 
   // get filename from command line argument  
   if ParamCount > 0 then openFile := ParamStr(1)
@@ -2615,7 +2618,7 @@ begin
     MainCp.Height := Image.Height;
     RandomBatch;
     MainForm.Caption := AppVersionString + ' - Random Batch';
-    OpenFile := AppPath + 'apophysis.rand';
+    OpenFile := AppPath + randFilename;
     ListXML(OpenFile, 1);
     OpenFileType := ftXML;
     if batchsize = 1 then DrawFlame;
@@ -2696,8 +2699,8 @@ begin
   end;
   Application.ProcessMessages;
   CanDrawOnResize := False;
-  if FileExists('apophysis.rand') then DeleteFile('apophysis.rand');
-  if FileExists('apophysis.undo') then DeleteFile('apophysis.undo');
+  if FileExists(randFilename) then DeleteFile(randFilename);
+  if FileExists(undoFilename) then DeleteFile(undoFilename);
   SaveSettings;
 end;
 
@@ -2825,7 +2828,7 @@ begin
 
     UndoIndex := 0;
     UndoMax := 0;
-    if fileExists(AppPath + 'apophysis.undo') then DeleteFile(AppPath + 'apophysis.undo');
+    if fileExists(AppPath + undoFilename) then DeleteFile(AppPath + undoFilename);
     Statusbar.Panels[2].Text := Maincp.name;
     RedrawTimer.Enabled := True;
     Application.ProcessMessages;
@@ -2897,7 +2900,7 @@ begin
 
     UndoIndex := 0;
     UndoMax := 0;
-    if fileExists(AppPath + 'apophysis.undo') then DeleteFile(AppPath + 'apophysis.undo');
+    if fileExists(AppPath + undoFilename) then DeleteFile(AppPath + undoFilename);
     Statusbar.Panels[2].Text := Maincp.name;
     RedrawTimer.Enabled := True;
     Application.ProcessMessages;
@@ -3052,7 +3055,7 @@ begin
         if SavedPal then maincp.cmap := Palette;
         UndoIndex := 0;
         UndoMax := 0;
-        if fileExists(AppPath + 'apophysis.undo') then DeleteFile(AppPath + 'apophysis.undo');
+        if fileExists(AppPath + undoFilename) then DeleteFile(AppPath + undoFilename);
         maincp.name := ListView.Selected.Caption;
         Statusbar.Panels[2].Text := maincp.name;
         RedrawTimer.Enabled := True;
@@ -3436,10 +3439,10 @@ end;
 procedure TMainForm.Undo;
 begin
   if UndoIndex = UndoMax then
-    SaveFlame(maincp, Format('%.4d-', [UndoIndex]) + maincp.name, AppPath + 'apophysis.undo');
+    SaveFlame(maincp, Format('%.4d-', [UndoIndex]) + maincp.name, AppPath + undoFilename);
   StopThread;
   Dec(UndoIndex);
-  LoadUndoFlame(UndoIndex, AppPath + 'apophysis.undo');
+  LoadUndoFlame(UndoIndex, AppPath + undoFilename);
   mnuRedo.Enabled := True;
   mnuPopRedo.Enabled := True;
   btnRedo.Enabled := True;
@@ -3469,7 +3472,7 @@ begin
 
   assert(UndoIndex <= UndoMax, 'Undo list index out of range!');
 
-  LoadUndoFlame(UndoIndex, AppPath + 'apophysis.undo');
+  LoadUndoFlame(UndoIndex, AppPath + undoFilename);
   mnuUndo.Enabled := True;
   mnuPopUndo.Enabled := True;
   btnUndo.Enabled := True;
@@ -3659,7 +3662,7 @@ end;
 
 procedure TMainForm.mnuSaveUndoClick(Sender: TObject);
 begin
-  if FileExists(AppPath + 'apophysis.undo') then
+  if FileExists(AppPath + undoFilename) then
   begin
     SaveDialog.DefaultExt := 'apo';
     SaveDialog.Filter := 'Apophysis Parameters (*.apo)|*.apo';
@@ -3667,14 +3670,14 @@ begin
     if SaveDialog.Execute then
     begin
       if FileExists(SaveDialog.Filename) then DeleteFile(SaveDialog.Filename);
-      CopyFile(PChar(AppPath + 'apophysis.undo'), PChar(SaveDialog.Filename), False);
+      CopyFile(PChar(AppPath + undoFilename), PChar(SaveDialog.Filename), False);
     end;
   end;
 end;
 
 procedure TMainForm.mnuExportBatchClick(Sender: TObject);
 begin
-  if FileExists(AppPath + 'apophysis.rand') then
+  if FileExists(AppPath + randFilename) then
   begin
     SaveDialog.DefaultExt := 'apo';
     SaveDialog.Filter := 'Parameter files (*.apo)|*.apo';
@@ -3682,7 +3685,7 @@ begin
     if SaveDialog.Execute then
     begin
       if FileExists(SaveDialog.Filename) then DeleteFile(SaveDialog.Filename);
-      CopyFile(PChar(AppPath + 'apophysis.rand'), PChar(SaveDialog.Filename), False);
+      CopyFile(PChar(AppPath + randFilename), PChar(SaveDialog.Filename), False);
     end;
   end;
 end;
