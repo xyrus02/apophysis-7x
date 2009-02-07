@@ -130,7 +130,8 @@ end;
 {$endif}
 
   try
-    xf := fcp.xform[0];//random(fcp.NumXForms)];
+    xf := fcp.xform[0];
+    xf.NextPoint(p);
     for i := 0 to FUSE do begin
       xf := xf.PropTable[Random(PROP_TABLE_SIZE)];
       xf.NextPoint(p);
@@ -194,7 +195,8 @@ end;
 {$endif}
 
   try
-    xf := fcp.xform[0];//random(fcp.NumXForms)];
+    xf := fcp.xform[0];
+    xf.NextPoint(p);
     for i := 0 to FUSE do begin
       xf := xf.PropTable[Random(PROP_TABLE_SIZE)];
       xf.NextPoint(p);
@@ -259,7 +261,8 @@ end;
 {$endif}
 
   try
-    xf := fcp.xform[0];//random(fcp.NumXForms)];
+    xf := fcp.xform[0];
+    xf.NextPoint(p);
     for i := 0 to FUSE do begin
       xf := xf.PropTable[Random(PROP_TABLE_SIZE)];
       xf.NextPoint(p);
@@ -325,7 +328,8 @@ end;
 {$endif}
 
   try
-    xf := fcp.xform[0];//random(fcp.NumXForms)];
+    xf := fcp.xform[0];
+    xf.NextPoint(p);
     for i := 0 to FUSE do begin
       xf := xf.PropTable[Random(PROP_TABLE_SIZE)];
       xf.NextPoint(p);
