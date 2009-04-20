@@ -9,7 +9,8 @@ const
   NRLOCVAR = 30;
 
 var
-  NumBuiltinVars: integer;
+  NumBuiltinVariations: integer;
+  NumBuiltinVariables: integer;
 
 function NrVar: integer;
 function Varnames(const index: integer): String;
@@ -92,11 +93,19 @@ end;
 procedure RegisterVariation(Variation: TVariationLoader);
 var
   i: integer;
+  newvars: integer;
 begin
   VariationList.Add(Variation);
 
-  for i := 0 to Variation.GetNrVariables - 1 do
-    VariableNames.Add(Variation.GetVariableNameAt(i))
+  newvars := Variation.GetNrVariables;
+  if newvars > 0 then begin
+    Variation.firstVariableIndex := VariableNames.Count;
+
+    for i := 0 to newvars-1 do
+      VariableNames.Add(Variation.GetVariableNameAt(i));
+  end
+  else
+    Variation.firstVariableIndex := -1;
 end;
 
 ///////////////////////////////////////////////////////////////////////////////
