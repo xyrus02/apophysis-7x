@@ -231,7 +231,7 @@ begin
 
   VarPossible := false;
   for j := 0 to NRVAR - 1 do begin
-    VarPossible := VarPossible or Variations[j];
+    VarPossible := VarPossible or RandomVariations[j];
   end;
 
   for i := 0 to cp.NumXForms - 1 do begin
@@ -241,11 +241,11 @@ begin
     if VarPossible then begin
       repeat
         a := random(NRVAR);
-      until Variations[a];
+      until RandomVariations[a];
 
       repeat
         b := random(NRVAR);
-      until Variations[b];
+      until RandomVariations[b];
     end else begin
       a := 0;
       b := 0;
@@ -368,7 +368,7 @@ var
 begin
   t := cp.NumXForms;
   for i := 0 to t - 1 do
-    cp.xform[i].density := 1.0 / t;
+    cp.xform[i].weight := 0.5;
 end;
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -379,12 +379,12 @@ var
 begin
   td := 0.0;
   for i := 0 to cp.NumXForms - 1 do
-    td := td + cp.xform[i].Density;
+    td := td + cp.xform[i].weight;
   if (td < 0.001) then
     EqualizeWeights(cp)
   else
     for i := 0 to cp.NumXForms - 1 do
-      cp.xform[i].Density := cp.xform[i].Density / td;
+      cp.xform[i].weight := cp.xform[i].weight / td;
 end;
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -397,12 +397,12 @@ begin
   total_area := 0.0;
   for i := 0 to t - 1 do
   begin
-    cp1.xform[i].Density := triangle_area(Triangles[i]);
-    total_area := total_area + cp1.xform[i].Density;
+    cp1.xform[i].weight := triangle_area(Triangles[i]);
+    total_area := total_area + cp1.xform[i].weight;
   end;
   for i := 0 to t - 1 do
   begin
-    cp1.xform[i].Density := cp1.xform[i].Density / total_area;
+    cp1.xform[i].weight := cp1.xform[i].weight / total_area;
   end;
   NormalizeWeights(cp1);
 end;
@@ -414,7 +414,7 @@ var
   i: integer;
 begin
   for i := 0 to Transforms - 1 do
-    cp1.xform[i].Density := random;
+    cp1.xform[i].weight := random;
   NormalizeWeights(cp1);
 end;
 
@@ -472,7 +472,7 @@ begin
               Result.xform[i].c[2, 0] := 0;
               Result.xform[i].c[2, 1] := 0;
               Result.xform[i].color := 0;
-              Result.xform[i].symmetry := 0;
+              Result.xform[i].color_speed := 0;
               Result.xform[i].vars[0] := 1;
               for j := 1 to NRVAR - 1 do
                 Result.xform[i].vars[j] := 0;
@@ -512,16 +512,16 @@ begin
               Result.xform[i].c[2][1] := random * 2 - 1;
             end;
             for i := 0 to 100-1 do //NXFORMS - 1 do
-              Result.xform[i].density := 0;
+              Result.xform[i].weight := 0;
             for i := 0 to Transforms - 1 do
-              Result.xform[i].density := 1 / Transforms;
+              Result.xform[i].weight := 1 / Transforms;
             SetVariation(Result);
           end;
         9: begin
             for i := 0 to 100-1 do //NXFORMS - 1 do
-              Result.xform[i].density := 0;
+              Result.xform[i].weight := 0;
             for i := 0 to Transforms - 1 do
-              Result.xform[i].density := 1 / Transforms;
+              Result.xform[i].weight := 1 / Transforms;
           end;
       end; // case
       Result.TrianglesFromCp(Triangles);
@@ -536,7 +536,7 @@ begin
     end;
     for i := 0 to Transforms - 1 do
       Result.xform[i].color := i / (transforms - 1);
-    if Result.xform[0].density = 1 then
+    if Result.xform[0].weight = 1 then
       Continue;
     case SymmetryType of
       { Bilateral }
@@ -554,7 +554,7 @@ begin
     end;
     if skip then
       continue;
-  until not Result.BlowsUP(5000) and (Result.xform[0].density <> 0);
+  until not Result.BlowsUP(5000) and (Result.xform[0].weight <> 0);
 
   RandomGradient(SourceCP, Result);
 
@@ -578,7 +578,7 @@ begin
   Result.URl := SheepURL;
 
   Result.xform[Result.NumXForms].Clear;
-  Result.xform[Result.NumXForms].symmetry := 1;
+  Result.xform[Result.NumXForms].color_speed := 1;
 end;
 
 end.
