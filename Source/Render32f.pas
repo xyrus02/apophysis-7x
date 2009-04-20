@@ -157,7 +157,7 @@ end;
 {$endif}
 
   try
-    xf := fcp.xform[0];//random(fcp.NumXForms)];
+    xf := fcp.xform[0];
     xf.NextPoint(p);
     for i := 0 to FUSE do begin
       xf := xf.PropTable[Random(PROP_TABLE_SIZE)];
@@ -168,7 +168,8 @@ end;
       xf := xf.PropTable[Random(PROP_TABLE_SIZE)];
       xf.NextPoint(p);
 
-      if xf.noPlot then continue;
+      if (xf.plotMode < 0) then continue
+      else if (xf.plotMode = 0) and (random > xf.opacity) then continue;
 
       px := p.x - camX0;
       if (px < 0) or (px > camW) then continue;
@@ -224,7 +225,7 @@ end;
 {$endif}
 
   try
-    xf := fcp.xform[0];//random(fcp.NumXForms)];
+    xf := fcp.xform[0];
     xf.NextPoint(p);
     for i := 0 to FUSE do begin
       xf := xf.PropTable[Random(PROP_TABLE_SIZE)];
@@ -235,7 +236,8 @@ end;
       xf := xf.PropTable[Random(PROP_TABLE_SIZE)];
       xf.NextPoint(p);
 
-      if xf.noPlot then continue;
+      if (xf.plotMode < 0) then continue
+      else if (xf.plotMode = 0) and (random > xf.opacity) then continue;
 
       px := p.x * cosa + p.y * sina + rcX;
       if (px < 0) or (px > camW) then continue;
@@ -292,7 +294,7 @@ end;
 {$endif}
 
   try
-    xf := fcp.xform[0];//random(fcp.NumXForms)];
+    xf := fcp.xform[0];
     xf.NextPoint(p);
     for i := 0 to FUSE do begin
       xf := xf.PropTable[Random(PROP_TABLE_SIZE)];
@@ -303,7 +305,8 @@ end;
       xf := xf.PropTable[Random(PROP_TABLE_SIZE)];
       xf.NextPoint(p);
 
-      if xf.noPlot then continue;
+      if (xf.plotMode < 0) then continue
+      else if (xf.plotMode = 0) and (random > xf.opacity) then continue;
 
       finalXform.NextPointTo(p, q);
 
@@ -361,7 +364,7 @@ end;
 {$endif}
 
   try
-    xf := fcp.xform[0];//random(fcp.NumXForms)];
+    xf := fcp.xform[0];
     xf.NextPoint(p);
     for i := 0 to FUSE do begin
       xf := xf.PropTable[Random(PROP_TABLE_SIZE)];
@@ -372,7 +375,8 @@ end;
       xf := xf.PropTable[Random(PROP_TABLE_SIZE)];
       xf.NextPoint(p);
 
-      if xf.noPlot then continue;
+      if (xf.plotMode < 0) then continue
+      else if (xf.plotMode = 0) and (random > xf.opacity) then continue;
 
       finalXform.NextPointTo(p, q);
 
