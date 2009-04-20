@@ -862,7 +862,7 @@ begin
   begin
     i := GetArrayIndex(0);
     if (i >= 0) and (i < NRVAR) then
-      ReturnOutPutArg(Variations[i]);
+      ReturnOutPutArg(RandomVariations[i]);
   end;
 end;
 
@@ -877,7 +877,7 @@ begin
     i := GetArrayIndex(0);
     if (i >= 0) and (i < NRVAR) then
     begin
-      Variations[i] := v;
+      RandomVariations[i] := v;
 {
       vars := PackVariations;
       if vars <> 0 then
@@ -1264,7 +1264,7 @@ begin
     i := AMachine.GetInputArgAsInteger(0);
     MainForm.RandomizeCP(ScriptEditor.cp, i);
     for i := 0 to NXFORMS - 1 do
-      if ScriptEditor.cp.xform[i].density = 0 then break;
+      if ScriptEditor.cp.xform[i].weight = 0 then break;
     NumTransforms := i;
   except on E: EMathError do
   end;
@@ -1525,7 +1525,7 @@ begin
     ScriptEditor.cp.cmap := cps[v].cmap;
   end;
   for i := 0 to NXFORMS - 1 do
-    if ScriptEditor.cp.xform[i].density = 0 then break;
+    if ScriptEditor.cp.xform[i].weight = 0 then break;
   NumTransforms := i;
 end;
 
@@ -1599,7 +1599,7 @@ begin
     until Pos('</flame>', FStrings[i]) <> 0;
     MainForm.ParseXML(ScriptEditor.Cp, PCHAR(IFSStrings.Text));
     for i := 0 to NXFORMS - 1 do
-      if ScriptEditor.cp.xform[i].density = 0 then break;
+      if ScriptEditor.cp.xform[i].weight = 0 then break;
     NumTransforms := i;
 //    FlameName := FileList[index];
   finally
@@ -1670,7 +1670,7 @@ begin
     FlameString := EntryStrings.Text;
     ScriptEditor.cp.ParseString(FlameString);
     for i := 0 to NXFORMS - 1 do
-      if ScriptEditor.cp.xform[i].density = 0 then break;
+      if ScriptEditor.cp.xform[i].weight = 0 then break;
     NumTransforms := i;
     if SavedPal then ScriptEditor.cp.cmap := Palette;
     ScriptEditor.cp.name := FileList[index];
@@ -1718,7 +1718,7 @@ var
 begin
   add_symmetry_to_control_point(ScriptEditor.cp, AMachine.GetInputArgAsInteger(0));
   for i := 0 to NXFORMS - 1 do
-    if ScriptEditor.cp.xform[i].density = 0 then break;
+    if ScriptEditor.cp.xform[i].weight = 0 then break;
   NumTransforms := i;
 end;
 
@@ -1866,7 +1866,7 @@ begin
     ScriptEditor.cp.xform[i].density := 0;
 }
   ScriptEditor.cp.Clear;
-  ScriptEditor.cp.xform[0].symmetry := 1;
+  ScriptEditor.cp.xform[0].color_speed := 1;
 end;
 
 procedure TOperationLibrary.MorphProc(AMachine: TatVirtualMachine);
@@ -1883,7 +1883,7 @@ begin
     begin
       ScriptEditor.cp.InterpolateX(cps[a], cps[b], v);
       for i := 0 to NXFORMS - 1 do
-        if ScriptEditor.cp.xform[i].density = 0 then break;
+        if ScriptEditor.cp.xform[i].weight = 0 then break;
       NumTransforms := i;
     end;
   end;
@@ -1957,7 +1957,7 @@ begin
       for i := 1 to NRVAR - 1 do
         ScriptEditor.cp.xform[ActiveTransform].vars[i] := 0;}
       scriptEditor.cp.xform[ActiveTransform].Clear;
-      ScriptEditor.cp.xform[ActiveTransform].density := 0.5;
+      ScriptEditor.cp.xform[ActiveTransform].weight := 0.5;
     end
     else raise EFormatInvalid.Create('Too many transforms.');
   except on E: EFormatInvalid do
@@ -1979,7 +1979,7 @@ begin
     // final xform - just clear it
     begin
       scriptEditor.cp.xform[NumTransforms].Clear;
-      scriptEditor.cp.xform[NumTransforms].symmetry := 1;
+      scriptEditor.cp.xform[NumTransforms].color_speed := 1;
       scriptEditor.cp.finalXformEnabled := false;
       exit;
     end;
@@ -2122,7 +2122,7 @@ begin
   xform.c[2, 0] := 0;
   xform.c[2, 1] := 0;
   xform.color := 0;
-  xform.density := 1 / NumTransforms;
+  xform.weight := 0.5; //1 / NumTransforms;
   xform.vars[0] := 1;
   for i := 1 to NRVAR - 1 do
     xform.vars[i] := 0;
@@ -2654,7 +2654,7 @@ end;
 procedure TScriptEditor.GetTransformWeightProc(AMachine: TatVirtualMachine);
 begin
   with AMachine do
-    ReturnOutPutArg(cp.xform[ActiveTransform].density);
+    ReturnOutPutArg(cp.xform[ActiveTransform].weight);
 end;
 
 procedure TScriptEditor.SetTransformWeightProc(AMachine: TatVirtualMachine);
@@ -2665,14 +2665,14 @@ begin
   begin
     v := GetInputArgAsFloat(0);
     if (v > 0) and (v <= MAX_WEIGHT) then
-      cp.xform[ActiveTransform].density := v;
+      cp.xform[ActiveTransform].weight := v;
   end;
 end;
 
 procedure TScriptEditor.GetTransformSymProc(AMachine: TatVirtualMachine);
 begin
   with AMachine do
-    ReturnOutPutArg(cp.xform[ActiveTransform].symmetry);
+    ReturnOutPutArg(cp.xform[ActiveTransform].color_speed);
 end;
 
 procedure TScriptEditor.SetTransformSymProc(AMachine: TatVirtualMachine);
@@ -2683,7 +2683,7 @@ begin
   begin
     v := GetInputArgAsFloat(0);
     if (v >= -1) and (v <= 1) then
-      cp.xform[ActiveTransform].symmetry := v;
+      cp.xform[ActiveTransform].color_speed := v;
   end;
 end;
 
@@ -2754,7 +2754,7 @@ end;
 procedure TScriptEditor.GetTransformPlotModeProc(AMachine: TatVirtualMachine);
 begin
   with AMachine do
-    if cp.xform[ActiveTransform].noPlot then
+    if cp.xform[ActiveTransform].opacity <> 0 then
       ReturnOutPutArg(1)
     else
       ReturnOutPutArg(0);
@@ -2767,7 +2767,10 @@ begin
   with AMachine do
   begin
     v := GetInputArgAsInteger(0);
-    cp.xform[ActiveTransform].noPlot := v <> 0;
+    if v <> 0 then
+      cp.xform[ActiveTransform].opacity := 1
+    else
+      cp.xform[ActiveTransform].opacity := 0;
   end;
 end;
 
@@ -2961,9 +2964,9 @@ procedure TScriptEditor.TransformClearProc(AMachine: TatVirtualMachine);
 begin
   cp.xform[ActiveTransform].Clear;
   if ActiveTransform < Transforms then
-    cp.xform[ActiveTransform].density := 0.5
+    cp.xform[ActiveTransform].weight := 0.5
   else
-    cp.xform[ActiveTransform].symmetry := 1;
+    cp.xform[ActiveTransform].color_speed := 1;
 end;
 
 procedure TScriptEditor.TransformRotateOriginProc(AMachine: TatVirtualMachine);
@@ -3659,7 +3662,7 @@ begin
   dest.c[2, 1] := source.c[2, 1];
   dest.color := source.color;
 // hmm, why no symmetry here? // dest.symmetry := source.symmetry;
-  dest.density := source.density;
+  dest.weight := source.weight;
   for i := 0 to NRVAR - 1 do
     dest.vars[i] := source.vars[i];
 end;
