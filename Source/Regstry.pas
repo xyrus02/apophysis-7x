@@ -29,28 +29,24 @@ procedure SaveSettings;
 
 implementation
 
-uses Windows, SysUtils, Forms, Registry, Global, Dialogs, XFormMan;
+uses Windows, SysUtils, Forms, Registry, Global, Dialogs, XFormMan, Math;
 
-(*
-procedure UnpackVariations(v: int64);
-{ Unpacks the variation options form an integer }
-var
-  i: integer;
-begin
-  for i := 0 to NRVAR - 1 do
-    Variations[i] := boolean(v shr i and 1);
-end;
-*)
+const
+  variationSelectedForRandom = 1;
+  variationIsFavourite = 2;
 
 procedure ReadSettings;
 var
   Registry: TRegistry;
   DefaultPath: string;
   i, maxVars: integer;
+  value: integer;
   VariationOptions: int64;
 begin
+  SetLength(RandomVariations, NRVAR);
+  SetLength(FavouriteVariations, NRVAR);
+
   DefaultPath := ExtractFilePath(Application.Exename);
-//  ShowMessage(DefaultPath);
   Registry := TRegistry.Create;
   try
     Registry.RootKey := HKEY_CURRENT_USER;
@@ -607,6 +603,8 @@ begin
       end;
       if Registry.ValueExists('InternalBitsPerSample') then begin
         InternalBitsPerSample := Registry.ReadInteger('InternalBitsPerSample');
+        if (InternalBitsPerSample < 0) or (InternalBitsPerSample > 2) then
+          InternalBitsPerSample := 0;
       end else begin
         InternalBitsPerSample := 0;
       end;
@@ -686,21 +684,24 @@ begin
     end;
     Registry.CloseKey;
 
-    SetLength(Variations, NRVAR);
     if Registry.OpenKey('Software\' + APP_NAME + '\Variations', False) then
     begin
       for i := 0 to NRVAR-1 do begin
-      if Registry.ValueExists(Varnames(i)) then
-        Variations[i] := Registry.ReadBool(Varnames(i))
-      else
-        Variations[i] := false;
+        if Registry.ValueExists(Varnames(i)) then begin
+          value := Registry.ReadInteger(Varnames(i));
+          RandomVariations[i] := (value and variationSelectedForRandom) <> 0;
+          FavouriteVariations[i] := (value and variationIsFavourite) <> 0;
+        end
+        else begin
+          RandomVariations[i] := false;
+        end;
       end;
     end
     else begin
       if NRVAR >= 64 then maxVars := 63
       else maxVars := NRVAR-1;
       for i := 0 to maxVars do
-        Variations[i] := boolean(VariationOptions shr i and 1);
+        RandomVariations[i] := boolean(VariationOptions shr i and 1);
     end;
     Registry.CloseKey;
 
@@ -835,6 +836,8 @@ begin
       if Registry.ValueExists('BitsPerSample') then
       begin
         renderBitsPerSample := Registry.ReadInteger('BitsPerSample');
+        if (renderBitsPerSample < 0) or (renderBitsPerSample > 2) then
+          renderBitsPerSample := 0;
       end
       else
       begin
@@ -1052,6 +1055,7 @@ procedure SaveSettings;
 var
   Registry: TRegistry;
   i: integer;
+  value: integer;
 begin
   Registry := TRegistry.Create;
   try
@@ -1146,10 +1150,12 @@ begin
     if Registry.OpenKey('\Software\' + APP_NAME + '\Variations', True) then
     begin
       for i := 0 to NRVAR-1 do begin
-        if Registry.ValueExists(Varnames(i)) then
-          if Registry.ReadBool(Varnames(i)) = Variations[i] then
-            continue;
-        Registry.WriteBool(Varnames(i), Variations[i]);
+        if Registry.ValueExists(Varnames(i)) then begin
+          value := IfThen(RandomVariations[i], variationSelectedForRandom, 0) +
+                   IfThen(FavouriteVariations[i], variationIsFavourite, 0);
+          if Registry.ReadInteger(Varnames(i)) = value then continue; //?
+        end;
+        Registry.WriteInteger(Varnames(i), value);
       end;
     end;
     Registry.CloseKey;
