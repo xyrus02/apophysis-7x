@@ -27,7 +27,7 @@ type
     FBucketHeight: integer;
     FBucketWidth: integer;
 
-    FBuckets64: TBucket64Array;
+//    FBuckets64: TBucket64Array;
     FBuckets48: TBucket48Array;
     FBuckets32: TBucket32Array;
     FBuckets32f: TBucket32fArray;
@@ -35,7 +35,7 @@ type
     FOnProgress: TOnProgress;
 
     FGetBucket: function(x, y: integer): TBucket64 of object;
-    function GetBucket64(x, y: integer): TBucket64;
+//    function GetBucket64(x, y: integer): TBucket64;
     function GetBucket48(x, y: integer): TBucket64;
     function GetBucket32(x, y: integer): TBucket64;
     function GetBucket32f(x, y: integer): TBucket64;
@@ -207,7 +207,7 @@ end;
 ///////////////////////////////////////////////////////////////////////////////
 procedure TImageMaker.SetBucketData(const Buckets: pointer; BucketWidth, BucketHeight: integer; bits: integer);
 begin
-  FBuckets64 := TBucket64Array(Buckets);
+  //FBuckets64 := TBucket64Array(Buckets);
   FBuckets48 := TBucket48Array(Buckets);
   FBuckets32f := TBucket32fArray(Buckets);
   FBuckets32 := TBucket32Array(Buckets);
@@ -219,7 +219,7 @@ begin
     BITS_32:  FGetBucket := GetBucket32;
     BITS_32f: FGetBucket := GetBucket32f;
     BITS_48:  FGetBucket := GetBucket48;
-    BITS_64:  FGetBucket := GetBucket64;
+    //BITS_64:  FGetBucket := GetBucket64;
     else assert(false);
   end;
 end;
@@ -560,10 +560,12 @@ end;
 
 ///////////////////////////////////////////////////////////////////////////////
 
+{
 function TImageMaker.GetBucket64(x, y: integer): TBucket64;
 begin
   Result := FBuckets64[y][x];
 end;
+}
 
 function TImageMaker.GetBucket32(x, y: integer): TBucket64;
 begin

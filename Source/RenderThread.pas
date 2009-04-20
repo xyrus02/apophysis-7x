@@ -25,7 +25,6 @@ uses
   Classes, Windows, Messages, Graphics,
   ControlPoint, Render,
   Global, RenderTypes, PngImage,
-  Render64, Render64MT,
   Render48, Render48MT,
   Render32, Render32MT,
   Render32f, Render32fMT;
@@ -171,14 +170,14 @@ begin
         0: FRenderer := TRenderer32.Create;
         1: FRenderer := TRenderer32f.Create;
         2: FRenderer := TRenderer48.Create;
-        3: FRenderer := TRenderer64.Create;
+        //3: FRenderer := TRenderer64.Create;
       end;
     end else begin
       case FBitsPerSample of
         0: FRenderer := TRenderer32MM.Create;
         1: FRenderer := TRenderer32fMM.Create;
         2: FRenderer := TRenderer48MM.Create;
-        3: FRenderer := TRenderer64MM.Create;
+        //3: FRenderer := TRenderer64MM.Create;
       end;
       FRenderer.MaxMem := MaxMem;
     end;
@@ -189,14 +188,14 @@ begin
         0: FRenderer := TRenderer32MT.Create;
         1: FRenderer := TRenderer32fMT.Create;
         2: FRenderer := TRenderer48MT.Create;
-        3: FRenderer := TRenderer64MT.Create;
+        //3: FRenderer := TRenderer64MT.Create;
       end;
     end else begin
       case FBitsPerSample of
         0: FRenderer := TRenderer32MT_MM.Create;
         1: FRenderer := TRenderer32fMT_MM.Create;
         2: FRenderer := TRenderer48MT_MM.Create;
-        3: FRenderer := TRenderer64MT_MM.Create;
+        //3: FRenderer := TRenderer64MT_MM.Create;
       end;
       FRenderer.MaxMem := MaxMem;
     end;
