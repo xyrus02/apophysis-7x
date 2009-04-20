@@ -170,7 +170,6 @@ type
     function Clone: TControlPoint;
     procedure Copy(cp1: TControlPoint; KeepSizes: boolean = false);
 
-//    function HasNewVariants: boolean;
     function HasFinalXForm: boolean;
 
     // CP-specific functions moved from unit Main
@@ -327,8 +326,15 @@ begin
   invalidXform.PrepareInvalidXForm;
 
   if soloXform >= 0 then begin
-    for i := 0 to n - 1 do xform[i].noPlot := true;
-    xform[soloXform].noPlot := false;
+    for i := 0 to n - 1 do xform[i].plotMode := -1; //neverPlot;
+    xform[soloXform].plotMode := 1; //alwaysPlot;
+  end
+  else begin
+    for i := 0 to n - 1 do with xform[i] do begin
+      if opacity = 0 then plotMode := -1 //neverPlot
+      else if opacity = 1 then plotMode := 1 //alwaysPlot
+      else plotMode := 0; //opacityPlot;
+    end;
   end;
 
   for k := 0 to n - 1 do begin
@@ -336,7 +342,7 @@ begin
     SetLength(xform[k].PropTable, PROP_TABLE_SIZE);
 
     for i := 0 to n - 1 do begin
-      tp[i] := xform[i].density * xform[k].modWeights[i];
+      tp[i] := xform[i].weight * xform[k].modWeights[i];
       totValue := totValue + tp[i];
     end;
 
@@ -459,7 +465,9 @@ end;
         xf := xf.PropTable[Random(PROP_TABLE_SIZE)];
         xf.NextPoint(p);
 
-        if xf.noPlot then
+        if (xf.plotMode < 0) or
+          ((xf.plotMode = 0) and (random > xf.opacity))
+        then
           pPoint^.x := MaxDouble // hack
         else
           finalXform.NextPointTo(p, pPoint^);
@@ -470,7 +478,10 @@ end;
       for i := 0 to NrPoints - 1 do begin
         xf := xf.PropTable[Random(PROP_TABLE_SIZE)];
         xf.NextPoint(p);
-        if xf.noPlot then
+
+        if (xf.plotMode < 0) or
+          ((xf.plotMode = 0) and (random > xf.opacity))
+        then
           pPoint^.x := MaxDouble // hack
         else begin
           pPoint^ := p;
@@ -785,15 +796,15 @@ begin
 //      Inc(ParsePos);
 //      cmapindex := StrToInt(ParseValues[ParsePos]);
       OutputDebugString(Pchar('NYI import Palette'));
-    end else if AnsiCompareText(CurrentToken, 'density') = 0 then begin
+    end else if AnsiCompareText(CurrentToken, 'weight') = 0 then begin
       Inc(ParsePos);
-      xform[CurrentXForm].Density := StrToFloat(ParseValues[ParsePos]);
+      xform[CurrentXForm].weight := StrToFloat(ParseValues[ParsePos]);
     end else if AnsiCompareText(CurrentToken, 'color') = 0 then begin
       Inc(ParsePos);
       xform[CurrentXForm].color := StrToFloat(ParseValues[ParsePos]);
-    end else if AnsiCompareText(CurrentToken, 'symmetry') = 0 then begin
+    end else if AnsiCompareText(CurrentToken, 'color_speed') = 0 then begin
       Inc(ParsePos);
-      xform[CurrentXForm].symmetry := StrToFloat(ParseValues[ParsePos]);
+      xform[CurrentXForm].color_speed := StrToFloat(ParseValues[ParsePos]);
     end else if AnsiCompareText(CurrentToken, 'coefs') = 0 then begin
       Inc(ParsePos);
       xform[CurrentXForm].c[0, 0] := StrToFloat(ParseValues[ParsePos]);
@@ -877,9 +888,9 @@ begin
         Inc(i);
       end;
 
-    end else if AnsiCompareText(CurrentToken, 'plotmode') = 0 then begin
+    end else if AnsiCompareText(CurrentToken, 'opacity') = 0 then begin
       Inc(ParsePos);
-      xform[CurrentXForm].noPlot := (StrToInt(ParseValues[ParsePos]) = 1);
+      xform[CurrentXForm].opacity := StrToFloat(ParseValues[ParsePos]);
     end else begin
       OutputDebugString(Pchar('Unknown Token: ' + CurrentToken));
     end;
@@ -903,13 +914,13 @@ begin
   FillVarDisturb;
   VarPossible := false;
   for j := 0 to NRVAR - 1 do begin
-    VarPossible := VarPossible or Variations[j];
+    VarPossible := VarPossible or RandomVariations[j];
   end;
 
   if VarPossible then begin
     repeat
       rv := var_distrib[random(Length(var_distrib))];
-    until Variations[rv];
+    until RandomVariations[rv];
   end else begin
     rv := 0;
   end;
@@ -926,7 +937,7 @@ begin
         if VarPossible then begin
           repeat
             v := Mixed_var_distrib[random(Length(mixed_var_distrib))];
-          until Variations[v]; // Use only Variations set in options
+          until RandomVariations[v]; // Use only Variations set in options
         end else begin
           v := 0;
         end;
@@ -959,23 +970,23 @@ begin
   FillVarDisturb;
   VarPossible := false;
   for j := 0 to NRVAR - 1 do begin
-    VarPossible := VarPossible or Variations[j];
+    VarPossible := VarPossible or RandomVariations[j];
   end;
 
   if VarPossible then begin
     repeat
       rv := var_distrib[random(Length(var_distrib))];
-    until Variations[rv];
+    until RandomVariations[rv];
   end else begin
     rv := 0;
   end;
 
   for i := 0 to NXFORMS - 1 do begin
-    xform[i].density := 0;
+    xform[i].weight := 0;
   end;
 
   for i := 0 to nrXforms - 1 do begin
-    xform[i].density := 1.0 / nrXforms;
+    xform[i].weight := 1.0 / nrXforms;
     xform[i].color := i / (nrXforms - 1);
 
     xform[i].c[0][0] := 2 * random - 1;
@@ -997,7 +1008,7 @@ begin
       if VarPossible then begin
         repeat
           v := Mixed_var_distrib[random(Length(mixed_var_distrib))];
-        until Variations[v]; // use only variations set in options
+        until RandomVariations[v]; // use only variations set in options
       end else begin
         v := 0;
       end;
@@ -1047,11 +1058,7 @@ begin
 //  RandSeed := 1234567;
   try
     SetLength(Points, SUB_BATCH_SIZE);
-{    case compatibility of
-      0: iterate_Old(SUB_BATCH_SIZE, points);
-      1: iterateXYC(SUB_BATCH_SIZE, points);
-    end;
-}
+
     cosa := cos(FAngle);
     sina := sin(FAngle);
 
@@ -1462,7 +1469,7 @@ begin
   end
   else begin
     cp1.xform[NXFORMS].Clear;
-    cp1.xform[NXFORMS].symmetry := 1;
+    cp1.xform[NXFORMS].color_speed := 1;
   end;
 
   nXforms2 := cp2.NumXForms;
@@ -1476,13 +1483,13 @@ begin
   end
   else begin
     cp2.xform[NXFORMS].Clear;
-    cp2.xform[NXFORMS].symmetry := 1;
+    cp2.xform[NXFORMS].color_speed := 1;
   end;
 
   for i := 0 to NXFORMS do begin
-    Result.xform[i].density := c0 * cp1.xform[i].density + c1 * cp2.xform[i].density;
+    Result.xform[i].weight := c0 * cp1.xform[i].weight + c1 * cp2.xform[i].weight;
     Result.xform[i].color := c0 * cp1.xform[i].color + c1 * cp2.xform[i].color;
-    Result.xform[i].symmetry := c0 * cp1.xform[i].symmetry + c1 * cp2.xform[i].symmetry;
+    Result.xform[i].color_speed := c0 * cp1.xform[i].color_speed + c1 * cp2.xform[i].color_speed;
 //    for j := 0 to NrVar - 1 do
 //      Result.xform[i].vars[j] := c0 * cp1.xform[i].vars[j] + c1 * cp2.xform[i].vars[j];
     for j := 0 to NrVar-1 do
@@ -1578,9 +1585,9 @@ begin
 
   for i := 0 to Min(NumXForms+1, NXFORMS) do
     with xform[i] do begin
-      //if density = 0 then continue; - FinalXform has weight=0
+      //if weight = 0 then continue; - FinalXform has weight=0
 
-      sl.add(format('xform %d density %g color %g symmetry %g', [i, density, color, symmetry]));
+      sl.add(format('xform %d weight %g color %g color_speed %g', [i, weight, color, color_speed]));
       s := 'vars';
       for j := 0 to NRVAR - 1 do begin
         s := format('%s %g', [s, vars[j]]);
@@ -1596,9 +1603,9 @@ begin
 {$endif}
       end;
       sl.add(s);
-      sl.Add(format('coefs %.6f %.6f %.6f %.6f %.6f %.6f',
+      sl.Add(format('coefs %g %g %g %g %g %g', // 'coefs %.6f %.6f %.6f %.6f %.6f %.6f',
         [c[0][0], c[0][1], c[1][0], c[1][1], c[2][0], c[2][1]]));
-      sl.Add(format('post %.6f %.6f %.6f %.6f %.6f %.6f',
+      sl.Add(format('post %g %g %g %g %g %g',  // 'post %.6f %.6f %.6f %.6f %.6f %.6f',
         [p[0][0], p[0][1], p[1][0], p[1][1], p[2][0], p[2][1]]));
       if postXswap then
         sl.Add('postxswap 1')
@@ -1611,7 +1618,7 @@ begin
       end;
       sl.Add(s);
 
-      sl.Add(Format('plotmode %d', [Ifthen(noPlot, 1, 0)]));
+      sl.Add(Format('opacity %g', [opacity]));
 
     end;
   DecimalSeparator := OldDecimalSperator;
@@ -1709,7 +1716,7 @@ begin
   begin
     Result := (c[0,0]<>1) or (c[0,1]<>0) or (c[1,0]<>0) or (c[1,1]<>1) or (c[2,0]<>0) or (c[2,1]<>0) or
               (p[0,0]<>1) or (p[0,1]<>0) or (p[1,0]<>0) or (p[1,1]<>1) or (p[2,0]<>0) or (p[2,1]<>0) or
-              (symmetry <> 1) or (vars[0] <> 1);
+              (color_speed <> 1) or (vars[0] <> 1);
     if Result = false then
       for i := 1 to NRVAR-1 do Result := Result or (vars[i] <> 0);
   end;
@@ -1745,7 +1752,7 @@ begin
   end;
 
   for i := 0 to NXFORMS - 1 do
-    if (cp.xform[i].density = 0.0) then break;
+    if (cp.xform[i].weight = 0.0) then break;
 
   if (i = NXFORMS) then
   begin
@@ -1756,8 +1763,8 @@ begin
 
   if (sym < 0) then
   begin
-    cp.xform[i].density := 1.0;
-    cp.xform[i].symmetry := 1;
+    cp.xform[i].weight := 1.0;
+    cp.xform[i].color_speed := 1;
     cp.xform[i].vars[0] := 1.0;
     for j := 1 to NRVAR - 1 do
       cp.xform[i].vars[j] := 0;
@@ -1781,9 +1788,9 @@ begin
 //  while (k < sym) and (i < NXFORMS) do
   while (k < sym) and (i < SymmetryNVars) do
   begin
-    cp.xform[i].density := 1.0;
+    cp.xform[i].weight := 1.0;
     cp.xform[i].vars[0] := 1.0;
-    cp.xform[i].symmetry := 1;
+    cp.xform[i].color_speed := 1;
     for j := 1 to NRVAR - 1 do
       cp.xform[i].vars[j] := 0;
     if sym < 3 then
@@ -1994,7 +2001,7 @@ begin
   Result := NXFORMS;
   for i := 0 to NXFORMS - 1 do
   begin
-    if xform[i].density = 0 then
+    if xform[i].weight = 0 then
     begin
       Result := i;
       Break;
@@ -2095,7 +2102,7 @@ var
 begin
   t := NumXForms;
   for i := 0 to t - 1 do
-    xform[i].density := 0.5;
+    xform[i].weight := 0.5;
 end;
 
 procedure TControlPoint.NormalizeWeights;
@@ -2105,12 +2112,12 @@ var
 begin
   td := 0.0;
   for i := 0 to NumXForms - 1 do
-    td := td + xform[i].Density;
+    td := td + xform[i].weight;
   if (td < 0.001) then
     EqualizeWeights
   else
     for i := 0 to NumXForms - 1 do
-      xform[i].Density := xform[i].Density / td;
+      xform[i].weight := xform[i].weight / td;
 end;
 
 procedure TControlPoint.RandomizeWeights;
@@ -2118,7 +2125,7 @@ var
   i: integer;
 begin
   for i := 0 to Transforms - 1 do
-    xform[i].Density := Random;
+    xform[i].weight := Random;
 end;
 
 procedure TControlPoint.ComputeWeights(Triangles: TTriangles; t: integer);
@@ -2130,14 +2137,13 @@ begin
   total_area := 0;
   for i := 0 to t - 1 do
   begin
-    xform[i].Density := triangle_area(Triangles[i]);
-    total_area := total_area + xform[i].Density;
+    xform[i].weight := triangle_area(Triangles[i]);
+    total_area := total_area + xform[i].weight;
   end;
   for i := 0 to t - 1 do
   begin
-    xform[i].Density := xform[i].Density / total_area;
+    xform[i].weight := xform[i].weight / total_area;
   end;
-  //? cp1.NormalizeWeights;
 end;
 
 procedure TControlPoint.GetFromTriangles(const Triangles: TTriangles; const t: integer);
