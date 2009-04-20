@@ -27,9 +27,8 @@ type
     Blue,
     Count: Int64;
   end;
-  PBucket64 = ^TBucket64;
-  TBucket64Array = array of array of TBucket64;
-//  PBucket64Array = ^PBucket64Array;
+//  PBucket64 = ^TBucket64;
+//  TBucket64Array = array of array of TBucket64;
 
   TBucket48 = packed record
     rl: longword; rh: word;
@@ -39,7 +38,6 @@ type
   end;
   PBucket48 = ^TBucket48;
   TBucket48Array = array of array of TBucket48;
-//  PBucket48Array = ^PBucket48Array;
 
   TBucket32f = record
     Red,
@@ -49,7 +47,6 @@ type
   end;
   PBucket32f = ^TBucket32f;
   TBucket32fArray = array of array of TBucket32f;
-//  PBucket32fArray = ^PBucket32fArray;
 
   TBucket32 = Record
     Red,
@@ -74,8 +71,8 @@ const
   BITS_32 = 0;
   BITS_32f = 1;
   BITS_48 = 2;
-  BITS_64 = 3;
-  SizeOfBucket: array[0..3] of byte = (16, 16, 24, 32);
+  //BITS_64 = 3;
+  SizeOfBucket: array[0..2] of byte = (16, 16, 24); //, 32);
 
 type
   TBucketStats = record
