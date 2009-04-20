@@ -537,8 +537,7 @@ object RenderForm: TRenderForm
           Items.Strings = (
             '32-bit integer'
             '32-bit floating-point'
-            '48-bit integer'
-            '64-bit integer')
+            '48-bit integer')
         end
       end
     end
