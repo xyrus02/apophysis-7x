@@ -65,7 +65,6 @@ type
     txtD: TEdit;
     txtE: TEdit;
     txtF: TEdit;
-    txtP: TEdit;
     tabVariations: TTabSheet;
     VEVars: TValueListEditor;
     tabColors: TTabSheet;
@@ -158,9 +157,8 @@ type
     N6: TMenuItem;
     Rotatetriangle90CCW1: TMenuItem;
     Rotatetriangle90CCW2: TMenuItem;
-    txtSymmetry: TEdit;
-    pnlWeight: TPanel;
-    pnlSymmetry: TPanel;
+    txtColorSpeed: TEdit;
+    pnlColorSpeed: TPanel;
     mnuResetTrgRotation: TMenuItem;
     mnuResetTrgPosition: TMenuItem;
     mnuResetTrgScale: TMenuItem;
@@ -173,7 +171,6 @@ type
     tbPivotMode: TToolButton;
     tbRotate90CCW: TToolButton;
     tbRotate90CW: TToolButton;
-    lblTransform: TLabel;
     chkPreserve: TCheckBox;
     bvlCoefs: TBevel;
     bvlPostCoefs: TBevel;
@@ -199,9 +196,14 @@ type
     N10: TMenuItem;
     mnuLinkPostxform: TMenuItem;
     GroupBox4: TGroupBox;
-    chkXformInvisible: TCheckBox;
     chkXformSolo: TCheckBox;
     mnuChaosRebuild: TMenuItem;
+    pnlTransform: TPanel;
+    pnlWeight: TPanel;
+    txtP: TEdit;
+    mnuLinkPreXform: TMenuItem;
+    pnlOpacity: TPanel;
+    txtOpacity: TEdit;
 
     procedure ValidateVariable;
     procedure vleVariablesValidate(Sender: TObject; ACol, ARow: Integer; const KeyName, KeyValue: string);
@@ -263,6 +265,8 @@ type
     procedure txtXFormColorKeyPress(Sender: TObject; var Key: Char);
     procedure txtSymmetrySet(Sender: TObject);
     procedure txtSymmetrKeyPress(Sender: TObject; var Key: Char);
+    procedure txtOpacitySet(Sender: TObject);
+    procedure txtOpacityKeyPress(Sender: TObject; var Key: Char);
 
     procedure btTrgRotateLeftClick(Sender: TObject);
     procedure btTrgRotateRightClick(Sender: TObject);
@@ -354,12 +358,20 @@ type
       Rect: TRect; State: TGridDrawState);
     procedure mnuChaosViewToClick(Sender: TObject);
     procedure mnuChaosViewFromClick(Sender: TObject);
-    procedure chkPlotModeClick(Sender: TObject);
     procedure mnuChaosClearAllClick(Sender: TObject);
     procedure mnuChaosSetAllClick(Sender: TObject);
     procedure mnuLinkPostxformClick(Sender: TObject);
     procedure chkXformSoloClick(Sender: TObject);
     procedure mnuChaosRebuildClick(Sender: TObject);
+    procedure vleVariablesDrawCell(Sender: TObject; ACol, ARow: Integer;
+      Rect: TRect; State: TGridDrawState);
+    procedure mnuLinkPreXformClick(Sender: TObject);
+    procedure VEVarsGetEditText(Sender: TObject; ACol, ARow: Integer;
+      var Value: String);
+    procedure vleVariablesGetEditText(Sender: TObject; ACol, ARow: Integer;
+      var Value: String);
+    procedure vleChaosGetEditText(Sender: TObject; ACol, ARow: Integer;
+      var Value: String);
 //    procedure btnInvisibleClick(Sender: TObject);
 //    procedure btnSoloClick(Sender: TObject);
 
@@ -409,8 +421,18 @@ type
     oldx, oldy, olddist: double;
     Pivot: TSPoint;
 
-    VarsCache: array[0..150] of double; // hack: to prevent slow valuelist redraw
+    VarsCache: array of double; // hack: to prevent slow valuelist redraw
                                         // -JF- 64 wasn't big enough... buffer overrun
+//    VariablesOddness: array of integer;
+    VariableUsed: array of bool;
+//    VariableFavsHighlight: array of bool; //hmm
+    VariableListColors, VariableListTextColors: array of TColor;
+    VariableListStrings: TStrings;
+    variableListCount: integer;
+
+    NormalVarColors, ParametricVarColors, PluginVarColors,
+    ChaosColors: array[0..1] of TColor;
+    clFavVarGreyed: TColor;
 
     pnlDragMode: boolean;
     pnlDragPos, pnlDragOld: integer;
@@ -451,11 +473,6 @@ type
     procedure ScriptGetPivot(var px, py: double);
   end;
 
-const
-  TrgColors: array[-1..13] of TColor = (clGray,
-    $0000ff, $00ffff, $00ff00, $ffff00, $ff0000, $ff00ff, $007fff,
-    $7f00ff, $55ffff, $ccffcc, $ffffaa, $ff7f7f, $ffaaff, $55ccff );
-
 var
   EditForm: TEditForm;
 
@@ -475,9 +492,25 @@ function ScaleTrianglePoint(t: TTriangle; x, y, scale: double): TTriangle;
 implementation
 
 uses
-  Main, Global, Adjust, Mutate, XformMan;
+  Main, Global, Adjust, Mutate, XformMan,
+  Mask;
 
 {$R *.DFM}
+
+const
+  TrgColors: array[-1..13] of TColor = (clGray,
+    $0000ff, $00ffff, $00ff00, $ffff00, $ff0000, $ff00ff, $007fff,
+    $7f00ff, $55ffff, $ccffcc, $ffffaa, $ff7f7f, $ffaaff, $55ccff );
+
+  clNormalHilite = $e0e0e0;
+  clParametricHilite = $ffc0c0;
+  clPluginsHilite = $c0ffc0;
+  clChaosHilite = $ffc0ff;
+  clFavVariation = $c00000;
+
+type // Hack to access protected members of TValueListEditor & TCustomMaskEdit
+  TGridHacker = class(TCustomGrid);
+  TEditorHacker = class(TCustomMaskEdit);
 
 { Triangle transformations }
 
@@ -659,6 +692,8 @@ begin
 end;
 
 procedure TEditForm.UpdateDisplay(PreviewOnly: boolean = false);
+var
+  i, j, n: integer;
 begin
   // currently EditForm does not really know if we select another
   // flame in the Main Window - which is not good...
@@ -696,8 +731,15 @@ begin
   cp.TrianglesFromCP(MainTriangles);
 
   ShowSelectedInfo;
+
   if MainForm.UndoIndex = 0 then AutoZoom // auto-zoom only on 'new' flame
   else TriangleView.Invalidate;
+
+  for i := 0 to GetNrRegisteredVariations-1 do begin
+    n := GetRegisteredVariation(i).firstVariableIndex;
+//    for j := 0 to GetRegisteredVariation(i).GetNrVariables-1 do
+//      VariableFavsHighlight[n + j] := FavouriteVariations[NRLOCVAR + i];
+  end;
 end;
 
 procedure TEditForm.DrawPreview;
@@ -728,9 +770,14 @@ end;
 
 procedure TEditForm.ShowSelectedInfo;
 var
-  i: integer;
+  i, j, n: integer;
   v: double;
   strval: string;
+
+  nonzero, usedVarsChanged: boolean;
+  row: integer;
+  varname, selectedvar: string;
+  dummy: string;
 begin
   updating := true;
 
@@ -806,37 +853,15 @@ begin
       btnResetCoefs.Font.Style := [fsBold];
       btnResetPostCoefs.Font.Style := [];
     end;
-{
-    btnXpost.Enabled := postXswap;
-    btnYpost.Enabled := postXswap;
-    btnOpost.Enabled := postXswap;
-    txtPost00.Enabled  := postXswap;
-    txtPost01.Enabled  := postXswap;
-    txtPost10.Enabled  := postXswap;
-    txtPost11.Enabled  := postXswap;
-    txtPost20.Enabled  := postXswap;
-    txtPost21.Enabled  := postXswap;
-    btnResetPostCoefs.Enabled := postXswap;
-
-    btnXcoefs.Enabled := not postXswap;
-    btnYcoefs.Enabled := not postXswap;
-    btnOcoefs.Enabled := not postXswap;
-    txtA.Enabled  := not postXswap;
-    txtB.Enabled  := not postXswap;
-    txtC.Enabled  := not postXswap;
-    txtD.Enabled  := not postXswap;
-    txtE.Enabled  := not postXswap;
-    txtF.Enabled  := not postXswap;
-    btnResetCoefs.Enabled := not postXswap;
-}
 
     if SelectedTriangle < Transforms then
     begin
-      txtP.text := Format('%.6g', [density]);
+      txtP.text := Format('%.6g', [weight]);
       txtP.Enabled := true;
       vleChaos.Enabled := true;
-      chkXformInvisible.Enabled := true;
-      chkXformInvisible.Checked := noPlot;
+//      chkXformInvisible.Enabled := true;
+//      chkXformInvisible.Checked := (opacity = 0);
+      txtOpacity.Enabled := true;
       chkXformSolo.Enabled := true;
 
       if cp.soloXform >= 0 then begin
@@ -852,37 +877,99 @@ begin
       txtP.Enabled := false;
       txtP.Text := 'n/a';
       vleChaos.Enabled := false;
-      chkXformInvisible.Enabled := false;
-      chkXformInvisible.Checked := false;
+//      chkXformInvisible.Enabled := false;
+//      chkXformInvisible.Checked := false;
+      txtOpacity.Enabled := false;
       chkXformSolo.Enabled := false;
     end;
     tbEnableFinalXform.Down := EnableFinalXform;
 
-    txtSymmetry.text := Format('%.6g', [symmetry]);
+    txtColorSpeed.text := Format('%.6g', [color_speed]);
+    txtOpacity.text := Format('%.6g', [opacity]);
 
     pnlXFormColor.Color := ColorValToColor(cp.cmap, color);
     txtXFormColor.Text := Format('%1.3f', [color]);
     scrlXFormcolor.Position := Trunc(color * scrlXFormColor.Max);
 
-   for i := 0 to NRVAR-1 do begin
-       v := vars[i];
+    usedVarsChanged := false;
+    for i := 0 to NRVAR-1 do begin
+      v := vars[i];
+
       if v <> VarsCache[i] then
       begin
         VarsCache[i]:=v;
-        VEVars.Values[VarNames(i)] := Format('%.6g', [v]);
+        VEVars.Values[VarNames(i)] := FloatToStr(v); //Format('%.6g', [v]);
+
+//if (v = 0) and (FavouriteVariations[i] = false) then VEVars.RowHeights[i+1] := -1
+//else VEVars.RowHeights[i+1] := VEVars.DefaultRowHeight;
+
+        if i >= NRLOCVAR then begin
+          n := GetRegisteredVariation(i - NRLOCVAR).GetNrVariables;
+          if n > 0 then begin
+            j := GetRegisteredVariation(i - NRLOCVAR).firstVariableIndex;
+            repeat
+              nonzero := (v <> 0);
+              usedVarsChanged := usedVarsChanged or (VariableUsed[j] <> nonzero);
+              VariableUsed[j] := nonzero;
+
+              Inc(j);
+              Dec(n);
+            until n = 0;
+          end;
+        end;
       end;
     end;
 
-    for i:= 0 to GetNrVariableNames - 1 do begin
+    if usedVarsChanged then begin
+      // got to change keys list
+      selectedvar := vleVariables.Keys[vleVariables.Row];
+      VariableListStrings.Clear;
+      n := 0;
+      for i := NRLOCVAR to NRVAR-1 do begin
+        if (vars[i] <> 0) then begin
+          for j := 0 to GetRegisteredVariation(i - NRLOCVAR).GetNrVariables-1 do begin
+            varname := GetRegisteredVariation(i - NRLOCVAR).GetVariableNameAt(j);
+            GetVariable(varname, v);
+            VariableListStrings.Add(varname + '=' + FloatToStr(v));
+            if i <= NumBuiltinVariations then
+              VariableListColors[n] := ParametricVarColors[n and 1 xor 1]
+            else
+              VariableListColors[n] := PluginVarColors[n and 1 xor 1];
+            VariableListTextColors[n] := IfThen(FavouriteVariations[i], clFavVariation, vleVariables.Font.Color);
+            Inc(n);
+          end;
+        end;
+      end;
+
+      if (n = 0) then begin
+        vleVariables.RowHeights[1] := -1;
+        //VariableListColors[0] := vleVariables.Color;
+        //VariableListTextColors[0] := vleVariables.Font.Color;
+      end
+      else begin
+        vleVariables.RowHeights[1] := vleVariables.DefaultRowHeight;
+        vleVariablesGetEditText(vleVariables, 1, vleVariables.Row, dummy); // set inplace editor colors
+      end;
+
+      vleVariables.Strings := VariableListStrings;
+      if vleVariables.FindRow(selectedvar, row) then
+        vleVariables.Row := row;
+      variableListCount := n;
+    end
+    else begin
+      // keys list not changed, just update values
+      for i:= 0 to GetNrVariableNames - 1 do begin
+        if VariableUsed[i] = false then continue;
+        varname := GetVariableNameAt(i);
 {$ifndef VAR_STR}
-      GetVariable(GetVariableNameAt(i), v);
-      strval := Format('%.6g', [v]);
+        GetVariable(varname, v);
+        strval := FloatToStr(v);
 {$else}
-      strval := GetVariableStr(GetVariableNameAt(i));
+        strval := GetVariableStr(varname);
 {$endif}
-       // kinda funny, but it really helped...
-      if vleVariables.Values[GetVariableNameAt(i)] <> strval then
-        vleVariables.Values[GetVariableNameAt(i)] := strval;
+        if vleVariables.Values[varname] <> strval then
+          vleVariables.Values[varname] := strval;
+      end;
     end;
 
     //Assert(vleChaos.RowCount = Transforms+1);
@@ -1047,7 +1134,7 @@ begin
     EnableFinalXform := false;
     cp.finalXformEnabled := false;
     cp.xform[Transforms].Clear;
-    cp.xform[Transforms].symmetry := 1;
+    cp.xform[Transforms].color_speed := 1;
     assert(cp.HasFinalXForm = false);
     MainTriangles[Transforms] := MainTriangles[-1];
     tbEnableFinalXform.Down := false;
@@ -1072,7 +1159,7 @@ begin
         if (nmin = nmax) and (nmin = t) then begin
           for j := 0 to Transforms-1 do
             modWeights[j] := cp.xform[t].modWeights[j];
-          if noPlot then noPlot := cp.xform[t].noPlot;
+          if opacity = 0 then opacity := cp.xform[t].opacity;
         end;
       end;
       // check for single "from" links
@@ -1120,7 +1207,7 @@ begin
     else if cp.soloXform = t then cp.soloXform := -1;
 
     Dec(Transforms);
-    assert(cp.xform[transforms].density = 0); // cp.xform[transforms].density := 0;
+    assert(cp.xform[transforms].weight = 0); // cp.xform[transforms].weight := 0;
   end;
   UpdateXformsList;
   UpdateFlame(True);
@@ -1681,9 +1768,21 @@ begin
   end;
 end;
 
+function MixColor(c1, c2: TColor): TColor;
+begin
+{
+  Result := ( ((c1 and $ff) + (c2 and $ff)) div 2 ) +
+    ( (((c1 shr 8) and $ff) + ((c2 shr 8) and $ff)) div 2 ) shl 8 +
+    ( (((c1 shr 16) and $ff) + ((c2 shr 16) and $ff)) div 2 ) shl 16;
+}
+  Result := (c1 shr 1 and $7f7f7f) + (c2 shr 1 and $7f7f7f); 
+end;
+
 procedure TEditForm.FormCreate(Sender: TObject);
 var
   i: integer;
+  j, n: integer;
+  listBkgColor: TColor;
 begin
   // Custom control setup
   TriangleView := TCustomDrawControl.Create(self);
@@ -1707,12 +1806,20 @@ begin
   TriangleView.OnExit       := TriangleViewExit;
   TriangleView.OnMouseLeave := TriangleViewmouseLeave;
 
-  for i:= 0 to NRVAR - 1 do begin
+  for i := 0 to NRVAR-1 do begin
     VEVars.InsertRow(Varnames(i), '0', True);
   end;
-  for i:= 0 to GetNrVariableNames - 1 do begin
-    vleVariables.InsertRow(GetVariableNameAt(i), '0', True);
-  end;
+
+  SetLength(VariableUsed, GetNrVariableNames);
+  SetLength(VariableListColors, GetNrVariableNames);
+  SetLength(VariableListTextColors, GetNrVariableNames);
+  VariableListStrings := TStringList.Create;
+
+//  for i := 0 to GetNrVariableNames-1 do begin
+//    vleVariables.InsertRow(GetVariableNameAt(i), '0', True);
+//  end;
+  variableListCount := 0;
+  vleVariables.RowHeights[1] := -1;
 
   vleChaos.InsertRow('to 1', '1', true);
   mnuChaosRebuild.Checked := RebuildXaosLinks;
@@ -1741,9 +1848,7 @@ begin
   AxisLock := TransformAxisLock;
   tbAxisLock.Down := AxisLock;
   ExtendedEdit := ExtEditEnabled;
-//  tbExtendedEdit.Down := ExtendedEdit;
   widgetMode := modeRotate;
-//  tbExtendedEdit.ImageIndex := imgExtMove;
 
   EdgeCaught := false;
   CornerCaught := false;
@@ -1761,14 +1866,29 @@ begin
   MemTriangle.x[2] := 0;
   MemTriangle.y[2] := 1;
 
+  SetLength(VarsCache, NRVAR);
   for i := 0 to NRVAR-1 do
     VarsCache[i] := MinDouble;
+
+  listBkgColor := VEVars.Canvas.Brush.Color;
+  NormalVarColors[0] := MixColor(listBkgColor, clNormalHilite);
+  NormalVarColors[1] := listBkgColor;
+  ParametricVarColors[0] := MixColor(listBkgColor, clParametricHilite);
+  ParametricVarColors[1] := MixColor(listBkgColor, ParametricVarColors[0]);
+  PluginVarColors[0] := MixColor(listBkgColor, clPluginsHilite);
+  PluginVarColors[1] := MixColor(listBkgColor, PluginVarColors[0]);
+
+  ChaosColors[0] := MixColor(listBkgColor, clChaosHilite);
+  ChaosColors[1] := MixColor(listBkgColor, ChaosColors[0]);
+
+  clFavVarGreyed := MixColor(listBkgColor, clFavVariation);
 end;
 
 procedure TEditForm.FormDestroy(Sender: TObject);
 begin
   cp.free;
   Render.free;
+  VariableListStrings.Free;
 end;
 
 procedure TEditForm.TriangleViewMouseMove(Sender: TObject; Shift: TShiftState;
@@ -2477,7 +2597,7 @@ begin
     MainTriangles[Transforms] := MainTriangles[-1];
     SelectedTriangle := Transforms;
     cp.xform[Transforms].Clear;
-    cp.xform[Transforms].density := 0.5;
+    cp.xform[Transforms].weight := 0.5;
     cp.xform[Transforms].vars[0] := 1;
 //    for i := 1 to NRVAR - 1 do cp.xform[Transforms].vars[i] := 0;
     Inc(Transforms);
@@ -2504,7 +2624,7 @@ begin
       cp.xform[Transforms].modWeights[Transforms] := cp.xform[SelectedTriangle].modWeights[SelectedTriangle];
       SelectedTriangle := Transforms;
     end
-    else cp.xform[Transforms].density := 0.5;
+    else cp.xform[Transforms].weight := 0.5;
     Inc(Transforms);
     UpdateXformsList;
     UpdateFlame(True);
@@ -2548,7 +2668,7 @@ begin
     Val := Format('%.6f', [MainTriangles[SelectedTriangle].y[2]])
   else if Sender = txtP then
     if SelectedTriangle < Transforms then
-      val := Format('%.6f', [cp.xform[SelectedTriangle].density]);
+      val := Format('%.6f', [cp.xform[SelectedTriangle].weight]);
   OldText := Val;
   { Test that it's a valid floating point number }
   try
@@ -2577,8 +2697,8 @@ begin
       MainTriangles[SelectedTriangle].y[2] := StrToFloat(TEdit(Sender).Text)
     else if Sender = txtP then
     begin
-      cp.xform[SelectedTriangle].density := StrToFloat(TEdit(Sender).Text);
-      TEdit(Sender).Text := Format('%.6g', [cp.xform[SelectedTriangle].density]);
+      cp.xform[SelectedTriangle].weight := StrToFloat(TEdit(Sender).Text);
+      TEdit(Sender).Text := Format('%.6g', [cp.xform[SelectedTriangle].weight]);
     end;
     MainForm.UpdateUndo;
     UpdateFlame(True);
@@ -2607,7 +2727,7 @@ begin
     else if Sender = txtCy then
       Val := Format('%.6f', [MainTriangles[SelectedTriangle].y[2]])
     else if Sender = txtP then
-      val := Format('%.6f', [cp.xform[SelectedTriangle].density]);
+      val := Format('%.6f', [cp.xform[SelectedTriangle].weight]);
     OldText := Val;
     { Stop the beep }
     Key := #0;
@@ -2638,8 +2758,8 @@ begin
         MainTriangles[SelectedTriangle].y[2] := StrToFloat(TEdit(Sender).Text)
       else if Sender = txtP then
       begin
-        cp.xform[SelectedTriangle].density := StrToFloat(TEdit(Sender).Text);
-        TEdit(Sender).Text := Format('%.6g', [cp.xform[SelectedTriangle].density]);
+        cp.xform[SelectedTriangle].weight := StrToFloat(TEdit(Sender).Text);
+        TEdit(Sender).Text := Format('%.6g', [cp.xform[SelectedTriangle].weight]);
       end;
       MainForm.UpdateUndo;
       UpdateFlame(True);
@@ -2660,7 +2780,7 @@ begin
     { Stop the beep }
     Key := #0;
     Allow := True;
-    OldVal := Round6(cp.xform[SelectedTriangle].density);
+    OldVal := Round6(cp.xform[SelectedTriangle].weight);
     { Test that it's a valid floating point number }
     try
       StrToFloat(TEdit(Sender).Text);
@@ -2679,7 +2799,7 @@ begin
     if (OldVal <> NewVal) and Allow then
     begin
       MainForm.UpdateUndo;
-      cp.xform[SelectedTriangle].density := NewVal;
+      cp.xform[SelectedTriangle].weight := NewVal;
       //ReadjustWeights(cp);
       UpdateFlame(True);
     end;
@@ -2693,7 +2813,7 @@ var
 begin
   if SelectedTriangle >= Transforms then exit;
   Allow := True;
-  OldVal := Round6(cp.xform[SelectedTriangle].density);
+  OldVal := Round6(cp.xform[SelectedTriangle].weight);
     { Test that it's a valid floating point number }
   try
     StrToFloat(TEdit(Sender).Text);
@@ -2712,7 +2832,7 @@ begin
   if (OldVal <> NewVal) and Allow then
   begin
     MainForm.UpdateUndo;
-    cp.xform[SelectedTriangle].density := NewVal;
+    cp.xform[SelectedTriangle].weight := NewVal;
     //ReadjustWeights(cp);
     UpdateFlame(True);
   end;
@@ -2732,7 +2852,6 @@ begin
     if Registry.OpenKey('\Software\' + APP_NAME + '\Forms\Editor', True) then
     begin
       { Options }
-//      Registry.WriteBool('UseFlameBackground', UseFlameBackground);
       Registry.WriteBool('ResetLocation', mnuResetLoc.checked);
       Registry.WriteBool('VariationPreview', showVarPreview);
       Registry.WriteBool('HelpersEnabled', HelpersEnabled);
@@ -2765,7 +2884,6 @@ end;
 procedure TEditForm.mnuLowQualityClick(Sender: TObject);
 begin
   mnuLowQuality.Checked := True;
-  //tbLowQ.Down := true;
   PreviewDensity := prevLowQuality;
   EditPrevQual := 0;
   DrawPreview;
@@ -2774,7 +2892,6 @@ end;
 procedure TEditForm.mnuHighQualityClick(Sender: TObject);
 begin
   mnuHighQuality.Checked := True;
-  //tbHiQ.Down := true;
   PreviewDensity := prevHighQuality;
   EditPrevQual := 2;
   DrawPreview;
@@ -2783,7 +2900,6 @@ end;
 procedure TEditForm.mnuMediumQualityClick(Sender: TObject);
 begin
   mnuMediumQuality.Checked := True;
-  //tbMedQ.Down := true;
   PreviewDensity := prevMediumQuality;
   EditPrevQual := 1;
   DrawPreview;
@@ -2795,7 +2911,6 @@ var
 begin
   reset:= not mnuResetLoc.Checked;
   mnuResetLoc.Checked := reset;
-  //tbResetLoc.Down := reset;
   if reset then
   begin
     cp.width := MainCp.width;
@@ -3023,20 +3138,6 @@ begin
   end;
 end;
 
-(*
-procedure TEditForm.chkUseXFormColorClick(Sender: TObject);
-begin
-  UseTransformColors := chkUseXFormColor.checked;
-  TriangleView.Invalidate;
-end;
-
-procedure TEditForm.chkHelpersClick(Sender: TObject);
-begin
-  HelpersEnabled := chkHelpers.checked;
-  TriangleView.Invalidate;
-end;
-*)
-
 procedure TEditForm.txtXFormColorExit(Sender: TObject);
 var
   v: double;
@@ -3077,7 +3178,7 @@ var
   NewVal, OldVal: double;
 begin
   Allow := True;
-  OldVal := Round6(cp.xform[SelectedTriangle].symmetry);
+  OldVal := Round6(cp.xform[SelectedTriangle].color_speed);
     { Test that it's a valid floating point number }
   try
     StrToFloat(TEdit(Sender).Text);
@@ -3096,7 +3197,7 @@ begin
   if (OldVal <> NewVal) and Allow then
   begin
     MainForm.UpdateUndo;
-    cp.xform[SelectedTriangle].symmetry := NewVal;
+    cp.xform[SelectedTriangle].color_speed := NewVal;
     UpdateFlame(True);
   end;
 end;
@@ -3110,29 +3211,38 @@ begin
   begin
     { Stop the beep }
     Key := #0;
-    Allow := True;
-    OldVal := Round6(cp.xform[SelectedTriangle].symmetry);
-    { Test that it's a valid floating point number }
-    try
-      StrToFloat(TEdit(Sender).Text);
-    except on Exception do
-      begin
-        { It's not, so we restore the old value }
-        TEdit(Sender).Text := Format('%.6g', [OldVal]);
-        Allow := False;
-      end;
-    end;
-    NewVal := Round6(StrToFloat(TEdit(Sender).Text));
-    if NewVal < -1 then NewVal := -1;
-    if NewVal > 1 then NewVal := 1;
-    { If it's not the same as the old value and it was valid }
-    TEdit(Sender).Text := Format('%.6g', [NewVal]);
-    if (OldVal <> NewVal) and Allow then
+    txtSymmetrySet(Sender);
+  end;
+end;
+
+procedure TEditForm.txtOpacitySet(Sender: TObject);
+var
+  v: double;
+begin
+  try
+    v := StrToFloat(txtOpacity.Text);
+  except on EConvertError do
     begin
-      MainForm.UpdateUndo;
-      cp.xform[SelectedTriangle].symmetry := NewVal;
-      UpdateFlame(True);
+      txtOpacity.text := Format('%1.3f', [cp.xform[SelectedTriangle].opacity]);
+      exit;
     end;
+  end;
+  if v > 1 then v := 1;
+  if v < 0 then v := 0;
+  if v <> cp.xform[SelectedTriangle].opacity then
+  begin
+    MainForm.UpdateUndo;
+    cp.xform[SelectedTriangle].opacity := v;
+    UpdateFlame(true);
+  end;
+end;
+
+procedure TEditForm.txtOpacityKeyPress(Sender: TObject; var Key: Char);
+begin
+  if key = #13 then
+  begin
+    key := #0;
+    txtOpacitySet(Sender);
   end;
 end;
 
@@ -3148,64 +3258,18 @@ begin
   try
     NewVal := Round6(StrToFloat(VEVars.Values[VarNames(i)]));
   except
-      VEVars.Values[VarNames(i)] := Format('%.6g', [OldVal]);
+      VEVars.Values[VarNames(i)] := FloatToStr(OldVal); //Format('%.6g', [OldVal]);
       exit;
   end;
   if (NewVal <> OldVal) then
   begin
     MainForm.UpdateUndo;
     cp.xform[SelectedTriangle].vars[i] := NewVal;
-    VEVars.Values[VarNames(i)] := Format('%.6g', [NewVal]);
+    VEVars.Values[VarNames(i)] := FloatToStr(NewVal); //Format('%.6g', [NewVal]);
     ShowSelectedInfo;
     UpdateFlame(True);
   end;
 end;
-
-(*
-
-// here's another way to do this -
-// we could use it with variables value editor,
-// only if we had an *array* of variables
-
-type
-  TDblArray = array of double;
-  PDblArray = ^TDblArray;
-
-procedure ValidateValue(Sender: TValueListEditor; values: PDblArray);
-var
-  Allow: boolean;
-  i: integer;
-  NewVal, OldVal: double;
-begin
-  Allow := True;
-
-  i := Sender.Row - 1;
-
-  OldVal := values^[i];
-{ Test that it's a valid floating point number }
-  try
-    StrToFloat(Sender.Values[VarNames(i)]);
-  except on Exception do
-    begin
-    { It's not, so we restore the old value }
-      Sender.Values[VarNames(i)] := Format('%.6g', [OldVal]);
-      Allow := False;
-    end;
-  end;
-  NewVal := Round6(StrToFloat(Sender.Values[VarNames(i)]));
-  Sender.Values[VarNames(i)] := Format('%.6g', [NewVal]);
-
-{ If it's not the same as the old value and it was valid }
-  if (NewVal <> OldVal) and Allow then
-  begin
-    MainForm.UpdateUndo;
-    values^[i] := NewVal;
-    Sender.Values[VarNames(i)] := Format('%.6g', [NewVal]);
-    EditForm.ShowSelectedInfo;
-    EditForm.UpdateFlame(True);
-  end;
-end;
-*)
 
 procedure TEditForm.VEVarsKeyPress(Sender: TObject; var Key: Char);
 begin
@@ -3232,6 +3296,7 @@ procedure TEditForm.VEVarsMouseDown(Sender: TObject; Button: TMouseButton;
   Shift: TShiftState; X, Y: Integer);
 var
   cell: TGridCoord;
+  i, n: integer;
 begin
   if Button = mbLeft then begin
     varDragOld:=x;
@@ -3244,6 +3309,21 @@ begin
 
     TValueListEditor(Sender).Row := cell.Y;
 
+    if Sender = VEVars then
+      varDragValue := cp.xform[SelectedTriangle].vars[varDragIndex]
+    else if Sender = vleVariables then begin
+      if variableListCount = 0 then exit;
+      cp.xform[SelectedTriangle].GetVariable(vleVariables.Keys[varDragIndex+1], varDragValue)
+    end
+    else if Sender = vleChaos then begin
+      if mnuChaosViewTo.Checked then
+        pDragValue := @cp.xform[SelectedTriangle].modWeights[varDragIndex]
+      else
+        pDragValue := @cp.xform[varDragIndex].modWeights[SelectedTriangle];
+      varDragValue := pDragValue^;
+    end
+    else Assert(false);
+
     Screen.Cursor := crHSplit;
 
     //GetCursorPos(mousepos); // hmmm
@@ -3253,18 +3333,6 @@ begin
     varDragPos:=0;
     varMM := false;
     SetCaptureControl(TValueListEditor(Sender));
-    if Sender = VEVars then
-      varDragValue := cp.xform[SelectedTriangle].vars[varDragIndex]
-    else if Sender = vleVariables then
-      cp.xform[SelectedTriangle].GetVariable(vleVariables.Keys[varDragIndex+1], varDragValue)
-    else if Sender = vleChaos then begin
-      if mnuChaosViewTo.Checked then
-        pDragValue := @cp.xform[SelectedTriangle].modWeights[varDragIndex]
-      else
-        pDragValue := @cp.xform[varDragIndex].modWeights[SelectedTriangle];
-      varDragValue := pDragValue^;
-    end
-    else Assert(false);
 
     HasChanged := False;
   end;
@@ -3289,20 +3357,26 @@ begin
   begin
     Inc(varDragPos, x - varDragOld);
 
-    if GetKeyState(VK_MENU) < 0 then v := 100000
-    else if GetKeyState(VK_CONTROL) < 0 then v := 10000
-    else if GetKeyState(VK_SHIFT) < 0 then v := 100
-    else v := 1000;
+    //if GetKeyState(VK_MENU) < 0 then v := 100000
+    //else if GetKeyState(VK_CONTROL) < 0 then v := 10000
+    //else if GetKeyState(VK_SHIFT) < 0 then v := 100
+    //else v := 1000;
+    //v := Round6(varDragValue + varDragPos/v);
 
-    v := Round6(varDragValue + varDragPos/v);
+    if (ssAlt in Shift) and (ssShift in Shift) then
+      v := Round6(varDragValue + Round(varDragPos/100))
+    else begin
+      if ssAlt in Shift then v := 100000
+      else if ssCtrl in Shift then v := 10000
+      else if ssShift in Shift then v := 100
+      else v := 1000;
+
+      v := Round6(varDragValue + varDragPos/v);
+    end;
 
     SetCursorPos(MousePos.x, MousePos.y); // hmmm
-    // this Delphi is WEIRD!
-    // why GetCursorPos deals with TPoint,
-    // and SetCursorPos - with two integers? :)
     varMM:=true;
 
-    //cp.xform[SelectedTriangle].vars[varDragIndex] := v;
     if Sender = VEVars then
     begin
       cp.xform[SelectedTriangle].vars[varDragIndex] := v;
@@ -3314,7 +3388,6 @@ begin
     end
     else begin
       if v < 0 then v := 0;
-      //cp.xform[SelectedTriangle].modWeights[varDragIndex] := v;
       pDragValue^ := v;
       vleChaos.Cells[1, varDragIndex+1] := FloatToStr(v);
     end;
@@ -3346,9 +3419,10 @@ end;
 
 procedure TEditForm.VEVarsDblClick(Sender: TObject);
 var
-  n: integer;
+  i, n: integer;
   v, v1: double;
-  changed: boolean;
+  changed, allzero: boolean;
+  varname: string;
 begin
   n := TValueListEditor(Sender).Row - 1;
   assert(n >= 0);
@@ -3359,15 +3433,23 @@ begin
   if Sender = VEVars then
   begin
     v := cp.xform[SelectedTriangle].vars[n];
-    cp.xform[SelectedTriangle].vars[n] := IfThen(v = 0, 1, 0);
+    if v = 0 then begin
+      allzero := true;
+      for i := 1 to NrVar-1 do
+        allzero := allzero and (cp.xform[SelectedTriangle].vars[i] = 0);
+      if (cp.xform[SelectedTriangle].vars[0] = 1) and allzero then
+        cp.xform[SelectedTriangle].vars[0] := 0;
+      cp.xform[SelectedTriangle].vars[n] := 1;
+    end
+    else cp.xform[SelectedTriangle].vars[n] := 0;
     //VEVars.Values[VarNames(n)] := '0';
     changed := (cp.xform[SelectedTriangle].vars[n] <> v);
   end
   else if Sender = vleVariables then begin
-    cp.xform[SelectedTriangle].GetVariable(vleVariables.Keys[n + 1], v);
-    cp.xform[SelectedTriangle].ResetVariable(vleVariables.Keys[n + 1]);
-    //vleVariables.Values[vleVariables.Keys[varDragIndex+1]] := '0';
-    cp.xform[SelectedTriangle].GetVariable(vleVariables.Keys[n + 1], v1);
+    varname := vleVariables.Keys[n + 1];
+    cp.xform[SelectedTriangle].GetVariable(varname, v);
+    cp.xform[SelectedTriangle].ResetVariable(varname);
+    cp.xform[SelectedTriangle].GetVariable(varname, v1);
     changed := (v1 <> v);
   end
   else if Sender = vleChaos then begin
@@ -3376,9 +3458,7 @@ begin
     else
       pDragValue := @cp.xform[varDragIndex].modWeights[SelectedTriangle];
     v := pDragValue^;
-    //v := cp.xform[SelectedTriangle].modWeights[n];
     v := ifthen(v = 1, 0, 1);
-    //cp.xform[SelectedTriangle].modWeights[n] := v;
     pDragValue^ := v;
     vleChaos.Cells[1, n+1] := FloatToStr(v);
     changed := true;
@@ -3531,28 +3611,6 @@ begin
   TrgMove(0,-1);
 end;
 
-{
-procedure TEditForm.btTrgMoveLUClick(Sender: TObject);
-begin
-  TrgMove(-1,1);
-end;
-
-procedure TEditForm.btTrgMoveLDClick(Sender: TObject);
-begin
-  TrgMove(-1,-1);
-end;
-
-procedure TEditForm.btTrgMoveRUClick(Sender: TObject);
-begin
-  TrgMove(1,1);
-end;
-
-procedure TEditForm.btTrgMoveRDClick(Sender: TObject);
-begin
-  TrgMove(1,-1);
-end;
-}
-
 procedure TEditForm.btTrgScaleUpClick(Sender: TObject);
 var
   scale: double;
@@ -3655,10 +3713,10 @@ begin
     Ord('P'): btnPickPivotClick(Sender);
     Ord('T'): tbPostXswapClick(Sender);
 
-    Ord('I'): // Invisible
-      begin
-        chkXformInvisible.Checked := not chkXformInvisible.Checked;
-      end;
+//    Ord('I'): // Invisible
+//      begin
+//        chkXformInvisible.Checked := not chkXformInvisible.Checked;
+//      end;
     Ord('S'): // Solo
       begin
         chkXformSolo.Checked := not chkXformSolo.Checked;
@@ -3921,6 +3979,18 @@ end;
 
 //-- Variable List -------------------------------------------------------------
 
+procedure TEditForm.vleVariablesDrawCell(Sender: TObject; ACol,
+  ARow: Integer; Rect: TRect; State: TGridDrawState);
+begin
+  if (ARow > 0) and not (gdSelected in State) and (variableListCount > 0) then
+  with vleVariables.canvas do begin
+    Brush.Color := VariableListColors[ARow-1];
+    FillRect(Rect);
+    Font.Color := VariableListTextColors[ARow-1];
+    TextRect(Rect, Rect.Left+2, Rect.Top+2, vleVariables.Cells[ACol,ARow]);
+  end;
+end;
+
 procedure TEditForm.ValidateVariable;
 var
   i: integer;
@@ -3928,16 +3998,16 @@ var
   str, oldstr: string;
 begin
   i := vleVariables.Row;
+  if variableListCount = 0 then exit;
 
 {$ifndef VAR_STR}
   cp.xform[SelectedTriangle].GetVariable(vleVariables.Keys[i], OldVal);
   { Test that it's a valid floating point number }
   try
-    NewVal := Round6(StrToFloat(vleVariables.Values[vleVariables.Keys[i]]));
+    NewVal := StrToFloat(vleVariables.Values[vleVariables.Keys[i]]);
   except
     { It's not, so we restore the old value }
-    vleVariables.Values[vleVariables.Keys[i]] := Format('%.6g', [OldVal]);
-//      cp.xform[SelectedTriangle].GetVariableStr(vleVariables.Keys[i]);
+    vleVariables.Values[vleVariables.Keys[i]] := FloatToStr(oldVal);
     exit;
   end;
   { If it's not the same as the old value and it was valid }
@@ -3946,7 +4016,7 @@ begin
     MainForm.UpdateUndo;
 
     cp.xform[SelectedTriangle].SetVariable(vleVariables.Keys[i], NewVal);
-    vleVariables.Values[vleVariables.Keys[i]] := Format('%.6g', [NewVal]);
+    vleVariables.Values[vleVariables.Keys[i]] := FloatToStr(newVal);
 
     ShowSelectedInfo;
     UpdateFlame(True);
@@ -3985,25 +4055,6 @@ procedure TEditForm.vleVariablesValidate(Sender: TObject; ACol, ARow: Integer; c
 begin
   ValidateVariable;
 end;
-
-(*
-procedure TEditForm.vleVariablesGetPickList(Sender: TObject;
-  const KeyName: String; Values: TStrings);
-begin
-  if KeyName ='blur2_type' then
-  begin
-    Values.Add('gaussian');
-    Values.Add('zoom');
-    Values.Add('radial');
-    Values.Add('defocus');
-  end;
-end;
-
-procedure TEditForm.vleVariablesStringsChange(Sender: TObject);
-begin
-  if (vleVariables.ItemProps[vleVariables.Row - 1].ReadOnly) then ValidateVariable;
-end;
-*)
 
 // -----------------------------------------------------------------------------
 
@@ -4066,8 +4117,8 @@ begin
   MainForm.UpdateUndo;
   for i := 0 to Transforms do cp.xform[i].Clear;
   cp.xform[0].vars[0] := 1;
-  cp.xform[0].density := 0.5;
-  cp.xform[1].symmetry := 1;
+  cp.xform[0].weight := 0.5;
+  cp.xform[1].color_speed := 1;
 
   cp.center[0] := 0;
   cp.center[1] := 0;
@@ -4083,9 +4134,6 @@ begin
   EnableFinalXform := false;
   assert(cp.HasFinalXForm = false);
 
-//  cbTransforms.clear;
-//  cbTransforms.Items.Add('1');
-//  cbTransforms.Items.Add('2');
   UpdateXformsList;
   AutoZoom;
 
@@ -4430,15 +4478,28 @@ end;
 procedure TEditForm.VEVarsDrawCell(Sender: TObject; ACol, ARow: Integer;
   Rect: TRect; State: TGridDrawState);
 begin
-  if (ARow > NRLOCVAR) and not (gdSelected in	State) then
+  if (ARow = 0) or (gdSelected in	State) then exit;
+  if (ARow <= NRLOCVAR) then
+    VEVars.canvas.brush.Color := NormalVarColors[ARow and 1]
+  else
   begin
-    if Arow > NumBuiltinVars then
-      VEVars.canvas.brush.Color := $e0ffff
+    if ARow <= NumBuiltinVariations then
+      VEVars.canvas.brush.Color := ParametricVarColors[ARow and 1]
     else
-      VEVars.canvas.brush.Color := $ffe0e0;
-    VEVars.canvas.fillRect(Rect);
-    VEVars.canvas.TextOut(Rect.Left+2, Rect.Top+2, VEVars.Cells[ACol,ARow]);
+      VEVars.canvas.brush.Color := PluginVarColors[ARow and 1];
   end;
+  VEVars.canvas.fillRect(Rect);
+
+  if VEVars.Cells[1,Arow] = '0' then begin
+    if FavouriteVariations[ARow-1] = true then
+      VEVars.canvas.Font.Color := clFavVarGreyed
+    else
+      VEVars.canvas.Font.Color := clGrayText;
+  end
+  else if FavouriteVariations[ARow-1] = true then
+    VEVars.canvas.Font.Color := clFavVariation;
+
+  VEVars.canvas.TextRect(Rect, Rect.Left+2, Rect.Top+2, VEVars.Cells[ACol,ARow]);
 end;
 
 procedure TEditForm.tbEnableFinalXformClick(Sender: TObject);
@@ -4464,6 +4525,8 @@ begin
   TriangleView.Invalidate;
 end;
 
+///////////////////////////////////////////////////////////////////////////////
+
 procedure TEditForm.DragPanelMouseDown(Sender: TObject;
   Button: TMouseButton; Shift: TShiftState; X, Y: Integer);
 begin
@@ -4474,12 +4537,16 @@ begin
 
   if (Sender = pnlWeight) then
     if SelectedTriangle < Transforms then
-      pnlDragValue := cp.xform[SelectedTriangle].density
+      pnlDragValue := cp.xform[SelectedTriangle].weight
     else exit
-  else if (Sender = pnlSymmetry) then
-    pnlDragValue := cp.xform[SelectedTriangle].symmetry
+  else if (Sender = pnlColorSpeed) then
+    pnlDragValue := cp.xform[SelectedTriangle].color_speed
   else if (Sender = pnlXformColor) then
     pnlDragValue := cp.xform[SelectedTriangle].color
+  else if (Sender = pnlOpacity) then
+    if SelectedTriangle < Transforms then
+      pnlDragValue := cp.xform[SelectedTriangle].opacity
+    else exit
   else assert(false);
 
   pnlDragMode := true;
@@ -4523,15 +4590,15 @@ begin
     begin
       if v <= 0.000001 then v := 0.000001
       else if v > MAX_WEIGHT then v := MAX_WEIGHT;
-      cp.xform[SelectedTriangle].density := v;
+      cp.xform[SelectedTriangle].weight := v;
       pEdit := @txtP;
     end
-    else if (Sender = pnlSymmetry) then
+    else if (Sender = pnlColorSpeed) then
     begin
       if v < -1 then v := -1
       else if v > 1 then v := 1;
-      cp.xform[SelectedTriangle].symmetry := v;
-      pEdit := @txtSymmetry;
+      cp.xform[SelectedTriangle].color_speed := v;
+      pEdit := @txtColorSpeed;
     end
     else if (Sender = pnlXformColor) then
     begin
@@ -4543,6 +4610,13 @@ begin
       scrlXformColor.Position := round(v*1000);
       pEdit := @txtXformColor;
       updating := false;
+    end
+    else if (Sender = pnlOpacity) then
+    begin
+      if v < 0 then v := 0
+      else if v > 1 then v := 1;
+      cp.xform[SelectedTriangle].opacity := v;
+      pEdit := @txtOpacity;
     end
     else assert(false);
     pEdit^.Text := FloatToStr(v);
@@ -4582,14 +4656,14 @@ begin
   if (Sender = pnlWeight) then
   begin
     if SelectedTriangle >= Transforms then exit; // hmm
-    pValue := @cp.xform[SelectedTriangle].density;
+    pValue := @cp.xform[SelectedTriangle].weight;
     if pValue^ = 0.5 then exit;
     pValue^ := 0.5;
     pEdit := @txtP;
   end
-  else if (Sender = pnlSymmetry) then
+  else if (Sender = pnlColorSpeed) then
   begin
-    pValue := @cp.xform[SelectedTriangle].symmetry;
+    pValue := @cp.xform[SelectedTriangle].color_speed;
     if SelectedTriangle = Transforms then begin
       if pValue^ = 1 then exit;
       pValue^ := 1;
@@ -4598,7 +4672,7 @@ begin
       if pValue^ = 0 then exit;
       pValue^ := 0;
     end;
-    pEdit := @txtSymmetry;
+    pEdit := @txtColorSpeed;
   end
   else if (Sender = pnlXformColor) then
   begin
@@ -4607,12 +4681,21 @@ begin
     pValue^ := 0;
     pEdit := @txtXformColor;
   end
+  else if (Sender = pnlOpacity) then
+  begin
+    pValue := @cp.xform[SelectedTriangle].opacity;
+    if pValue^ = 1 then pValue^ := 0
+    else pValue^ := 1;
+    pEdit := @txtOpacity;
+  end
   else assert(false);
 
   MainForm.UpdateUndo;
   pEdit^.Text := FloatToStr(pValue^);
   UpdateFlame(true);
 end;
+
+///////////////////////////////////////////////////////////////////////////////
 
 procedure TEditForm.mnuResetTrgRotationClick(Sender: TObject);
 var
@@ -4882,12 +4965,15 @@ var
   h,ax,ay,bx,by: integer;
   trgColor: TColor;
 begin
-  if (ACol > 0) or (ARow = 0) then exit;
-
-  trgColor := GetTriangleColor(ARow - 1);
+  if (ARow > 0) and not (gdSelected in State) then
   with vleChaos.Canvas do begin
+    Brush.Color := ChaosColors[ARow and 1];
+    FillRect(Rect);
     h := Rect.Bottom - Rect.Top - 2;
-//    TextOut(Rect.Left+h+2, Rect.Top+1, vleChaos.Cells[ACol, ARow]);
+    TextRect(Rect, Rect.Left+2, Rect.Top+1, vleChaos.Cells[ACol, ARow]);
+    if ACol > 0 then exit;
+
+    trgColor := GetTriangleColor(ARow - 1);
 
     ax:=Rect.Right-3;
     ay:=Rect.Top+2;
@@ -4896,10 +4982,24 @@ begin
 
     pen.Color := clBlack;
     Polyline([Point(ax+1, ay-2), Point(ax+1, by+1), Point(bx-2, by+1), Point(ax+1, ay-2)]);
-
     pen.Color := trgColor;
     brush.Color := pen.Color shr 1 and $7f7f7f;
     Polygon([Point(ax, ay), Point(ax, by), Point(bx, by)]);
+{
+    else begin
+      TextOut(Rect.Left+h+4, Rect.Top+1, vleChaos.Cells[ACol, ARow]);
+      ax:=Rect.Left+h;
+      ay:=Rect.Top+2;
+      bx:=Rect.Left+3;
+      by:=Rect.Bottom-3;
+
+      pen.Color := clBlack;
+      Polyline([Point(ax+2, ay-1), Point(bx-1, ay-1), Point(bx-1, by+2), Point(ax+2, ay-1)]);
+      pen.Color := trgColor;
+      brush.Color := pen.Color shr 1 and $7f7f7f;
+      Polygon([Point(ax, ay), Point(bx, ay), Point(bx, by)]);
+    end;
+}
   end;
 end;
 
@@ -4927,6 +5027,7 @@ begin
   //ShowSelectedInfo;
 end;
 
+(*
 procedure TEditForm.chkPlotModeClick(Sender: TObject);
 var
   newMode: boolean;
@@ -4941,6 +5042,7 @@ begin
     end;
   end;
 end;
+*)
 
 procedure TEditForm.mnuChaosClearAllClick(Sender: TObject);
 var
@@ -5014,7 +5116,7 @@ begin
 
     MainTriangles[Transforms] := MainTriangles[-1];
     cp.xform[Transforms].Clear;
-    cp.xform[Transforms].density := 0.5;
+    cp.xform[Transforms].weight := 0.5;
     cp.xform[Transforms].vars[0] := 1;
 
     for i := 0 to Transforms-1 do begin
@@ -5026,9 +5128,46 @@ begin
       cp.xform[i].modWeights[Transforms] := 0;
     cp.xform[SelectedTriangle].modWeights[Transforms] := 1;
 
-    cp.xform[Transforms].symmetry := 1;
-    cp.xform[Transforms].noPlot := cp.xform[SelectedTriangle].noPlot;
-    cp.xform[SelectedTriangle].noPlot := true;
+    cp.xform[Transforms].color_speed := 1;
+    cp.xform[Transforms].opacity := cp.xform[SelectedTriangle].opacity;
+    cp.xform[SelectedTriangle].opacity := 0;
+
+    SelectedTriangle := Transforms;
+
+    Inc(Transforms);
+    UpdateXformsList;
+    UpdateFlame(True);
+  end;
+end;
+
+procedure TEditForm.mnuLinkPreXformClick(Sender: TObject);
+var
+  i: integer;
+begin
+  if (Transforms < NXFORMS) and (SelectedTriangle <> Transforms) then
+  begin
+    MainForm.UpdateUndo;
+    MainTriangles[Transforms+1] := MainTriangles[Transforms];
+    cp.xform[Transforms+1].Assign(cp.xform[Transforms]);
+
+    MainTriangles[Transforms] := MainTriangles[-1];
+    cp.xform[Transforms].Clear;
+    cp.xform[Transforms].weight := 0.5;
+    cp.xform[Transforms].vars[0] := 1;
+
+    for i := 0 to Transforms-1 do begin
+      cp.xform[i].modWeights[Transforms] := cp.xform[i].modWeights[SelectedTriangle];
+      cp.xform[i].modWeights[SelectedTriangle] := 0;
+      //cp.xform[Transforms].modWeights[i] := cp.xform[SelectedTriangle].modWeights[i];
+      //cp.xform[SelectedTriangle].modWeights[i] := 0;
+    end;
+
+    for i := 0 to Transforms do
+      cp.xform[Transforms].modWeights[i] := 0;
+    cp.xform[Transforms].modWeights[SelectedTriangle] := 1;
+
+    cp.xform[Transforms].color_speed := 1;
+    cp.xform[Transforms].opacity := 0;
 
     SelectedTriangle := Transforms;
 
@@ -5091,6 +5230,56 @@ procedure TEditForm.mnuChaosRebuildClick(Sender: TObject);
 begin
   RebuildXaosLinks := not RebuildXaosLinks;
   mnuChaosRebuild.Checked := RebuildXaosLinks;
+end;
+
+procedure TEditForm.VEVarsGetEditText(Sender: TObject; ACol, ARow: Integer;
+  var Value: String);
+var
+  editor: TEditorHacker;
+begin
+  editor := TEditorHacker(TGridHacker(sender).InplaceEditor);
+  if Assigned(editor) then begin
+    if (ARow <= NRLOCVAR) then
+      editor.Color := NormalVarColors[ARow and 1]
+    else
+    begin
+      if ARow <= NumBuiltinVariations then
+        editor.Color := ParametricVarColors[ARow and 1]
+      else
+        editor.Color := PluginVarColors[ARow and 1];
+    end;
+    if VEVars.Cells[1,Arow] = '0' then begin
+      if FavouriteVariations[ARow-1] = true then
+        editor.Font.Color := clFavVarGreyed
+      else
+        editor.Font.Color := clGrayText;
+    end
+    else if FavouriteVariations[ARow-1] = true then
+      editor.Font.Color := clFavVariation;
+  end;
+end;
+
+procedure TEditForm.vleVariablesGetEditText(Sender: TObject; ACol,
+  ARow: Integer; var Value: String);
+var
+  editor: TEditorHacker;
+begin
+  editor := TEditorHacker(TGridHacker(sender).InplaceEditor);
+  if Assigned(editor) then begin
+    editor.Color := VariableListColors[ARow-1];
+    editor.Font.Color := VariableListTextColors[ARow-1];
+  end;
+end;
+
+procedure TEditForm.vleChaosGetEditText(Sender: TObject; ACol,
+  ARow: Integer; var Value: String);
+var
+  editor: TEditorHacker;
+begin
+  editor := TEditorHacker(TGridHacker(sender).InplaceEditor);
+  if Assigned(editor) then begin
+    editor.Color := ChaosColors[ARow and 1];
+  end;
 end;
 
 end.
