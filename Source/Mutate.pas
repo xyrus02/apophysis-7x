@@ -292,7 +292,7 @@ begin
     begin
       for j := 0 to transforms - 1 do
       begin
-        if cps[0].xform[j].Symmetry = 1 then
+        if cps[0].xform[j].color_speed = 1 then
         begin
           mutants[i].xform[j].Assign(cps[0].xform[j]);
 {
@@ -329,7 +329,7 @@ begin
     if cps[0].HasFinalXForm = false then
     begin
       cps[i].xform[cps[i].NumXForms].Clear;
-      cps[i].xform[cps[i].NumXForms].symmetry := 1;
+      cps[i].xform[cps[i].NumXForms].color_speed := 1;
     end;
   end;
   Interpolate;
@@ -354,7 +354,7 @@ begin
   finally
     Registry.Free;
   end;
-  if cps[0].xform[0].density <> 0 then begin // hmm...!?
+  if cps[0].xform[0].weight <> 0 then begin // hmm...!?
     Interpolate;
     ShowMain;
     ShowMutants;
@@ -484,7 +484,7 @@ begin
   begin
     for i := 0 to transforms - 1 do
     begin
-      if cpt.xform[i].Symmetry = 1 then
+      if cpt.xform[i].color_speed = 1 then
       begin
         cps[0].xform[i].Assign(cpt.xform[i]);
 {
