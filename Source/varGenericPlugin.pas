@@ -230,7 +230,8 @@ var
   name, msg: string;
   PluginData : TPluginData;
 begin
-  NumBuiltinVars := NRLOCVAR + GetNrRegisteredVariations;
+  NumBuiltinVariations := NRLOCVAR + GetNrRegisteredVariations;
+  NumBuiltinVariables := GetNrVariableNames;
   // Try to find regular files matching *.dll in the plugins dir
   if FindFirst('.\Plugins\*.dll', faAnyFile, searchResult) = 0 then
   begin
