@@ -15,11 +15,11 @@ const
 type
   TVariationJuliaScope = class(TBaseVariation)
   private
-    N: integer;
-    c: double;
+    power: integer;
+    distortion: double;
 
     rN: integer;
-    cn: double;
+    invDistPower: double;
 
     procedure CalcPower1;
     procedure CalcPowerMinus1;
@@ -54,24 +54,24 @@ uses
 ///////////////////////////////////////////////////////////////////////////////
 constructor TVariationJuliaScope.Create;
 begin
-  N := random(5) + 2;
-  c := 1.0;
+  power := random(5) + 2;
+  distortion := 1.0;
 end;
 
 procedure TVariationJuliaScope.Prepare;
 begin
-  rN := abs(N);
-  cn := c / N / 2;
+  rN := abs(power);
+  invDistPower := distortion / power / 2;
 end;
 
 ///////////////////////////////////////////////////////////////////////////////
 procedure TVariationJuliaScope.GetCalcFunction(var f: TCalcFunction);
 begin
-  if c = 1 then begin
-    if N = 2 then f := CalcPower2
-    else if N = -2 then f := CalcPowerMinus2
-    else if N = 1 then f := CalcPower1
-    else if N = -1 then f := CalcPowerMinus1
+  if distortion = 1 then begin
+    if power = 2 then f := CalcPower2
+    else if power = -2 then f := CalcPowerMinus2
+    else if power = 1 then f := CalcPower1
+    else if power = -1 then f := CalcPowerMinus1
     else f := CalcFunction;
   end
   else f := CalcFunction;
@@ -87,17 +87,17 @@ var
 begin
   rnd := random(rN);
   if (rnd and 1) = 0 then
-    sincos( (2*pi*rnd + arctan2(FTy^, FTx^)) / N, sina, cosa)
+    sincos( (2*pi*rnd + arctan2(FTy^, FTx^)) / power, sina, cosa)
   else
-    sincos( (2*pi*rnd - arctan2(FTy^, FTx^)) / N, sina, cosa);
-  r := vvar * Math.Power(sqr(FTx^) + sqr(FTy^), cn);
+    sincos( (2*pi*rnd - arctan2(FTy^, FTx^)) / power, sina, cosa);
+  r := vvar * Math.Power(sqr(FTx^) + sqr(FTy^), invDistPower);
   FPx^ := FPx^ + r * cosa;
   FPy^ := FPy^ + r * sina;
 {$else}
 asm
     mov     edx, [eax + FTy]
     fld     qword ptr [edx]
-    fld     qword ptr [eax + cn]
+    fld     qword ptr [eax + invDistPower]
     mov     edx, [eax + FTx]
     fld     qword ptr [edx]
     fld     st(2)
@@ -118,7 +118,7 @@ asm
     fimul   dword ptr [esp]
     add     esp, 4
     faddp
-    fidiv   dword ptr [ecx + N]
+    fidiv   dword ptr [ecx + power]
 
     fxch    st(3)
     fmul    st, st
@@ -384,13 +384,13 @@ function TVariationJuliaScope.SetVariable(const Name: string; var value: double)
 begin
   Result := False;
   if Name = var_n_name then begin
-    N := Round(Value);
-    if N = 0 then N := 1;
-    Value := N;
+    power := Round(Value);
+    if power = 0 then power := 1;
+    Value := power;
     Result := True;
   end
   else if Name = var_c_name then begin
-    c := value;
+    distortion := value;
     Result := True;
   end;
 end;
@@ -399,12 +399,12 @@ function TVariationJuliaScope.ResetVariable(const Name: string): boolean;
 begin
   Result := False;
   if Name = var_n_name then begin
-    if N = 2 then N := -2
-    else N := 2;
+    if power = 2 then power := -2
+    else power := 2;
     Result := True;
   end
   else if Name = var_c_name then begin
-    c := 1;
+    distortion := 1;
     Result := True;
   end;
 end;
@@ -420,11 +420,11 @@ function TVariationJuliaScope.GetVariable(const Name: string; var value: double)
 begin
   Result := False;
   if Name = var_n_name then begin
-    Value := N;
+    Value := power;
     Result := true;
   end
   else if Name = var_c_name then begin
-    Value := c;
+    Value := distortion;
     Result := true;
   end;
 end;
