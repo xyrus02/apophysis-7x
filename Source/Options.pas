@@ -1,6 +1,8 @@
 {
      Apophysis Copyright (C) 2001-2004 Mark Townsend
-     Apophysis Copyright (C) 2005-2006 Ronald Hordijk, Piotr Borys, Peter Sdobnov     
+     Apophysis Copyright (C) 2005-2006 Ronald Hordijk, Piotr Borys, Peter Sdobnov
+     Apophysis Copyright (C) 2007-2008 Piotr Borys, Peter Sdobnov
+     Apophysis Copyright (C) 2009 Peter Sdobnov
 
      This program is free software; you can redistribute it and/or modify
      it under the terms of the GNU General Public License as published by
@@ -83,9 +85,6 @@ type
     Label7: TLabel;
     Label9: TLabel;
     VariationsPage: TTabSheet;
-    GroupBox17: TGroupBox;
-    btnSetAll: TButton;
-    btnClearAll: TButton;
     TabSheet1: TTabSheet;
     grpGradient: TRadioGroup;
     GroupBox3: TGroupBox;
@@ -223,6 +222,13 @@ type
     txtGammaThreshold: TEdit;
     lblGammaThreshold: TLabel;
     chkXaosRebuild: TCheckBox;
+    PageControl1: TPageControl;
+    varsPageEnabled: TTabSheet;
+    varsPageFavourite: TTabSheet;
+    btnSetAll: TButton;
+    btnClearAll: TButton;
+    clbVarFavourites: TCheckListBox;
+    btnClearVarFavs: TButton;
     procedure btnCancelClick(Sender: TObject);
     procedure FormShow(Sender: TObject);
     procedure btnOKClick(Sender: TObject);
@@ -255,6 +261,7 @@ type
     procedure btnBrowseSoundClick(Sender: TObject);
     procedure btnPlayClick(Sender: TObject);
     procedure btnGradientsFileClick(Sender: TObject);
+    procedure btnClearVarFavsClick(Sender: TObject);
 
   private
     { Private declarations }
@@ -379,9 +386,10 @@ begin
   udSymNVars.Position := SymmetryNVars;
 
   { Variations tab }
-  //UnpackVariations(VariationOptions);
-  for i := 0 to NRVAR -1 do
-    clbVarEnabled.Checked[i] := Variations[i];
+  for i := 0 to NRVAR -1 do begin
+    clbVarEnabled.Checked[i] := RandomVariations[i];
+    clbVarFavourites.Checked[i] := FavouriteVariations[i];
+  end;
 
   { Gradient tab }
   grpGradient.ItemIndex := randGradient;
@@ -427,15 +435,17 @@ begin
   { Get option values from controls. Disallow bad values }
   vars := false;
   for i := 0 to NRVAR-1 do begin
-    Variations[i] := clbVarEnabled.Checked[i];
-    vars := vars or Variations[i];
+    RandomVariations[i] := clbVarEnabled.Checked[i];
+    vars := vars or RandomVariations[i];
+
+    FavouriteVariations[i] := clbVarFavourites.Checked[i];
   end;
 
   if vars = false then begin
     //Application.MessageBox('You must select at least one variation.', 'Apophysis', 48);
     //Tabs.ActivePage := VariationsPage;
     //Exit;
-    Variations[0] := true;
+    RandomVariations[0] := true;
   end;
 
   { General tab }
@@ -734,6 +744,9 @@ begin
   for i:= 0 to NRVAR - 1 do begin
     clbVarEnabled.AddItem(varnames(i),nil);
   end;
+  for i:= 0 to NRVAR - 1 do begin
+    clbVarFavourites.AddItem(varnames(i),nil);
+  end;
 end;
 
 procedure TOptionsForm.pnlBackColorClick(Sender: TObject);
@@ -814,6 +827,14 @@ begin
   begin
     txtGradientsFile.text := OpenDialog.FileName;
   end;
+end;
+
+procedure TOptionsForm.btnClearVarFavsClick(Sender: TObject);
+var
+  i: integer;
+begin
+  for i := 0 to NRVAR - 1 do
+    clbVarFavourites.Checked[i] := False;
 end;
 
 end.
