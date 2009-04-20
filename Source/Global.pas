@@ -158,7 +158,8 @@ var
   SymmetryType: integer;
   SymmetryOrder: integer;
   SymmetryNVars: integer;
-  Variations: array of boolean;
+  RandomVariations: array of boolean;
+  FavouriteVariations: array of boolean;
 
   MainForm_RotationMode: integer;
   PreserveQuality: boolean;
