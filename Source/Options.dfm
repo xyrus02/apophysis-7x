@@ -275,8 +275,7 @@ object OptionsForm: TOptionsForm
           Items.Strings = (
             '32-bit integer'
             '32-bit float'
-            '48-bit integer'
-            '64-bit integer')
+            '48-bit integer')
         end
       end
     end
@@ -986,44 +985,72 @@ object OptionsForm: TOptionsForm
     object VariationsPage: TTabSheet
       Caption = 'Variations'
       ImageIndex = 4
-      object GroupBox17: TGroupBox
-        Left = 8
+      object PageControl1: TPageControl
+        Left = 0
         Top = 0
-        Width = 341
-        Height = 233
+        Width = 443
+        Height = 237
         HelpContext = 1026
-        Caption = 'Enabled'
-        TabOrder = 2
-        object clbVarEnabled: TCheckListBox
-          Left = 12
-          Top = 16
-          Width = 317
-          Height = 206
-          Columns = 2
-          ItemHeight = 13
-          TabOrder = 0
-          TabWidth = 100
-        end
-      end
-      object btnSetAll: TButton
-        Left = 356
-        Top = 176
-        Width = 75
-        Height = 25
-        HelpContext = 1027
-        Caption = 'Set All'
+        ActivePage = varsPageEnabled
+        Align = alClient
         TabOrder = 0
-        OnClick = btnSetAllClick
-      end
-      object btnClearAll: TButton
-        Left = 356
-        Top = 208
-        Width = 75
-        Height = 25
-        HelpContext = 1028
-        Caption = 'Clear All'
-        TabOrder = 1
-        OnClick = btnClearAllClick
+        object varsPageEnabled: TTabSheet
+          Caption = 'Enabled'
+          object clbVarEnabled: TCheckListBox
+            Left = 2
+            Top = 2
+            Width = 348
+            Height = 206
+            Columns = 2
+            ItemHeight = 13
+            TabOrder = 0
+            TabWidth = 100
+          end
+          object btnSetAll: TButton
+            Left = 356
+            Top = 148
+            Width = 75
+            Height = 25
+            HelpContext = 1027
+            Caption = 'Set All'
+            TabOrder = 1
+            OnClick = btnSetAllClick
+          end
+          object btnClearAll: TButton
+            Left = 356
+            Top = 180
+            Width = 75
+            Height = 25
+            HelpContext = 1028
+            Caption = 'Clear All'
+            TabOrder = 2
+            OnClick = btnClearAllClick
+          end
+        end
+        object varsPageFavourite: TTabSheet
+          Caption = 'Favourite'
+          ImageIndex = 1
+          object clbVarFavourites: TCheckListBox
+            Left = 2
+            Top = 2
+            Width = 348
+            Height = 206
+            Columns = 2
+            ItemHeight = 13
+            TabOrder = 0
+            TabWidth = 100
+          end
+          object btnClearVarFavs: TButton
+            Left = 356
+            Top = 180
+            Width = 75
+            Height = 25
+            HelpContext = 1028
+            Caption = 'Clear All'
+            TabOrder = 1
+            OnClick = btnClearVarFavsClick
+          end
+        end
       end
     end
     object TabSheet1: TTabSheet
