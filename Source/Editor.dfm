@@ -2,7 +2,7 @@ object EditForm: TEditForm
   Left = 380
   Top = 304
   Width = 582
-  Height = 575
+  Height = 589
   Caption = 'Transform Editor'
   Color = clBtnFace
   Constraints.MinHeight = 400
@@ -54,7 +54,7 @@ object EditForm: TEditForm
   TextHeight = 13
   object StatusBar: TStatusBar
     Left = 0
-    Top = 527
+    Top = 541
     Width = 574
     Height = 15
     Panels = <
@@ -339,14 +339,14 @@ object EditForm: TEditForm
     Left = 0
     Top = 24
     Width = 574
-    Height = 503
+    Height = 517
     Align = alClient
     TabOrder = 1
     object Splitter1: TSplitter
       Left = 392
       Top = 1
       Width = 9
-      Height = 501
+      Height = 515
       Align = alRight
       AutoSnap = False
       Beveled = True
@@ -357,7 +357,7 @@ object EditForm: TEditForm
       Left = 1
       Top = 1
       Width = 391
-      Height = 501
+      Height = 515
       Align = alClient
       BevelOuter = bvNone
       Color = clAppWorkSpace
@@ -367,7 +367,7 @@ object EditForm: TEditForm
       Left = 401
       Top = 1
       Width = 172
-      Height = 501
+      Height = 515
       Align = alRight
       Alignment = taLeftJustify
       BevelOuter = bvNone
@@ -388,40 +388,27 @@ object EditForm: TEditForm
         Left = 0
         Top = 138
         Width = 172
-        Height = 363
+        Height = 377
         Align = alClient
         TabOrder = 0
-        object lblTransform: TLabel
-          Left = 28
-          Top = 10
-          Width = 59
-          Height = 13
-          Caption = 'Transform'
-          Font.Charset = ANSI_CHARSET
-          Font.Color = clWindowText
-          Font.Height = -11
-          Font.Name = 'Tahoma'
-          Font.Style = [fsBold]
-          ParentFont = False
-        end
         object cbTransforms: TComboBox
           Left = 92
-          Top = 8
-          Width = 57
-          Height = 19
+          Top = 4
+          Width = 64
+          Height = 21
           Style = csOwnerDrawFixed
           Color = clBlack
           DropDownCount = 12
-          ItemHeight = 13
+          ItemHeight = 15
           TabOrder = 0
           OnChange = cbTransformsChange
           OnDrawItem = cbTransformsDrawItem
         end
         object PageControl: TPageControl
           Left = 1
-          Top = 31
+          Top = 48
           Width = 170
-          Height = 331
+          Height = 328
           ActivePage = tabVariations
           Align = alBottom
           Anchors = [akLeft, akTop, akRight, akBottom]
@@ -434,7 +421,7 @@ object EditForm: TEditForm
               Left = 0
               Top = 0
               Width = 162
-              Height = 285
+              Height = 282
               HorzScrollBar.Visible = False
               VertScrollBar.Smooth = True
               VertScrollBar.Style = ssFlat
@@ -1111,7 +1098,7 @@ object EditForm: TEditForm
             Caption = 'Transform'
             object bvlPostCoefs: TBevel
               Left = 4
-              Top = 152
+              Top = 128
               Width = 154
               Height = 103
               Shape = bsFrame
@@ -1200,7 +1187,7 @@ object EditForm: TEditForm
             end
             object btnXpost: TSpeedButton
               Left = 8
-              Top = 180
+              Top = 156
               Width = 25
               Height = 21
               Hint = 'Reset vector X'
@@ -1211,7 +1198,7 @@ object EditForm: TEditForm
             end
             object btnYpost: TSpeedButton
               Left = 8
-              Top = 204
+              Top = 180
               Width = 25
               Height = 21
               Hint = 'Reset vector Y'
@@ -1222,7 +1209,7 @@ object EditForm: TEditForm
             end
             object btnOpost: TSpeedButton
               Left = 8
-              Top = 228
+              Top = 204
               Width = 25
               Height = 21
               Hint = 'Reset vector O'
@@ -1233,7 +1220,7 @@ object EditForm: TEditForm
             end
             object btnResetPostCoefs: TSpeedButton
               Left = 8
-              Top = 156
+              Top = 132
               Width = 145
               Height = 22
               Hint = 'Reset post-transform vectors to defaults'
@@ -1241,24 +1228,6 @@ object EditForm: TEditForm
               ParentShowHint = False
               ShowHint = True
               OnClick = btnResetPostCoefsClick
-            end
-            object pnlWeight: TPanel
-              Left = 8
-              Top = 128
-              Width = 88
-              Height = 21
-              Cursor = crHandPoint
-              Hint = 'Click and drag to change value'
-              Alignment = taLeftJustify
-              BevelOuter = bvLowered
-              Caption = ' Weight:'
-              ParentShowHint = False
-              ShowHint = True
-              TabOrder = 13
-              OnDblClick = DragPanelDblClick
-              OnMouseDown = DragPanelMouseDown
-              OnMouseMove = DragPanelMouseMove
-              OnMouseUp = DragPanelMouseUp
             end
             object txtA: TEdit
               Left = 36
@@ -1320,20 +1289,19 @@ object EditForm: TEditForm
               OnExit = CoefValidate
               OnKeyPress = CoefKeyPress
             end
-            object txtP: TEdit
-              Left = 96
-              Top = 128
-              Width = 57
-              Height = 21
-              Hint = '"Weight" is the probability of this transform to be applied'
-              TabOrder = 6
-              Text = '0'
-              OnExit = txtPExit
-              OnKeyPress = txtPKeyPress
-            end
             object txtPost00: TEdit
               Left = 36
-              Top = 180
+              Top = 156
+              Width = 57
+              Height = 21
+              TabOrder = 6
+              Text = '0'
+              OnExit = PostCoefValidate
+              OnKeyPress = PostCoefKeypress
+            end
+            object txtPost01: TEdit
+              Left = 96
+              Top = 156
               Width = 57
               Height = 21
               TabOrder = 7
@@ -1341,8 +1309,8 @@ object EditForm: TEditForm
               OnExit = PostCoefValidate
               OnKeyPress = PostCoefKeypress
             end
-            object txtPost01: TEdit
-              Left = 96
+            object txtPost10: TEdit
+              Left = 36
               Top = 180
               Width = 57
               Height = 21
@@ -1351,9 +1319,9 @@ object EditForm: TEditForm
               OnExit = PostCoefValidate
               OnKeyPress = PostCoefKeypress
             end
-            object txtPost10: TEdit
-              Left = 36
-              Top = 204
+            object txtPost11: TEdit
+              Left = 96
+              Top = 180
               Width = 57
               Height = 21
               TabOrder = 9
@@ -1361,8 +1329,8 @@ object EditForm: TEditForm
               OnExit = PostCoefValidate
               OnKeyPress = PostCoefKeypress
             end
-            object txtPost11: TEdit
-              Left = 96
+            object txtPost20: TEdit
+              Left = 36
               Top = 204
               Width = 57
               Height = 21
@@ -1371,22 +1339,12 @@ object EditForm: TEditForm
               OnExit = PostCoefValidate
               OnKeyPress = PostCoefKeypress
             end
-            object txtPost20: TEdit
-              Left = 36
-              Top = 228
+            object txtPost21: TEdit
+              Left = 96
+              Top = 204
               Width = 57
               Height = 21
               TabOrder = 11
-              Text = '0'
-              OnExit = PostCoefValidate
-              OnKeyPress = PostCoefKeypress
-            end
-            object txtPost21: TEdit
-              Left = 96
-              Top = 228
-              Width = 57
-              Height = 21
-              TabOrder = 12
               Text = '0'
               OnExit = PostCoefValidate
               OnKeyPress = PostCoefKeypress
@@ -1405,7 +1363,7 @@ object EditForm: TEditForm
               ParentShowHint = False
               ShowHint = True
               State = cbChecked
-              TabOrder = 14
+              TabOrder = 12
               Visible = False
             end
           end
@@ -1419,7 +1377,7 @@ object EditForm: TEditForm
               Height = 95
               Caption = 'Transform color'
               TabOrder = 0
-              object pnlSymmetry: TPanel
+              object pnlColorSpeed: TPanel
                 Left = 8
                 Top = 62
                 Width = 73
@@ -1428,7 +1386,7 @@ object EditForm: TEditForm
                 Hint = 'Click and drag to change value'
                 Alignment = taLeftJustify
                 BevelOuter = bvLowered
-                Caption = ' Symmetry:'
+                Caption = ' Color speed:'
                 ParentShowHint = False
                 ShowHint = True
                 TabOrder = 3
@@ -1474,7 +1432,7 @@ object EditForm: TEditForm
                 OnExit = txtXFormColorExit
                 OnKeyPress = txtXFormColorKeyPress
               end
-              object txtSymmetry: TEdit
+              object txtColorSpeed: TEdit
                 Left = 80
                 Top = 62
                 Width = 57
@@ -1487,7 +1445,7 @@ object EditForm: TEditForm
             end
             object GroupBox2: TGroupBox
               Left = 8
-              Top = 168
+              Top = 176
               Width = 145
               Height = 77
               Caption = 'Variation preview'
@@ -1544,26 +1502,45 @@ object EditForm: TEditForm
               Left = 8
               Top = 104
               Width = 145
-              Height = 57
+              Height = 65
               Caption = 'Transform visibility'
               TabOrder = 2
-              object chkXformInvisible: TCheckBox
-                Left = 8
-                Top = 16
-                Width = 129
-                Height = 17
-                Caption = 'Invisible'
-                TabOrder = 0
-                OnClick = chkPlotModeClick
-              end
               object chkXformSolo: TCheckBox
                 Left = 8
-                Top = 32
+                Top = 42
                 Width = 129
                 Height = 17
                 Caption = 'Solo'
-                TabOrder = 1
+                TabOrder = 0
                 OnClick = chkXformSoloClick
+              end
+              object pnlOpacity: TPanel
+                Left = 8
+                Top = 16
+                Width = 73
+                Height = 21
+                Cursor = crHandPoint
+                Hint = 'Click and drag to change value'
+                Alignment = taLeftJustify
+                BevelOuter = bvLowered
+                Caption = ' Opacity:'
+                ParentShowHint = False
+                ShowHint = True
+                TabOrder = 1
+                OnDblClick = DragPanelDblClick
+                OnMouseDown = DragPanelMouseDown
+                OnMouseMove = DragPanelMouseMove
+                OnMouseUp = DragPanelMouseUp
+              end
+              object txtOpacity: TEdit
+                Left = 80
+                Top = 16
+                Width = 57
+                Height = 21
+                TabOrder = 2
+                Text = '0'
+                OnExit = txtOpacitySet
+                OnKeyPress = txtOpacityKeyPress
               end
             end
           end
@@ -1573,7 +1550,7 @@ object EditForm: TEditForm
               Left = 0
               Top = 0
               Width = 162
-              Height = 285
+              Height = 282
               Align = alClient
               ScrollBars = ssVertical
               TabOrder = 0
@@ -1583,14 +1560,15 @@ object EditForm: TEditForm
               OnDblClick = VEVarsDblClick
               OnDrawCell = VEVarsDrawCell
               OnExit = VEVarsChange
+              OnGetEditText = VEVarsGetEditText
               OnKeyPress = VEVarsKeyPress
               OnMouseDown = VEVarsMouseDown
               OnMouseMove = VEVarsMouseMove
               OnMouseUp = VEVarsMouseUp
               OnValidate = VEVarsValidate
               ColWidths = (
-                93
-                63)
+                91
+                65)
             end
           end
           object TabSheet4: TTabSheet
@@ -1600,7 +1578,7 @@ object EditForm: TEditForm
               Left = 0
               Top = 0
               Width = 162
-              Height = 285
+              Height = 282
               Align = alClient
               ScrollBars = ssVertical
               TabOrder = 0
@@ -1608,15 +1586,17 @@ object EditForm: TEditForm
                 'Variable'
                 'Value')
               OnDblClick = VEVarsDblClick
+              OnDrawCell = vleVariablesDrawCell
               OnExit = vleVariablesExit
+              OnGetEditText = vleVariablesGetEditText
               OnKeyPress = vleVariablesKeyPress
               OnMouseDown = VEVarsMouseDown
               OnMouseMove = VEVarsMouseMove
               OnMouseUp = VEVarsMouseUp
               OnValidate = vleVariablesValidate
               ColWidths = (
-                93
-                63)
+                91
+                65)
             end
           end
           object TabChaos: TTabSheet
@@ -1626,7 +1606,7 @@ object EditForm: TEditForm
               Left = 0
               Top = 0
               Width = 162
-              Height = 285
+              Height = 282
               Align = alClient
               PopupMenu = ChaosPopup
               ScrollBars = ssVertical
@@ -1637,16 +1617,63 @@ object EditForm: TEditForm
               OnDblClick = VEVarsDblClick
               OnDrawCell = VleChaosDrawCell
               OnExit = vleChaosExit
+              OnGetEditText = vleChaosGetEditText
               OnKeyPress = vleChaosKeyPress
               OnMouseDown = VEVarsMouseDown
               OnMouseMove = VEVarsMouseMove
               OnMouseUp = VEVarsMouseUp
               OnValidate = vleChaosValidate
               ColWidths = (
-                65
-                91)
+                58
+                98)
             end
           end
+        end
+        object pnlTransform: TPanel
+          Left = 16
+          Top = 4
+          Width = 76
+          Height = 21
+          Alignment = taLeftJustify
+          BevelOuter = bvNone
+          BorderWidth = 1
+          Caption = ' Transform:'
+          Font.Charset = ANSI_CHARSET
+          Font.Color = clWindowText
+          Font.Height = -11
+          Font.Name = 'Tahoma'
+          Font.Style = [fsBold]
+          ParentFont = False
+          TabOrder = 2
+        end
+        object pnlWeight: TPanel
+          Left = 16
+          Top = 25
+          Width = 76
+          Height = 21
+          Cursor = crHandPoint
+          Hint = 'Click and drag to change value'
+          Alignment = taLeftJustify
+          BevelOuter = bvLowered
+          Caption = ' Weight:'
+          ParentShowHint = False
+          ShowHint = True
+          TabOrder = 3
+          OnDblClick = DragPanelDblClick
+          OnMouseDown = DragPanelMouseDown
+          OnMouseMove = DragPanelMouseMove
+          OnMouseUp = DragPanelMouseUp
+        end
+        object txtP: TEdit
+          Left = 92
+          Top = 25
+          Width = 64
+          Height = 21
+          Hint = '"Weight" is the probability of this transform to be applied'
+          TabOrder = 4
+          Text = '0'
+          OnExit = txtPExit
+          OnKeyPress = txtPKeyPress
         end
       end
       object PrevPnl: TPanel
@@ -3088,6 +3115,7 @@ object EditForm: TEditForm
       Caption = 'Rebuild xaos links'
       Checked = True
       Hint = 'Rebuild xaos links when deleting transforms'
+      Visible = False
       OnClick = mnuChaosRebuildClick
     end
     object N9: TMenuItem
@@ -3105,8 +3133,12 @@ object EditForm: TEditForm
       Caption = '-'
     end
     object mnuLinkPostxform: TMenuItem
-      Caption = 'Add linked xform'
+      Caption = 'Add linked xform after'
       OnClick = mnuLinkPostxformClick
+    end
+    object mnuLinkPreXform: TMenuItem
+      Caption = 'Add linked xform before'
+      OnClick = mnuLinkPreXformClick
     end
   end
 end
