@@ -42,7 +42,7 @@ const
   RS_XO = 2;
   RS_VO = 3;
 
-  AppVersionString = 'Apophysis 2.08 beta 2';
+  AppVersionString = 'Apophysis 2.09 pre-beta 1';
 
   randFilename = 'apophysis.rand';
   undoFilename = 'apophysis.undo';
@@ -73,7 +73,6 @@ type
     mnuCopyUPR: TMenuItem;
     mnuEditor: TMenuItem;
     mnuRandom: TMenuItem;
-    mnuNormalWeights: TMenuItem;
     mnuEqualize: TMenuItem;
     mnuRWeights: TMenuItem;
     mnuOptions: TMenuItem;
@@ -208,7 +207,6 @@ type
     procedure FormClose(Sender: TObject; var Action: TCloseAction);
     procedure mnuHelpTopicsClick(Sender: TObject);
     procedure mnuRefreshClick(Sender: TObject);
-    procedure mnuNormalWeightsClick(Sender: TObject);
     procedure FormDestroy(Sender: TObject);
     procedure mnuCopyUPRClick(Sender: TObject);
     procedure mnuItemDeleteClick(Sender: TObject);
@@ -293,6 +291,10 @@ type
       Change: TItemChange; var AllowChange: Boolean);
     procedure ListViewInfoTip(Sender: TObject; Item: TListItem;
       var InfoTip: String);
+    procedure ListXmlScannerEmptyTag(Sender: TObject; TagName: String;
+      Attributes: TAttrList);
+    procedure ListViewSelectItem(Sender: TObject; Item: TListItem;
+      Selected: Boolean);
 
   private
     Renderer: TRenderThread;
@@ -338,6 +340,7 @@ type
 
     procedure LoadXMLFlame(filename, name: string); overload;
     procedure LoadXMLFlame(filename: string; index: integer); overload;
+    procedure CheckXMLFlame(filename: string; index: integer); overload;
     procedure DisableFavorites;
     procedure EnableFavorites;
     procedure ParseXML(var cp1: TControlPoint; const params: PCHAR);
@@ -387,25 +390,31 @@ function GetWinVersion: TWin32Version;
 var
   MainForm: TMainForm;
   pname, ptime: string;
-  nxform: integer;
 
   MainCp: TControlPoint;
   ParseCp: TControlPoint;
-  mainCPindex: integer;
 
 implementation
 
 uses
 {$IFDEF DEBUG}
-  JclDebug, ExceptForm,
+  //JclDebug, ExceptForm,
 {$ENDIF}
   Editor, Options, Regstry,  Render,
   FullScreen, FormRender, Mutate, Adjust, Browser, Save, About, CmapData,
-  HtmlHlp, ScriptForm, FormFavorites, FormExport, msMultiPartFormData,
-  ImageColoring, RndFlame,
+  HtmlHlp, ScriptForm, FormFavorites, FormExport, RndFlame,
+  {msMultiPartFormData,} ImageColoring,
   Tracer, Types;
 
 {$R *.DFM}
+
+var
+  nxform: integer;
+  mainCPindex: integer;
+
+  pxformnum: integer;
+  pversion: string;
+  xmlErrorsList: TStringList;
 
 procedure NormalizeVariations(var cp1: TControlPoint);
 var
@@ -614,10 +623,10 @@ begin
       cp.xform[i].vars[j] := 0;
     repeat
       a := random(NRVAR);
-    until Variations[a];
+    until RandomVariations[a];
     repeat
       b := random(NRVAR);
-    until Variations[b];
+    until RandomVariations[b];
     if (a = b) then
     begin
       cp.xform[i].vars[a] := 1;
@@ -1083,7 +1092,7 @@ begin
       d := cp.xform[i].c[1][1];
       e := cp.xform[i].c[2][0];
       f := cp.xform[i].c[2][1];
-      p := cp.xform[i].density;
+      p := cp.xform[i].weight;
       Strings.Add(Format('%.6g %.6g %.6g %.6g %.6g %.6g %.6g',
         [a, b, c, d, e, f, p]));
     end;
@@ -1187,7 +1196,7 @@ begin
               MainCp.xform[sTransforms].c[1][1] := d;
               MainCp.xform[sTransforms].c[2][0] := e;
               MainCp.xform[sTransforms].c[2][1] := f;
-              MainCp.xform[sTransforms].density := p;
+              MainCp.xform[sTransforms].weight := p;
               inc(sTransforms);
             end
             else
@@ -1243,7 +1252,7 @@ begin
       d := cp.xform[m].c[1][1];
       e := cp.xform[m].c[2][0];
       f := cp.xform[m].c[2][1];
-      p := cp.xform[m].density;
+      p := cp.xform[m].weight;
       Write(IFile, Format('%.6g %.6g %.6g %.6g %.6g %.6g %.6g',
         [a, b, c, d, e, f, p]));
       WriteLn(IFile, '');
@@ -1356,7 +1365,7 @@ begin
       format('scale="%g" ', [cp1.pixels_per_unit]);
 
     if cp1.FAngle <> 0 then
-      parameters := parameters + format('angle="%g" ', [cp1.FAngle]) +
+      parameters := parameters + //format('angle="%g" ', [cp1.FAngle]) +
                                  format('rotate="%g" ', [-180 * cp1.FAngle/Pi]);
     if cp1.zoom <> 0 then
       parameters := parameters + format('zoom="%g" ', [cp1.zoom]);
@@ -1942,7 +1951,7 @@ begin
     AssignFile(F, AppPath + randFilename);
     OpenFile := AppPath + randFilename;
     ReWrite(F);
-    WriteLn(F, '<random_batch>');
+    WriteLn(F, '<flames name="random batch">');
     for i := 0 to BatchSize - 1 do
     begin
       inc(RandomIndex);
@@ -1963,7 +1972,7 @@ begin
 //      Write(F, FlameToString(Title));
 //      WriteLn(F, ' ');
     end;
-    Write(F, '</random_batch>');
+    Write(F, '</flames>');
     CloseFile(F);
   except
     on EInOutError do Application.MessageBox('Error creating batch', PChar(APP_NAME), 16);
@@ -1977,36 +1986,55 @@ end;
 procedure ListXML(FileName: string; sel: integer);
 { List .flame file }
 var
-  i, p: integer;
+  i, j, p: integer;
   Title: string;
   ListItem: TListItem;
-  FStrings: TStringList;
+  FileStrings: TStringList;
+  ParamStrings: TStringList;
 begin
-  FStrings := TStringList.Create;
-  FStrings.LoadFromFile(FileName);
+  FileStrings := TStringList.Create;
+  FileStrings.LoadFromFile(FileName);
+  ParamStrings := TStringList.Create;
   try
     MainForm.ListView.Items.BeginUpdate;
     MainForm.ListView.Items.Clear;
-    if (Pos('<flame ', Lowercase(FStrings.Text)) <> 0) then
+    if (Pos('<flame ', Lowercase(FileStrings.Text)) <> 0) then
     begin
-      for i := 0 to FStrings.Count - 1 do
+      i := 0;
+      while i < FileStrings.Count do
       begin
-        p := Pos('<flame ', LowerCase(FStrings[i]));
+        p := Pos('<flame ', LowerCase(FileStrings[i]));
         if (p <> 0) then
         begin
-          MainForm.ListXMLScanner.LoadFromBuffer(PCHAR(FSTrings[i]));
+          ParamStrings.Add(FileStrings[i]);
+          repeat
+            Inc(i);
+            ParamStrings.Add(FileStrings[i]);
+          until pos('</flame>', Lowercase(FileStrings[i])) <> 0;
+
+          Assert(xmlErrorsList.Count = 0);
+          pname := '';
+          ptime := '';
+          pversion := '';
+          MainForm.ListXMLScanner.LoadFromBuffer(PCHAR(ParamStrings.Text));
           MainForm.ListXMLScanner.Execute;
 
-          if Trim(pname) = '' then
-            Title := '*untitled ' + ptime
-          else
-            Title := Trim(pname);
+          Title := Trim(pname);
+          if Title = '' then
+            Title := '*untitled ' + ptime;
+
           if Title <> '' then
           begin { Otherwise bad format }
             ListItem := MainForm.ListView.Items.Add;
-            Listitem.Caption := Title;
+            ListItem.Caption := Title;
+            if xmlErrorsList.Count > 0 then begin
+              ListItem.ImageIndex := 1;
+              xmlErrorsList.Clear;
+            end;
           end;
+          ParamStrings.Clear;
         end;
+        Inc(i);
       end;
     end;
     MainForm.ListView.Items.EndUpdate;
@@ -2015,7 +2043,8 @@ begin
       1: MainForm.ListView.Selected := MainForm.ListView.Items[0];
     end;
   finally
-    FStrings.Free;
+    ParamStrings.Free;
+    FileStrings.Free;
   end;
 end;
 
@@ -2033,7 +2062,7 @@ begin
     mnuListRename.Enabled := True;
     mnuItemDelete.Enabled := True;
     OpenFile := OpenDialog.FileName;
-    MainForm.Caption := AppVersionString + ' - ' + OpenFile; // --Z--
+    MainForm.Caption := AppVersionString + ' - ' + OpenFile;
     OpenFileType := ftXML;
     if UpperCase(ExtractFileExt(OpenDialog.FileName)) = '.IFS' then
     begin
@@ -2125,16 +2154,6 @@ end;
 procedure TMainForm.mnuRefreshClick(Sender: TObject);
 begin
   RedrawTimer.enabled := true;
-end;
-
-procedure TMainForm.mnuNormalWeightsClick(Sender: TObject);
-begin
-  StopThread;
-  UpdateUndo;
-// TODO: ...something
-//  ComputeWeights(MainCp, MainTriangles, transforms);
-  RedrawTimer.Enabled := True;
-  UpdateWindows;
 end;
 
 procedure TMainForm.mnuRWeightsClick(Sender: TObject);
@@ -2239,7 +2258,7 @@ begin
       d := cp1.xform[m].c[1][1];
       e := cp1.xform[m].c[2][0];
       f := cp1.xform[m].c[2][1];
-      p := cp1.xform[m].Density;
+      p := cp1.xform[m].weight;
       if m < Transforms then xf_str := 'p_xf' + inttostr(m)
       else begin
         if cp1.HasFinalXForm = false then break;
@@ -2247,7 +2266,7 @@ begin
       end;
       Strings.Add('  ' + xf_str + '_p=' + Format('%.6g ', [p]));
       Strings.Add('  ' + xf_str + '_c=' + floatTostr(cp1.xform[m].color));
-      Strings.Add('  ' + xf_str + '_sym=' + floatTostr(cp1.xform[m].symmetry));
+      Strings.Add('  ' + xf_str + '_sym=' + floatTostr(cp1.xform[m].color_speed));
       Strings.Add('  ' + xf_str + '_cfa=' + Format('%.6g ', [a]) +
         xf_str + '_cfb=' + Format('%.6g ', [b]) +
         xf_str + '_cfc=' + Format('%.6g ', [c]) +
@@ -2543,6 +2562,7 @@ begin
   tbShowAlpha.Down := ShowTransparency;
   DrawSelection := true;
   FViewScale := 1; // prevent divide by zero (?)
+  xmlErrorsList := TStringList.Create;
 end;
 
 procedure TMainForm.FormShow(Sender: TObject);
@@ -2608,7 +2628,7 @@ begin
   if FileExists(AppPath + randFilename) then
     DeleteFile(AppPath + randFilename);
 
-  // get filename from command line argument  
+  // get filename from command line argument
   if ParamCount > 0 then openFile := ParamStr(1)
   else openFile := defFlameFile;
 
@@ -2713,6 +2733,7 @@ begin
   MainCP.free;
   ParseCp.free;
   Favorites.Free;
+  xmlErrorsList.Free;
 end;
 
 procedure TMainForm.FormKeyPress(Sender: TObject; var Key: Char);
@@ -2778,6 +2799,7 @@ begin
     begin
       pname := '';
       ptime := '';
+      pversion := '';
       p := Pos('<flame ', LowerCase(FileStrings[i]));
       if (p <> 0) then
       begin
@@ -2847,7 +2869,7 @@ var
   i, p: integer;
   FileStrings: TStringList;
   ParamStrings: TStringList;
-  Tokens: TStringList;
+//  Tokens: TStringList;
   flameindex: integer;
 begin
   FileStrings := TStringList.Create;
@@ -2860,6 +2882,7 @@ begin
     begin
       pname := '';
       ptime := '';
+      pversion := '';
       p := Pos('<flame ', LowerCase(FileStrings[i]));
       if (p <> 0) then
       begin
@@ -2914,6 +2937,50 @@ begin
   end;
 end;
 
+procedure TMainForm.CheckXMLFlame(filename: string; index: integer);
+var
+  i, p: integer;
+  FileStrings: TStringList;
+  ParamStrings: TStringList;
+  Tokens: TStringList;
+  flameindex: integer;
+begin
+  FileStrings := TStringList.Create;
+  ParamStrings := TStringList.Create;
+
+  try
+    FileStrings.LoadFromFile(filename);
+    flameindex := 0;
+    for i := 0 to FileStrings.Count - 1 do
+    begin
+      pname := '';
+      ptime := '';
+      pversion := '';
+      p := Pos('<flame ', LowerCase(FileStrings[i]));
+      if (p <> 0) then
+      begin
+        if (flameIndex <> index) then begin
+          inc(flameIndex);
+          continue;
+        end;
+        ParamStrings.Add(FileStrings[i]);
+        Break;
+      end;
+    end;
+    repeat
+      inc(i);
+      ParamStrings.Add(FileStrings[i]);
+    until pos('</flame>', Lowercase(FileStrings[i])) <> 0;
+
+    Assert(xmlErrorsList.Count = 0);
+    MainForm.ListXMLScanner.LoadFromBuffer(PCHAR(PAramStrings.Text));
+    MainForm.ListXMLScanner.Execute;
+  finally
+    FileStrings.free;
+    ParamStrings.free;
+  end;
+end;
+
 procedure TMainForm.ResizeImage;
 var
   pw, ph: integer;
@@ -2961,7 +3028,7 @@ begin
 
     if OpenFileType = ftXML then
     begin
-      LoadXMLFlame(OpenFile, ListView.Selected.Index);
+      LoadXMLFlame(OpenFile, {ListView.Selected.Index ?}Item.Index);
     end
     else
     begin
@@ -3166,7 +3233,8 @@ label
   skip;
 begin
   for i := 0 to mainCP.NumXForms-1 do
-    if mainCP.xform[i].noPlot = false then goto skip;
+    if mainCP.xform[i].opacity <> 0 then goto skip;
+  // No visible xforms - exiting
   exit;
 skip:
   maincp.zoom := 0;
@@ -3924,12 +3992,12 @@ begin
 
   if FinalXformLoaded = false then begin
     cp1{MainCP}.xform[nxform].Clear;
-    cp1{MainCP}.xform[nxform].symmetry := 1;
+    cp1{MainCP}.xform[nxform].color_speed := 1;
   end;
 
   if nxform < NXFORMS then
     for i := nxform to NXFORMS - 1 do
-      cp1.xform[i].density := 0;
+      cp1.xform[i].weight := 0;
 
   // Check for symmetry parameter
   if ParseCp.symmetry <> 0 then
@@ -4162,8 +4230,56 @@ end;
 procedure TMainForm.ListXmlScannerStartTag(Sender: TObject;
   TagName: string; Attributes: TAttrList);
 begin
-  pname := Attributes.value('name');
-  ptime := Attributes.value('time');
+  if (TagName = 'flame') then begin
+    pname := Attributes.value('name');
+    ptime := Attributes.value('time');
+    pversion := Attributes.Value('version');
+    pxformnum := 1; // hacky
+  end;
+end;
+
+procedure TMainForm.ListXmlScannerEmptyTag(Sender: TObject;
+  TagName: String; Attributes: TAttrList);
+const
+  ValidAttributes: array[0..9] of string = (
+    'coefs', 'post', 'weight', 'color',
+    'symmetry', 'noplot', 'chaos', 'enabled',
+    'plotmode', 'opacity'
+  );
+var
+  i, j: integer;
+  found: boolean;
+  attr: string;
+begin
+  if (tagName = 'xform') or (tagName = 'finalxform') then begin
+    for i := 0 to Attributes.Count-1 do begin
+      attr := Attributes.Name(i);
+      found := false;
+      for j := 0 to High(ValidAttributes) do
+        if attr = ValidAttributes[j] then begin
+          found := true;
+          break;
+        end;
+      if found then continue;
+
+      for j := 0 to NRVAR-1 do
+        if attr = Varnames(j) then begin
+          found := true;
+          break;
+        end;
+      if found then continue;
+
+      for j := 0 to GetNrVariableNames-1 do
+        if attr = GetVariableNameAt(j) then begin
+          found := true;
+          break;
+        end;
+      if found then continue;
+
+      xmlErrorsList.Add('in xform #' + IntToStr(pxformnum) + ' "' + attr + '"');
+    end;
+    Inc(pxformnum);
+  end;
 end;
 
 procedure TMainForm.XMLScannerStartTag(Sender: TObject; TagName: string;
@@ -4316,7 +4432,7 @@ begin
      with ParseCP.xform[nXform] do begin
       Clear;
       v := Attributes.Value('weight');
-      if (v <> '') and (TagName = 'xform') then density := StrToFloat(v);
+      if (v <> '') and (TagName = 'xform') then weight := StrToFloat(v);
       if (TagName = 'finalxform') then
       begin
         v := Attributes.Value('enabled');
@@ -4324,12 +4440,14 @@ begin
         else ParseCP.finalXformEnabled := true;
       end;
 
-      if activexformset > 0 then density := 0; // tmp...
+      if activexformset > 0 then weight := 0; // tmp...
 
       v := Attributes.Value('color');
       if v <> '' then color := StrToFloat(v);
       v := Attributes.Value('symmetry');
-      if v <> '' then symmetry := StrToFloat(v);
+      if v <> '' then color_speed := StrToFloat(v);
+      v := Attributes.Value('color_speed');
+      if v <> '' then color_speed := StrToFloat(v);
       v := Attributes.Value('coefs');
       GetTokens(v, tokens);
       if Tokens.Count < 6 then ShowMessage('Not enough coefficients...crash?');
@@ -4363,12 +4481,15 @@ begin
       v := Attributes.Value('plotmode');
       if v <> '' then begin
         if v = 'off' then begin
-          noPlot := true;
+          opacity := 0; //noPlot := true;
         end
         else begin
-          noPlot := false;
+          opacity := 1; //noPlot := false;
         end;
       end;
+
+      v := Attributes.Value('opacity');
+      if v <> '' then opacity := StrToFloat(v);
 
       for i := 0 to NRVAR - 1 do
       begin
@@ -4616,7 +4737,6 @@ procedure TMainForm.ImageMouseUp(Sender: TObject; Button: TMouseButton;
   Shift: TShiftState; X, Y: Integer);
 var
   scale: double;
-  rs: TSRect;
 begin
   case FMouseMoveState of
     msZoomWindowMove:
@@ -4824,7 +4944,7 @@ const
   cornerSize = 32;
 var
   bkuPen: TPen;
-  dx, dy, cx, cy: integer;
+  dx, dy: integer;
   l, r, t, b: integer;
 begin
   bkuPen := TPen.Create;
@@ -4939,7 +5059,7 @@ begin
     NewMenuItem.GroupIndex := 2;
     NewMenuItem.RadioItem  := True;
     VarMenus[i] := NewMenuItem;
-    if i < NumBuiltinVars then
+    if i < NumBuiltinVariations then
       mnuBuiltinVars.Add(NewMenuItem)
     else
       mnuPluginVars.Add(NewMenuItem);
@@ -5074,10 +5194,23 @@ end;
 
 procedure TMainForm.ListViewInfoTip(Sender: TObject; Item: TListItem;
   var InfoTip: String);
-var
-  Bitmap: TBitmap;
-  lcp: TControlPoint;
+//var
+  //Bitmap: TBitmap;
+  //lcp: TControlPoint;
 begin
+{
+  // Show unrecognized variations/variables in the tooltip
+
+  CheckXMLFlame(OpenFile, Item.Index);
+
+  InfoTip := InfoTip + #13#10 + 'Created with: ' + pversion;
+
+  if xmlErrorsList.Count > 0 then begin
+    InfoTip := InfoTip + #13#10 + 'Unrecognized values:' + #13#10 + xmlErrorsList.Text;
+    xmlErrorsList.Clear;
+  end;
+}
+
   // flame preview in a tooltip...
 {
   BitMap := TBitMap.create;
@@ -5117,6 +5250,25 @@ begin
 
   lcp.Free;
   Bitmap.Free;
+}
+end;
+
+procedure TMainForm.ListViewSelectItem(Sender: TObject; Item: TListItem;
+  Selected: Boolean);
+var
+  i: integer;
+  str: string;
+begin
+{
+  CheckXMLFlame(OpenFile, Item.Index);
+
+  if xmlErrorsList.Count > 0 then begin
+    str := 'Unrecognized values:' + #13#10 + xmlErrorsList.Text;
+
+    InfoLabel.Caption := InfoLabel.Caption + #13#10 + str;
+    InfoLabel.Hint := str;
+    xmlErrorsList.Clear;
+  end
 }
 end;
 
