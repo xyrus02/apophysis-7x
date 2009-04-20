@@ -55,15 +55,17 @@ type
     vars: array of double; // {normalized} interp coefs between variations
     c: array[0..2, 0..1] of double;      // the coefs to the affine part of the function
     p: array[0..2, 0..1] of double;      // post-transform coefs!
-    density: double;                     // prob is this function is chosen
+    weight: double;                      // prob is this function is chosen
     color: double;                       // color coord for this function. 0 - 1
     color2: double;                      // Second color coord for this function. 0 - 1
-    symmetry: double;
+    color_speed: double;
+    animate: double;  // for flam3, use as 1/0 toggle in Apo?
     c00, c01, c10, c11, c20, c21: double;// unnecessary duplicated variables
     p00, p01, p10, p11, p20, p21: double;// :-)
     postXswap: boolean;
 
-    noPlot: boolean;
+    opacity: double;
+    plotMode: integer; // (neverPlot = -1, opacityPlot = 0, alwaysPlot = 1);
 
 //    nx,ny,x,y: double;
 //    script: TatPascalScripter;
@@ -205,9 +207,9 @@ procedure TXForm.Clear;
 var
   i: Integer;
 begin
-  density := 0;
+  weight := 0;
   color := 0;
-  symmetry := 0;
+  color_speed := 0;
   postXswap := false;
 
   c[0, 0] := 1;
@@ -231,7 +233,7 @@ begin
   for i := 0 to NXFORMS do
     modWeights[i] := 1;
 
-  noPlot := false;
+  opacity := 1;
 end;
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -247,8 +249,8 @@ begin
   c20 := c[2][0];
   c21 := c[2][1];
 
-  colorC1 := (1 + symmetry)/2;
-  colorC2 := color*(1 - symmetry)/2;
+  colorC1 := (1 + color_speed)/2;
+  colorC2 := color*(1 - color_speed)/2;
 
   FNrFunctions := 0;
 
@@ -2120,10 +2122,10 @@ begin
 
   c := Xform.c;
   p := Xform.p;
-  density := XForm.density;
+  weight := XForm.weight;
   color := XForm.color;
   color2 := XForm.color2;
-  symmetry := XForm.symmetry;
+  color_speed := XForm.color_speed;
   Orientationtype := XForm.Orientationtype;
 
   postXswap := Xform.postXswap;
@@ -2139,7 +2141,7 @@ begin
   for i := 0 to High(modWeights) do
     modWeights[i] := xform.modWeights[i];
 
-  noPlot := xform.noPlot;
+  opacity := xform.opacity;
 end;
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -2150,8 +2152,11 @@ var
   Value: double;
   numChaos: integer;
 begin
-  result := Format('   <xform weight="%g" color="%g" ', [density, color]);
-  if symmetry <> 0 then result := result + format('symmetry="%g" ', [symmetry]);
+  result := Format('   <xform weight="%g" color="%g" ', [weight, color]);
+  if color_speed <> 0 then
+    result := result + format('symmetry="%g" ', [color_speed]);
+  if opacity <> 1 then
+    Result := Result + Format('opacity="%g" ', [opacity]);
 
   for i := 0 to nrvar - 1 do begin
     if vars[i] <> 0 then
@@ -2184,9 +2189,6 @@ begin
     Result := Result + '" ';
   end;
 
-  if noPlot = true then
-    Result := Result + 'plotmode="off" ';
-
   Result := Result + '/>';
 end;
 
@@ -2199,7 +2201,7 @@ begin
 //  result := Format('   <finalxform enabled="%d" color="%g" symmetry="%g" ',
 //                   [ifthen(IsEnabled, 1, 0), color, symmetry]);
   result := Format('   <finalxform color="%g" ', [color]);
-  if symmetry <> 0 then result := result + format('symmetry="%g" ', [symmetry]);
+  if color_speed <> 0 then result := result + format('symmetry="%g" ', [color_speed]);
   for i := 0 to nrvar - 1 do begin
     if vars[i] <> 0 then
       Result := Result + varnames(i) + format('="%g" ', [vars[i]]);
