@@ -103,8 +103,6 @@ var
   MapColor: PColorMapColor;
 begin
   for i := SUB_BATCH_SIZE - 1 downto 0 do begin
-//    if FStop then Exit;
-
     px := points[i].x - camX0;
     if (px < 0) or (px > camW) then continue;
     py := points[i].y - camY0;
@@ -129,8 +127,6 @@ var
   MapColor: PColorMapColor;
 begin
   for i := SUB_BATCH_SIZE - 1 downto 0 do begin
-//    if FStop then Exit;
-
     px := points[i].x * cosa + points[i].y * sina + rcX;
     if (px < 0) or (px > camW) then continue;
     py := points[i].y * cosa - points[i].x * sina + rcY;
