@@ -51,7 +51,7 @@ uses
   ScriptRender in '..\..\Source\ScriptRender.pas' {ScriptRenderForm},
   FormFavorites in '..\..\Source\FormFavorites.pas' {FavoritesForm},
   FormExport in '..\..\Source\FormExport.pas' {ExportDialog},
-  MsMultiPartFormData in '..\..\Source\MsMultiPartFormData.pas',
+  ValueReplacer in '..\..\Source\ValueReplacer.pas' {ValueReplacerForm},
   XForm in '..\..\Source\XForm.pas',
   XFormMan in '..\..\Source\XFormMan.pas',
   cmapdata in '..\..\Source\cmapdata.pas',
@@ -75,8 +75,6 @@ uses
   Render32MT in '..\..\Source\Render32MT.pas',
   Render48 in '..\..\Source\Render48.pas',
   Render48MT in '..\..\Source\Render48MT.pas',
-  Render64 in '..\..\Source\Render64.pas',
-  Render64MT in '..\..\Source\Render64MT.pas',
   FastMM4Messages in '..\..\Source\FastMM4Messages.pas',
   varRadialBlur in '..\..\Source\varRadialBlur.pas',
   varRings2 in '..\..\Source\varRings2.pas',
@@ -93,7 +91,7 @@ uses
 {$R *.RES}
 
 begin
-  if now >= EncodeDate(2048, 8, 8) then begin
+  if now >= EncodeDate(2009, 9, 9) then begin
     ShowMessage('This version has expired. Please go to http://sourceforge.net/project/apophysis and download the latest version.');
     Halt
   end;
@@ -120,6 +118,7 @@ begin
   Application.CreateForm(TfrmPostProcess, frmPostProcess);
   Application.CreateForm(TfrmImageColoring, frmImageColoring);
   Application.CreateForm(TTraceForm, TraceForm);
+  Application.CreateForm(TValueReplacerForm, ValueReplacerForm);
   Application.UpdateFormatSettings := False;
   DecimalSeparator := '.';
   Application.Run;
