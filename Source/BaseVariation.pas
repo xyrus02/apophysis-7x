@@ -39,6 +39,8 @@ type
 type
   TVariationLoader = class
   public
+    firstVariableIndex: integer;
+
     function GetName: string; virtual; abstract;
     function GetInstance: TBaseVariation; virtual; abstract;
     function GetNrVariables: integer; virtual; abstract;
@@ -95,7 +97,7 @@ var
   value: double;
 begin
   if GetVariable(Name, value) then
-    Result := Format('%.6g', [value])
+    Result := FloatToStr(value) //Format('%.6g', [value])
   else
     Result := '';
 end;
