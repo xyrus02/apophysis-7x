@@ -259,8 +259,6 @@ type
     procedure scrlXFormColorScroll(Sender: TObject;
       ScrollCode: TScrollCode; var ScrollPos: Integer);
     procedure scrlXFormColorChange(Sender: TObject);
-//    procedure chkUseXFormColorClick(Sender: TObject);
-//    procedure chkHelpersClick(Sender: TObject);
     procedure txtXFormColorExit(Sender: TObject);
     procedure txtXFormColorKeyPress(Sender: TObject; var Key: Char);
     procedure txtSymmetrySet(Sender: TObject);
@@ -422,11 +420,12 @@ type
     Pivot: TSPoint;
 
     VarsCache: array of double; // hack: to prevent slow valuelist redraw
-                                        // -JF- 64 wasn't big enough... buffer overrun
-//    VariablesOddness: array of integer;
+                                // -JF- 64 wasn't big enough... buffer overrun
+    VariationListColors, VariationListTextColors: array of TColor;
+
     VariableUsed: array of bool;
-//    VariableFavsHighlight: array of bool; //hmm
     VariableListColors, VariableListTextColors: array of TColor;
+
     VariableListStrings: TStrings;
     variableListCount: integer;
 
@@ -692,8 +691,6 @@ begin
 end;
 
 procedure TEditForm.UpdateDisplay(PreviewOnly: boolean = false);
-var
-  i, j, n: integer;
 begin
   // currently EditForm does not really know if we select another
   // flame in the Main Window - which is not good...
@@ -734,12 +731,6 @@ begin
 
   if MainForm.UndoIndex = 0 then AutoZoom // auto-zoom only on 'new' flame
   else TriangleView.Invalidate;
-
-  for i := 0 to GetNrRegisteredVariations-1 do begin
-    n := GetRegisteredVariation(i).firstVariableIndex;
-//    for j := 0 to GetRegisteredVariation(i).GetNrVariables-1 do
-//      VariableFavsHighlight[n + j] := FavouriteVariations[NRLOCVAR + i];
-  end;
 end;
 
 procedure TEditForm.DrawPreview;
@@ -770,7 +761,7 @@ end;
 
 procedure TEditForm.ShowSelectedInfo;
 var
-  i, j, n: integer;
+  i, j, k, n: integer;
   v: double;
   strval: string;
 
@@ -897,25 +888,39 @@ begin
 
       if v <> VarsCache[i] then
       begin
-        VarsCache[i]:=v;
+        VarsCache[i] := v;
         VEVars.Values[VarNames(i)] := FloatToStr(v); //Format('%.6g', [v]);
 
 //if (v = 0) and (FavouriteVariations[i] = false) then VEVars.RowHeights[i+1] := -1
 //else VEVars.RowHeights[i+1] := VEVars.DefaultRowHeight;
 
+        nonzero := (v <> 0);
+        if nonzero then
+          VariationListTextColors[i] := IfThen(FavouriteVariations[i], clFavVariation, vleVariables.Font.Color)
+        else
+          VariationListTextColors[i] := IfThen(FavouriteVariations[i], clFavVarGreyed, clGrayText);
+
         if i >= NRLOCVAR then begin
+          n := GetRegisteredVariation(i - NRLOCVAR).GetNrVariables;
+          if n > 0 then begin
+            k := GetRegisteredVariation(i - NRLOCVAR).firstVariableIndex;
+            for j := k to k+n-1 do begin
+              usedVarsChanged := usedVarsChanged or (VariableUsed[j] <> nonzero);
+              VariableUsed[j] := nonzero;
+            end;
+          end;
+{
           n := GetRegisteredVariation(i - NRLOCVAR).GetNrVariables;
           if n > 0 then begin
             j := GetRegisteredVariation(i - NRLOCVAR).firstVariableIndex;
             repeat
-              nonzero := (v <> 0);
               usedVarsChanged := usedVarsChanged or (VariableUsed[j] <> nonzero);
               VariableUsed[j] := nonzero;
-
               Inc(j);
               Dec(n);
             until n = 0;
           end;
+}
         end;
       end;
     end;
@@ -932,9 +937,9 @@ begin
             GetVariable(varname, v);
             VariableListStrings.Add(varname + '=' + FloatToStr(v));
             if i <= NumBuiltinVariations then
-              VariableListColors[n] := ParametricVarColors[n and 1 xor 1]
+              VariableListColors[n] := ParametricVarColors[n and 1]
             else
-              VariableListColors[n] := PluginVarColors[n and 1 xor 1];
+              VariableListColors[n] := PluginVarColors[n and 1];
             VariableListTextColors[n] := IfThen(FavouriteVariations[i], clFavVariation, vleVariables.Font.Color);
             Inc(n);
           end;
@@ -1781,7 +1786,6 @@ end;
 procedure TEditForm.FormCreate(Sender: TObject);
 var
   i: integer;
-  j, n: integer;
   listBkgColor: TColor;
 begin
   // Custom control setup
@@ -1806,8 +1810,12 @@ begin
   TriangleView.OnExit       := TriangleViewExit;
   TriangleView.OnMouseLeave := TriangleViewmouseLeave;
 
+  SetLength(VarsCache, NRVAR);
+  SetLength(VariationListColors, NRVAR);
+  SetLength(VariationListTextColors, NRVAR);
   for i := 0 to NRVAR-1 do begin
     VEVars.InsertRow(Varnames(i), '0', True);
+    VarsCache[i] := MinDouble;
   end;
 
   SetLength(VariableUsed, GetNrVariableNames);
@@ -1866,18 +1874,21 @@ begin
   MemTriangle.x[2] := 0;
   MemTriangle.y[2] := 1;
 
-  SetLength(VarsCache, NRVAR);
-  for i := 0 to NRVAR-1 do
-    VarsCache[i] := MinDouble;
-
   listBkgColor := VEVars.Canvas.Brush.Color;
-  NormalVarColors[0] := MixColor(listBkgColor, clNormalHilite);
-  NormalVarColors[1] := listBkgColor;
-  ParametricVarColors[0] := MixColor(listBkgColor, clParametricHilite);
-  ParametricVarColors[1] := MixColor(listBkgColor, ParametricVarColors[0]);
-  PluginVarColors[0] := MixColor(listBkgColor, clPluginsHilite);
-  PluginVarColors[1] := MixColor(listBkgColor, PluginVarColors[0]);
+  NormalVarColors[1] := MixColor(listBkgColor, clNormalHilite);
+  NormalVarColors[0] := listBkgColor;
+  ParametricVarColors[1] := MixColor(listBkgColor, clParametricHilite);
+  ParametricVarColors[0] := MixColor(listBkgColor, ParametricVarColors[1]);
+  PluginVarColors[1] := MixColor(listBkgColor, clPluginsHilite);
+  PluginVarColors[0] := MixColor(listBkgColor, PluginVarColors[1]);
 
+  for i := 0 to NrLocVar-1 do
+    VariationListColors[i] := NormalVarColors[i and 1];
+  for i := NrLocVar to NumBuiltinVariations-1 do
+    VariationListColors[i] := ParametricVarColors[i and 1];
+  for i := NumBuiltinVariations to NrVAR-1 do
+    VariationListColors[i] := PluginVarColors[i and 1];
+  
   ChaosColors[0] := MixColor(listBkgColor, clChaosHilite);
   ChaosColors[1] := MixColor(listBkgColor, ChaosColors[0]);
 
@@ -3203,9 +3214,6 @@ begin
 end;
 
 procedure TEditForm.txtSymmetrKeyPress(Sender: TObject; var Key: Char);
-var
-  Allow: boolean;
-  NewVal, OldVal: double;
 begin
   if key = #13 then
   begin
@@ -3296,7 +3304,6 @@ procedure TEditForm.VEVarsMouseDown(Sender: TObject; Button: TMouseButton;
   Shift: TShiftState; X, Y: Integer);
 var
   cell: TGridCoord;
-  i, n: integer;
 begin
   if Button = mbLeft then begin
     varDragOld:=x;
@@ -4479,6 +4486,7 @@ procedure TEditForm.VEVarsDrawCell(Sender: TObject; ACol, ARow: Integer;
   Rect: TRect; State: TGridDrawState);
 begin
   if (ARow = 0) or (gdSelected in	State) then exit;
+{
   if (ARow <= NRLOCVAR) then
     VEVars.canvas.brush.Color := NormalVarColors[ARow and 1]
   else
@@ -4500,6 +4508,13 @@ begin
     VEVars.canvas.Font.Color := clFavVariation;
 
   VEVars.canvas.TextRect(Rect, Rect.Left+2, Rect.Top+2, VEVars.Cells[ACol,ARow]);
+}
+  with VEVars.Canvas do begin
+    Brush.Color := VariationListColors[ARow-1];
+    FillRect(Rect);
+    Font.Color := VariationListTextColors[ARow-1];
+    TextRect(Rect, Rect.Left+2, Rect.Top+2, VEVars.Cells[ACol,ARow]);
+  end;
 end;
 
 procedure TEditForm.tbEnableFinalXformClick(Sender: TObject);
@@ -5239,23 +5254,16 @@ var
 begin
   editor := TEditorHacker(TGridHacker(sender).InplaceEditor);
   if Assigned(editor) then begin
-    if (ARow <= NRLOCVAR) then
-      editor.Color := NormalVarColors[ARow and 1]
-    else
-    begin
-      if ARow <= NumBuiltinVariations then
-        editor.Color := ParametricVarColors[ARow and 1]
-      else
-        editor.Color := PluginVarColors[ARow and 1];
-    end;
-    if VEVars.Cells[1,Arow] = '0' then begin
-      if FavouriteVariations[ARow-1] = true then
-        editor.Font.Color := clFavVarGreyed
-      else
-        editor.Font.Color := clGrayText;
+    editor.Color := VariationListColors[ARow-1];
+    //editor.Font.Color := VariationListTextColors[ARow-1];
+
+    if (VEVars.Cells[1, ARow] <> '0') or (value <> '0') then begin
+      editor.Font.Color := IfThen(FavouriteVariations[ARow-1], clFavVariation, VEVars.Font.Color);
     end
-    else if FavouriteVariations[ARow-1] = true then
-      editor.Font.Color := clFavVariation;
+    else begin
+      editor.Font.Color := IfThen(FavouriteVariations[ARow-1], clFavVarGreyed, clGrayText);
+    end;
+
   end;
 end;
 
