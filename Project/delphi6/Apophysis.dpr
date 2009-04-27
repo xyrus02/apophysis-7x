@@ -118,7 +118,6 @@ begin
   Application.CreateForm(TfrmPostProcess, frmPostProcess);
   Application.CreateForm(TfrmImageColoring, frmImageColoring);
   Application.CreateForm(TTraceForm, TraceForm);
-  Application.CreateForm(TValueReplacerForm, ValueReplacerForm);
   Application.UpdateFormatSettings := False;
   DecimalSeparator := '.';
   Application.Run;
