@@ -1,3 +1,12 @@
+2.09
++ Added favourite variations
++ In variables list there're displayed only used ones
++ Not used variations are greyed out
++ "Symmetry" parameter renamed to "Color speed"
++ Added checking XML for unrecognized variation/variable values
+- 64-bit renderer removed
++ Many various fixes
+
 2.06b
 + Single-transform flames are now understood by scripts.
 
