@@ -188,6 +188,10 @@ type
     mnuRenderAll: TMenuItem;
     mnuBuiltinVars: TMenuItem;
     mnuPluginVars: TMenuItem;
+    Thumbnails: TImageList;
+    tbShowIcons: TToolButton;
+    tbShowList: TToolButton;
+    ToolButton8: TToolButton;
     procedure tbzoomoutwindowClick(Sender: TObject);
     procedure mnuimageClick(Sender: TObject);
     procedure mnuExitClick(Sender: TObject);
@@ -295,6 +299,8 @@ type
       Attributes: TAttrList);
     procedure ListViewSelectItem(Sender: TObject; Item: TListItem;
       Selected: Boolean);
+    procedure tbShowIconsClick(Sender: TObject);
+    procedure tbShowListClick(Sender: TObject);
 
   private
     Renderer: TRenderThread;
@@ -1991,13 +1997,17 @@ var
   ListItem: TListItem;
   FileStrings: TStringList;
   ParamStrings: TStringList;
+  Bitmap: TBitmap;
+  lcp: TControlPoint;
+  RenderEngine: TRenderer;
 begin
   FileStrings := TStringList.Create;
   FileStrings.LoadFromFile(FileName);
   ParamStrings := TStringList.Create;
   try
-    MainForm.ListView.Items.BeginUpdate;
+    //MainForm.ListView.Items.BeginUpdate;
     MainForm.ListView.Items.Clear;
+    MainForm.Thumbnails.Clear;
     if (Pos('<flame ', Lowercase(FileStrings.Text)) <> 0) then
     begin
       i := 0;
@@ -2012,7 +2022,7 @@ begin
             ParamStrings.Add(FileStrings[i]);
           until pos('</flame>', Lowercase(FileStrings[i])) <> 0;
 
-          Assert(xmlErrorsList.Count = 0);
+          //Assert(xmlErrorsList.Count = 0);
           pname := '';
           ptime := '';
           pversion := '';
@@ -2025,19 +2035,48 @@ begin
 
           if Title <> '' then
           begin { Otherwise bad format }
+
+            if xmlErrorsList.Count = 0 then
+            begin
+              lcp := TControlPoint.Create;
+              lcp.Clear;
+              MainForm.ParseXML(lcp, PCHAR(ParamStrings.Text));
+
+              if xmlErrorsList.Count = 0 then
+              begin
+                lcp.sample_density := 0.5;
+                lcp.spatial_oversample := 1;
+                lcp.spatial_filter_radius := 0.3;
+                lcp.AdjustScale(MainForm.Thumbnails.Width, MainForm.Thumbnails.Height);
+                lcp.Transparency := false;
+                lcp.Width := MainForm.Thumbnails.Width;
+                lcp.Height := MainForm.Thumbnails.Height;
+                try
+                  RenderEngine := TRenderer.Create;
+                  assert(RenderEngine <> nil);
+                  RenderEngine.SetCP(lcp);
+                  RenderEngine.Render;
+                except
+                end;
+                MainForm.Thumbnails.Add(RenderEngine.GetImage, nil);
+                RenderEngine.Free;
+              end;
+              lcp.Free;
+            end;
             ListItem := MainForm.ListView.Items.Add;
             ListItem.Caption := Title;
-            if xmlErrorsList.Count > 0 then begin
-              ListItem.ImageIndex := 1;
+            if xmlErrorsList.Count = 0 then
+              ListItem.ImageIndex := MainForm.Thumbnails.Count-1
+            else
               xmlErrorsList.Clear;
-            end;
           end;
           ParamStrings.Clear;
+          Application.ProcessMessages;
         end;
         Inc(i);
       end;
     end;
-    MainForm.ListView.Items.EndUpdate;
+    //MainForm.ListView.Items.EndUpdate;
     case sel of
       0: MainForm.ListView.Selected := MainForm.ListView.Items[MainForm.ListView.Items.Count - 1];
       1: MainForm.ListView.Selected := MainForm.ListView.Items[0];
@@ -2824,7 +2863,7 @@ begin
       end;
     end;
     repeat
-      inc(i);
+      inc(i);         
       ParamStrings.Add(FileStrings[i]);
     until pos('</flame>', Lowercase(FileStrings[i])) <> 0;
 
@@ -5270,6 +5309,16 @@ begin
     xmlErrorsList.Clear;
   end
 }
+end;
+
+procedure TMainForm.tbShowIconsClick(Sender: TObject);
+begin
+  ListView.ViewStyle := vsIcon;
+end;
+
+procedure TMainForm.tbShowListClick(Sender: TObject);
+begin
+  ListView.ViewStyle := vsReport;
 end;
 
 end.
