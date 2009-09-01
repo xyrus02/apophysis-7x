@@ -173,7 +173,7 @@ Set the default options for FastMM here.
   {Set this option to require the presence of the Delphi IDE to report memory
    leaks. This option has no effect if the option "EnableMemoryLeakReporting"
    is not also set.}
-  {.$define RequireIDEPresenceForLeakReporting}
+  {$define RequireIDEPresenceForLeakReporting}
 
   {Set this option to require the program to be run inside the IDE debugger to
    report memory leaks. This option has no effect if the option
@@ -184,7 +184,7 @@ Set the default options for FastMM here.
   {Set this option to require the presence of debug info ($D+ option) in the
    compiled unit to perform memory leak checking. This option has no effect if
    the option "EnableMemoryLeakReporting" is not also set.}
-  {.$define RequireDebugInfoForLeakReporting}
+  {$define RequireDebugInfoForLeakReporting}
 
   {Set this option to enable manual control of the memory leak report. When
    this option is set the ReportMemoryLeaksOnShutdown variable (default = false)
@@ -205,7 +205,7 @@ Set the default options for FastMM here.
  AMD K5, Pentium I and earlier CPUs. MMX is currently only used in the variable
  size move routines, so if UseCustomVariableSizeMoveRoutines is not set then
  this option has no effect.}
-{.$define EnableMMX}
+{$define EnableMMX}
 
   {Set this option to force the use of MMX instructions without checking
    whether the CPU supports it. If this option is disabled then the CPU will be
@@ -259,7 +259,7 @@ Set the default options for FastMM here.
  FullDebugMode if the application is being debugged inside the Delphi IDE.
  Otherwise the default Delphi memory manager will be used (which is equivalent
  to the non-FullDebugMode FastMM since Delphi 2006.)}
-{.$define FullDebugModeInIDE}
+{$define FullDebugModeInIDE}
 
 {Group the options you use for release and debug versions below}
 {$ifdef Release}
