@@ -1,7 +1,7 @@
 {
      Apophysis Copyright (C) 2001-2004 Mark Townsend
      Apophysis Copyright (C) 2005-2006 Ronald Hordijk, Piotr Borys, Peter Sdobnov
-     Apophysis Copyright (C) 2007-2008 Piotr Borys, Peter Sdobnov
+     Apophysis Copyright (C) 2007-2009 Piotr Borys, Peter Sdobnov
 
      This program is free software; you can redistribute it and/or modify
      it under the terms of the GNU General Public License as published by
@@ -42,7 +42,7 @@ const
   RS_XO = 2;
   RS_VO = 3;
 
-  AppVersionString = 'Apophysis 2.09 pre-beta 1';
+  AppVersionString = 'Apophysis 2.09 pre-beta 2';
 
   randFilename = 'apophysis.rand';
   undoFilename = 'apophysis.undo';
@@ -53,6 +53,25 @@ type
 
 type
   TWin32Version = (wvUnknown, wvWin95, wvWin98, wvWinNT, wvWin2000, wvWinXP);
+
+type
+  TThumbsRenderThread = class(TThread)
+  private
+    FListView: TListView;
+    FThumbnails: TImageList;
+    FBitmap: TBitmap;
+    index: integer;
+
+    procedure PaintThumb;
+    procedure SetListView(const Value: TListView);
+    procedure SetThumbnails(const Value: TImageList);
+  protected
+    procedure Execute; override;
+  public
+    constructor Create(CreateSuspended: Boolean);
+    property ListView: TListView read FListView write SetListView;
+    property Thumbnails: TImageList read FThumbnails write SetThumbnails;
+  end;
 
 type
   pRGBTripleArray = ^TRGBTripleArray;
@@ -346,6 +365,7 @@ type
 
     procedure LoadXMLFlame(filename, name: string); overload;
     procedure LoadXMLFlame(filename: string; index: integer); overload;
+    procedure LoadXMLFlame(filename: string; index: integer; var cp: TControlPoint); overload;
     procedure CheckXMLFlame(filename: string; index: integer); overload;
     procedure DisableFavorites;
     procedure EnableFavorites;
@@ -1997,15 +2017,14 @@ var
   ListItem: TListItem;
   FileStrings: TStringList;
   ParamStrings: TStringList;
+  RenderThread: TThumbsRenderThread;
   Bitmap: TBitmap;
-  lcp: TControlPoint;
-  RenderEngine: TRenderer;
 begin
   FileStrings := TStringList.Create;
   FileStrings.LoadFromFile(FileName);
   ParamStrings := TStringList.Create;
   try
-    //MainForm.ListView.Items.BeginUpdate;
+    MainForm.ListView.Items.BeginUpdate;
     MainForm.ListView.Items.Clear;
     MainForm.Thumbnails.Clear;
     if (Pos('<flame ', Lowercase(FileStrings.Text)) <> 0) then
@@ -2035,48 +2054,23 @@ begin
 
           if Title <> '' then
           begin { Otherwise bad format }
-
-            if xmlErrorsList.Count = 0 then
-            begin
-              lcp := TControlPoint.Create;
-              lcp.Clear;
-              MainForm.ParseXML(lcp, PCHAR(ParamStrings.Text));
-
-              if xmlErrorsList.Count = 0 then
-              begin
-                lcp.sample_density := 0.5;
-                lcp.spatial_oversample := 1;
-                lcp.spatial_filter_radius := 0.3;
-                lcp.AdjustScale(MainForm.Thumbnails.Width, MainForm.Thumbnails.Height);
-                lcp.Transparency := false;
-                lcp.Width := MainForm.Thumbnails.Width;
-                lcp.Height := MainForm.Thumbnails.Height;
-                try
-                  RenderEngine := TRenderer.Create;
-                  assert(RenderEngine <> nil);
-                  RenderEngine.SetCP(lcp);
-                  RenderEngine.Render;
-                except
-                end;
-                MainForm.Thumbnails.Add(RenderEngine.GetImage, nil);
-                RenderEngine.Free;
-              end;
-              lcp.Free;
-            end;
             ListItem := MainForm.ListView.Items.Add;
             ListItem.Caption := Title;
-            if xmlErrorsList.Count = 0 then
-              ListItem.ImageIndex := MainForm.Thumbnails.Count-1
-            else
+            if xmlErrorsList.Count > 0 then
               xmlErrorsList.Clear;
           end;
           ParamStrings.Clear;
-          Application.ProcessMessages;
+          //Application.ProcessMessages;
         end;
         Inc(i);
       end;
     end;
-    //MainForm.ListView.Items.EndUpdate;
+    MainForm.ListView.Items.EndUpdate;
+    // start to render thumbs in background
+    RenderThread := TThumbsRenderThread.Create(true);
+    RenderThread.ListView := MainForm.ListView;
+    RenderThread.Thumbnails := MainForm.Thumbnails;
+    RenderThread.Resume;
     case sel of
       0: MainForm.ListView.Selected := MainForm.ListView.Items[MainForm.ListView.Items.Count - 1];
       1: MainForm.ListView.Selected := MainForm.ListView.Items[0];
@@ -2970,6 +2964,50 @@ begin
     EditForm.SelectedTriangle := 0; // (?)
 
     UpdateWindows;
+  finally
+    FileStrings.free;
+    ParamStrings.free;
+  end;
+end;
+
+procedure TMainForm.LoadXMLFlame(filename: string; index: integer; var cp: TControlPoint);
+var
+  i, p: integer;
+  FileStrings: TStringList;
+  ParamStrings: TStringList;
+  flameindex: integer;
+begin
+  FileStrings := TStringList.Create;
+  ParamStrings := TStringList.Create;
+
+  try
+    FileStrings.LoadFromFile(filename);
+    flameindex := 0;
+    for i := 0 to FileStrings.Count - 1 do
+    begin
+      pname := '';
+      ptime := '';
+      pversion := '';
+      p := Pos('<flame ', LowerCase(FileStrings[i]));
+      if (p <> 0) then
+      begin
+        if (flameIndex <> index) then begin
+          inc(flameIndex);
+          continue;
+        end;
+        MainForm.ListXMLScanner.LoadFromBuffer(PCHAR(FileStrings[i]));
+        MainForm.ListXMLScanner.Execute;
+        ParamStrings.Add(FileStrings[i]);
+        Break;
+      end;
+    end;
+    repeat
+      inc(i);
+      ParamStrings.Add(FileStrings[i]);
+    until pos('</flame>', Lowercase(FileStrings[i])) <> 0;
+
+    ParseXML(cp, PCHAR(ParamStrings.Text));
+    
   finally
     FileStrings.free;
     ParamStrings.free;
@@ -5319,6 +5357,76 @@ end;
 procedure TMainForm.tbShowListClick(Sender: TObject);
 begin
   ListView.ViewStyle := vsReport;
+end;
+
+{
+   Separate thread for rendering thumbnails
+}
+
+constructor TThumbsRenderThread.Create(CreateSuspended: Boolean) ;
+begin
+  inherited;
+end;
+
+procedure TThumbsRenderThread.SetListView(const Value: TListView);
+begin
+  FListView := Value;
+end;
+
+procedure TThumbsRenderThread.SetThumbnails(const Value: TImageList);
+begin
+  FThumbnails := Value;
+end;
+
+procedure TThumbsRenderThread.Execute;
+var
+  lcp: TControlPoint;
+  RenderEngine: TRenderer;
+  i: integer;
+begin
+  FreeOnTerminate := True;
+
+  FBitmap := TBitmap.Create;
+  for i := 0 to FListView.Items.Count-1 do
+  begin
+    index := i;
+    lcp := TControlPoint.Create;
+    lcp.Clear;
+    MainForm.LoadXMLFlame(OpenFile, i, lcp);
+
+    if xmlErrorsList.Count = 0 then
+    begin
+      lcp.sample_density := 0.5;
+      lcp.spatial_oversample := 1;
+      lcp.spatial_filter_radius := 0.3;
+      lcp.AdjustScale(FThumbnails.Width, FThumbnails.Height);
+      lcp.Transparency := false;
+      lcp.Width := FThumbnails.Width;
+      lcp.Height := FThumbnails.Height;
+      try
+        RenderEngine := TRenderer.Create;
+        assert(RenderEngine <> nil);
+        RenderEngine.SetCP(lcp);
+        RenderEngine.Render;
+      except
+      end;
+      FBitmap := RenderEngine.GetImage;
+      Synchronize(PaintThumb);
+      //FBitmap.FreeImage;
+      RenderEngine.Free;
+    end;
+
+    lcp.Free;
+    if xmlErrorsList.Count > 0 then
+      xmlErrorsList.Clear;
+  end;
+  FBitmap.Free;
+end;
+
+procedure TThumbsRenderThread.PaintThumb;
+begin
+  FThumbnails.Add(FBitmap, nil);
+  FListView.Items.Item[index].ImageIndex := FThumbnails.Count-1;
 end;
 
 end.
