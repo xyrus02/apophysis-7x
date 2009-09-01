@@ -2,6 +2,7 @@
 + Added favourite variations
 + In variables list there're displayed only used ones
 + Not used variations are greyed out
++ Thumbnails in flames list
 + "Symmetry" parameter renamed to "Color speed"
 + Added checking XML for unrecognized variation/variable values
 - 64-bit renderer removed
