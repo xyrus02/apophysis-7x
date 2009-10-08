@@ -379,17 +379,17 @@ type
     PreviewDensity: double;
 
     viewDragMode, viewDragged: boolean;
-    editMode, oldMode, widgetMode: (modeNone, modeMove, modeRotate, modeScale, modePick);
+    editMode, oldMode, bracketMode: (modeNone, modeMove, modeRotate, modeScale, modePick);
     modeHack: boolean; // for mouseOverEdge...
     modeKey: word;
     key_handled: boolean;
     updating: boolean;
 
     MousePos: TPoint; // in screen coordinates
-    mouseOverTriangle, mouseOverEdge, mouseOverCorner, mouseOverWidget: integer;
+    mouseOverTriangle, mouseOverEdge, mouseOverCorner, mouseOverBracket: integer;
     mouseOverPos: TSPoint;
 
-    Widgets: array[0..3] of array [0..2] of TSPoint;
+    Brackets: array[0..3] of array [0..2] of TSPoint;
     xx, xy, yx, yy: double;
 
     varDragMode: boolean;
@@ -439,7 +439,7 @@ type
 
     procedure UpdateFlameX;
     procedure UpdateFlame(DrawMain: boolean);
-    procedure UpdateWidgets;
+    procedure UpdateBrackets;
     procedure UpdateXformsList;
 
     procedure DeleteTriangle(t: integer);
@@ -1097,7 +1097,7 @@ begin
   end;
 end;
 
-procedure TEditForm.UpdateWidgets;
+procedure TEditForm.UpdateBrackets;
   function Point(x, y: double): TSPoint;
   begin
     Result.x := x;
@@ -1110,21 +1110,21 @@ begin
     xy := y[0] - y[1];
     yx := x[2] - x[1];
     yy := y[2] - y[1];
-    Widgets[0][0] := Point(x[1] + 0.8*xx + yx, y[1] + 0.8*xy + yy);
-    Widgets[0][1] := Point(x[1] + xx + yx,     y[1] + xy + yy);
-    Widgets[0][2] := Point(x[1] + xx + 0.8*yx, y[1] + xy + 0.8*yy);
+    Brackets[0][0] := Point(x[1] + 0.8*xx + yx, y[1] + 0.8*xy + yy);
+    Brackets[0][1] := Point(x[1] + xx + yx,     y[1] + xy + yy);
+    Brackets[0][2] := Point(x[1] + xx + 0.8*yx, y[1] + xy + 0.8*yy);
 
-    Widgets[1][0] := Point(x[1] - 0.8*xx + yx, y[1] - 0.8*xy + yy);
-    Widgets[1][1] := Point(x[1] - xx + yx,     y[1] - xy + yy);
-    Widgets[1][2] := Point(x[1] - xx + 0.8*yx, y[1] - xy + 0.8*yy);
+    Brackets[1][0] := Point(x[1] - 0.8*xx + yx, y[1] - 0.8*xy + yy);
+    Brackets[1][1] := Point(x[1] - xx + yx,     y[1] - xy + yy);
+    Brackets[1][2] := Point(x[1] - xx + 0.8*yx, y[1] - xy + 0.8*yy);
 
-    Widgets[2][0] := Point(x[1] - 0.8*xx - yx, y[1] - 0.8*xy - yy);
-    Widgets[2][1] := Point(x[1] - xx - yx,     y[1] - xy - yy);
-    Widgets[2][2] := Point(x[1] - xx - 0.8*yx, y[1] - xy - 0.8*yy);
+    Brackets[2][0] := Point(x[1] - 0.8*xx - yx, y[1] - 0.8*xy - yy);
+    Brackets[2][1] := Point(x[1] - xx - yx,     y[1] - xy - yy);
+    Brackets[2][2] := Point(x[1] - xx - 0.8*yx, y[1] - xy - 0.8*yy);
 
-    Widgets[3][0] := Point(x[1] + 0.8*xx - yx, y[1] + 0.8*xy - yy);
-    Widgets[3][1] := Point(x[1] + xx - yx,     y[1] + xy - yy);
-    Widgets[3][2] := Point(x[1] + xx - 0.8*yx, y[1] + xy - 0.8*yy);
+    Brackets[3][0] := Point(x[1] + 0.8*xx - yx, y[1] + 0.8*xy - yy);
+    Brackets[3][1] := Point(x[1] + xx - yx,     y[1] + xy - yy);
+    Brackets[3][2] := Point(x[1] + xx - 0.8*yx, y[1] + xy - 0.8*yy);
   end;
 end;
 
@@ -1302,7 +1302,7 @@ var
   a, b, c: TPoint;
   e, f: TPoint;
 
-  procedure DrawWidgets;
+  procedure DrawBrackets;
   var
     i: integer;
   begin
@@ -1311,9 +1311,9 @@ var
       begin
         for i := 0 to 3 do
         begin
-          a:=toscreen(Widgets[i][0].x, Widgets[i][0].y);
-          b:=toscreen(Widgets[i][1].x, Widgets[i][1].y);
-          c:=toscreen(Widgets[i][2].x, Widgets[i][2].y);
+          a:=toscreen(Brackets[i][0].x, Brackets[i][0].y);
+          b:=toscreen(Brackets[i][1].x, Brackets[i][1].y);
+          c:=toscreen(Brackets[i][2].x, Brackets[i][2].y);
           moveto(a.x, a.y);
           lineto(b.x, b.y);
           lineto(c.x, c.y);
@@ -1324,9 +1324,9 @@ var
 var
   i, n, tc, tn: integer;
   d, d1: double;
-  tx, ty: double;
 
   ax, ay: integer;
+  tx, ty, tr, ta: double;
 
   gridX1, gridX2, gridY1, gridY2, gi, gstep: double;
   gp: TRoundToRange;
@@ -1495,19 +1495,19 @@ begin
         TextOut(b.x+2, b.y+1, 'O');
       end;
 
-      UpdateWidgets;
+      UpdateBrackets;
       if ExtendedEdit then begin
         n := GetTriangleColor(SelectedTriangle);// shr 1 and $7f7f7f;
         if mouseOverTriangle <> SelectedTriangle then n := n shr 1 and $7f7f7f;
         Pen.Color := n;
         Pen.Mode := pmMerge;
-        DrawWidgets;
+        DrawBrackets;
 
-        if mouseOverWidget >= 0 then
+        if mouseOverBracket >= 0 then
         begin
           pen.Color := pen.Color shr 1 and $7f7f7f;
           pen.Width := 4;
-          DrawWidgets;
+          DrawBrackets;
           pen.Width := 1;
         end;
       end;
@@ -1517,22 +1517,55 @@ begin
         assert(trkVarPreviewRange.position > 0);
         assert(trkVarPreviewDensity.position > 0);
 
-        cp.xform[SelectedTriangle].Prepare;
+        try
+          cp.xform[SelectedTriangle].Prepare;
+        except
+        end;
 
-        n := trkVarPreviewRange.position * trkVarPreviewDensity.position * 5;
-        d1 := trkVarPreviewDensity.position * 5;
-        tc := GetTriangleColor(SelectedTriangle);
-        for ax := -n to n do
-          for ay := -n to n do
+        if btnCoefsPolar.Down then begin
+          n := trkVarPreviewRange.position * trkVarPreviewDensity.position * 5;
+          d1 := trkVarPreviewDensity.position * 5;
+          tc := GetTriangleColor(SelectedTriangle);
+
           try
-            tx := ax / d1;
-            ty := ay / d1;
+            tx := 0;
+            ty := 0;
             for i := trkVarPreviewDepth.position downto 1 do
               cp.xform[SelectedTriangle].NextPointXY(tx, ty);
-            a := toscreen(tx, -ty);
+            a := ToScreen(tx, -ty);
             Pixels[a.x, a.y] := tc;
           except
           end;
+          for ax := -2*n to 2*n do
+            for ay := 1 to n do
+            try
+              tr := ay/d1;
+              ta := ax * PI/2/n;
+              tx := tr * cos(ta);
+              ty := tr * sin(ta);
+              for i := trkVarPreviewDepth.position downto 1 do
+                cp.xform[SelectedTriangle].NextPointXY(tx, ty);
+              a := ToScreen(tx, -ty);
+              Pixels[a.x, a.y] := tc;
+            except
+            end;
+        end
+        else begin
+          n := trkVarPreviewRange.position * trkVarPreviewDensity.position * 5;
+          d1 := trkVarPreviewDensity.position * 5;
+          tc := GetTriangleColor(SelectedTriangle);
+          for ax := -n to n do
+            for ay := -n to n do
+            try
+              tx := ax / d1;
+              ty := ay / d1;
+              for i := trkVarPreviewDepth.position downto 1 do
+                cp.xform[SelectedTriangle].NextPointXY(tx, ty);
+              a := ToScreen(tx, -ty);
+              Pixels[a.x, a.y] := tc;
+            except
+            end;
+        end;
       end;
 
       if (TriangleCaught or CornerCaught) then // if dragging, draw pivot axis
@@ -1856,7 +1889,7 @@ begin
   AxisLock := TransformAxisLock;
   tbAxisLock.Down := AxisLock;
   ExtendedEdit := ExtEditEnabled;
-  widgetMode := modeRotate;
+  bracketMode := modeRotate;
 
   EdgeCaught := false;
   CornerCaught := false;
@@ -1864,7 +1897,7 @@ begin
   mouseOverTriangle := -1;
   mouseOverCorner := -1;
   mouseOverEdge := -1;
-  mouseOverWidget := -1;
+  mouseOverBracket := -1;
   oldSelected := -1;
 
   MemTriangle.x[0] := 1;
@@ -1937,7 +1970,7 @@ begin
 
   if not (CornerCaught or TriangleCaught) then // look for a point under cursor
   begin
-    mouseOverWidget := -1;
+    mouseOverBracket := -1;
     mouseOverEdge := -1;
     mouseOverCorner:= -1;
     mouseOverPos.x := fx;
@@ -1999,14 +2032,14 @@ begin
 
     if ExtendedEdit then //and (oldMode = modeNone) then
     begin
-      for i := 0 to 3 do // -- detect 'widget' hit
+      for i := 0 to 3 do // -- detect bracket hit
         for j := 0 to 1 do begin
-          if abs(line_dist(fx, fy, Widgets[i][j].x, Widgets[i][j].y,
-                                   Widgets[i][j+1].x, Widgets[i][j+1].y)
+          if abs(line_dist(fx, fy, Brackets[i][j].x, Brackets[i][j].y,
+                                   Brackets[i][j+1].x, Brackets[i][j+1].y)
                  ) * GraphZoom * 50 < 3 then
           begin
             mouseOverTriangle := SelectedTriangle;
-            mouseOverWidget := i;
+            mouseOverBracket := i;
 //            mouseOverEdge := -1;
 //            mouseOverCorner:= -1;
             mouseOverPos.x := fx;
@@ -2045,7 +2078,7 @@ FoundCorner:
 
   if (mouseOverTriangle >= 0) or (SelectMode = false) or (oldMode <> modeNone) then
   begin
-    if (mouseOverWidget >= 0) and (oldMode = modeNone) then
+    if (mouseOverBracket >= 0) and (oldMode = modeNone) then
       TriangleView.Cursor := crEditRotate
     else
     if (mouseOverEdge >= 0) and (oldMode = modeNone) then begin // kinda hack, not good...
@@ -2382,11 +2415,11 @@ begin
 
     if ExtendedEdit then //and (oldMode = modeNone) then
     begin
-      for i := 0 to 3 do // -- detect 'widget' hit
+      for i := 0 to 3 do // -- detect bracket hit
         for j := 0 to 1 do
         begin
-          if abs(line_dist(fx, fy, Widgets[i][j].x, Widgets[i][j].y,
-                                   Widgets[i][j+1].x, Widgets[i][j+1].y)
+          if abs(line_dist(fx, fy, Brackets[i][j].x, Brackets[i][j].y,
+                                   Brackets[i][j+1].x, Brackets[i][j+1].y)
                  ) * GraphZoom * 50 < 3 then
           begin
 //            modeHack := true;
@@ -3923,7 +3956,7 @@ begin
         2: mnuResetTrgScaleClick(Sender);
       end;
     end
-    else if mouseOverWidget >= 0 then begin
+    else if mouseOverBracket >= 0 then begin
       case editMode of
         modeScale: mnuResetTrgScaleClick(Sender);
         else mnuResetTrgRotationClick(Sender);
@@ -4198,6 +4231,7 @@ end;
 procedure TEditForm.btnCoefsModeClick(Sender: TObject);
 begin
   ShowSelectedInfo;
+  TriangleView.Invalidate;
 end;
 
 procedure TEditForm.tbVarPreviewClick(Sender: TObject);
@@ -5167,7 +5201,7 @@ begin
 
     MainTriangles[Transforms] := MainTriangles[-1];
     cp.xform[Transforms].Clear;
-    cp.xform[Transforms].weight := 0.5;
+    cp.xform[Transforms].weight := cp.xform[SelectedTriangle].weight;
     cp.xform[Transforms].vars[0] := 1;
 
     for i := 0 to Transforms-1 do begin
