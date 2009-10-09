@@ -91,11 +91,12 @@ uses
 {$R *.RES}
 
 begin
+  {
   if now >= EncodeDate(2010, 3, 15) then begin
     ShowMessage('This version has expired. Please go to http://sourceforge.net/project/apophysis and download the latest version.');
     Halt
   end;
-
+  }
   Application.Initialize;
   Application.Title := 'Apophysis';
   Application.HelpFile := 'Apophysis 2.0.chm';

@@ -42,7 +42,7 @@ const
   RS_XO = 2;
   RS_VO = 3;
 
-  AppVersionString = 'Apophysis 2.09 pre-beta 2';
+  AppVersionString = 'Apophysis 2.10';
 
   randFilename = 'apophysis.rand';
   undoFilename = 'apophysis.undo';
@@ -5386,7 +5386,6 @@ var
 begin
   FreeOnTerminate := True;
 
-  FBitmap := TBitmap.Create;
   for i := 0 to FListView.Items.Count-1 do
   begin
     index := i;
@@ -5412,7 +5411,6 @@ begin
       end;
       FBitmap := RenderEngine.GetImage;
       Synchronize(PaintThumb);
-      //FBitmap.FreeImage;
       RenderEngine.Free;
     end;
 
@@ -5420,7 +5418,6 @@ begin
     if xmlErrorsList.Count > 0 then
       xmlErrorsList.Clear;
   end;
-  FBitmap.Free;
 end;
 
 procedure TThumbsRenderThread.PaintThumb;
