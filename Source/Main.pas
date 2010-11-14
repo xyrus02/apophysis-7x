@@ -54,6 +54,8 @@ type
 type
   TWin32Version = (wvUnknown, wvWin95, wvWin98, wvWinNT, wvWin2000, wvWinXP);
 
+{$define _NO_THUMBNAILS_} // they only crash anyway
+
 type
   TThumbsRenderThread = class(TThread)
   private
@@ -2017,7 +2019,7 @@ var
   ListItem: TListItem;
   FileStrings: TStringList;
   ParamStrings: TStringList;
-  RenderThread: TThumbsRenderThread;
+  ThumbsRenderThread: TThumbsRenderThread;
   Bitmap: TBitmap;
 begin
   FileStrings := TStringList.Create;
@@ -2067,10 +2069,12 @@ begin
     end;
     MainForm.ListView.Items.EndUpdate;
     // start to render thumbs in background
-    RenderThread := TThumbsRenderThread.Create(true);
-    RenderThread.ListView := MainForm.ListView;
-    RenderThread.Thumbnails := MainForm.Thumbnails;
-    RenderThread.Resume;
+{$ifndef _NO_THUMBNAILS_}
+    ThumbsRenderThread := TThumbsRenderThread.Create(true);
+    ThumbsRenderThread.ListView := MainForm.ListView;
+    ThumbsRenderThread.Thumbnails := MainForm.Thumbnails;
+    ThumbsRenderThread.Resume;
+{$endif}
     case sel of
       0: MainForm.ListView.Selected := MainForm.ListView.Items[MainForm.ListView.Items.Count - 1];
       1: MainForm.ListView.Selected := MainForm.ListView.Items[0];
@@ -2513,8 +2517,8 @@ var
   i: integer;
   s: string;
 begin
-  if not FileExists(AppPath + 'favorites') then exit;
-  Favorites.LoadFromFile(AppPath + 'favorites');
+  if not FileExists(AppPath + scriptFavsFilename) then exit;
+  Favorites.LoadFromFile(AppPath + scriptFavsFilename);
   if Trim(Favorites.Text) = '' then exit;
   if Favorites.count <> 0 then
   begin
@@ -2562,6 +2566,11 @@ begin
   Application.OnException := AppException;
 {$ENDIF}
 *)
+{$ifdef _NO_THUMBNAILS_}
+  tbShowIcons.Visible := false;
+  tbShowList.Visible := false;
+  ToolButton9.Visible := false;
+{$endif}
 
   FMouseMoveState := msDrag;
   LimitVibrancy := True;
@@ -4318,10 +4327,10 @@ end;
 procedure TMainForm.ListXmlScannerEmptyTag(Sender: TObject;
   TagName: String; Attributes: TAttrList);
 const
-  ValidAttributes: array[0..9] of string = (
+  ValidAttributes: array[0..11] of string = (
     'coefs', 'post', 'weight', 'color',
     'symmetry', 'noplot', 'chaos', 'enabled',
-    'plotmode', 'opacity'
+    'plotmode', 'opacity', 'color_speed', 'animate'
   );
 var
   i, j: integer;
@@ -4508,10 +4517,14 @@ begin
 
      with ParseCP.xform[nXform] do begin
       Clear;
-      v := Attributes.Value('weight');
-      if (v <> '') and (TagName = 'xform') then weight := StrToFloat(v);
-      if (TagName = 'finalxform') then
+      if (TagName = 'xform') then begin
+        v := Attributes.Value('weight');
+        if (v <> '') then weight := StrToFloat(v);
+      end
+      else // if (TagName = 'finalxform') then
       begin
+        weight := 0;
+        color_speed := 1;
         v := Attributes.Value('enabled');
         if v <> '' then ParseCP.finalXformEnabled := (StrToInt(v) <> 0)
         else ParseCP.finalXformEnabled := true;
@@ -4525,6 +4538,7 @@ begin
       if v <> '' then color_speed := StrToFloat(v);
       v := Attributes.Value('color_speed');
       if v <> '' then color_speed := StrToFloat(v);
+
       v := Attributes.Value('coefs');
       GetTokens(v, tokens);
       if Tokens.Count < 6 then ShowMessage('Not enough coefficients...crash?');
@@ -4771,7 +4785,6 @@ begin
         scale := FViewScale * Image.Width / FViewImage.Width;
         FViewPos.X := FViewPos.X + (x - FClickRect.Right) / scale;
         FViewPos.Y := FViewPos.Y + (y - FClickRect.Bottom) / scale;
-        //FClickRect.BottomRight := Point(x, y);
 
 		    DrawImageView;
       end;
@@ -4782,20 +4795,9 @@ begin
         FRotateAngle := arctan2(y-Image.Height/2, Image.Width/2-x) - FClickAngle;
         if ssShift in Shift then // angle snap
           FRotateAngle := Round(FRotateAngle/snap_angle)*snap_angle;
-        //SelectRect.Left := x;
-
-//        pdjpointgen.Rotate(FRotateAngle);
-//        FRotateAngle := 0;
 
         DrawRotatelines(FRotateAngle);
         DrawSelection := true;
-{
-        Image.Refresh;
-if AdjustForm.Visible then begin
-MainCp.FAngle:=-FRotateAngle;
-AdjustForm.UpdateDisplay;
-end;
-}
       end;
   end;
   FClickRect.BottomRight := Point(x, y);
@@ -4988,7 +4990,6 @@ begin
   Image.Canvas.Pen.Style   := psDot; //psDash;
   Image.Canvas.Brush.Style := bsClear;
 
-//  Image.Canvas.Rectangle(FSelectRect);
   points[0].x := (Image.Width div 2)-1;
   points[0].y := (Image.Height div 2)-1;
   points[1].x := (Image.Width div 2)-1;
@@ -5189,7 +5190,6 @@ procedure TMainForm.ImageDblClick(Sender: TObject);
 begin
   if FMouseMoveState = msRotateMove then
   begin
-//        FRotateAngle := 0;
     StopThread;
     UpdateUndo;
     MainCp.FAngle := 0;
@@ -5390,7 +5390,6 @@ begin
   begin
     index := i;
     lcp := TControlPoint.Create;
-    lcp.Clear;
     MainForm.LoadXMLFlame(OpenFile, i, lcp);
 
     if xmlErrorsList.Count = 0 then
@@ -5422,7 +5421,10 @@ end;
 
 procedure TThumbsRenderThread.PaintThumb;
 begin
-  FThumbnails.Add(FBitmap, nil);
+  if FThumbnails.Count <= index then
+    FThumbnails.Add(FBitmap, nil)
+  else
+    FThumbnails.Replace(index, FBitmap, nil);
   FListView.Items.Item[index].ImageIndex := FThumbnails.Count-1;
 end;
 

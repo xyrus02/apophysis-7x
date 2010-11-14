@@ -31,7 +31,7 @@ object MainForm: TMainForm
     Left = 137
     Top = 28
     Width = 4
-    Height = 436
+    Height = 430
   end
   object ToolBar: TToolBar
     Left = 0
@@ -332,7 +332,7 @@ object MainForm: TMainForm
     Left = 0
     Top = 28
     Width = 137
-    Height = 436
+    Height = 430
     Align = alLeft
     BevelOuter = bvNone
     Columns = <
@@ -345,18 +345,19 @@ object MainForm: TMainForm
     ParentShowHint = False
     PopupMenu = ListPopUp
     ShowHint = True
+    SmallImages = SmallImages
     TabOrder = 0
+    ViewStyle = vsReport
     OnChange = ListViewChange
     OnChanging = ListViewChanging
     OnEdited = ListViewEdited
-    OnInfoTip = ListViewInfoTip
     OnSelectItem = ListViewSelectItem
   end
   object BackPanel: TPanel
     Left = 141
     Top = 28
     Width = 580
-    Height = 436
+    Height = 430
     Align = alClient
     BevelInner = bvLowered
     BevelOuter = bvNone
@@ -367,7 +368,7 @@ object MainForm: TMainForm
       Left = 1
       Top = 1
       Width = 578
-      Height = 434
+      Height = 428
       Align = alClient
       Anchors = []
       Center = True
@@ -381,7 +382,7 @@ object MainForm: TMainForm
   end
   object StatusBar: TStatusBar
     Left = 0
-    Top = 464
+    Top = 458
     Width = 721
     Height = 19
     Panels = <
@@ -399,7 +400,7 @@ object MainForm: TMainForm
     Left = 8
     Top = 56
     Bitmap = {
-      494C010138003B00040010001000FFFFFFFFFF00FFFFFFFFFFFFFFFF424D3600
+      494C010138003B00040010001000FFFFFFFFFF10FFFFFFFFFFFFFFFF424D3600
       000000000000360000002800000040000000F0000000010020000000000000F0
       0000000000000000000000000000000000000000000000000000000000000000
       0000000000000000000000000000000000000000000000000000000000000000
@@ -2383,7 +2384,8 @@ object MainForm: TMainForm
       C003000F80018000C003000780018000C003000380018000C003000180018000
       C003000180018000C003001F80018000C003001F80018001C003001F80018001
       C0038FF180018001C007FFF980018001C00FFF7580018001C01FFF8F80018001
-      C03FFFFF80018001FFFFFFFFFFFFFFFF}
+      C03FFFFF80018001FFFFFFFFFFFFFFFF00000000000000000000000000000000
+      000000000000}
   end
   object SmallImages: TImageList
     Left = 40
