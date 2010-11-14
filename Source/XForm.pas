@@ -2154,7 +2154,9 @@ var
 begin
   result := Format('   <xform weight="%g" color="%g" ', [weight, color]);
   if color_speed <> 0 then
-    result := result + format('symmetry="%g" ', [color_speed]);
+    result := result + format('color_speed="%g" ', [color_speed]);
+  if animate <> 0 then
+    result := result + format('animate="%g" ', [color_speed]);
   if opacity <> 1 then
     Result := Result + Format('opacity="%g" ', [opacity]);
 
@@ -2200,9 +2202,10 @@ var
 begin
 //  result := Format('   <finalxform enabled="%d" color="%g" symmetry="%g" ',
 //                   [ifthen(IsEnabled, 1, 0), color, symmetry]);
-  result := Format('   <finalxform color="%g" ', [color]);
-  if color_speed <> 0 then result := result + format('symmetry="%g" ', [color_speed]);
-  for i := 0 to nrvar - 1 do begin
+  Result := '   <finalxform ';
+  if color_speed <> 1 then
+    Result := Result + format('color="%g" color_speed="%g" ', [color, color_speed]);
+  for i := 0 to NrVar - 1 do begin
     if vars[i] <> 0 then
       Result := Result + varnames(i) + format('="%g" ', [vars[i]]);
   end;

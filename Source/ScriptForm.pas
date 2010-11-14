@@ -25,7 +25,11 @@ uses
   ExtCtrls, StdCtrls, ControlPoint, Buttons, ComCtrls, ToolWin, Menus,
   atScript, atPascal, AdvMemo, Advmps, XFormMan, XForm, GradientHlpr, cmap;
 
-const NCPS = 10;
+const
+  NCPS = 10;
+
+  scriptFavsFilename = 'favorites';
+
 type
   TOptions = class
   public
@@ -3735,7 +3739,7 @@ begin
       There := true;
   if there then exit;
   Favorites.Add(Script);
-  Favorites.SaveToFile(AppPath + 'favorites');
+  Favorites.SaveToFile(AppPath + scriptFavsFilename);
 end;
 
 procedure TScriptEditor.FormShortCut(var Msg: TWMKey; var Handled: Boolean);
