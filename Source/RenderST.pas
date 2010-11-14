@@ -47,10 +47,13 @@ begin
   assert(n > 0);
 
   finalXform := fcp.xform[n];
-  finalXform.Prepare;
   useFinalXform := fcp.FinalXformEnabled and fcp.HasFinalXform;
 
-  fcp.Prepare;
+  try
+    fcp.Prepare;
+  except
+    on EMathError do ;
+  end;
 end;
 
 ///////////////////////////////////////////////////////////////////////////////

@@ -162,10 +162,8 @@ type
     procedure InterpolateX(cp1, cp2: TControlPoint; Tm: double);
 //    procedure IterateXY(NrPoints: integer; var Points: TPointsXYArray);
     procedure IterateXYC(NrPoints: integer; var Points: TPointsArray);
-//    procedure IterateXYCC(NrPoints: integer; var Points: T2CPointsArray);
 
     procedure Prepare;
-//    procedure Testiterate(NrPoints: integer; var Points: TPointsArray);
 
     function Clone: TControlPoint;
     procedure Copy(cp1: TControlPoint; KeepSizes: boolean = false);
@@ -495,113 +493,13 @@ end;
   end;
 end;
 
-///////////////////////////////////////////////////////////////////////////////
-{
-procedure TControlPoint.Testiterate(NrPoints: integer; var Points: TPointsArray);
-var
-  i: Integer;
-  px, py, pc, pt: double;
-  CurrentPoint: PCPPoint;
-begin
-
-  PreparePropTable;
-
-  for i := 0 to NXFORMS - 1 do
-    xform[i].prepare;
-
-  for i := 0 to NrPoints - 1 do begin
-    px := 4 * (-1 + 2 * random);
-    py := 4 * (-1 + 2 * random);
-
-    pc := 0.1 + 0.5 * sqrt(sqr(px/4)+ sqr(py/4)) ;
-    if abs(px)< 0.02 then
-      pc := 1 ;
-    if abs(py)< 0.02 then
-      pc := 1 ;
-    if abs(frac(px))< 0.01 then
-      pc := 1 ;
-    if abs(frac(py))< 0.01 then
-      pc := 1 ;
-    if abs(sqrt(sqr(px/4)+ sqr(py/4)) - 0.9) < 0.02 then
-      pc := 0;
-    try
-
-      PropTable[Random(PROP_TABLE_SIZE)].NextPoint(px,py,pt);
-    except
-      on EMathError do begin
-        exit;
-      end;
-    end;
-    // store points
-    if i >= 0 then begin
-      CurrentPoint := @Points[i];
-      CurrentPoint.X := px;
-      CurrentPoint.Y := py;
-      CurrentPoint.C := pc;
-    end
-  end;
-end;
-}
-
-{
-procedure TControlPoint.IterateXYCC(NrPoints: integer; var Points: T2CPointsArray);
-var
-  i: Integer;
-  //px, py, pc1, pc2: double;
-  p: T2CPoint;
-  CurrentPoint: P2Cpoint;
-
-  xf: TXform;
-begin
-  p.x := 2 * random - 1;
-  p.y := 2 * random - 1;
-  p.c1 := random;
-  p.c2 := random;
-
-  try
-    xf := xform[random(NumXForms)];
-    for i := 0 to FUSE do begin
-      xf := xf.PropTable[Random(PROP_TABLE_SIZE)];
-      xf.NextPoint2C(p);//px, py, pc1, pc2);
-    end;
-
-    CurrentPoint := @Points[0];
-if UseFinalXform then
-    for i := 0 to NrPoints - 1 do begin
-      xf := xf.PropTable[Random(PROP_TABLE_SIZE)];
-      xf.NextPoint2C(p);//px, py, pc1, pc2);
-      CurrentPoint.X := p.x;
-      CurrentPoint.Y := p.y;
-      CurrentPoint.C1 := p.c1;
-      CurrentPoint.C2 := p.c2;
-      finalXform.NextPoint2C(CurrentPoint^);
-      Inc(CurrentPoint);
-    end
-else
-    for i := 0 to NrPoints - 1 do begin
-      xf := xf.PropTable[Random(PROP_TABLE_SIZE)];
-      xf.NextPoint2C(p);
-      CurrentPoint.X := p.x;
-      CurrentPoint.Y := p.y;
-      CurrentPoint.C1 := p.c1;
-      CurrentPoint.C2 := p.c2;
-      Inc(CurrentPoint);
-    end
-  except
-    on EMathError do begin
-      exit;
-    end;
-  end;
-end;
-}
-
 function TControlPoint.BlowsUp(NrPoints: integer): boolean;
 var
   i, n: Integer;
   px, py: double;
   minx, maxx, miny, maxy: double;
   Points: TPointsArray; //TPointsXYArray;
-  CurrentPoint: PXYPoint;
+  CurrentPoint: PCPPoint;
 
   xf: TXForm;
 begin
