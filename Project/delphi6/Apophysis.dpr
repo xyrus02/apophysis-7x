@@ -91,10 +91,10 @@ uses
 {$R *.RES}
 
 begin
-  if now >= EncodeDate(2009, 9, 9) then begin
-    ShowMessage('This version has expired. Please go to http://sourceforge.net/project/apophysis and download the latest version.');
-    Halt
-  end;
+//  if now >= EncodeDate(2012, 12, 21) then begin
+//    ShowMessage('This version has expired. Please go to http://sourceforge.net/project/apophysis and download the latest version.');
+//    Halt
+//  end;
 
   Application.Initialize;
   Application.Title := 'Apophysis';
@@ -118,6 +118,7 @@ begin
   Application.CreateForm(TfrmPostProcess, frmPostProcess);
   Application.CreateForm(TfrmImageColoring, frmImageColoring);
   Application.CreateForm(TTraceForm, TraceForm);
+  Application.CreateForm(TValueReplacerForm, ValueReplacerForm);
   Application.UpdateFormatSettings := False;
   DecimalSeparator := '.';
   Application.Run;

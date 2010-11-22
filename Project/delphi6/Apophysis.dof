@@ -109,26 +109,26 @@ DebugCWD=
 IncludeVerInfo=1
 AutoIncBuild=0
 MajorVer=2
-MinorVer=0
-Release=8
-Build=3
+MinorVer=1
+Release=0
+Build=0
 Debug=0
 PreRelease=0
 Special=0
 Private=0
 DLL=0
-Locale=3082
+Locale=1033
 CodePage=1252
 [Version Info Keys]
 CompanyName=
-FileDescription=Apophysis 2.08 beta
-FileVersion=2.0.8.3
+FileDescription=Apophysis 2.1
+FileVersion=2.1.0.0
 InternalName=
-LegalCopyright=Copyright © 2005-2008 Apophysis Developers Team
+LegalCopyright=Copyright © 2005-2010 Apophysis Developers Team
 LegalTrademarks=
 OriginalFilename=Apophysis.exe
 ProductName=
-ProductVersion=2.0
+ProductVersion=2.1
 Comments=
 [HistoryLists\hlDebugSourcePath]
 Count=3
@@ -141,8 +141,8 @@ Item0=WinTypes=Windows;WinProcs=Windows;DbiTypes=BDE;DbiProcs=BDE;DbiErrs=BDE;
 [HistoryLists\hlSearchPath]
 Count=3
 Item0=$(DELPHI)\Lib\Debug;..\..\..\Apolibstuff\libxml;..\..\..\Apolibstuff\imglib;..\..\..\Apolibstuff\Scripter\Imports\Delphi7;..\..\..\Apolibstuff\Scripter;..\..\..\ApoLibStuff\pngimage
-Item1=..\..\..\Apolibstuff\libxml;..\..\..\Apolibstuff\imglib;..\..\..\Apolibstuff\Scripter\Imports\Delphi7;..\..\..\Apolibstuff\Scripter;..\..\..\ApoLibStuff\pngimage
-Item2=$(DELPHI)\Lib\Debug;..\..\..\Apolibstuff\libxml;..\..\..\Apolibstuff\imglib;..\..\..\Apolibstuff\Scripter\Imports\Delphi7;..\..\..\Apolibstuff\Scripter;..\..\..\ApoLibStuff\pngimage
+Item1=$(DELPHI)\Lib\Debug;..\..\..\Apolibstuff\libxml;..\..\..\Apolibstuff\imglib;..\..\..\Apolibstuff\Scripter\Imports\Delphi7;..\..\..\Apolibstuff\Scripter;..\..\..\ApoLibStuff\pngimage
+Item2=..\..\..\Apolibstuff\libxml;..\..\..\Apolibstuff\imglib;..\..\..\Apolibstuff\Scripter\Imports\Delphi7;..\..\..\Apolibstuff\Scripter;..\..\..\ApoLibStuff\pngimage
 [HistoryLists\hlUnitOutputDirectory]
 Count=1
 Item0=..\..\out\dcu
