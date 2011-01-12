@@ -1,0 +1,42 @@
+ARROW_BLACK        CURSOR         "ARROW_BLACK.cur"
+ARROW_WHITE        CURSOR         "ARROW_WHITE.cur"
+MOVE_BLACK         CURSOR         "MOVE_BLACK.cur"
+MOVE_WB            CURSOR         "MOVE_WB.cur"
+MOVE_WHITE         CURSOR         "MOVE_WHITE.cur"
+ROTATE_BLACK       CURSOR         "ROTATE_BLACK.cur"
+ROTATE_WB          CURSOR         "ROTATE_WB.cur"
+ROTATE_WHITE       CURSOR         "ROTATE_WHITE.cur"
+SCALE_BLACK        CURSOR         "SCALE_BLACK.cur"
+SCALE_WB           CURSOR         "SCALE_WB.cur"
+SCALE_WHITE        CURSOR         "SCALE_WHITE.cur"
+THUMB_PLACEHOLDER  BITMAP         "THUMB_PLACEHOLDER.bmp"
+
+MAINICON           ICON           "MAINICON.ico"
+1				   VERSIONINFO
+    FILEVERSION     2,1,0,1500
+    PRODUCTVERSION  2,1,0,1500
+    FILEOS          0x00000004
+    FILETYPE        0x00000001
+    FILESUBTYPE     0x00000000
+    FILEFLAGSMASK   0x00000000
+    FILEFLAGS       0x00000000
+{
+    BLOCK "StringFileInfo"
+    {
+        BLOCK "040904e4"
+        {
+            VALUE "CompanyName", "Apophysis Developers Team"
+            VALUE "FileDescription", "Apophysis 7X"
+            VALUE "FileVersion", "2.1.0.1500"
+            VALUE "InternalName", "2.09.7x15-1500"
+            VALUE "LegalCopyright", "Copyright (c) 2005-2010 Apophysis Developers Team"
+            VALUE "OriginalFilename", "Apophysis7X.exe"
+            VALUE "ProductName", "Apophysis"
+            VALUE "ProductVersion", "2.1.0.1500"
+        }
+    }
+    BLOCK "VarFileInfo"
+    {
+        VALUE "Translation", 0x0409, 0x04E4
+    }
+}
