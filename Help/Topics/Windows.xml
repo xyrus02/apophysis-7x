@@ -1,0 +1,37 @@
+﻿<topic template="Default" status="Needs Review" lasteditedby="Georg Kiehne" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../helpproject.xsd">
+  <title translate="true">Windows</title>
+  <a-keywords>
+    <a-keyword>Window Interface Program</a-keyword>
+  </a-keywords>
+  <body>
+    <header>
+      <para styleclass="Heading1"><text styleclass="Heading1" translate="true">Apophysis Windows</text></para>
+    </header>
+    <para styleclass="Image Caption"><text styleclass="Image Caption" translate="true">Jump to: </text><link displaytype="text" defaultstyle="true" type="topiclink" href="Main_window" styleclass="Image Caption" translate="true">Main window</link><text styleclass="Image Caption" translate="true"> - </text><link displaytype="text" defaultstyle="true" type="topiclink" href="Editor_window" styleclass="Image Caption" translate="true">Editor window</link><text styleclass="Image Caption" translate="true"> - </text><link displaytype="text" defaultstyle="true" type="topiclink" href="Adjustment" styleclass="Image Caption" translate="true">Adjustment window</link><text styleclass="Image Caption" translate="true"> - </text><link displaytype="text" defaultstyle="true" type="topiclink" href="Rendering" styleclass="Image Caption" translate="true">Rendering window</link><text styleclass="Image Caption" translate="true"> - </text><link displaytype="text" defaultstyle="true" type="topiclink" href="Mutation" styleclass="Image Caption" translate="true">Mutation window</link><text styleclass="Image Caption" translate="true"> - </text><link displaytype="text" defaultstyle="true" type="topiclink" href="Options" styleclass="Image Caption" translate="true">Options window</link></para>
+    <para styleclass="Heading1"></para>
+    <para styleclass="Heading1"><text styleclass="Heading1" translate="true">Main window</text></para>
+    <para styleclass="Heading1"></para>
+    <para styleclass="Heading1" style="text-indent:11px; margin-right:0px; margin-left:0px;"><snippet src="Main_window"/></para>
+    <para styleclass="Heading1"></para>
+    <para styleclass="Heading1"><text styleclass="Heading1" translate="true">Editor window</text></para>
+    <para styleclass="Heading1"></para>
+    <para styleclass="Heading1" style="text-indent:13px; margin-right:0px; margin-left:0px;"><snippet src="Editor"/></para>
+    <para styleclass="Heading1"></para>
+    <para styleclass="Heading1"><text styleclass="Heading1" translate="true">Adjustment window</text></para>
+    <para styleclass="Heading1"></para>
+    <para styleclass="Heading1" style="text-indent:12px; margin-right:0px; margin-left:0px;"><snippet src="Adjustment"/></para>
+    <para styleclass="Heading1"></para>
+    <para styleclass="Heading1"><text styleclass="Heading1" translate="true">Rendering window</text></para>
+    <para styleclass="Heading1"></para>
+    <para styleclass="Heading1" style="text-indent:12px; margin-right:0px; margin-left:0px;"><snippet src="Rendering"/></para>
+    <para styleclass="Heading1"></para>
+    <para styleclass="Heading1"><text styleclass="Heading1" translate="true">Mutation window</text></para>
+    <para styleclass="Heading1"></para>
+    <para styleclass="Heading1" style="text-indent:13px; margin-right:0px; margin-left:0px;"><snippet src="Mutation"/></para>
+    <para styleclass="Heading1"></para>
+    <para styleclass="Heading1"><text styleclass="Heading1" translate="true">Options window</text></para>
+    <para styleclass="Heading1"></para>
+    <para styleclass="Heading1" style="text-indent:13px; margin-right:0px; margin-left:0px;"><snippet src="Options"/></para>
+    <para styleclass="Image Caption"></para>
+  </body>
+</topic>

@@ -1,0 +1,84 @@
+<topic template="Default" status="Needs Review" lasteditedby="Georg Kiehne" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../helpproject.xsd">
+  <title translate="true">Transform operations</title>
+  <body>
+    <header>
+      <para styleclass="Heading1"><text styleclass="Heading1" translate="true">Operations</text></para>
+    </header>
+    <para styleclass="Normal"><text styleclass="Normal" translate="true">The transform operations are no members of the flame interface - which means you don&apos;t prepend &quot;Transform.&quot; to the procedure name.</text></para>
+    <para styleclass="Normal"></para>
+    <para styleclass="Normal"><table styleclass="Default" rowcount="8" colcount="2" style="width:654px;">
+      <tr style="vertical-align:top">
+        <td style="width:234px;">
+          <para styleclass="Heading3"><text styleclass="Heading3" translate="true">AddTransform</text></para>
+        </td>
+        <td style="width:420px;">
+          <para styleclass="Normal"><text styleclass="Normal" translate="true">Adds a new transform and sets it active.</text></para>
+          <para styleclass="Normal"></para>
+        </td>
+      </tr>
+      <tr style="vertical-align:top">
+        <td style="width:234px;">
+          <para styleclass="Heading3"><text styleclass="Heading3" translate="true">DeleteTransform</text></para>
+        </td>
+        <td style="width:420px;">
+          <para styleclass="Normal"><text styleclass="Normal" translate="true">Removes the currently active transform.</text></para>
+          <para styleclass="Normal"></para>
+        </td>
+      </tr>
+      <tr style="vertical-align:top">
+        <td style="width:234px;">
+          <para styleclass="Heading3"><text styleclass="Heading3" translate="true">CopyTransform</text></para>
+        </td>
+        <td style="width:420px;">
+          <para styleclass="Normal"><text styleclass="Normal" translate="true">Clones the currently active transform.</text></para>
+          <para styleclass="Normal"></para>
+        </td>
+      </tr>
+      <tr style="vertical-align:top">
+        <td style="width:234px;">
+          <para styleclass="Heading3"><text styleclass="Heading3" translate="true">SetActiveTransform(index)</text></para>
+        </td>
+        <td style="width:420px;">
+          <para styleclass="Normal"><text styleclass="Normal" translate="true">Selects a transform by its zero-based index.</text></para>
+          <para styleclass="Normal"></para>
+        </td>
+      </tr>
+      <tr style="vertical-align:top">
+        <td style="width:234px;">
+          <para styleclass="Heading3"><text styleclass="Heading3" translate="true">Rotate(angle)</text></para>
+        </td>
+        <td style="width:420px;">
+          <para styleclass="Normal"><text styleclass="Normal" translate="true">Rotates the currently active transform by a given angle (in degrees)</text></para>
+          <para styleclass="Normal"></para>
+          <para styleclass="Normal"></para>
+        </td>
+      </tr>
+      <tr style="vertical-align:top">
+        <td style="width:234px;">
+          <para styleclass="Heading3"><text styleclass="Heading3" translate="true">Scale(factor)</text></para>
+        </td>
+        <td style="width:420px;">
+          <para styleclass="Normal"><text styleclass="Normal" translate="true">Scales the currently active transform by a given factor.</text></para>
+          <para styleclass="Normal"></para>
+        </td>
+      </tr>
+      <tr style="vertical-align:top">
+        <td style="width:234px;">
+          <para styleclass="Heading3"><text styleclass="Heading3" translate="true">Translate(x,y)</text></para>
+        </td>
+        <td style="width:420px;">
+          <para styleclass="Normal"><text styleclass="Normal" translate="true">Moves the currently active transform by a given offset.</text></para>
+          <para styleclass="Normal"></para>
+        </td>
+      </tr>
+      <tr style="vertical-align:top">
+        <td style="width:234px;">
+          <para styleclass="Heading3"><text styleclass="Heading3" translate="true">Multiply(a,b,c,d)</text></para>
+        </td>
+        <td style="width:420px;">
+          <para styleclass="Normal"><text styleclass="Normal" translate="true">Performs a matrix multiplication on the currently active transform by a given 2x2-matrix.</text></para>
+        </td>
+      </tr>
+    </table></para>
+  </body>
+</topic>

@@ -1,0 +1,66 @@
+﻿<topic template="Default" status="Needs Review" lasteditedby="Georg Kiehne" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../helpproject.xsd">
+  <title translate="true">Operations</title>
+  <body>
+    <header>
+      <para styleclass="Heading1"><text styleclass="Heading1" translate="true">Operations</text></para>
+    </header>
+    <para styleclass="Normal"><text styleclass="Normal" translate="true">The flame operations are no members of the flame interface - which means you don&apos;t prepend &quot;Flame.&quot; to the procedure name.</text></para>
+    <para styleclass="Normal"></para>
+    <para styleclass="Normal"><table styleclass="Default" rowcount="6" colcount="2" style="width:654px;">
+      <tr style="vertical-align:top">
+        <td style="width:189px;">
+          <para styleclass="Heading3"><text styleclass="Heading3" translate="true">StoreFlame(index)</text></para>
+        </td>
+        <td style="width:465px;">
+          <para styleclass="Normal"><text styleclass="Normal" translate="true">Stores the flame at the given batch index in memory.</text></para>
+          <para styleclass="Normal"></para>
+        </td>
+      </tr>
+      <tr style="vertical-align:top">
+        <td style="width:189px;">
+          <para styleclass="Heading3"><text styleclass="Heading3" translate="true">SaveFlame(path)</text></para>
+        </td>
+        <td style="width:465px;">
+          <para styleclass="Normal"><text styleclass="Normal" translate="true">Stores the currently selected flame to a flame file on your hard disk given by the parameter.</text></para>
+          <para styleclass="Normal"></para>
+        </td>
+      </tr>
+      <tr style="vertical-align:top">
+        <td style="width:189px;">
+          <para styleclass="Heading3"><text styleclass="Heading3" translate="true">Morph(index1, index2, time)</text></para>
+        </td>
+        <td style="width:465px;">
+          <para styleclass="Normal"><text styleclass="Normal" translate="true">Interpolates the flames properties between the flame at batch index 1 and batch index 2 during a given time.</text></para>
+          <para styleclass="Normal"></para>
+        </td>
+      </tr>
+      <tr style="vertical-align:top">
+        <td style="width:189px;">
+          <para styleclass="Heading3"><text styleclass="Heading3" translate="true">RotateFlame(angle)</text></para>
+        </td>
+        <td style="width:465px;">
+          <para styleclass="Normal"><text styleclass="Normal" translate="true">Rotates all transforms in the currently selected flame by an angle given in degrees.</text></para>
+          <para styleclass="Normal"></para>
+        </td>
+      </tr>
+      <tr style="vertical-align:top">
+        <td style="width:189px;">
+          <para styleclass="Heading3"><text styleclass="Heading3" translate="true">NormalizeVars</text></para>
+        </td>
+        <td style="width:465px;">
+          <para styleclass="Normal"><text styleclass="Normal" translate="true">Changes the variation weights at each transform to sum up to a total weight of 1.0.</text></para>
+          <para styleclass="Normal"></para>
+        </td>
+      </tr>
+      <tr style="vertical-align:top">
+        <td style="width:189px;">
+          <para styleclass="Heading3"><text styleclass="Heading3" translate="true">CalculateScale</text></para>
+        </td>
+        <td style="width:465px;">
+          <para styleclass="Normal"><text styleclass="Normal" translate="true">Rearranges the editor windows orientation and zoom so that all transforms are contained within the window.</text></para>
+          <para styleclass="Normal"></para>
+        </td>
+      </tr>
+    </table></para>
+  </body>
+</topic>

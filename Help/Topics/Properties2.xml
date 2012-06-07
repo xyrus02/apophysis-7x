@@ -1,0 +1,90 @@
+<topic template="Default" status="Needs Review" lasteditedby="Georg Kiehne" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../helpproject.xsd">
+  <title translate="true">Transform properties</title>
+  <body>
+    <header>
+      <para styleclass="Heading1"><text styleclass="Heading1" translate="true">Properties</text></para>
+    </header>
+    <para styleclass="Normal"><table styleclass="Default" rowcount="8" colcount="2" style="width:654px;">
+      <tr style="vertical-align:top">
+        <td style="width:234px;">
+          <para styleclass="Heading3"><text styleclass="Heading3" translate="true">Transform.A..Transform.F</text></para>
+        </td>
+        <td style="width:420px;">
+          <para styleclass="Normal"><text styleclass="Normal" translate="true">The values within the selected transformation matrix:</text></para>
+          <para styleclass="Normal"><text styleclass="Normal" translate="true">A = Xx, B = Xy, C = Yx, D = Yy, E = Ox, F = Oy</text></para>
+          <para styleclass="Normal"><text styleclass="Normal" translate="true">Default is: A=1, B=0, C=0, D=1, E=0, F=0</text></para>
+          <para styleclass="Normal"></para>
+        </td>
+      </tr>
+      <tr style="vertical-align:top">
+        <td style="width:234px;">
+          <para styleclass="Heading3"><text styleclass="Heading3" translate="true">Transform.post[0..2, 0..1]</text></para>
+        </td>
+        <td style="width:420px;">
+          <para styleclass="Normal"><text styleclass="Normal" translate="true">A two dimensional array containing the post transformation matrix&apos; values.</text></para>
+          <para styleclass="Normal"><text styleclass="Normal" translate="true">On the first dimension, 0 is point X, 1 is point Y and 2 is point O</text></para>
+          <para styleclass="Normal"><text styleclass="Normal" translate="true">On the second dimension, 0 is component x, 1 is component y</text></para>
+          <para styleclass="Normal"><text styleclass="Normal" translate="true">Default is: [0,0]=1, [0,1]=0, [1,0]=0, [1,1]=1, [2,0]=0, [2,1]=0</text></para>
+          <para styleclass="Normal"></para>
+        </td>
+      </tr>
+      <tr style="vertical-align:top">
+        <td style="width:234px;">
+          <para styleclass="Heading3"><text styleclass="Heading3" translate="true">Transform.Variation[0..NVARS-1] or</text></para>
+          <para styleclass="Heading3"><text styleclass="Heading3" translate="true">Transform.&lt;identifier&gt;</text></para>
+        </td>
+        <td style="width:420px;">
+          <para styleclass="Normal"><text styleclass="Normal" translate="true">Sets the individual variations identified by their index. It is recommended for modern Apophysis versions to use the variation / variable names directly - e.g.: </text></para>
+          <para styleclass="Normal"><text styleclass="Normal" translate="true">Transform.julian = 1.0; Transform.julian_power = 5;</text></para>
+          <para styleclass="Normal"></para>
+        </td>
+      </tr>
+      <tr style="vertical-align:top">
+        <td style="width:234px;">
+          <para styleclass="Heading3"><text styleclass="Heading3" translate="true">Transform.Color</text></para>
+        </td>
+        <td style="width:420px;">
+          <para styleclass="Normal"><text styleclass="Normal" translate="true">The color map position of the transform.</text></para>
+          <para styleclass="Normal"></para>
+        </td>
+      </tr>
+      <tr style="vertical-align:top">
+        <td style="width:234px;">
+          <para styleclass="Heading3"><text styleclass="Heading3" translate="true">Transform.ColorSpeed or </text></para>
+          <para styleclass="Heading3"><text styleclass="Heading3" translate="true">Transform.Symmetry</text></para>
+        </td>
+        <td style="width:420px;">
+          <para styleclass="Normal"><text styleclass="Normal" translate="true">The color speed of the transform.</text></para>
+          <para styleclass="Normal"></para>
+          <para styleclass="Normal"></para>
+        </td>
+      </tr>
+      <tr style="vertical-align:top">
+        <td style="width:234px;">
+          <para styleclass="Heading3"><text styleclass="Heading3" translate="true">Transform.Weight</text></para>
+        </td>
+        <td style="width:420px;">
+          <para styleclass="Normal"><text styleclass="Normal" translate="true">The transform weight.</text></para>
+          <para styleclass="Normal"></para>
+        </td>
+      </tr>
+      <tr style="vertical-align:top">
+        <td style="width:234px;">
+          <para styleclass="Heading3"><text styleclass="Heading3" translate="true">Transform.Opacity</text></para>
+        </td>
+        <td style="width:420px;">
+          <para styleclass="Normal"><text styleclass="Normal" translate="true">The transform opacity.</text></para>
+          <para styleclass="Normal"></para>
+        </td>
+      </tr>
+      <tr style="vertical-align:top">
+        <td style="width:234px;">
+          <para styleclass="Heading3"><text styleclass="Heading3" translate="true">Transform.Chaos[0..NXFORMS-1]</text></para>
+        </td>
+        <td style="width:420px;">
+          <para styleclass="Normal"><text styleclass="Normal" translate="true">The xaos coefficient from the current transform to the transform given by the specified index (zero-based counting)</text></para>
+        </td>
+      </tr>
+    </table></para>
+  </body>
+</topic>

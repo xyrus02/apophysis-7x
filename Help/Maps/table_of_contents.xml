@@ -1,0 +1,123 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<map xmlns:xsi="http://www.w3.org/2001/XInclude">
+  <topicref type="topic" id="403469331046248" build="ALL" modified="2010-06-17T19:15:09.761Z" icon="0" href="Home">
+    <caption translate="true">Home</caption>
+    <topicref type="topic" id="403467245551847" build="ALL" modified="2010-06-17T17:21:15.583Z" icon="0" href="Acknowledgements">
+      <caption translate="true">Acknowledgements</caption>
+    </topicref>
+  </topicref>
+  <topicref type="topic" id="403465258053769" build="ALL" modified="2010-06-17T17:21:15.099Z" icon="0" href="Windows">
+    <caption translate="true">Windows</caption>
+    <topicref type="topic" id="403468177856885" build="ALL" modified="2010-06-17T17:21:15.261Z" icon="0" href="Main_window">
+      <caption translate="true">Main window</caption>
+      <topicref type="topic" id="403468528558283" build="ALL" modified="2010-06-18T13:23:48.509Z" icon="0" href="Menu">
+        <caption translate="true">Main menu</caption>
+      </topicref>
+      <topicref type="topic" id="403469303940875" build="ALL" modified="2010-06-18T13:23:52.501Z" icon="0" href="Toolbar">
+        <caption translate="true">Main toolbar</caption>
+      </topicref>
+    </topicref>
+    <topicref type="topic" id="403466192778184" build="ALL" modified="2010-06-18T18:01:26.564Z" icon="0" href="Editor">
+      <caption translate="true">Editor window</caption>
+      <topicref type="topic" id="403467716101516" build="ALL" modified="2010-06-18T13:23:56.269Z" icon="0" href="Toolbar2">
+        <caption translate="true">Editor toolbar</caption>
+      </topicref>
+    </topicref>
+    <topicref type="topic" id="4036545334589" build="ALL" modified="2010-06-18T13:24:02.933Z" icon="0" href="Adjustment">
+      <caption translate="true">Adjustment window</caption>
+    </topicref>
+    <topicref type="topic" id="403467758486459" build="ALL" modified="2010-06-18T13:24:06.165Z" icon="0" href="Rendering">
+      <caption translate="true">Rendering window</caption>
+    </topicref>
+    <topicref type="topic" id="403465215753529" build="ALL" modified="2010-06-18T13:24:09.717Z" icon="0" href="Mutation">
+      <caption translate="true">Mutation window</caption>
+    </topicref>
+    <topicref type="topic" id="403466498043458" build="ALL" modified="2010-06-18T13:24:14.365Z" icon="0" href="Options">
+      <caption translate="true">Options window</caption>
+      <topicref type="topic" id="403470729100089" build="ALL" modified="2010-06-18T13:24:17.388Z" icon="0" href="General">
+        <caption translate="true">General options</caption>
+      </topicref>
+      <topicref type="topic" id="403468631327748" build="ALL" modified="2010-06-18T13:24:20.764Z" icon="0" href="Editor2">
+        <caption translate="true">Editor options</caption>
+      </topicref>
+      <topicref type="topic" id="403468858743810" build="ALL" modified="2010-06-18T13:24:24.524Z" icon="0" href="Display">
+        <caption translate="true">Display options</caption>
+      </topicref>
+      <topicref type="topic" id="403469185853051" build="ALL" modified="2010-06-18T13:24:32.628Z" icon="0" href="Random">
+        <caption translate="true">Randomization options</caption>
+      </topicref>
+      <topicref type="topic" id="403468506805191" build="ALL" modified="2010-06-18T13:24:41.146Z" icon="0" href="Variations2">
+        <caption translate="true">Variation selection</caption>
+      </topicref>
+      <topicref type="topic" id="403468918802724" build="ALL" modified="2010-06-18T13:24:45.764Z" icon="0" href="Gradient">
+        <caption translate="true">Gradient options</caption>
+      </topicref>
+      <topicref type="topic" id="403468327606426" build="ALL" modified="2010-06-18T13:24:51.387Z" icon="0" href="UPR">
+        <caption translate="true">UPR options</caption>
+      </topicref>
+      <topicref type="topic" id="403468349690467" build="ALL" modified="2010-06-18T13:25:08.339Z" icon="0" href="Paths">
+        <caption translate="true">Search paths</caption>
+      </topicref>
+      <topicref type="topic" id="403471210279474" build="ALL" modified="2010-06-18T13:25:12.731Z" icon="0" href="Autosave">
+        <caption translate="true">Autosave options</caption>
+      </topicref>
+    </topicref>
+  </topicref>
+  <topicref type="topic" id="403466399665289" build="ALL" modified="2010-06-18T13:12:32.188Z" icon="0" href="Flames">
+    <caption translate="true">Fractal Flames</caption>
+    <topicref type="topic" id="403468126241183" build="ALL" modified="2010-06-17T17:21:15.392Z" icon="0" href="Transforms">
+      <caption translate="true">Transforms</caption>
+    </topicref>
+    <topicref type="topic" id="403466157181956" build="ALL" modified="2010-06-17T17:21:15.374Z" icon="0" href="Variations">
+      <caption translate="true">Variations</caption>
+    </topicref>
+    <topicref type="topic" id="403468064180986" build="ALL" modified="2010-06-17T17:21:15.411Z" icon="0" href="Coloring">
+      <caption translate="true">Coloring</caption>
+    </topicref>
+    <topicref type="topic" id="403468954629483" build="ALL" modified="2010-06-17T20:43:09.911Z" icon="0" href="Xaos">
+      <caption translate="true">Xaos</caption>
+    </topicref>
+  </topicref>
+  <topicref type="topic" id="403467637389414" build="ALL" modified="2010-06-17T17:21:15.429Z" icon="0" href="Scripting">
+    <caption translate="true">Scripting</caption>
+    <topicref type="topic" id="403474519320882" build="ALL" modified="2010-06-18T15:57:07.382Z" icon="0" href="Language">
+      <caption translate="true">Language</caption>
+      <topicref type="topic" id="40346346378859" build="ALL" modified="2010-06-18T16:45:51.851Z" icon="0" href="Identifiers">
+        <caption translate="true">Identifiers</caption>
+      </topicref>
+      <topicref type="topic" id="40347130699146" build="ALL" modified="2010-06-18T17:27:11.591Z" icon="0" href="Literals_and_operators">
+        <caption translate="true">Literals and Operators</caption>
+      </topicref>
+      <topicref type="topic" id="403476751115188" build="ALL" modified="2010-06-18T17:03:19.382Z" icon="0" href="Conditions_and_Loops">
+        <caption translate="true">Conditions and Loops</caption>
+      </topicref>
+      <topicref type="topic" id="403477014650913" build="ALL" modified="2010-06-18T17:27:08.000Z" icon="0" href="Procedures_and_functions">
+        <caption translate="true">Procedures and Functions</caption>
+      </topicref>
+      <topicref type="topic" id="403477437987198" build="ALL" modified="2010-06-18T17:17:40.724Z" icon="0" href="Comments">
+        <caption translate="true">Comments</caption>
+      </topicref>
+    </topicref>
+    <topicref type="topic" id="403476812684047" build="ALL" modified="2010-06-18T17:20:27.670Z" icon="0" href="General_interface">
+      <caption translate="true">Pre-defined procedures and constants</caption>
+    </topicref>
+    <topicref type="topic" id="403467929479856" build="ALL" modified="2010-06-17T17:21:15.449Z" icon="0" href="Flame_interface">
+      <caption translate="true">Flame interface</caption>
+      <topicref type="topic" id="403478597086113" build="ALL" modified="2010-06-18T22:09:10.666Z" icon="0" href="Operations2">
+        <caption translate="true">Operations</caption>
+      </topicref>
+      <topicref type="topic" id="403466296884806" build="ALL" modified="2010-06-17T17:21:15.467Z" icon="0" href="Properties">
+        <caption translate="true">Properties</caption>
+      </topicref>
+    </topicref>
+    <topicref type="topic" id="403467026918573" build="ALL" modified="2010-06-17T17:21:15.487Z" icon="0" href="Transform_interface">
+      <caption translate="true">Transform interface</caption>
+      <topicref type="topic" id="403469272638752" build="ALL" modified="2010-06-17T17:21:15.506Z" icon="0" href="Operations">
+        <caption translate="true">Operations</caption>
+      </topicref>
+      <topicref type="topic" id="403465455485008" build="ALL" modified="2010-06-17T17:21:15.526Z" icon="0" href="Properties2">
+        <caption translate="true">Properties</caption>
+      </topicref>
+    </topicref>
+  </topicref>
+</map>

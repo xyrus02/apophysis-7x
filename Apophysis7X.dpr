@@ -82,7 +82,7 @@ uses
   varCross in 'Variations\varCross.pas',
   varWedge in 'Variations\varWedge.pas',
   varEpispiral in 'Variations\varEpispiral.pas',
-  varBwraps in 'Variations\varBwraps.pas', 
+  varBwraps in 'Variations\varBwraps.pas',
   varPDJ in 'Variations\varPDJ.pas',
   varJuliaN in 'Variations\varJuliaN.pas',
   varJuliaScope in 'Variations\varJuliaScope.pas',

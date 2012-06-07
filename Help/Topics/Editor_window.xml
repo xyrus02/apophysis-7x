@@ -1,0 +1,113 @@
+﻿<topic template="Default" lasteditedby="Georg Kiehne" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../helpproject.xsd">
+  <title translate="true">Editor window</title>
+  <a-keywords>
+    <a-keyword>Window Interface Program Editor</a-keyword>
+  </a-keywords>
+  <body>
+    <header>
+      <para styleclass="Heading1"><text styleclass="Heading1" translate="true">Editor window</text></para>
+    </header>
+    <para styleclass="Normal" style="text-indent:0px; margin-right:444px; margin-left:0px;"><image src="editor.jpg" scale="87.62%" width="631" height="559" styleclass="Image Caption"></image></para>
+    <para styleclass="Normal" style="text-indent:1px; margin-right:444px; margin-left:11px;"><text styleclass="Image Caption" translate="true">The editor window</text></para>
+    <para styleclass="Normal" style="text-indent:1px; margin-right:444px; margin-left:11px;"></para>
+    <para styleclass="Normal" style="text-indent:0px; margin-right:444px; margin-left:0px;"><table styleclass="Default" rowcount="7" colcount="2" style="width:654px; page-break-inside:auto;">
+      <tr style="vertical-align:top">
+        <td colspan="2">
+          <para styleclass="Normal" style="text-indent:0px; margin-right:0px; margin-left:0px;"><text styleclass="Normal" translate="true">The editor window is your central place to design fractal flames. It offers full control over the appearance of your work. It consists of various areas explained below.</text></para>
+          <para styleclass="Normal" style="text-indent:0px; margin-right:444px; margin-left:0px;"></para>
+          <para styleclass="Normal" style="text-indent:0px; margin-right:0px; margin-left:0px;"><text styleclass="Heading3" translate="true">The toolbar area</text><br/><text styleclass="Normal" translate="true">In the toolbar, you can access the features of the editor. Alternatively, you can access most of them in the context menu of the editor panel. To learn more about the toolbar features, read the </text><link displaytype="text" defaultstyle="true" type="topiclink" href="Toolbar2" styleclass="Normal" translate="true">editor toolbar</link><text styleclass="Normal" translate="true"> topic.</text></para>
+          <para styleclass="Normal" style="text-indent:0px; margin-right:444px; margin-left:0px;"></para>
+          <para styleclass="Normal" style="text-indent:0px; margin-right:0px; margin-left:0px;"><text styleclass="Heading3" translate="true">The mini-preview</text><br/><text styleclass="Normal" translate="true">The mini-preview shows the currently editing flame. It updates way faster than the main preview. Right-clicking lets you choose the quality of the preview.</text></para>
+          <para styleclass="Normal" style="text-indent:0px; margin-right:444px; margin-left:0px;"></para>
+          <para styleclass="Normal" style="text-indent:0px; margin-right:0px; margin-left:0px;"><text styleclass="Heading3" translate="true">The editor panel</text><br/><text styleclass="Normal" translate="true">The black area at the window client shows an arrangement of triangles. These represent the transform nodes which control the transformation of the applied variations.</text></para>
+          <para styleclass="Normal" style="text-indent:0px; margin-right:444px; margin-left:0px;"></para>
+          <para styleclass="Heading2" style="text-indent:0px; margin-right:0px; margin-left:0px;"><text styleclass="Heading3" translate="true">The transform selection- and property area</text><br/><text styleclass="Normal" translate="true">This area consists of a drop-down box where you can select the active transform (alternatively you can click a triangle in the editor panel), a field where you can name your transform and the transform weight box. Below these fields, you can choose from a variety of tabs which group the transform properties into meaningful categories:</text></para>
+          <para styleclass="Heading2" style="text-indent:0px; margin-right:444px; margin-left:0px;"></para>
+        </td>
+      </tr>
+      <tr style="vertical-align:top">
+        <td style="width:126px;">
+          <para styleclass="Heading3" style="text-indent:0px; margin-right:0px; margin-left:0px;"><text styleclass="Heading3" translate="true">Variations</text></para>
+        </td>
+        <td style="width:528px;">
+          <para styleclass="Normal" style="text-indent:0px; margin-right:0px; margin-left:0px;"><text styleclass="Normal" translate="true">Here you can specify the weight of each transforms variation. The list enumerates all built-in variations and those which were loaded through plugins.</text></para>
+          <para styleclass="Normal" style="text-indent:0px; margin-right:0px; margin-left:0px;"><text styleclass="Normal" translate="true">Below the list is a button captioned &quot;Clear&quot;. This button removes every active variation by setting it to zero.Variations weighted zero are inactive.</text></para>
+          <para styleclass="Normal" style="text-indent:0px; margin-right:0px; margin-left:0px;"><text styleclass="Normal" translate="true">Also, you can hide every inactive variation by checking the box captioned &quot;Hide non-used variations&quot;. This is useful if you want to see which variations a transform uses quickly without checking each entry in the list. (which can become very long)</text></para>
+          <para styleclass="Normal" style="text-indent:0px; margin-right:0px; margin-left:0px;"><text styleclass="Normal" translate="true">To learn more about variations, read the </text><link displaytype="text" defaultstyle="true" type="topiclink" href="Variations" styleclass="Normal" translate="true">variations</link><text styleclass="Normal" translate="true"> topic in the </text><link displaytype="text" defaultstyle="true" type="topiclink" href="Flames" styleclass="Normal" translate="true">flames</link><text styleclass="Normal" translate="true"> section.</text></para>
+          <para styleclass="Normal" style="text-indent:0px; margin-right:0px; margin-left:0px;"></para>
+        </td>
+      </tr>
+      <tr style="vertical-align:top">
+        <td style="width:126px;">
+          <para styleclass="Heading3" style="text-indent:0px; margin-right:0px; margin-left:0px;"><text styleclass="Heading3" translate="true">Variables</text></para>
+        </td>
+        <td style="width:528px;">
+          <para styleclass="Normal" style="text-indent:0px; margin-right:0px; margin-left:0px;"><text styleclass="Normal" translate="true">Some variations have additional parameters named variables. With variables you can customize the effect of variations. A popular example for a variation with variables is the &quot;julian&quot;-variation.</text></para>
+          <para styleclass="Normal" style="text-indent:0px; margin-right:0px; margin-left:0px;"><text styleclass="Normal" translate="true">Below the variables listing is a box captioned &quot;Show all variables&quot;. If this box is checked, every variable available within the loaded variations will be listed. By default, only variables of active variations will be shown.</text></para>
+          <para styleclass="Normal" style="text-indent:0px; margin-right:0px; margin-left:0px;"></para>
+        </td>
+      </tr>
+      <tr style="vertical-align:top">
+        <td style="width:126px;">
+          <para styleclass="Heading3" style="text-indent:0px; margin-right:0px; margin-left:0px;"><text styleclass="Heading3" translate="true">Xaos</text></para>
+        </td>
+        <td style="width:528px;">
+          <para styleclass="Normal" style="text-indent:0px; margin-right:0px; margin-left:0px;"><text styleclass="Normal" translate="true">The Xaos-tab allows you to specify transform weights relative to other transforms. The list contains an entry for each transform in the flame for which you can set the weight of the currently selected transform relative to the corresponding transform in the list.</text></para>
+          <para styleclass="Normal" style="text-indent:0px; margin-right:0px; margin-left:0px;"><text styleclass="Normal" translate="true">There are two view modes which you can choose below the list: &quot;View links as to&quot; lets you specify the weight of the current transform to other transforms. &quot;View links as from&quot; lets you specify the weight of other transforms to the current transforms. To learn more about Xaos read the </text><link displaytype="text" defaultstyle="true" type="topiclink" href="Xaos" styleclass="Normal" translate="true">Xaos</link><text styleclass="Normal" translate="true"> topic in the </text><link displaytype="text" defaultstyle="true" type="topiclink" href="Flames" styleclass="Normal" translate="true">flames</link><text styleclass="Normal" translate="true"> section.</text></para>
+          <para styleclass="Normal" style="text-indent:0px; margin-right:0px; margin-left:0px;"></para>
+        </td>
+      </tr>
+      <tr style="vertical-align:top">
+        <td style="width:126px;">
+          <para styleclass="Heading3" style="text-indent:0px; margin-right:0px; margin-left:0px;"><text styleclass="Heading3" translate="true">Triangle</text></para>
+        </td>
+        <td style="width:528px;">
+          <para styleclass="Normal" style="text-indent:0px; margin-right:0px; margin-left:0px;"><text styleclass="Normal" translate="true">This tab offers you a variety of controls to move, rotate and scale the triangle representing the current transform. The numbers on top let you enter exact transform coordinates while the controls below let you alter them visually:</text><br/></para>
+          <list id="1" type="ul" listtype="bullet" formatstring="&#183;" format-charset="SYMBOL_CHARSET" levelreset="true" legalstyle="false" startfrom="1" styleclass="Normal" style="text-indent:0px; margin-right:0px; margin-left:0px; font-family:Symbol; font-size:10pt; color:#000000;">
+            <li styleclass="Normal" style="text-indent:0px; margin-right:0px; margin-left:0px;"><text styleclass="Normal" translate="true">Rotation: The angled arrows rotate the triangle by 90 degrees clockwise or counterclockwise while the curvy arrows rotate it by the angle you specified in the drop-down.</text></li>
+            <li styleclass="Normal" style="text-indent:0px; margin-right:0px; margin-left:0px;"><text styleclass="Normal" translate="true">Movement: Each arrow moves the triangle by the amount you specified in the drop-down in the chosen direction.</text></li>
+            <li styleclass="Normal" style="text-indent:0px; margin-right:0px; margin-left:0px;"><text styleclass="Normal" translate="true">Scaling: The drop-down specifies the percentage for which the current transform should be scaled. The left icon scales it down while the right scales it up.</text><br/></li>
+          </list>
+          <para styleclass="Normal" style="text-indent:0px; margin-right:0px; margin-left:0px;"><text styleclass="Normal" translate="true">Below these controls is a set of icons:</text><br/></para>
+          <para styleclass="Normal" style="text-indent:0px; margin-right:0px; margin-left:0px;"><image src="CopyHS.png" scale="100.00%" styleclass="Image Caption"></image><text styleclass="Normal" translate="true"> Stores the current transform coordinates in the clipboard</text></para>
+          <para styleclass="Normal" style="text-indent:0px; margin-right:0px; margin-left:0px;"><image src="PasteHS.png" scale="100.00%" styleclass="Image Caption"></image><text styleclass="Normal" translate="true"> Pastes the transform coordinates from the clipboard into the current transform. This will only work when there is valid data in the clipboard.</text></para>
+          <para styleclass="Normal" style="text-indent:0px; margin-right:0px; margin-left:0px;"><image src="extended_edit.png" scale="100.00%" styleclass="Image Caption"></image><text styleclass="Image Caption" translate="true">&#32;</text><text styleclass="Normal" translate="true">Enables or disables the extended edit mode. When the extended edit mode is activated, you can move, rotate and scale the transform with additional grips in the editor panel.</text></para>
+          <para styleclass="Normal" style="text-indent:0px; margin-right:0px; margin-left:0px;"><image src="lock_axis.png" scale="100.00%" styleclass="Image Caption"></image><text styleclass="Normal" translate="true"> Locks or unlocks the transform axes when rotating a transform. (lines from O to X and Y)</text></para>
+          <para styleclass="Normal" style="text-indent:0px; margin-right:0px; margin-left:0px;"><image src="balance.png" scale="100.00%" styleclass="Image Caption"></image><text styleclass="Image Caption" translate="true">&#32;</text><text styleclass="Normal" translate="true">Enables or disables the automatic balancing of transform weights.</text></para>
+          <para styleclass="Normal" style="text-indent:0px; margin-right:0px; margin-left:0px;"><image src="mode_px.png" scale="100.00%" styleclass="Image Caption"></image><text styleclass="Image Caption" translate="true">&#32;</text><text styleclass="Normal" translate="true">Enables or disables post-transform editing. (to learn more about post-transforms read the &#160;</text><link displaytype="text" defaultstyle="true" type="topiclink" href="Transforms" styleclass="Normal" translate="true">transforms</link><text styleclass="Normal" translate="true">&#32;</text><text styleclass="Normal" translate="true">topic in the </text><link displaytype="text" defaultstyle="true" type="topiclink" href="Flames" styleclass="Normal" translate="true">flames</link><text styleclass="Normal" translate="true"> section)</text></para>
+          <para styleclass="Normal" style="text-indent:0px; margin-right:0px; margin-left:0px;"></para>
+          <para styleclass="Normal" style="text-indent:0px; margin-right:0px; margin-left:0px;"><text styleclass="Normal" translate="true">The controls on the very bottom let you take influence on the so called pivot point. The pivot point is the location around which transforms are rotated and which is the center of a scaling operation. You can either enter the coordinates of this point into the two boxes (left: X, right: Y) or use the buttons below. The button captioned &quot;R&quot; resets the pivot point to its default location, the large button right to it toggles between local pivot (point O of the triangle) and the world pivot. (point at the coordinates 0,0) The button captioned &quot;P&quot; lets you pick the pivot point using the mouse.</text></para>
+          <para styleclass="Normal" style="text-indent:0px; margin-right:0px; margin-left:0px;"></para>
+        </td>
+      </tr>
+      <tr style="vertical-align:top">
+        <td style="width:126px;">
+          <para styleclass="Heading3" style="text-indent:0px; margin-right:0px; margin-left:0px;"><text styleclass="Heading3" translate="true">Transform</text></para>
+        </td>
+        <td style="width:528px;">
+          <para styleclass="Normal" style="text-indent:0px; margin-right:0px; margin-left:0px;"><text styleclass="Normal" translate="true">The transform tab contains input boxes similar to those on the triangle tab at its top. The difference is that the values for are vectors rather than absolute point coordinates. This means that the values you enter for X and Y are relative to those of O. The buttons containing the caption of the vectors will reset the corresponding values to their default once you click them. The large button captioned &quot;reset transform&quot; will reset the entire triangle to its default coordinates.</text></para>
+          <para styleclass="Normal" style="text-indent:0px; margin-right:0px; margin-left:0px;"><text styleclass="Normal" translate="true">With the buttons captioned &quot;rectangular&quot; and &quot;polar&quot; you can choose the coordinate system type for the edit operation. The polar coordinate system uses degrees as unit.</text></para>
+          <para styleclass="Normal" style="text-indent:0px; margin-right:0px; margin-left:0px;"><text styleclass="Normal" translate="true">The set of boxes and buttons below is similar but for the post-transform triangle.</text></para>
+          <para styleclass="Normal" style="text-indent:0px; margin-right:0px; margin-left:0px;"><text styleclass="Normal" translate="true">At the very bottom is a box captioned &quot;Auto-calculate pre_zscale&quot; which automatically sets the built-in variation &quot;pre_zscale&quot; based on the transform vectors. This is useful if you plan to create a 3D flame.</text></para>
+          <para styleclass="Normal" style="text-indent:0px; margin-right:0px; margin-left:0px;"></para>
+        </td>
+      </tr>
+      <tr style="vertical-align:top">
+        <td style="width:126px;">
+          <para styleclass="Heading3" style="text-indent:0px; margin-right:0px; margin-left:0px;"><text styleclass="Heading3" translate="true">Colors</text></para>
+        </td>
+        <td style="width:528px;">
+          <para styleclass="Normal" style="text-indent:0px; margin-right:0px; margin-left:0px;"><text styleclass="Normal" translate="true">The color tab offers you controls to colorize your flame. You can specify the base color with the slider on the top. The color speed (formerly called symmetry) specifies the amount of which the color of the current transform is dependend from other transforms. This ranges from -1 (completely independend) to 1. (transform fully inherits colors from other transforms) The default value is zero.</text></para>
+          <para styleclass="Normal" style="text-indent:0px; margin-right:0px; margin-left:0px;"><text styleclass="Normal" translate="true">The opacity field specifies how much visible the variations of the current transform are on the image. If you set zero, the transform itself is invisible but its influence on other transforms is still visible as well as eventually repeated versions of the transform.</text></para>
+          <para styleclass="Normal" style="text-indent:0px; margin-right:0px; margin-left:0px;"><text styleclass="Normal" translate="true">The box captioned &quot;solo&quot; hides all other transforms (opacity is set to zero) and only shows the current one. This effect is not permanent and can be undone any time - even when you close and restart Apophysis.</text></para>
+          <para styleclass="Normal" style="text-indent:0px; margin-right:0px; margin-left:0px;"><text styleclass="Normal" translate="true">The sliders below offer display controls about the variation preview feature you can activate in the toolbar. They have no effect on the rendered image.</text></para>
+          <para styleclass="Normal" style="text-indent:0px; margin-right:0px; margin-left:0px;"><text styleclass="Normal" translate="true">To learn more about coloring your flames read the </text><link displaytype="text" defaultstyle="true" type="topiclink" href="Coloring" styleclass="Normal" translate="true">coloring</link><text styleclass="Normal" translate="true"> topic in the &#160;</text><link displaytype="text" defaultstyle="true" type="topiclink" href="Flames" styleclass="Normal" translate="true">flames</link><text styleclass="Normal" translate="true">&#32;</text><text styleclass="Normal" translate="true">section.</text></para>
+        </td>
+      </tr>
+    </table></para>
+    <para styleclass="Normal" style="text-indent:0px; margin-right:412px; margin-left:0px;"></para>
+    <para styleclass="Heading2"><text styleclass="Heading2" translate="true">The editor toolbar</text></para>
+    <para styleclass="Heading2"></para>
+    <para styleclass="Heading2" style="text-indent:11px; margin-right:0px; margin-left:0px;"><snippet src="Toolbar2"/></para>
+  </body>
+</topic>

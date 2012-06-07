@@ -1,0 +1,37 @@
+<topic template="Default" lasteditedby="Georg Kiehne" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../helpproject.xsd" status="Needs Review">
+  <title translate="true">Literals and Operators</title>
+  <body>
+    <header>
+      <para styleclass="Heading1"><text styleclass="Heading1" translate="true">Literals and Operators</text></para>
+    </header>
+    <para styleclass="Normal"><table styleclass="Default" rowcount="1" colcount="1" style="width:654px;">
+      <tr style="vertical-align:top">
+        <td style="width:642px;">
+          <para styleclass="Normal"><text styleclass="Normal" translate="true">There is a number of operators in the script language:</text></para>
+          <para styleclass="Normal"></para>
+          <list id="1" type="ul" listtype="bullet" formatstring="·" format-charset="SYMBOL_CHARSET" levelreset="true" legalstyle="false" startfrom="1" styleclass="Normal" style="font-family:Symbol; font-size:10pt; color:#000000;">
+            <li styleclass="Normal"><text styleclass="Normal" translate="true">Basic operations (addition, subtraction, multiplication, division)</text><br/><br/><text styleclass="Code Example" translate="true">a := b + c; </text><br/><text styleclass="Code Example" translate="true">c := a - b; </text><br/><text styleclass="Code Example" translate="true">d := a * 2; </text><br/><text styleclass="Code Example" translate="true">a := d / 2;</text><br/><br/><text styleclass="Normal" translate="true">Note that</text><text styleclass="Code Example" translate="true"> the + </text><text styleclass="Normal" translate="true">operator also can be used to chain strings.</text><br/></li>
+            <li styleclass="Normal"><text styleclass="Normal" translate="true">Assignation and comparison</text><br/><br/><text styleclass="Code Example" translate="true">a := &apos;This text is going to be assigned to a&apos;;</text><br/><text styleclass="Code Example" translate="true">if (a = b) then ShowMessage(&apos;This message pops up when a is equal to b&apos;);</text><br/><text styleclass="Code Example" translate="true">if (a &lt;&gt; c) then ShowMessage(&apos;This message pops up when a is not equal to c&apos;);</text><br/><br/><text styleclass="Normal" translate="true">Do NOT swap</text><text styleclass="Code Example" translate="true"> := </text><text styleclass="Normal" translate="true">and</text><text styleclass="Code Example" translate="true"> = </text><text styleclass="Normal" translate="true">!</text><br/><text styleclass="Normal" translate="true">Other valid comparison operations are </text><text styleclass="Code Example" translate="true">&lt;</text><text styleclass="Normal" translate="true"> and </text><text styleclass="Code Example" translate="true">&gt;</text><text styleclass="Normal" translate="true">  - but only for numbers.</text><br/></li>
+            <li styleclass="Normal"><text styleclass="Normal" translate="true">Modulo and integral division operation</text><br/><br/><text styleclass="Code Example" translate="true">a := 5; b := 2;</text><br/><text styleclass="Code Example" translate="true">c := a mod b; // c will be 1</text><br/><text styleclass="Code Example" translate="true">ShowMessage(&apos;The remainder of 5 / 2 is &apos; + IntToStr( c ));</text><br/><br/><text styleclass="Code Example" translate="true">d := a div b; // d will be 2</text><br/><text styleclass="Code Example" translate="true">ShowMessage(&apos;The result of the integral division of 5 and 2 is &apos; + IntToStr( d ));</text><br/></li>
+            <li styleclass="Normal"><text styleclass="Normal" translate="true">Indexing operation</text><br/><br/><text styleclass="Code Example" translate="true">a := [ 1, 2, 3 ];</text><br/><text styleclass="Code Example" translate="true">ShowMessage(&apos;The second element of a is a[1] (zero-based counting): &apos; + IntToStr(a[1]));</text><br/></li>
+            <li styleclass="Normal"><text styleclass="Normal" translate="true">Boolean operations</text><br/><br/><text styleclass="Code Example" translate="true">a := ((c = 1) and (b &lt;&gt; 0)) or (not some_boolean_variable)</text></li>
+          </list>
+          <para styleclass="Normal"></para>
+          <para styleclass="Normal"><text styleclass="Normal" translate="true">Valid literals are numbers, strings and array constructors:</text></para>
+          <para styleclass="Normal"></para>
+          <para styleclass="Code Example"><text styleclass="Code Example" translate="true">a := &apos;I am a string literal&apos;;</text></para>
+          <para styleclass="Code Example"><text styleclass="Code Example" translate="true">b := 2;</text></para>
+          <para styleclass="Code Example"><text styleclass="Code Example" translate="true">c := [ 1, 2, 3 ];</text></para>
+          <para styleclass="Code Example"></para>
+          <para styleclass="Normal"><text styleclass="Normal" translate="true">Literals are constant and may not be located at the left side of an assignation operation.</text></para>
+          <para styleclass="Normal"></para>
+          <para styleclass="Normal"><text styleclass="Normal" translate="true">Arrays may contain multiple dimensions:</text></para>
+          <para styleclass="Normal"></para>
+          <para styleclass="Code Example"><text styleclass="Code Example" translate="true">a := [ [1, 2, 3], [4, 5, 6] ];</text></para>
+          <para styleclass="Code Example"><text styleclass="Code Example" translate="true">ShowMessage(IntToStr( a[0, 1] );</text></para>
+        </td>
+      </tr>
+    </table><br/></para>
+    <para styleclass="Image Caption"><text styleclass="Image Caption" translate="true">Jump to: </text><link displaytype="text" defaultstyle="true" type="topiclink" href="Identifiers" styleclass="Image Caption" translate="true">Identifiers</link><text styleclass="Image Caption" translate="true"> - </text><link displaytype="text" defaultstyle="true" type="topiclink" href="Literals_and_operators" styleclass="Image Caption" translate="true">Literals and Operators</link><text styleclass="Image Caption" translate="true"> - </text><link displaytype="text" defaultstyle="true" type="topiclink" href="Conditions_and_Loops" styleclass="Image Caption" translate="true">Conditions and Loops</link><text styleclass="Image Caption" translate="true"> - </text><link displaytype="text" defaultstyle="true" type="topiclink" href="Procedures_and_functions" styleclass="Image Caption" translate="true">Procedures and Functions</link><text styleclass="Image Caption" translate="true"> - </text><link displaytype="text" defaultstyle="true" type="topiclink" href="Comments" styleclass="Image Caption" translate="true">Comments</link></para>
+  </body>
+</topic>

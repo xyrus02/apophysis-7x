@@ -1,0 +1,135 @@
+﻿<topic template="Default" status="Needs Review" lasteditedby="Georg Kiehne" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../helpproject.xsd">
+  <title translate="true">Flame properties</title>
+  <body>
+    <header>
+      <para styleclass="Heading1"><text styleclass="Heading1" translate="true">Properties</text></para>
+    </header>
+    <para styleclass="Normal"><table styleclass="Default" rowcount="14" colcount="2" style="width:654px;">
+      <tr style="vertical-align:top">
+        <td style="width:189px;">
+          <para styleclass="Heading3"><text styleclass="Heading3" translate="true">Flame.Name</text></para>
+        </td>
+        <td style="width:465px;">
+          <para styleclass="Normal"><text styleclass="Normal" translate="true">The name of the flame in memory but not on the batch listing.</text></para>
+          <para styleclass="Normal"></para>
+        </td>
+      </tr>
+      <tr style="vertical-align:top">
+        <td style="width:189px;">
+          <para styleclass="Heading3"><text styleclass="Heading3" translate="true">Flame.SampleDensity</text></para>
+        </td>
+        <td style="width:465px;">
+          <para styleclass="Normal"><text styleclass="Normal" translate="true">The sample density (&quot;quality&quot;) of the flame.</text></para>
+          <para styleclass="Normal"></para>
+        </td>
+      </tr>
+      <tr style="vertical-align:top">
+        <td style="width:189px;">
+          <para styleclass="Heading3"><text styleclass="Heading3" translate="true">Flame.Oversample</text></para>
+        </td>
+        <td style="width:465px;">
+          <para styleclass="Normal"><text styleclass="Normal" translate="true">The oversampling factor of the flame.</text></para>
+          <para styleclass="Normal"></para>
+        </td>
+      </tr>
+      <tr style="vertical-align:top">
+        <td style="width:189px;">
+          <para styleclass="Heading3"><text styleclass="Heading3" translate="true">Flame.FilterRadius</text></para>
+        </td>
+        <td style="width:465px;">
+          <para styleclass="Normal"><text styleclass="Normal" translate="true">The filter radius of the flame.</text></para>
+          <para styleclass="Normal"></para>
+        </td>
+      </tr>
+      <tr style="vertical-align:top">
+        <td style="width:189px;">
+          <para styleclass="Heading3"><text styleclass="Heading3" translate="true">Flame.Width</text></para>
+        </td>
+        <td style="width:465px;">
+          <para styleclass="Normal"><text styleclass="Normal" translate="true">The image width for the rendered flame.</text></para>
+          <para styleclass="Normal"></para>
+        </td>
+      </tr>
+      <tr style="vertical-align:top">
+        <td style="width:189px;">
+          <para styleclass="Heading3"><text styleclass="Heading3" translate="true">Flame.Height</text></para>
+        </td>
+        <td style="width:465px;">
+          <para styleclass="Normal"><text styleclass="Normal" translate="true">The image height for the rendered flame.</text></para>
+          <para styleclass="Normal"></para>
+        </td>
+      </tr>
+      <tr style="vertical-align:top">
+        <td style="width:189px;">
+          <para styleclass="Heading3"><text styleclass="Heading3" translate="true">Flame.Batches</text></para>
+        </td>
+        <td style="width:465px;">
+          <para styleclass="Normal"><text styleclass="Normal" translate="true">The amount of batches for the flame. Common export renderers use this for motion blurring. It is not recommended to set a value other than 1 unless you know what you do.</text></para>
+          <para styleclass="Normal"></para>
+        </td>
+      </tr>
+      <tr style="vertical-align:top">
+        <td style="width:189px;">
+          <para styleclass="Heading3"><text styleclass="Heading3" translate="true">Flame.Scale</text></para>
+        </td>
+        <td style="width:465px;">
+          <para styleclass="Normal"><text styleclass="Normal" translate="true">The point scale of the flame.</text></para>
+          <para styleclass="Normal"></para>
+        </td>
+      </tr>
+      <tr style="vertical-align:top">
+        <td style="width:189px;">
+          <para styleclass="Heading3"><text styleclass="Heading3" translate="true">Flame.Zoom</text></para>
+        </td>
+        <td style="width:465px;">
+          <para styleclass="Normal"><text styleclass="Normal" translate="true">The camera zoom of the flame.</text></para>
+          <para styleclass="Normal"></para>
+        </td>
+      </tr>
+      <tr style="vertical-align:top">
+        <td style="width:189px;">
+          <para styleclass="Heading3"><text styleclass="Heading3" translate="true">Flame.Background</text></para>
+        </td>
+        <td style="width:465px;">
+          <para styleclass="Normal"><text styleclass="Normal" translate="true">The red, green and blue component of the background color of the flame. This is a one-dimensional array of length 3.</text></para>
+          <para styleclass="Normal"></para>
+        </td>
+      </tr>
+      <tr style="vertical-align:top">
+        <td style="width:189px;">
+          <para styleclass="Heading3"><text styleclass="Heading3" translate="true">Flame.Gradient</text></para>
+        </td>
+        <td style="width:465px;">
+          <para styleclass="Normal"><text styleclass="Normal" translate="true">The individual colors of the flames color map. This is a two dimensional array where the first dimension represents the color map index and ranges from 0 to 255 and the second ranges from 0 to 3 (0: Red, 1: Green, 2: Blue)</text></para>
+          <para styleclass="Normal"></para>
+        </td>
+      </tr>
+      <tr style="vertical-align:top">
+        <td style="width:189px;">
+          <para styleclass="Heading3"><text styleclass="Heading3" translate="true">Flame.Brightness</text></para>
+        </td>
+        <td style="width:465px;">
+          <para styleclass="Normal"><text styleclass="Normal" translate="true">The brightness of the flame.</text></para>
+          <para styleclass="Normal"></para>
+        </td>
+      </tr>
+      <tr style="vertical-align:top">
+        <td style="width:189px;">
+          <para styleclass="Heading3"><text styleclass="Heading3" translate="true">Flame.Gamma</text></para>
+        </td>
+        <td style="width:465px;">
+          <para styleclass="Normal"><text styleclass="Normal" translate="true">The gamma correction factor of the flame.</text></para>
+          <para styleclass="Normal"></para>
+        </td>
+      </tr>
+      <tr style="vertical-align:top">
+        <td style="width:189px;">
+          <para styleclass="Heading3"><text styleclass="Heading3" translate="true">Flame.GammaTreshold</text></para>
+        </td>
+        <td style="width:465px;">
+          <para styleclass="Normal"><text styleclass="Normal" translate="true">The gamma treshold of the flame.</text></para>
+        </td>
+      </tr>
+    </table></para>
+  </body>
+</topic>
