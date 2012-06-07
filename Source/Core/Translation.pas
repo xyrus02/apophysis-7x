@@ -2,7 +2,7 @@
 
 interface
 
-uses Global, Classes, Forms, LibXmlParser, LibXmlComps, SysUtils, RegexHelper, {Unicode,} NativeXML;
+uses Global, Classes, Forms, LibXmlParser, LibXmlComps, SysUtils, RegexHelper;
 
 procedure ListLanguages;
 procedure LanguageInfo(path: string; var name, localName: string);
@@ -60,17 +60,13 @@ const
   exp1 = '\stitle="([^"]*)"';
   exp2 = '\slocalized-title="([^"]*)"';
 var
-  langfile : TextFile;
-  buffer, langxml : string;
+  langxml : string;
+  sl: TStringList;
 begin
-  AssignFile(langfile, path) ;
-  Reset(langfile) ;
-  while not EOF(langfile) do
-    begin
-      ReadLn(langfile, buffer) ;
-      langxml := langxml + #13#10 + buffer;
-    end;
-  CloseFile(langfile) ;
+  sl := TStringList.Create;
+  sl.LoadFromFile(path);
+  langxml := sl.Text;
+  sl.Destroy;
 
   name := GetStringPart(langxml, exp1, 1, '');
   localname := GetStringPart(langxml, exp2, 1, '');
@@ -79,17 +75,13 @@ function LanguageAuthor(path: string): string;
 const
   exp = '\sauthor="([^"]*)"';
 var
-  langfile : TextFile;
-  buffer, langxml : string;
+  langxml : string;
+  sl: TStringList;
 begin
-  AssignFile(langfile, path) ;
-  Reset(langfile) ;
-  while not EOF(langfile) do
-    begin
-      ReadLn(langfile, buffer) ;
-      langxml := langxml + #13#10 + buffer;
-    end;
-  CloseFile(langfile) ;
+  sl := TStringList.Create;
+  sl.LoadFromFile(path);
+  langxml := sl.Text;
+  sl.Destroy;
 
   Result := GetStringPart(langxml, exp, 1, '');
 end;
@@ -220,6 +212,13 @@ begin
 	Add('adjustment-tab-size-title', 'Image size');
 	Add('adjustment-tab-size-preset', 'Empty preset');
 	Add('adjustment-tab-size-resizemain', 'Resize main window');
+  Add('adjustment-tab-curves-title', 'Curves');
+  Add('adjustment-tab-curves-reset', 'Reset');
+  Add('adjustment-tab-curves-selected', 'Selected curve:');
+  Add('adjustment-tab-curves-overall', 'Overall');
+  Add('adjustment-tab-curves-red', 'Red');
+  Add('adjustment-tab-curves-green', 'Green');
+  Add('adjustment-tab-curves-blue', 'Blue');
 	Add('adjustment-popup-quality-instantpreview', 'Instant preview');
 	Add('adjustment-popup-gradient-randomize', 'Randomize');
 	Add('adjustment-popup-gradient-invert', 'Invert');
@@ -362,14 +361,12 @@ begin
 	Add('render-tab-output-title', 'Output');
 	Add('render-resourceusage-title', 'Resource usage');
 	Add('render-resourceusage-infotext', 'The render process will use %u MB of %u MB available physical memory');
+  Add('render-resourceusage-infotext2', 'Apophysis will try to use %u processor cores (%u available) - change this in the options');
 	Add('render-resourceusage-limit', 'Memory limit');
 	Add('render-resourceusage-nolimit', 'No limit');
 	Add('render-resourceusage-bufferdepth', 'Buffer depth');
 	Add('render-output-title', 'Output options');
 	Add('render-output-saveparams', 'Save parameters');
-	Add('render-output-writeexif', 'Write EXIF-Header (JPEG only)');
-	Add('render-output-author', 'Author (EXIF)');
-	Add('render-output-includeparams', 'Include parameters in EXIF-Header');
 	Add('render-completion-title', 'Completion options');
 	Add('render-completion-postprocess', 'Post-process after rendering');
 	Add('render-completion-shutdown', 'Shut down after rendering');
@@ -385,8 +382,8 @@ begin
 	Add('render-status-elapsed', 'Elapsed');
 	Add('render-status-remaining', 'Remaining');
 	Add('render-status-slicestatus', 'Slice %d of %d');
-	Add('render-status-notenoughmemory1', 'You do not have enough memory for this render. Please use memory limiting.');
-	Add('render-status-notenoughmemory2', 'You do not have enough memory for this render. Please use a lower Maximum memory setting.');
+	Add('render-status-notenoughmemory1', 'You do not have enough memory for this render. Do you want to continue anyway?');
+	Add('render-status-notenoughmemory2', 'You do not have enough memory for this render. Please use a lower Maximum memory setting. Do you want to ignore this problem and continue?');
 	Add('render-status-nofilename', 'Please enter a file name.');
 	Add('render-status-fileexists-message1', '"%s" already exists');
 	Add('render-status-fileexists-message2', 'Do you want to replace it?');
@@ -396,7 +393,7 @@ begin
 	Add('render-status-invalidoversample', 'Invalid Oversample value');
 	Add('render-status-invalidwidth', 'Invalid image width');
 	Add('render-status-invalidheight', 'Invalid image height');
-	Add('render-status-maxmemorytoosmall', 'Maximum memory value is too small');
+	Add('render-status-maxmemorytoosmall', 'Maximum memory value is too small. Do you want to continue anyway?');
 	Add('render-status-shuttingdownrender', 'Shutting down previous render...');
 	Add('render-status-log-title', 'Rendering "%s"');
 	Add('render-status-log-size', 'Size: %dx%d');
@@ -452,6 +449,8 @@ begin
 	Add('options-tab-general-guidecentercolor', 'Center ');
 	Add('options-tab-general-guidethirdscolor', 'Thirds ');
 	Add('options-tab-general-guidegoldenratiocolor', 'Golden ratio ');
+  Add('options-tab-general-singleprecision', 'Use single-precision buffers ');
+  Add('options-tab-general-pluginpath', 'Plugin folder ');
 	Add('options-tab-editor-title', 'Editor ');
 	Add('options-tab-editor-editorgraph', 'Graph ');
 	Add('options-tab-editor-editordefaults', 'Defaults ');
@@ -584,6 +583,7 @@ begin
 	Add('main-menu-view-mutation', 'Mutation');
 	Add('main-menu-view-imagesize', 'Image size');
 	Add('main-menu-view-messages', 'Messages');
+  Add('main-menu-view-curves', 'Curves');
 	Add('main-menu-flame-title', 'Flame');
 	Add('main-menu-flame-reset', 'Reset location');
 	Add('main-menu-flame-randomize', 'Randomize');
@@ -640,8 +640,8 @@ begin
 	Add('main-status-morepluginsneeded', 'The flame "%s" requires the following additional %s:');
   Add('main-status-noautosave', 'No autosave present.');
   Add('main-status-chaoticacompatmissing', 'The variation compatibility data file can not be found at the configured location of Chaotica. The rendering result may look different from the preview. Do you want to proceed?');
-  Add('main-status-nochatocia', 'The executable file of Chaotica could not be found. Please check your settings.');
-  Add('main-status-oldchaotica', 'It seems you are using a version of Chaotica prior than 0.3. The rendering result may look different from the preview. Do you want to proceed?');
+  Add('main-status-nochaotica', 'The executable file of Chaotica could not be found. Please check your settings.');
+  Add('main-status-oldchaotica', 'The rendering result may look different from the preview. Do you want to proceed?');
 	Add('main-report-transformcount', 'Transform count: %d');
 	Add('main-report-finaltransform', 'Has final transform: %s');
 	Add('main-report-usedplugins', 'Used plugins:');
@@ -670,33 +670,13 @@ begin
   entry.value := value;
   language[tokenCount - 1] := entry;
 end;
-procedure AddNodes(node: TXMLNode; keyName: UTF8string);
-var i: integer; newName: UTF8String;
-begin
-  for i:=0 to node.NodeCount - 1 do begin
-    if (node.Name <> UTF8String('stringtable')) then
-      newName := keyName + node.Name + UTF8String('-')
-    else newName := keyName;
-    AddNodes(node.Nodes[i], newName);
-  end;
-  if node.ValueAsString <> UTF8String('') then begin
-    Add(string(keyName + node.Name), string(node.ValueAsString));
-  end;
-end;
 
 procedure LoadLanguage(path:string);
-var
-  document : TNativeXML;
 begin
   if (path = '') or (not FileExists(path)) then LoadEnglish()
   else begin
     tokenCount := 0;
-
-    document := TNativeXML.Create;
-    document.LoadFromFile(path);;
-    if lowercase(string(document.EncodingString)) <> 'utf-8' then begin
-      AddNodes(document.Root, UTF8String(''));
-    end else begin  // use easy xml because it supports utf-8 properly (at least...)
+    if true then begin
       parser := TParser.Create;
       ListXmlScanner := TEasyXmlScanner.Create(nil);
 

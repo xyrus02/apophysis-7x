@@ -26,7 +26,7 @@ interface
 
 uses
   Windows, Messages, SysUtils, Classes, Graphics, Controls, Forms, Dialogs,
-  ExtCtrls, ControlPoint, Render, Translation;
+  ExtCtrls, ControlPoint, RenderingInterface, Translation;
 
 type
   TPreviewForm = class(TForm)

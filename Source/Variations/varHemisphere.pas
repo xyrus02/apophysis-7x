@@ -57,7 +57,6 @@ uses
 
 ///////////////////////////////////////////////////////////////////////////////
 procedure TVariationHemisphere.CalcFunction;
-{$ifndef _ASM_}
 var
   t: double;
 begin
@@ -66,30 +65,6 @@ begin
   FPx^ := FPx^ + FTx^ * t;
   FPy^ := FPy^ + FTy^ * t;
   FPz^ := FPz^ + t;
-{$else}
-asm
-    mov     edx, [eax + FTx]
-    fld     qword ptr [edx + 8]  // FTy
-    fld     qword ptr [edx]      // FTx
-    fld     st(1)
-    fmul    st, st
-    fld     st(1)
-    fmul    st, st
-    faddp
-    fld1
-    faddp
-    fsqrt
-    fdivr   qword ptr [eax + vvar]
-    fmul    st(2), st
-    fmul    st(1), st
-    fadd    qword ptr [edx + 40] // FPz
-    fstp    qword ptr [edx + 40]
-    fadd    qword ptr [edx + 16] // FPx
-    fstp    qword ptr [edx + 16]
-    fadd    qword ptr [edx + 24] // FPy
-    fstp    qword ptr [edx + 24]
-    fwait
-{$endif}
 end;
 
 ///////////////////////////////////////////////////////////////////////////////

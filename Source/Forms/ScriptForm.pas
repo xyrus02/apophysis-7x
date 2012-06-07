@@ -27,8 +27,8 @@ interface
 uses
   Windows, Messages, SysUtils, Classes, Graphics, Controls, Forms, Dialogs,
   ExtCtrls, StdCtrls, ControlPoint, Buttons, ComCtrls, ToolWin, Menus,
-  atScript, atPascal, AdvMemo, Advmps, XFormMan, XForm, GradientHlpr, cmap,
-  LibXmlParser, LibXmlComps, Math, Translation;
+  XFormMan, XForm, GradientHlpr, cmap,LibXmlParser, LibXmlComps, Math, Translation,
+  atScript, atPascal, AdvMemo, Advmps;
 
 const
   NCPS = 10;
@@ -85,7 +85,6 @@ type
     N1: TMenuItem;
     BackPanel: TPanel;
     Editor: TAdvMemo;
-    PascalStyler: TAdvPascalMemoStyler;
     Scripter: TatPascalScripter;
     Splitter1: TSplitter;
     Console: TMemo;
@@ -93,7 +92,7 @@ type
     btnBreak: TToolButton;
     OpenDialog: TOpenDialog;
     SaveDialog: TSaveDialog;
-    F2SXML: TXmlScanner;
+    Styler: TAdvPascalMemoStyler;
     procedure F2SXMLStartTag(Sender: TObject; TagName: string;
       Attributes: TAttrList);
     procedure F2SXMLEndTag(Sender: TObject; TagName: string);
@@ -411,7 +410,7 @@ implementation
 }
 
 uses Main, Editor, Adjust, Global, Mutate, Registry, Preview,
-  ScriptRender, ap_math, ap_classes, ap_sysutils,
+  ScriptRender, ap_math, ap_classes, ap_sysutils, ap_Dialogs,
   SavePreset, ap_windows, ap_FileCtrl(*, bmdll32*);
 
 {$R *.DFM}
@@ -480,14 +479,21 @@ type
   end;
 
 procedure TScriptEditor.ScriptFromFlame(flameXML:string);
-var i : integer;
+var i : integer; xml : TXmlScanner;
 begin
   // Clear & Set caption to "New Script"
   btnNewClick(btnNew);
 
   chaosLines := TStringList.Create;
-  F2SXML.LoadFromBuffer(PCHAR(flameXML));
-  F2SXML.Execute;
+  xml := TXmlScanner.Create(nil);
+  xml.Normalize := True;
+  xml.OnContent := F2SXMLContent;
+  xml.OnEmptyTag := F2SXMLEmptyTag;
+  xml.OnEndTag := F2SXMLEndTag;
+  xml.OnStartTag := F2SXMLStartTag;
+  xml.LoadFromBuffer(PANSICHAR(AnsiString(flameXML)));
+  xml.Execute;
+  xml.Destroy;
 
   // use chaosLines...
   for i := 0 to chaosLines.Count - 1 do
@@ -1641,7 +1647,7 @@ begin
     begin
       if Pos('<flame ', Trim(FStrings[i])) = 1 then
       begin
-        MainForm.ListXMLScanner.LoadFromBuffer(PCHAR(FStrings[i]));
+        MainForm.ListXMLScanner.LoadFromBuffer(PANSICHAR(AnsiString(FStrings[i])));
         MainForm.ListXMLScanner.Execute;
         if FileList[index] = pname then
           break;
@@ -1652,7 +1658,7 @@ begin
       inc(i);
       IFSStrings.Add(FStrings[i]);
     until Pos('</flame>', FStrings[i]) <> 0;
-    MainForm.ParseXML(ScriptEditor.Cp, PCHAR(IFSStrings.Text), true);
+    MainForm.ParseXML(ScriptEditor.Cp, IFSStrings.Text, true);
     for i := 0 to NXFORMS - 1 do
       if ScriptEditor.cp.xform[i].density = 0 then break;
     NumTransforms := i;
@@ -3732,7 +3738,7 @@ begin
           if (p <> 0) then
           begin
             pname := '';
-            MainForm.ListXMLScanner.LoadFromBuffer(PCHAR(FSTrings[i]));
+            MainForm.ListXMLScanner.LoadFromBuffer(PANSICHAR(AnsiString(FSTrings[i])));
             MainForm.ListXMLScanner.Execute;
             if Trim(pname) = '' then
               Title := '*untitled ' + ptime
@@ -3958,7 +3964,7 @@ begin
       There := true;
   if there then exit;
   Favorites.Add(Script);
-  Favorites.SaveToFile(AppPath + scriptFavsFilename);
+  Favorites.SaveToFile(GetEnvVarValue('APPDATA') + '\' + scriptFavsFilename);
 end;
 
 procedure TScriptEditor.FormShortCut(var Msg: TWMKey; var Handled: Boolean);
@@ -3991,7 +3997,7 @@ procedure TScriptEditor.F2SXMLEmptyTag(Sender: TObject; TagName: string;
   Attributes: TAttrList);
 var
   i: integer;
-  v,w: string;
+  v,w: TStringType;
   d, floatcolor: double;
   Tokens: TStringList;
 begin
@@ -4002,13 +4008,14 @@ begin
       Editor.Lines.Add('');
       if TagName = 'finalxform' then begin
         Editor.Lines.Add('{ Final Transform }');
+        Editor.Lines.Add('Flame.FinalXformEnabled := True;');
         Editor.Lines.Add('SetActiveTransform(transforms);');
       end else begin
-        w := '{ Transform ' + IntToStr(AddedXForms + 1);
+        w := TStringType('{ Transform ' + IntToStr(AddedXForms + 1));
         v := Attributes.Value('name');
         if (v <> '') then w := w + ' (' + v + ')';
         w := w + ' }';
-        Editor.Lines.Add(w);
+        Editor.Lines.Add(String(w));
         Editor.Lines.Add('AddTransform;');
       end;
       Editor.Lines.Add('with Transform do begin');
@@ -4017,16 +4024,16 @@ begin
 
       v := Attributes.Value('weight');
       if (v <> '') and (TagName = 'xform') then
-        Editor.Lines.Add('  Weight := ' + v + ';');
+        Editor.Lines.Add('  Weight := ' + String(v) + ';');
       v := Attributes.Value('color');
-      if (v <> '') then Editor.Lines.Add('  Color := ' + v + ';');
+      if (v <> '') then Editor.Lines.Add('  Color := ' + String(v) + ';');
       v := Attributes.Value('var_color');
-      if (v <> '') then Editor.Lines.Add('  VarColor := ' + v + ';');
+      if (v <> '') then Editor.Lines.Add('  VarColor := ' + String(v) + ';');
       v := Attributes.Value('symmetry');
-      if (v <> '') and (TagName = 'xform') then Editor.Lines.Add('  Symmetry := ' + v + ';');
+      if (v <> '') and (TagName = 'xform') then Editor.Lines.Add('  Symmetry := ' + String(v) + ';');
       v := Attributes.Value('coefs');
       if (v <> '') then begin
-        GetTokens(v, tokens);
+        GetTokens(String(v), tokens);
         Editor.Lines.Add('  a := ' + Tokens[0] + ';');
         Editor.Lines.Add('  b := ' + Tokens[2] + ';');
         Editor.Lines.Add('  c := ' + Tokens[1] + ';');
@@ -4037,7 +4044,7 @@ begin
 
       v := Attributes.Value('post');
       if v <> '' then begin
-        GetTokens(v, tokens);
+        GetTokens(String(v), tokens);
         Editor.Lines.Add('  post[0,0] := ' + Tokens[0] + ';');
         Editor.Lines.Add('  post[0,1] := (-1) * ' + Tokens[1] + ';');
         Editor.Lines.Add('  post[1,0] := (-1) * ' + Tokens[2] + ';');
@@ -4053,7 +4060,7 @@ begin
         chaosLines.Add('{ Weight modifiers for transform ' + IntToStr(AddedXForms + 1) + ' }');
         chaosLines.Add('SetActiveTransform(' + IntToStr(AddedXForms) + ');');
         chaosLines.Add('with Transform do begin');
-        GetTokens(v, tokens);
+        GetTokens(String(v), tokens);
         for i := 0 to Tokens.Count-1 do
           chaosLines.Add('  chaos[' + IntToStr(i) + '] := ' + Tokens[i]) ;
         chaosLines.Add('end;');
@@ -4061,20 +4068,20 @@ begin
 
       v := Attributes.Value('opacity');
       if v <> '' then begin
-        Editor.Lines.Add('  Opacity := ' + v);
+        Editor.Lines.Add('  Opacity := ' + String(v));
       end;
 
       for i := 0 to NRVAR - 1 do
       begin
-        v := Attributes.Value(varnames(i));
+        v := Attributes.Value(TStringType(varnames(i)));
         if v <> '' then
-          Editor.Lines.Add('  ' + varnames(i) + ' := ' + v);
+          Editor.Lines.Add('  ' + varnames(i) + ' := ' + String(v));
       end;
 
       for i := 0 to GetNrVariableNames - 1 do begin
-        v := Attributes.Value(GetVariableNameAt(i));
+        v := Attributes.Value(TStringType(GetVariableNameAt(i)));
         if v <> '' then begin
-          Editor.Lines.Add('  ' + GetVariableNameAt(i) + ' := ' + v);
+          Editor.Lines.Add('  ' + GetVariableNameAt(i) + ' := ' + String(v));
         end;
       end;
 
@@ -4094,7 +4101,7 @@ procedure TScriptEditor.F2SXMLStartTag(Sender: TObject; TagName: string;
   Attributes: TAttrList);
 var
   Tokens: TStringList;
-  v: string;
+  v: TStringType;
   f, b: double;
 begin
   Tokens := TStringList.Create;
@@ -4109,9 +4116,9 @@ begin
     Editor.Lines.Add('  AngleTransform := 180 / PI else AngleTransform := 1;');
     Editor.Lines.Add('with Flame do begin');
 
-    v := Attributes.Value('size');
+    v := Attributes.Value(TStringType('size'));
     if (v <> '') then begin
-      GetTokens(v, tokens);
+      GetTokens(String(v), tokens);
 
       Editor.Lines.Add('  Width := ' + Tokens[0] + ';');
       Editor.Lines.Add('  Height := ' + Tokens[1] + ';');
@@ -4120,44 +4127,44 @@ begin
     end else f := 0;
     b := 0;
     
-    v := Attributes.Value('brightness');
+    v := Attributes.Value(TStringType('brightness'));
     if (v <> '') then begin
-      Editor.Lines.Add('  Brightness := ' + v + ';');
-      b := StrToFloat(v);
+      Editor.Lines.Add('  Brightness := ' + String(v) + ';');
+      b := StrToFloat(String(v));
     end;
-    v := Attributes.Value('gamma');
-    if (v <> '') then Editor.Lines.Add('  Gamma := ' + v + ';');
-    v := Attributes.Value('vibrancy');
-    if (v <> '') then Editor.Lines.Add('  Vibrancy := ' + v + ';');
-    v := Attributes.Value('gamma_threshold');
+    v := Attributes.Value(TStringType('gamma'));
+    if (v <> '') then Editor.Lines.Add('  Gamma := ' + String(v) + ';');
+    v := Attributes.Value(TStringType('vibrancy'));
+    if (v <> '') then Editor.Lines.Add('  Vibrancy := ' + String(v) + ';');
+    v := Attributes.Value(TStringType('gamma_threshold'));
     if (v <> '') then begin
-      if b <> 0 then b := StrToFloat(v) / b;
+      if b <> 0 then b := StrToFloat(String(v)) / b;
       Editor.Lines.Add('  GammaTreshold := ' + FloatToStr(b) + ';');
     end;
 
-    v := Attributes.Value('zoom');
-    if (v <> '') then Editor.Lines.Add('  Zoom := ' + v + ';');
-    v := Attributes.Value('scale');
-    if (v <> '') then Editor.Lines.Add('  Scale := ' + FloatToStr(StrToFloat(v) * f) + ';');
-    v := Attributes.Value('angle');
-    if (v <> '') then Editor.Lines.Add('  Angle := ' + v + ';');
+    v := Attributes.Value(TStringType('zoom'));
+    if (v <> '') then Editor.Lines.Add('  Zoom := ' + String(v) + ';');
+    v := Attributes.Value(TStringType('scale'));
+    if (v <> '') then Editor.Lines.Add('  Scale := ' + FloatToStr(StrToFloat(String(v)) * f) + ';');
+    v := Attributes.Value(TStringType('angle'));
+    if (v <> '') then Editor.Lines.Add('  Angle := ' + String(v) + ';');
 
     // 3d
-    v := Attributes.Value('cam_pitch');
-    if (v <> '') then Editor.Lines.Add('  Pitch := ' + v + ' * AngleTransform;');
-    v := Attributes.Value('cam_yaw');
-    if (v <> '') then Editor.Lines.Add('  Yaw := ' + v + ' * AngleTransform;');
-    v := Attributes.Value('cam_perspective');
-    if (v <> '') then Editor.Lines.Add('  Perspective := ' + v + ';');
-    v := Attributes.Value('cam_zpos');
-    if (v <> '') then Editor.Lines.Add('  Z := ' + v + ';');
-    v := Attributes.Value('cam_dof');
-    if (v <> '') then Editor.Lines.Add('  DOF := ' + v + ';');
+    v := Attributes.Value(TStringType('cam_pitch'));
+    if (v <> '') then Editor.Lines.Add('  Pitch := ' + String(v) + ' * AngleTransform;');
+    v := Attributes.Value(TStringType('cam_yaw'));
+    if (v <> '') then Editor.Lines.Add('  Yaw := ' + String(v) + ' * AngleTransform;');
+    v := Attributes.Value(TStringType('cam_perspective'));
+    if (v <> '') then Editor.Lines.Add('  Perspective := ' + String(v) + ';');
+    v := Attributes.Value(TStringType('cam_zpos'));
+    if (v <> '') then Editor.Lines.Add('  Z := ' + String(v) + ';');
+    v := Attributes.Value(TStringType('cam_dof'));
+    if (v <> '') then Editor.Lines.Add('  DOF := ' + String(v) + ';');
 
     try
-      v := Attributes.Value('center');
+      v := Attributes.Value(TStringType('center'));
       if (v <> '') then begin
-        GetTokens(v, tokens);
+        GetTokens(String(v), tokens);
         Editor.Lines.Add('  X := ' + Tokens[0] + ';');
         Editor.Lines.Add('  Y := ' + Tokens[1] + ';');
       end;
@@ -4167,9 +4174,9 @@ begin
     end;
 
     try
-      v := Attributes.Value('background');
+      v := Attributes.Value(TStringType('background'));
       if (v <> '') then begin
-        GetTokens(v, tokens);
+        GetTokens(String(v), tokens);
 
         Editor.Lines.Add('  Background[0] := ' + FloatToStr(Floor(StrToFloat(Tokens[0]) * 255)) + ';');
         Editor.Lines.Add('  Background[1] := ' + FloatToStr(Floor(StrToFloat(Tokens[1]) * 255)) + ';');
@@ -4181,8 +4188,8 @@ begin
       Editor.Lines.Add('  Background[2] := 0' + ';');
     end;
 
-    v := Attributes.Value('soloxform');
-    if (v <> '') then Editor.Lines.Add('SoloXform := ' + v + ';');
+    v := Attributes.Value(TStringType('soloxform'));
+    if (v <> '') then Editor.Lines.Add('SoloXform := ' + String(v) + ';');
 
     Editor.Lines.Add('end;');
   end;

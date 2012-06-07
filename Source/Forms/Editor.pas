@@ -32,9 +32,9 @@ interface
 uses
   Windows, Messages, SysUtils, Classes, Graphics, Controls, Forms, Dialogs,
   ExtCtrls, StdCtrls, ComCtrls, Math, Menus, ToolWin, Registry,
-  Grids, ValEdit, Buttons, ImgList, Types,
+  Grids, ValEdit, Buttons, ImgList, Types,  StrUtils , Curves,
   ControlPoint, XForm, cmap, CustomDrawControl,
-  Render, Translation, RenderThread;
+  RenderingInterface, Translation, RenderThread;
 
 type
   TEditForm = class(TForm)
@@ -64,7 +64,6 @@ type
     ToolButton1: TToolButton;
     tbUndo: TToolButton;
     tbRedo: TToolButton;
-    ToolButton5: TToolButton;
     tbScale: TToolButton;
     tbFlipHorz: TToolButton;
     tbFlipVert: TToolButton;
@@ -240,6 +239,17 @@ type
     mnuEHighQuality: TMenuItem;
     mnuEMediumQuality: TMenuItem;
     mnuELowQuality: TMenuItem;
+    Label4: TLabel;
+    txtSearchBox: TEdit;
+    ToolButton5: TToolButton;
+    ToolButton12: TToolButton;
+    ToolButton13: TToolButton;
+    ToolButton14: TToolButton;
+    SpeedButton1: TSpeedButton;
+    procedure ToolButton12Click(Sender: TObject);
+    procedure btnResetSearchClick(Sender: TObject);
+    procedure txtSearchBoxKeyPress(Sender: TObject; var Key: Char);
+    procedure txtSearchBoxChange(Sender: TObject);
     procedure FormActivate(Sender: TObject);
     procedure ScrollBox1Resize(Sender: TObject);
     procedure ScrollBox2Resize(Sender: TObject);
@@ -479,6 +489,8 @@ type
     pnlDragPos, pnlDragOld: integer;
     pnlDragValue: double;
 
+    LastFocus: TEdit;
+
     procedure UpdateFlameX;
     procedure UpdateFlame(DrawMain: boolean);
     procedure UpdateWidgets;
@@ -495,6 +507,7 @@ type
     procedure TriangleViewPaint(Sender: TObject);
     procedure AutoZoom;
 
+    procedure KeyInput(str: string);
   public
     cp: TControlPoint;
     Render: TRenderer;
@@ -523,7 +536,7 @@ const
     $0000ff, $00ffff, $00ff00, $ffff00, $ff0000, $ff00ff, $007fff,
     $7f00ff, $55ffff, $ccffcc, $ffffaa, $ff7f7f, $ffaaff, $55ccff );}
    TrgColors: array[-1..13] of TColor = (clGray,
-    $0000ff, $00cccc, $00cc00, $cccc00, $cc0000, $cc00cc, $0080cc,
+    $0000ff, $00cccc, $00cc00, $cccc00, $ff4040, $cc00cc, $0080cc,
     $4f0080, $228080, $608060, $808050, $804f4f, $805080, $226080 );
 
 var
@@ -815,7 +828,8 @@ var
 begin
   updating := true;
 
-  if (SelectedTriangle > LastTriangle) then SelectedTriangle := LastTriangle;
+  if (SelectedTriangle > LastTriangle) then
+    SelectedTriangle := LastTriangle;
   for i:=0 to Transforms -1 do begin
     if (i >= Transforms) then begin
      if (cbTransforms.Items.Count > Transforms) then cbTransforms.Items[i] := TextByKey('editor-common-finalxformlistitem')
@@ -994,7 +1008,9 @@ begin
         vleChaos.Cells[1, i] := 'n/a';
 
     txtName.Text := TransformName;
-    if (SelectedTriangle >= Transforms) then txtName.Text := 'n/a';
+    if (SelectedTriangle >= Transforms) then begin
+      txtName.Text := 'n/a';
+    end;
   end;
 
   if PivotMode = pivotLocal then begin
@@ -1093,6 +1109,7 @@ begin
     end;
     if AdjustForm.Visible then AdjustForm.UpdateDisplay;
     if MutateForm.Visible then MutateForm.UpdateDisplay;
+    if CurvesForm.Visible then CurvesForm.SetCp(MainCp);
     MainForm.RedrawTimer.enabled := true;
   end;
 
@@ -1841,10 +1858,14 @@ end;
 procedure TEditForm.FormCreate(Sender: TObject);
 var
   i: integer;
+  vn: string;
 begin
   mnuELowQuality.Caption := TextByKey('common-lowquality');
 	mnuEMediumQuality.Caption := TextByKey('common-mediumquality');
 	mnuEHighQuality.Caption := TextByKey('common-highquality');
+  mnuLowQuality.Caption := TextByKey('common-lowquality');
+	mnuMediumQuality.Caption := TextByKey('common-mediumquality');
+	mnuHighQuality.Caption := TextByKey('common-highquality');
 	ToolButton9.Caption := TextByKey('common-copy');
 	ToolButton9.Hint := TextByKey('common-copy');
 	tbCopyTriangle.Hint := TextByKey('common-copy');
@@ -2016,10 +2037,12 @@ begin
   TriangleView.OnMouseLeave := TriangleViewmouseLeave;
 
   for i:= 0 to NRVAR - 1 do begin
-    VEVars.InsertRow(Varnames(i), '0', True);
+    vn := Varnames(i);
+    VEVars.InsertRow(vn, '0', True);
   end;
   for i:= 0 to GetNrVariableNames - 1 do begin
-    vleVariables.InsertRow(GetVariableNameAt(i), '0', True);
+    vn := GetVariableNameAt(i);
+    vleVariables.InsertRow(vn, '0', True);
   end;
 
   vleChaos.InsertRow(Format(TextByKey('editor-common-toprefix'), [1]), '1', true);
@@ -2894,6 +2917,8 @@ begin
     MainForm.UpdateUndo;
     UpdateFlame(True);
   end;
+
+  self.LastFocus := TEdit(sender);
 end;
 
 procedure TEditForm.CornerEditKeyPress(Sender: TObject; var Key: Char);
@@ -3027,6 +3052,7 @@ begin
     //ReadjustWeights(cp);
     UpdateFlame(True);
   end;
+  self.LastFocus := TEdit(sender);
 end;
 
 { **************************************************************************** }
@@ -3075,31 +3101,34 @@ end;
 
 procedure TEditForm.mnuLowQualityClick(Sender: TObject);
 begin
+  mnuLowQuality.Checked := True;
   mnuELowQuality.Checked := True;
   //tbLowQ.Down := true;
   PreviewDensity := prevLowQuality;
   EditPrevQual := 0;
-  //DrawPreview;
+  DrawPreview;
   TriangleViewPaint(TriangleView);
 end;
 
 procedure TEditForm.mnuHighQualityClick(Sender: TObject);
 begin
+  mnuHighQuality.Checked := True;
   mnuEHighQuality.Checked := True;
   //tbHiQ.Down := true;
   PreviewDensity := prevHighQuality;
   EditPrevQual := 2;
-  //DrawPreview;
+  DrawPreview;
   TriangleViewPaint(TriangleView);
 end;
 
 procedure TEditForm.mnuMediumQualityClick(Sender: TObject);
 begin
+  mnuMediumQuality.Checked := True;
   mnuEMediumQuality.Checked := True;
   //tbMedQ.Down := true;
   PreviewDensity := prevMediumQuality;
   EditPrevQual := 1;
-  //DrawPreview;
+  DrawPreview;
   TriangleViewPaint(TriangleView);
 end;
 
@@ -3190,6 +3219,13 @@ var
   n: integer;
 begin
   n := cbTransforms.ItemIndex;
+  // We got a bug in the ComboBox-control :( <hack>
+  {if (EnableFinalXForm or cp.HasFinalXForm) and (SelectedTriangle = LastTriangle) then
+  begin
+    n := cbTransforms.Items.Count - 1;
+  end;}
+  // </hack>
+
   if (n <> SelectedTriangle) and (n >= 0) and (n <= LastTriangle) then
   begin
     SelectedTriangle := n;
@@ -3309,6 +3345,8 @@ begin
 
   ShowSelectedInfo;
   UpdateFlame(true);
+
+  self.LastFocus := TEdit(sender);
 end;
 
 procedure TEditForm.scrlXFormColorScroll(Sender: TObject;
@@ -4290,9 +4328,11 @@ begin
     end;
     if (key='"') then key := #0; // we dont want that in "name" box -> XML mess!
     exit;
+  end else if txtSearchBox.Focused then begin
+    exit;
   end;
 // kill alphanumeric keys generally
-  if key_handled or (key in ['A'..'z']) then key := #0; // hmmm...
+  if key_handled or (CharInSet(key,['A'..'z'])) then key := #0; // hmmm...
 end;
 
 procedure TEditForm.splitterMoved(Sender: TObject);
@@ -4808,6 +4848,8 @@ begin
 
   ShowSelectedInfo;
   UpdateFlame(true);
+
+  self.LastFocus := TEdit(sender);
 end;
 
 procedure TEditForm.btnResetCoefsClick(Sender: TObject);
@@ -4899,6 +4941,8 @@ begin
 
   TriangleView.Invalidate;
   ShowSelectedInfo;
+
+  self.LastFocus := TEdit(sender);
 end;
 
 procedure TEditForm.PivotKeyPress(Sender: TObject; var Key: Char);
@@ -5678,13 +5722,26 @@ end;
 procedure TEditForm.chkCollapseVariationsClick(Sender: TObject);
 var
   i:integer;
+  s:string;
 begin
+  //txtSearchBox.Text := '';
+  s:=Trim(txtSearchBox.Text);
   for i:= 1 to VEVars.RowCount - 1 do begin
-    if ((Assigned(cp)) and (VEVars.Cells[1,i]='0')) then
-      if chkCollapseVariations.Checked then VEVars.RowHeights[i] := -1
-      else VEVars.RowHeights[i] := VEVars.DefaultRowHeight
-    else
-      VEVars.RowHeights[i] := VEVars.DefaultRowHeight;
+    if (Length(s) = 0) then begin
+      if ((Assigned(cp)) and (VEVars.Cells[1,i]='0')) then
+        if chkCollapseVariations.Checked then VEVars.RowHeights[i] := -1
+        else VEVars.RowHeights[i] := VEVars.DefaultRowHeight
+      else VEVars.RowHeights[i] := VEVars.DefaultRowHeight;
+    end else begin
+      if (Length(s) > Length(VEVars.Cells[0, i])) then
+        VEVars.RowHeights[i] := -1
+      else if Pos(s, VEVars.Cells[0, i]) > 0 then begin
+        if ((Assigned(cp)) and (VEVars.Cells[1,i]='0')) then
+          if chkCollapseVariations.Checked then VEVars.RowHeights[i] := -1
+          else VEVars.RowHeights[i] := VEVars.DefaultRowHeight
+        else VEVars.RowHeights[i] := VEVars.DefaultRowHeight;
+      end else VEVars.RowHeights[i] := -1;
+    end;
   end;  
 end;
 
@@ -5856,4 +5913,65 @@ begin
   end;
 end;
 
+procedure TEditForm.txtSearchBoxChange(Sender: TObject);
+var
+  i:integer;
+  s:string;
+begin
+  s:=Trim(txtSearchBox.Text);
+  for i:= 1 to VEVars.RowCount - 1 do begin
+    if (Length(s) = 0) then begin
+      if ((Assigned(cp)) and (VEVars.Cells[1,i]='0')) then
+        if chkCollapseVariations.Checked then VEVars.RowHeights[i] := -1
+        else VEVars.RowHeights[i] := VEVars.DefaultRowHeight
+      else VEVars.RowHeights[i] := VEVars.DefaultRowHeight;
+    end else begin
+      if (Length(s) > Length(VEVars.Cells[0, i])) then
+        VEVars.RowHeights[i] := -1
+      else if Pos(s, VEVars.Cells[0, i]) > 0 then begin
+        if ((Assigned(cp)) and (VEVars.Cells[1,i]='0')) then
+          if chkCollapseVariations.Checked then VEVars.RowHeights[i] := -1
+          else VEVars.RowHeights[i] := VEVars.DefaultRowHeight
+        else VEVars.RowHeights[i] := VEVars.DefaultRowHeight;
+      end else VEVars.RowHeights[i] := -1;
+    end;
+  end;
+end;
+
+procedure TEditForm.txtSearchBoxKeyPress(Sender: TObject; var Key: Char);
+begin
+    txtSearchBoxChange(Sender);  
+end;
+
+procedure TEditForm.btnResetSearchClick(Sender: TObject);
+begin
+  txtSearchBox.Text := '';
+end;
+
+procedure TEditForm.KeyInput(str:string);
+var
+  Inp: TInput;
+  I: Integer;
+begin
+  for I := 1 to Length(Str) do
+  begin
+    Inp.Itype := INPUT_KEYBOARD;
+    Inp.ki.wVk := Ord(UpCase(Str[i]));
+    Inp.ki.dwFlags := 0;
+    SendInput(1, Inp, SizeOf(Inp));
+    Inp.Itype := INPUT_KEYBOARD;
+    Inp.ki.wVk := Ord(UpCase(Str[i]));
+    Inp.ki.dwFlags := KEYEVENTF_KEYUP;
+    SendInput(1, Inp, SizeOf(Inp));
+    Application.ProcessMessages;
+    Sleep(1);
+  end; 
+end;
+
+procedure TEditForm.ToolButton12Click(Sender: TObject);
+begin
+  KeyInput('3.141592');
+end;
+
 end.
+

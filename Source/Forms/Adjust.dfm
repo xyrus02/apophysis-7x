@@ -171,7 +171,7 @@ object AdjustForm: TAdjustForm
     Top = 157
     Width = 451
     Height = 130
-    ActivePage = TabSheet3
+    ActivePage = TabSheet6
     Anchors = [akLeft, akTop, akRight, akBottom]
     Images = MainForm.Buttons
     TabOrder = 1
@@ -590,7 +590,7 @@ object AdjustForm: TAdjustForm
       end
       object btnMenu: TSpeedButton
         Left = 4
-        Top = 47
+        Top = 42
         Width = 109
         Height = 21
         Hint = 'Click for menu'
@@ -637,10 +637,11 @@ object AdjustForm: TAdjustForm
         ParentShowHint = False
         ShowHint = True
         OnClick = btnMenuClick
+        ExplicitTop = 46
       end
       object btnOpen: TSpeedButton
         Left = 396
-        Top = 72
+        Top = 67
         Width = 23
         Height = 21
         Hint = 'Open Gradient Browser'
@@ -676,10 +677,11 @@ object AdjustForm: TAdjustForm
         ShowHint = True
         Transparent = False
         OnClick = btnOpenClick
+        ExplicitTop = 71
       end
       object btnSmoothPalette: TSpeedButton
         Left = 419
-        Top = 72
+        Top = 67
         Width = 23
         Height = 21
         Hint = 'Smooth Palette'
@@ -715,10 +717,11 @@ object AdjustForm: TAdjustForm
         ShowHint = True
         Transparent = False
         OnClick = mnuSmoothPaletteClick
+        ExplicitTop = 71
       end
       object btnPaste: TSpeedButton
         Left = 373
-        Top = 72
+        Top = 67
         Width = 23
         Height = 21
         Hint = 'Paste gradient from clipboard'
@@ -754,10 +757,11 @@ object AdjustForm: TAdjustForm
         ShowHint = True
         Transparent = False
         OnClick = btnPasteClick
+        ExplicitTop = 71
       end
       object btnCopy: TSpeedButton
         Left = 350
-        Top = 72
+        Top = 67
         Width = 23
         Height = 21
         Hint = 'Copy gradient to clipboard'
@@ -793,10 +797,11 @@ object AdjustForm: TAdjustForm
         ShowHint = True
         Transparent = False
         OnClick = btnCopyClick
+        ExplicitTop = 71
       end
       object btnColorPreset: TSpeedButton
         Left = 4
-        Top = 73
+        Top = 68
         Width = 109
         Height = 21
         Hint = 'Click to choose random preset'
@@ -805,12 +810,13 @@ object AdjustForm: TAdjustForm
         ParentShowHint = False
         ShowHint = True
         OnClick = btnColorPresetClick
+        ExplicitTop = 72
       end
       object GradientPnl: TPanel
         Left = 0
         Top = 0
         Width = 443
-        Height = 44
+        Height = 39
         Align = alTop
         Anchors = [akLeft, akTop, akRight, akBottom]
         BevelInner = bvRaised
@@ -822,7 +828,7 @@ object AdjustForm: TAdjustForm
           Left = 2
           Top = 2
           Width = 435
-          Height = 36
+          Height = 31
           Cursor = crHandPoint
           Align = alClient
           PopupMenu = GradientPopup
@@ -831,11 +837,12 @@ object AdjustForm: TAdjustForm
           OnMouseDown = GradImageMouseDown
           OnMouseMove = GradImageMouseMove
           OnMouseUp = GradImageMouseUp
+          ExplicitHeight = 36
         end
       end
       object ScrollBar: TScrollBar
         Left = 120
-        Top = 50
+        Top = 45
         Width = 179
         Height = 15
         Anchors = [akLeft, akRight, akBottom]
@@ -849,7 +856,7 @@ object AdjustForm: TAdjustForm
       end
       object cmbPalette: TComboBox
         Left = 120
-        Top = 73
+        Top = 68
         Width = 227
         Height = 21
         BevelInner = bvLowered
@@ -958,7 +965,7 @@ object AdjustForm: TAdjustForm
       end
       object txtVal: TEdit
         Left = 306
-        Top = 47
+        Top = 42
         Width = 49
         Height = 21
         Anchors = [akRight, akBottom]
@@ -969,7 +976,7 @@ object AdjustForm: TAdjustForm
       end
       object btnReset: TButton
         Left = 363
-        Top = 47
+        Top = 42
         Width = 79
         Height = 21
         Anchors = [akRight, akBottom]
@@ -995,9 +1002,10 @@ object AdjustForm: TAdjustForm
         Left = 184
         Top = 4
         Width = 138
-        Height = 88
+        Height = 93
         Anchors = [akLeft, akTop, akRight, akBottom]
         Shape = bsFrame
+        ExplicitHeight = 94
       end
       object Bevel3: TBevel
         Left = 330
@@ -1194,7 +1202,7 @@ object AdjustForm: TAdjustForm
         Left = 336
         Top = 10
         Width = 99
-        Height = 45
+        Height = 40
         Alignment = taLeftJustify
         Anchors = [akLeft, akTop, akRight, akBottom]
         Caption = 'Resize Main Window'
@@ -1241,7 +1249,6 @@ object AdjustForm: TAdjustForm
         Width = 75
         Height = 21
         Anchors = [akLeft, akTop, akRight]
-        ItemHeight = 13
         TabOrder = 6
         Text = '384'
         OnChange = txtHeightChange
@@ -1262,7 +1269,6 @@ object AdjustForm: TAdjustForm
         Width = 75
         Height = 21
         Anchors = [akLeft, akTop, akRight]
-        ItemHeight = 13
         TabOrder = 5
         Text = '512'
         OnChange = txtWidthChange
@@ -1275,138 +1281,132 @@ object AdjustForm: TAdjustForm
           '1280')
       end
     end
-    object TabSheet5: TTabSheet
-      Caption = 'Post process'
-      ImageIndex = 67
-      TabVisible = False
-      object txtERadius: TEdit
-        Left = 338
-        Top = 28
-        Width = 63
-        Height = 21
+    object TabSheet6: TTabSheet
+      Caption = 'Curves'
+      ImageIndex = 69
+      object CurvesPanel: TPanel
+        Left = 3
+        Top = 1
+        Width = 323
+        Height = 97
+        BevelOuter = bvLowered
+        Color = clBlack
+        ParentBackground = False
         TabOrder = 0
-        Text = '9'
-        OnEnter = txtRadiusEnter
-        OnExit = txtRadiusExit
-        OnKeyPress = txtERadiusKeyPress
       end
-      object scrollERadius: TScrollBar
-        Left = 80
-        Top = 31
-        Width = 249
+      object tbWeightLeft: TScrollBar
+        Left = 111
+        Top = 67
+        Width = 75
         Height = 15
-        LargeChange = 10
+        Max = 160
         PageSize = 0
-        Position = 9
+        Position = 10
         TabOrder = 1
-        OnChange = scrollRadiusChange
-        OnScroll = scrollRadiusScroll
+        Visible = False
+        OnChange = WeightChange
+        OnScroll = WeightScroll
       end
-      object pnlERadius: TPanel
-        Left = 4
-        Top = 28
-        Width = 69
+      object tbWeightRight: TScrollBar
+        Left = 111
+        Top = 83
+        Width = 129
+        Height = 15
+        Max = 160
+        PageSize = 0
+        Position = 10
+        TabOrder = 2
+        Visible = False
+        OnChange = WeightChange
+        OnScroll = WeightScroll
+      end
+      object Panel3: TPanel
+        Left = 111
+        Top = 88
+        Width = 121
         Height = 21
         Cursor = crHandPoint
-        Hint = 'Click and drag to change value'
         BevelOuter = bvLowered
-        Caption = 'Radius'
+        Caption = ' First CP weight:'
+        Font.Charset = DEFAULT_CHARSET
+        Font.Color = clWindowText
+        Font.Height = -11
+        Font.Name = 'Tahoma'
+        Font.Style = []
+        ParentFont = False
         ParentShowHint = False
         ShowHint = True
-        TabOrder = 2
-        OnDblClick = DragPanelDblClick
-        OnMouseDown = DragPanelMouseDown
-        OnMouseMove = DragPanelMouseMove
-        OnMouseUp = DragPanelMouseUp
-      end
-      object txtEMin: TEdit
-        Left = 338
-        Top = 52
-        Width = 63
-        Height = 21
         TabOrder = 3
-        Text = '0'
-        OnEnter = txtMinEnter
-        OnExit = txtMinExit
-        OnKeyPress = txtEMinKeyPress
+        Visible = False
       end
-      object scrollEMin: TScrollBar
-        Left = 80
-        Top = 55
-        Width = 249
-        Height = 15
-        LargeChange = 10
-        PageSize = 0
-        TabOrder = 4
-        OnChange = scrollMinChange
-        OnScroll = scrollMinScroll
-      end
-      object pnlEMin: TPanel
-        Left = 4
-        Top = 52
-        Width = 69
+      object Panel4: TPanel
+        Left = 119
+        Top = 88
+        Width = 121
         Height = 21
         Cursor = crHandPoint
-        Hint = 'Click and drag to change value'
         BevelOuter = bvLowered
-        Caption = 'Minimum'
+        Caption = ' Second CP weight:'
+        Font.Charset = DEFAULT_CHARSET
+        Font.Color = clWindowText
+        Font.Height = -11
+        Font.Name = 'Tahoma'
+        Font.Style = []
+        ParentFont = False
+        ParentShowHint = False
+        ShowHint = True
+        TabOrder = 4
+        Visible = False
+      end
+      object Panel5: TPanel
+        Left = 332
+        Top = 3
+        Width = 108
+        Height = 21
+        Cursor = crHandPoint
+        Alignment = taLeftJustify
+        BevelOuter = bvNone
+        Caption = ' Selected curve:'
+        Font.Charset = DEFAULT_CHARSET
+        Font.Color = clWindowText
+        Font.Height = -11
+        Font.Name = 'Tahoma'
+        Font.Style = []
+        ParentFont = False
         ParentShowHint = False
         ShowHint = True
         TabOrder = 5
-        OnDblClick = DragPanelDblClick
-        OnMouseDown = DragPanelMouseDown
-        OnMouseMove = DragPanelMouseMove
-        OnMouseUp = DragPanelMouseUp
       end
-      object txtECurve: TEdit
-        Left = 338
-        Top = 76
-        Width = 63
+      object cbChannel: TComboBox
+        Left = 332
+        Top = 30
+        Width = 107
         Height = 21
+        Style = csDropDownList
+        Font.Charset = DEFAULT_CHARSET
+        Font.Color = clWindowText
+        Font.Height = -11
+        Font.Name = 'Tahoma'
+        Font.Style = []
+        ItemIndex = 0
+        ParentFont = False
         TabOrder = 6
-        Text = '0.4'
-        OnEnter = txtCurveEnter
-        OnExit = txtCurveExit
-        OnKeyPress = txtECurveKeyPress
+        Text = 'Overall'
+        OnChange = curveChange
+        Items.Strings = (
+          'Overall'
+          'Red'
+          'Green'
+          'Blue')
       end
-      object scrollECurve: TScrollBar
-        Left = 80
-        Top = 79
-        Width = 249
-        Height = 15
-        LargeChange = 10
-        Min = 10
-        PageSize = 0
-        Position = 40
-        TabOrder = 7
-        OnChange = scrollCurveChange
-        OnScroll = scrollCurveScroll
-      end
-      object pnlECurve: TPanel
-        Left = 4
-        Top = 76
-        Width = 69
+      object btnResetCurves: TButton
+        Left = 332
+        Top = 75
+        Width = 107
         Height = 21
-        Cursor = crHandPoint
-        Hint = 'Click and drag to change value'
-        BevelOuter = bvLowered
-        Caption = 'Curve'
-        ParentShowHint = False
-        ShowHint = True
-        TabOrder = 8
-        OnDblClick = DragPanelDblClick
-        OnMouseDown = DragPanelMouseDown
-        OnMouseMove = DragPanelMouseMove
-        OnMouseUp = DragPanelMouseUp
-      end
-      object cbEnableDE: TCheckBox
-        Left = 4
-        Top = 8
-        Width = 405
-        Height = 17
-        Caption = 'Enable density estimation'
-        TabOrder = 9
-        OnClick = cbEnableDEClick
+        Caption = 'Reset'
+        TabOrder = 7
+        OnClick = btnResetCurvesClick
       end
     end
   end

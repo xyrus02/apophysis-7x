@@ -26,13 +26,12 @@ interface
 
 uses
   Windows, Messages, SysUtils, Classes, Graphics, Controls, Forms, Dialogs,
-  StdCtrls, ComCtrls, Math, Buttons, Registry, ExtCtrls, MMSystem,
-  ControlPoint, RenderThread, cmap, RenderTypes, dwTaskbarComponents,
-  dwProgressBar, ShellAPI, imageenio, Translation;
+  StdCtrls, ComCtrls, Math, Buttons, Registry, ExtCtrls, MMSystem, Windows7, 
+  ControlPoint, RenderThread, cmap, RenderingCommon, RenderingInterface,
+  ShellAPI, Translation, ActiveX, ComObj;
 
 type
   TRenderForm = class(TForm)
-    ProgressBar: TProgressBar;
     btnRender: TButton;
     btnCancel: TButton;
     SaveDialog: TSaveDialog;
@@ -62,39 +61,33 @@ type
     cbMaxMemory: TComboBox;
     chkLimitMem: TCheckBox;
     Output: TMemo;
-    ProgressBar2: TdwProgressBar;
-    PBMem: TdwProgressBar;
     lblMemory: TLabel;
     btnBrowse: TSpeedButton;
     txtFilename: TEdit;
     GroupBox1: TGroupBox;
     chkSave: TCheckBox;
-    chkThreadPriority: TCheckBox;
     GroupBox6: TGroupBox;
     chkPostProcess: TCheckBox;
     chkShutdown: TCheckBox;
     Label6: TLabel;
     Label7: TLabel;
     btnGoTo: TSpeedButton;
-    cbEXIF: TCheckBox;
-    en: TImageEnIO;
-    cbParEXIF: TCheckBox;
-    chkSaveIncompleteRenders: TCheckBox;
     pnlWidth: TPanel;
     pnlHeight: TPanel;
     pnlDensity: TPanel;
     pnlFilter: TPanel;
     pnlOversample: TPanel;
     pnlLimit: TPanel;
-    txtAuthor: TEdit;
     pnlTarget: TPanel;
-    pnlAuthor: TPanel;
-    TEST_btnSnapshot: TButton;
-    cbBitsPerSample: TComboBox;
-    pnlBufferDepth: TPanel;
-    TEST_btnUseSnapshot: TButton;
-    procedure TEST_btnUseSnapshotClick(Sender: TObject);
-    procedure TEST_btnSnapshotClick(Sender: TObject);
+    btnDonate: TButton;
+    btnSaveLog: TButton;
+    chkBinary: TCheckBox;
+    ProgressBar2: TProgressBar;
+    PBMem: TProgressBar;
+    chkSaveIncompleteRenders: TCheckBox;
+    lblCPUCores: TLabel;
+    procedure btnSaveLogClick(Sender: TObject);
+    procedure btnDonateClick(Sender: TObject);
     procedure cbMaxMemoryChange(Sender: TObject);
     procedure FormCreate(Sender: TObject);
     procedure FormDestroy(Sender: TObject);
@@ -116,10 +109,7 @@ type
     procedure cmbPresetChange(Sender: TObject);
     procedure chkMaintainClick(Sender: TObject);
     procedure chkSaveIncompleteRendersClick(Sender: TObject);
-    procedure cbBitsPerSampleSelect(Sender: TObject);
-    procedure chkThreadPriorityClick(Sender: TObject);
     procedure btnGoToClick(Sender: TObject);
-    procedure cbEXIFClick(Sender: TObject);
   private
     StartTime, EndTime, oldElapsed, edt: TDateTime;
     oldProg: double;
@@ -187,6 +177,7 @@ begin
   chkSaveIncompleteRenders.Enabled := not IsLimitingMemory;
   btnRender.Enabled := true;
   cmbPreset.enabled := true;
+  btnSaveLog.Enabled := false;
   chkSave.enabled := true;
   chkPostProcess.enabled := true;
   chkShutdown.enabled := true;
@@ -194,10 +185,13 @@ begin
   btnDeletePreset.enabled := true;
   btnCancel.Caption := TextByKey('common-close');
   btnPause.enabled := false;
-  cbParExif.Enabled := cbExif.Checked;
   ProgressBar2.Position := 0;
-  ProgressBar2.ShowInTaskbar := false;
   chkMaintain.Enabled := true;
+
+  SetTaskbarProgressValue(
+    ProgressBar2.Position - ProgressBar2.Min,
+    ProgressBar2.Max - ProgressBar2.Min);
+  SetTaskbarProgressState(tbpsNone);
 
   pnlWidth.Enabled := true;
   pnlHeight.Enabled := true;
@@ -236,6 +230,14 @@ begin
     );
 end;
 
+function GetCpuCount: integer;
+var
+  si: TSystemInfo;
+begin;
+  GetSystemInfo(si);
+  Result := si.dwNumberOfProcessors;
+end;
+
 procedure TRenderForm.ShowMemoryStatus;
 var
   GlobalMemoryInfo: TMemoryStatus; // holds the global memory status information
@@ -244,18 +246,32 @@ begin
   GlobalMemoryStatus(GlobalMemoryInfo);
   PhysicalMemory := GlobalMemoryInfo.dwAvailPhys div 1048576;
   TotalPhysicalMemory := GlobalMemoryInfo.dwTotalPhys div 1048576;
-  TotalPhysicalMemory := TotalPhysicalMemory * 9 div 10; // assume that OS will take 10% of RAM ;)
-  ApproxMemory := int64(ImageHeight) * int64(ImageWidth) * sqr(Oversample) * SizeOfBucket[BitsPerSample] div 1048576;
+  //TotalPhysicalMemory := TotalPhysicalMemory * 9 div 10; // assume that OS will take 10% of RAM ;)
+
+  if SingleBuffer then
+    ApproxMemory := int64(ImageHeight) * int64(ImageWidth) * sqr(Oversample) * 16 div 1048576
+  else
+    ApproxMemory := int64(ImageHeight) * int64(ImageWidth) * sqr(Oversample) * 32 div 1048576;
+  
 
 //  lblPhysical.Caption := Format('%u', [PhysicalMemory]) + ' Mb';
 //  lblApproxMem.Caption := Format('%u', [ApproxMemory]) + ' Mb';
   lblMemory.Caption := Format(TextByKey('render-resourceusage-infotext'), [ApproxMemory, PhysicalMemory]);
+  lblCPUCores.Caption := Format(TextByKey('render-resourceusage-infotext2'), [NrTreads, GetCpuCount]);
   PBMem.Position := round(100 * (ApproxMemory / PhysicalMemory));
 
   if ApproxMemory > PhysicalMemory then //lblPhysical.Font.Color := clRed
-    PBMem.ProgressBarState := pbstError
+    lblMemory.Font.Color := clRed
   else //lblPhysical.Font.Color := clWindowText;
-    PBMem.ProgressBarState := pbstNormal;
+    lblMemory.Font.Color := clWindowText;
+
+  if NrTreads > GetCpuCount then
+    lblCpuCores.Font.Color := clRed
+  else
+    lblCpuCores.Font.Color := clWindowText;
+
+
+  //btnRender.Enabled := (ApproxMemory <= PhysicalMemory) or (cbMaxMemory.ItemIndex > 0);
 
   if  ApproxMemory > 0 then
     lblMaxbits.caption := format('%2.3f', [8 + log2(
@@ -272,24 +288,6 @@ end;
 procedure TRenderForm.Save(const str:string);
 begin
   Renderer.SaveImage(FileName);
-  if cbEXIF.Checked then begin
-    en.ParamsFromFile(FileName);
-    en.Params.EXIF_HasExifData := true;
-    en.Params.EXIF_XPTitle := cp.name;
-    en.Params.EXIF_XPKeywords := 'Apophysis ' + cp.name;
-    en.Params.EXIF_XPAuthor := txtAuthor.Text;
-    en.Params.EXIF_Artist := txtAuthor.text;
-    en.Params.EXIF_Software := AppVersionString;
-    en.Params.EXIF_DateTime := FormatDateTime('yyyy.mm.dd hh:nn:ss',Now);
-    en.Params.EXIF_DateTimeOriginal := en.Params.EXIF_DateTime;
-    en.Params.EXIF_DateTimeDigitized := en.Params.EXIF_DateTime;
-    en.Params.EXIF_Make := 'Apophysis';
-    en.Params.EXIF_Model := AppVersionString;
-    if (cbParExif.Checked) then begin
-      en.Params.EXIF_UserComment := MainForm.RetrieveXML(cp);
-    end;
-    en.InjectJpegEXIF(FileName);
-  end;
 end;
 
 procedure TRenderForm.HandleThreadCompletion(var Message: TMessage);
@@ -317,7 +315,7 @@ begin
         Output.Lines.Add(TimeToStr(Now) + ' : ' + TextByKey('render-status-saveerror-log'));
         tryAgain := (Application.MessageBox(PChar(TextByKey('render-status-saveerror-message1') + #13#10 + e.Message +
           #13#10 + TextByKey('render-status-saveerror-message2')), 'Apophysis', MB_RETRYCANCEL or MB_ICONERROR) = IDRETRY);
-          ProgressBar2.ProgressBarState := pbstError;
+          SetTaskbarProgressState(tbpsError);
       end;
     end;
   until tryAgain = false;
@@ -335,7 +333,8 @@ begin
     Renderer.ShowSmallStats;
   Output.Lines.Add('  ' + TextByKey('render-status-totaltime') + TimeToString(EndTime - StartTime));
   Output.Lines.Add('');
-  ProgressBar2.ShowInTaskbar := false;
+
+  SetTaskbarProgressState(tbpsNone);
 
   if not IsLimitingMemory and chkPostProcess.checked then
     DoPostProcess;
@@ -343,6 +342,9 @@ begin
   Renderer.Free;
   Renderer := nil;
   if not bRenderAll then ResetControls;
+
+  btnSaveLog.Enabled := true;
+
   if chkShutdown.Checked and not bRenderAll then
     WindowsExit;
 end;
@@ -365,12 +367,14 @@ begin
       Output.Lines.Add(TimeToStr(Now) + ' : ' + TextByKey('render-status-renderterminated'));
       
   Output.Lines.Add('');
-  ProgressBar2.ShowInTaskbar := false;
+  SetTaskbarProgressState(tbpsNone);
   sndPlaySound(pchar(SND_ALIAS_SYSTEMEXCLAMATION), SND_ALIAS_ID or SND_NOSTOP or SND_ASYNC);
 
   Renderer.Free;
   Renderer := nil;
   ResetControls;
+
+  btnSaveLog.Enabled := true;
 end;
 
 procedure TRenderForm.OnProgress(prog: double);
@@ -422,6 +426,12 @@ end;
 
 procedure TRenderForm.FormCreate(Sender: TObject);
 begin
+{$ifdef Apo7X64}
+  cbMaxMemory.Items.Add('2048');
+  cbMaxMemory.Items.Add('3072');
+  cbMaxMemory.Items.Add('4096');
+{$endif}
+
   pnlWidth.Caption := TextByKey('common-width');
 	pnlHeight.Caption := TextByKey('common-height');
 	GroupBox2.Caption := TextByKey('common-size');
@@ -442,16 +452,13 @@ begin
 	GroupBox4.Caption := TextByKey('render-resourceusage-title');
 	pnlLimit.Caption := TextByKey('render-resourceusage-limit');
 	//pnlBufferDepth.Caption := TextByKey('render-resourceusage-bufferdepth');
-	GroupBox1.Caption := TextByKey('render-output-title');
 	chkSave.Caption := TextByKey('render-output-saveparams');
-	cbEXIF.Caption := TextByKey('render-output-writeexif');
-	pnlAuthor.Caption := TextByKey('render-output-author');
-	cbParEXIF.Caption := TextByKey('render-output-includeparams');
 	GroupBox6.Caption := TextByKey('render-completion-title');
 	chkPostProcess.Caption := TextByKey('render-completion-postprocess');
 	chkShutdown.Caption := TextByKey('render-completion-shutdown');
 	chkSaveIncompleteRenders.Caption := TextByKey('render-completion-saveincomplete');
   cbMaxMemory.Items[0] := TextByKey('render-resourceusage-nolimit') ;
+  Groupbox1.Caption := TextByKey('render-tab-output-title');
 
   cp := TControlPoint.Create;
   cbMaxMemory.ItemIndex := 0;
@@ -479,18 +486,56 @@ var
   iCurrFlame: integer;
   path, ext: string;
   lim:integer;
+  ilm:boolean;
+  sl: TStringList;
+  tryAgain: boolean;
+  cancel: boolean;
+  result: integer;
 begin
+  // overwrite target with 0b file
+  // this to test writability in output directory
+  {sl := TStringList.Create;
+  sl.Text := '';
+  repeat
+    tryAgain := false;
+    cancel := false;
+    try
+      sl.SaveToFile(txtFileName.Text);
+    except
+      on e: Exception do begin
+        Output.Lines.Add(TimeToStr(Now) + ' : ' + TextByKey('render-status-saveerror-log'));
+        result := (Application.MessageBox(PChar(TextByKey('render-status-saveerror-message1') + #13#10 + e.Message +
+          #13#10 + TextByKey('render-status-saveerror-message2')), 'Apophysis', MB_RETRYCANCEL or MB_ICONERROR));
+        tryAgain := (result = IDRETRY);
+        cancel := (result = IDCANCEL);
+        ProgressBar2.ProgressBarState := pbstError;
+      end;
+    end;
+  until (tryAgain = false) or (cancel = true);
+  sl.Destroy; }
+
+  //if (cancel) then Exit;
+  Output.Text := '';
+  SetTaskbarProgressValue(
+    ProgressBar2.Position - ProgressBar2.Min,
+    ProgressBar2.Max - ProgressBar2.Min);
+  SetTaskbarProgressState(tbpsNormal);
+
   ImageWidth := StrToInt(cbWidth.text);
   ImageHeight := StrToInt(cbHeight.text);
 
-  if (IsLimitingMemory) then lim := StrToInt(cbMaxMemory.text)
+  ilm := IsLimitingMemory;
+  if (IsLimitingMemory) then begin
+    lim := StrToInt(cbMaxMemory.text);
+    MaxMemory := lim;
+  end
   else lim := PhysicalMemory + 1;
 
-  if not IsLimitingMemory then begin
+  if not ilm then begin
     if (ApproxMemory > {Total}PhysicalMemory) then
     begin
-      Application.MessageBox(PAnsiChar(TextByKey('render-status-notenoughmemory1')), 'Apophysis', 48);
-      exit;
+      if IDYES <> Application.MessageBox(PChar(TextByKey('render-status-notenoughmemory1')), 'Apophysis', MB_ICONWARNING or MB_YESNO) then
+        exit;
     end;
 {
     if (ApproxMemory > PhysicalMemory) then
@@ -504,56 +549,57 @@ begin
 }
   end
   else if (PhysicalMemory < lim) and (Approxmemory > PhysicalMemory) then begin
-    Application.MessageBox(PAnsiChar(TextByKey('render-status-notenoughmemory2')), 'Apophysis', 48);
-    exit;
+    if IDYES <> Application.MessageBox(PChar(TextByKey('render-status-notenoughmemory2')), 'Apophysis', MB_ICONWARNING or MB_YESNO) then
+      exit;
   end;
 
   t := txtFilename.Text;
   if t = '' then
   begin
-    Application.MessageBox(PAnsiChar(TextByKey('render-status-nofilename')), 'Apophysis', 48);
+    Application.MessageBox(PChar(TextByKey('render-status-nofilename')), 'Apophysis', 48);
     Exit;
   end;
   if FileExists(t) then
-    if Application.MessageBox(PAnsiChar(Format(TextByKey('render-status-fileexists-message1'), [t]) + #13#10 + TextByKey('render-status-fileexists-message2')),
+    if Application.MessageBox(PChar(Format(TextByKey('render-status-fileexists-message1'), [t]) + #13#10 + TextByKey('render-status-fileexists-message2')),
       'Apophysis', 52) = ID_NO then exit;
   if not DirectoryExists(ExtractFileDir(t)) then
   begin
-    Application.MessageBox(PAnsiChar(TextByKey('render-status-pathdoesnotexist')), 'Apophyis', 16);
+    Application.MessageBox(PChar(TextByKey('render-status-pathdoesnotexist')), 'Apophyis', 16);
     exit;
   end;
   {Check for invalid values }
   if sample_density <= 0 then
   begin
-    Application.MessageBox(PAnsiChar(TextByKey('render-status-invaliddensity')), 'Apophysis', 16);
+    Application.MessageBox(PChar(TextByKey('render-status-invaliddensity')), 'Apophysis', 16);
     exit;
   end;
   if filter_radius <= 0 then
   begin
-    Application.MessageBox(PAnsiChar(TextByKey('render-status-invalidfilterradius')), 'Apophysis', 16);
+    Application.MessageBox(PChar(TextByKey('render-status-invalidfilterradius')), 'Apophysis', 16);
     exit;
   end;
   if Oversample < 1 then
   begin
-    Application.MessageBox(PAnsiChar(TextByKey('render-status-invalidoversample')), 'Apophysis', 16);
+    Application.MessageBox(PChar(TextByKey('render-status-invalidoversample')), 'Apophysis', 16);
     exit;
   end;
   if ImageWidth < 1 then
   begin
-    Application.MessageBox(PAnsiChar(TextByKey('render-status-invalidwidth')), 'Apophysis', 16);
+    Application.MessageBox(PChar(TextByKey('render-status-invalidwidth')), 'Apophysis', 16);
     exit;
   end;
   if ImageHeight < 1 then
   begin
-    Application.MessageBox(PAnsiChar(TextByKey('render-status-invalidheight')), 'Apophysis', 16);
+    Application.MessageBox(PChar(TextByKey('render-status-invalidheight')), 'Apophysis', 16);
     exit;
   end;
-  if (IsLimitingMemory) then
-    if StrToInt(cbMaxMemory.text) * 1024*1024 < ImageWidth * (int64(ImageHeight) * 4 + oversample) then begin
+  if (ilm) then
+    if lim * 1024*1024 < ImageWidth * (int64(ImageHeight) * 4 + oversample) then begin
       // Must be enough memory to hold the final image (RGBA)
-      Application.MessageBox(PAnsiChar(TextByKey('render-status-maxmemorytoosmall')), 'Apophysis', 16);
-      exit;
+      if IDYES <> Application.MessageBox(PChar(TextByKey('render-status-maxmemorytoosmall')), 'Apophysis', MB_ICONERROR or MB_YESNO) then
+        exit;
     end;
+
   txtFilename.Enabled := false;
   btnBrowse.Enabled := false;
   cbWidth.Enabled := False;
@@ -571,11 +617,16 @@ begin
   btnSavePreset.enabled := false;
   btnDeletePreset.enabled := false;
   btnRender.Enabled := false;
+  btnSaveLog.Enabled := false;
   btnPause.enabled := true;
   btnCancel.Caption := TextByKey('common-cancel');
-  ProgressBar2.ShowInTaskbar := true;
   chkMaintain.Enabled := false;
   StartTime := Now;
+
+  SetTaskbarProgressValue(
+    ProgressBar2.Position - ProgressBar2.Min,
+    ProgressBar2.Max - ProgressBar2.Min);
+  SetTaskbarProgressState(tbpsNormal);
 
   pnlWidth.Enabled := false;
   pnlHeight.Enabled := false;
@@ -627,8 +678,12 @@ begin
       Output.Lines.Add('  ' + Format(TextByKey('render-status-log-size'), [ImageWidth, ImageHeight]));
       Output.Lines.Add('  ' + Format(TextByKey('render-status-log-quality'), [sample_density]));
       Output.Lines.Add('  ' + Format(TextByKey('render-status-log-oversampling'), [oversample, filter_radius]));
-      Output.Lines.Add('  ' + Format(TextByKey('render-status-log-bufferdepth'), ['32bit integer'(*cbBitsPerSample.Items[BitsPerSample]*)]));
-      if (not IsLimitingMemory) then
+      if SingleBuffer then
+        Output.Lines.Add('  ' + Format(TextByKey('render-status-log-bufferdepth'), ['32 bit float']))
+      else
+        Output.Lines.Add('  ' + Format(TextByKey('render-status-log-bufferdepth'), ['64 bit float']));
+      
+      if (ilm) then
         Output.Lines.Add('  ' + Format(TextByKey('render-status-log-memorylimit'), [MaxMemory]))
       else
         if (UpperCase(ExtractFileExt(FileName)) = '.PNG') and
@@ -671,9 +726,10 @@ begin
         else
           Renderer.SetPriority(tpNormal);
 }
+        Renderer.ExportBuffer := chkBinary.Checked;
         Renderer.BitsPerSample := BitsPerSample;
-        if (not IsLimitingMemory) then
-          Renderer.MaxMem := MaxMemory;//StrToInt(cbMaxMemory.text);
+        if (ilm) then
+          Renderer.MaxMem := lim;//StrToInt(cbMaxMemory.text);
         Renderer.OnProgress := OnProgress;
         Renderer.TargetHandle := self.Handle;
         Renderer.SetCP(cp);
@@ -696,9 +752,14 @@ begin
     Output.Lines.Add('  ' + Format(TextByKey('render-status-log-size'), [ImageWidth, ImageHeight]));
     Output.Lines.Add('  ' + Format(TextByKey('render-status-log-quality'), [sample_density]));
     Output.Lines.Add('  ' + Format(TextByKey('render-status-log-oversampling'), [oversample, filter_radius]));
-    Output.Lines.Add('  ' + Format(TextByKey('render-status-log-bufferdepth'), ['32bit integer'(*cbBitsPerSample.Items[BitsPerSample]*)]));
-    if (not IsLimitingMemory) then
-      Output.Lines.Add('  ' + Format(TextByKey('render-status-log-memorylimit'), [MaxMemory]))
+
+    if SingleBuffer then
+      Output.Lines.Add('  ' + Format(TextByKey('render-status-log-bufferdepth'), ['32 bit float']))
+    else
+      Output.Lines.Add('  ' + Format(TextByKey('render-status-log-bufferdepth'), ['64 bit float']));
+      
+    if (ilm) then
+      Output.Lines.Add('  ' + Format(TextByKey('render-status-log-memorylimit'), [lim]))
     else
       if (UpperCase(ExtractFileExt(FileName)) = '.PNG') and
         (ImageWidth * ImageHeight >= 20000000) then
@@ -746,8 +807,9 @@ begin
         Renderer.SetPriority(tpNormal);
 }
       Renderer.BitsPerSample := BitsPerSample;
-      if (not IsLimitingMemory) then
-        Renderer.MaxMem := MaxMemory;//StrToInt(cbMaxMemory.text);
+      if (ilm) then
+        Renderer.MaxMem := lim;//StrToInt(cbMaxMemory.text);
+      Renderer.ExportBuffer := chkBinary.Checked;
       Renderer.OnProgress := OnProgress;
       Renderer.TargetHandle := self.Handle;
   //    Renderer.Output := Output.Lines;
@@ -761,7 +823,7 @@ begin
 
      except
       Output.Lines.Add(TimeToStr(Now) + ' : ' + TextByKey('render-status-rendererror-log'));
-      Application.MessageBox(PAnsiChar(TextByKey('render-status-rendererror-message')), 'Apophysis', 48);
+      Application.MessageBox(PChar(TextByKey('render-status-rendererror-message')), 'Apophysis', 48);
      end;
     end;
   end;
@@ -804,20 +866,9 @@ begin
   sample_density := renderDensity;
   txtDensity.Text := FloatToStr(sample_density);
   BitsPerSample := renderBitsPerSample;
-  //cbBitsPerSample.ItemIndex := BitsPerSample;
-  cbExif.Checked := StoreEXIF;
-  cbParExif.Enabled := StoreEXIF;
-  cbParExif.Checked := (StoreExif and StoreParamsExif);
-  pnlAuthor.Enabled := StoreEXIF;
-  txtAuthor.Enabled := StoreEXIF;
-  if (not cbEXIF.Checked) then pnlAuthor.Font.Color := clGrayText
-  else pnlAuthor.Font.Color := clWindowText;
-  if (not txtAuthor.Enabled) then txtAuthor.Text := ''
-  else txtAuthor.Text := ExifAuthor;
   ShowMemoryStatus;
   Ratio := ImageWidth / ImageHeight;
   chkSaveIncompleteRenders.Checked := SaveIncompleteRenders;
-  chkThreadPriority.Checked := LowerRenderPriority;
 end;
 
 procedure TRenderForm.txtWidthChange(Sender: TObject);
@@ -878,15 +929,6 @@ var
 begin
   filename := txtFilename.text;
   ext := LowerCase(ExtractFileExt(filename));
-  if ((ext = '.jpg') or (ext = '.jpeg')) then begin
-    cbEXIF.Enabled := true;
-    cbParEXIF.Enabled := false;
-  end else begin
-    cbEXIF.Checked := false;
-    cbEXIF.Enabled := false;
-    cbParEXIF.Checked := false;
-    cbParEXIF.Enabled := false;
-  end;
 end;
 
 procedure TRenderForm.btnCancelClick(Sender: TObject);
@@ -900,7 +942,7 @@ begin
       end;
 
     if ConfirmStopRender then begin
-      if Application.MessageBox(PAnsiChar(TextByKey('render-status-confirmstop')), 'Apophysis', 36) = ID_NO then exit;
+      if Application.MessageBox(PChar(TextByKey('render-status-confirmstop')), 'Apophysis', 36) = ID_NO then exit;
     end;
 
     bRenderAll := false;
@@ -915,7 +957,10 @@ begin
         Renderer.WaitFor; //?
         PageCtrl.TabIndex := 0;
       end;
-      ProgressBar2.ProgressBarState := pbstNormal;
+      SetTaskbarProgressValue(
+        ProgressBar2.Position - ProgressBar2.Min,
+        ProgressBar2.Max - ProgressBar2.Min);
+      SetTaskbarProgressState(tbpsNone);
   end else
     Close;
 end;
@@ -952,9 +997,6 @@ begin
   renderDensity := Sample_density;
   renderOversample := Oversample;
   renderBitsPerSample := BitsPerSample;
-  StoreExif := cbExif.Checked;
-  StoreParamsExif := cbParExif.Checked;
-  ExifAuthor := txtAuthor.Text;
   { Write position to registry }
   Registry := TRegistry.Create;
   try
@@ -975,11 +1017,11 @@ begin
     if Renderer.Suspended = false then begin
       renderer.Suspend;
       btnPause.caption := TextByKey('common-resume');
-      ProgressBar2.ProgressBarState := pbstPaused;
+      SetTaskbarProgressState(tbpsPaused);
     end else begin
       renderer.Resume;
       btnPause.caption := TextByKey('common-pause');
-      ProgressBar2.ProgressBarState := pbstNormal;
+      SetTaskbarProgressState(tbpsNormal);
     end;
 end;
 
@@ -987,7 +1029,7 @@ procedure TRenderForm.FormCloseQuery(Sender: TObject;
   var CanClose: Boolean);
 begin
   if Assigned(Renderer) then
-    if Application.MessageBox(PAnsiChar(TextByKey('render-status-confirmstop')), 'Apophysis', 36) = ID_NO then
+    if Application.MessageBox(PChar(TextByKey('render-status-confirmstop')), 'Apophysis', 36) = ID_NO then
       CanClose := False
     else
     begin
@@ -1048,6 +1090,7 @@ procedure TRenderForm.btnBrowseClick(Sender: TObject);
 var
   fn:string;
   ext:string;
+  sl:TStringList;
 begin
   SaveDialog.Filename := Filename;
   case renderFileFormat of
@@ -1067,16 +1110,7 @@ begin
     ext := LowerCase(ExtractFileExt(fn));
     if (ext = '.bmp') then renderFileFormat := 1;
     if (ext = '.png') then renderFileFormat := 2;
-    if ((ext = '.jpg') or (ext = '.jpeg')) then begin
-      renderFileFormat := 3;
-      cbEXIF.Enabled := true;
-      cbParEXIF.Enabled := false;
-    end else begin
-      cbEXIF.Checked := false;
-      cbEXIF.Enabled := false;
-      cbParEXIF.Checked := false;
-      cbParEXIF.Enabled := false;
-    end;
+    if ((ext = '.jpg') or (ext = '.jpeg')) then renderFileFormat := 3;
     {case SaveDialog.FilterIndex of
       1: txtFilename.Text := ChangeFileExt(SaveDialog.Filename, '.bmp');
       2: txtFilename.Text := ChangeFileExt(SaveDialog.Filename, '.png');
@@ -1085,6 +1119,7 @@ begin
     txtFileName.Text := ChangeFileExt(fn, ext);
     //renderFileFormat := SaveDialog.FilterIndex;
     renderPath := ExtractFilePath(SaveDialog.Filename);
+
   end;
 end;
 
@@ -1190,10 +1225,6 @@ end;
 procedure TRenderForm.DoPostProcess;
 begin
   frmPostProcess.cp := cp;
-  frmPostProcess.en := en;
-  frmPostProcess.author := txtAuthor.text;
-  frmPostProcess.DoStoreExif := cbExif.Checked;
-  frmPostProcess.DoStoreExifParams := cbParExif.Checked;
   frmPostProcess.SetRenderer(Renderer.GetRenderer);
   frmPostProcess.SetControlPoint(CP);
   frmPostProcess.SetImageName(FileName);
@@ -1247,27 +1278,6 @@ begin
   SaveIncompleteRenders := chkSaveIncompleteRenders.Checked;
 end;
 
-procedure TRenderForm.cbBitsPerSampleSelect(Sender: TObject);
-begin
-  BitsPerSample := cbBitsPerSample.ItemIndex;
-
-  ShowMemoryStatus;
-end;
-
-procedure TRenderForm.chkThreadPriorityClick(Sender: TObject);
-begin
-  LowerRenderPriority := chkThreadPriority.Checked;
-
-
-  {if Assigned(Renderer) then begin
-    if LowerRenderPriority then
-      Renderer.SetPriority(tpLower)
-    else
-      Renderer.SetPriority(tpNormal);
-  end;}
-
-end;
-
 procedure TRenderForm.btnGoToClick(Sender: TObject);
 var
   path:string;
@@ -1277,43 +1287,31 @@ begin
 end;
 
 
-
-procedure TRenderForm.cbEXIFClick(Sender: TObject);
-begin
-  if (not cbEXIF.Checked) then cbParExif.Checked := false;
-  cbParExif.Enabled := cbEXIF.Checked;
-  pnlAuthor.Enabled := cbEXIF.Checked;
-  txtAuthor.Enabled := cbExif.Checked;
-  if (not cbEXIF.Checked) then pnlAuthor.Font.Color := clGrayText
-  else pnlAuthor.Font.Color := clWindowText;
-end;
-
 procedure TRenderForm.cbMaxMemoryChange(Sender: TObject);
 begin
   //cbMaxMemory.enabled := IsLimitingMemory;
   chkPostProcess.Enabled := not IsLimitingMemory;
   chkSaveIncompleteRenders.Enabled := not IsLimitingMemory;
+  //btnRender.Enabled := (ApproxMemory <= PhysicalMemory) or (cbMaxMemory.ItemIndex > 0);
 end;
 
-procedure TRenderForm.TEST_btnSnapshotClick(Sender: TObject);
+procedure TRenderForm.btnDonateClick(Sender: TObject);
 begin
-  Renderer.HibernateRender('F:\apo_hibernation.bin');
+  WinShellExecute('open', 'http://bit.ly/xwdonate');
 end;
 
-procedure TRenderForm.TEST_btnUseSnapshotClick(Sender: TObject);
+procedure TRenderForm.btnSaveLogClick(Sender: TObject);
+var fn: string; sl: TStringList;
 begin
-  Renderer := TRenderThread.Create;
-  assert(Renderer <> nil);
-  Renderer.BitsPerSample := BitsPerSample;
-  if (not IsLimitingMemory) then
-    Renderer.MaxMem := MaxMemory;//StrToInt(cbMaxMemory.text);
-  Renderer.OnProgress := OnProgress;
-  Renderer.TargetHandle := self.Handle;
-  Renderer.SetCP(cp);
-  Renderer.Priority := tpLower;
-  Renderer.NrThreads := NrTreads;
-  Renderer.Output := Output.Lines;
-  Renderer.ResumeFromHibernation('F:\apo_hibernation.bin');
+ if OpenSaveFileDialog(RenderForm, '.log',
+    Format('Render-Log (*.txt;*.log)|*.txt;*.log|%s|*.*', [TextByKey('common-filter-allfiles')]),
+    SaveDialog.InitialDir, TextByKey('common-browse'), fn, false, true, false, false)
+ then begin
+    sl := TStringList.Create;
+    sl.Text := Output.Text;
+    sl.SaveToFile(fn);
+    sl.Destroy;
+  end;
 end;
 
 end.

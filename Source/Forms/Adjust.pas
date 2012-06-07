@@ -26,8 +26,8 @@ interface
 
 uses
   Windows, Messages, SysUtils, Classes, Graphics, Controls, Forms, Dialogs,
-  StdCtrls, ExtCtrls, ComCtrls, Buttons, Menus, AppEvnts,
-  ControlPoint, Cmap, Render, Translation;
+  StdCtrls, ExtCtrls, ComCtrls, Buttons, Menus, AppEvnts, CurvesControl,
+  ControlPoint, Cmap, RenderingInterface, Translation;
 
 const
   WM_UPDATE_PARAMS = WM_APP + 5439;
@@ -154,20 +154,18 @@ type
     Shape1: TShape;
     txtVal: TEdit;
     btnReset: TButton;
-    TabSheet5: TTabSheet;
-    txtERadius: TEdit;
-    scrollERadius: TScrollBar;
-    pnlERadius: TPanel;
-    txtEMin: TEdit;
-    scrollEMin: TScrollBar;
-    pnlEMin: TPanel;
-    txtECurve: TEdit;
-    scrollECurve: TScrollBar;
-    pnlECurve: TPanel;
-    cbEnableDE: TCheckBox;
     pnlWidth: TPanel;
     pnlHeight: TPanel;
     pnlBackground: TPanel;
+    TabSheet6: TTabSheet;
+    CurvesPanel: TPanel;
+    tbWeightLeft: TScrollBar;
+    tbWeightRight: TScrollBar;
+    Panel3: TPanel;
+    Panel4: TPanel;
+    Panel5: TPanel;
+    cbChannel: TComboBox;
+    btnResetCurves: TButton;
     procedure FormCreate(Sender: TObject);
     procedure FormClose(Sender: TObject; var Action: TCloseAction);
     procedure FormDestroy(Sender: TObject);
@@ -316,27 +314,14 @@ type
     procedure btnResetClick(Sender: TObject);
     procedure txtValKeyPress(Sender: TObject; var Key: Char);
     procedure txtValExit(Sender: TObject);
-    procedure scrollCurveChange(Sender: TObject);
-    procedure scrollCurveScroll(Sender: TObject; ScrollCode: TScrollCode;
+    procedure WeightScroll(Sender: TObject; ScrollCode: TScrollCode;
       var ScrollPos: Integer);
-    procedure scrollMinChange(Sender: TObject);
-    procedure scrollMinScroll(Sender: TObject; ScrollCode: TScrollCode;
-      var ScrollPos: Integer);
-    procedure scrollRadiusChange(Sender: TObject);
-    procedure scrollRadiusScroll(Sender: TObject; ScrollCode: TScrollCode;
-      var ScrollPos: Integer);
-    procedure txtRadiusEnter(Sender: TObject);
-    procedure txtMinEnter(Sender: TObject);
-    procedure txtCurveEnter(Sender: TObject);
-    procedure txtERadiusKeyPress(Sender: TObject; var Key: Char);
-    procedure txtEMinKeyPress(Sender: TObject; var Key: Char);
-    procedure txtECurveKeyPress(Sender: TObject; var Key: Char);
-    procedure txtRadiusExit(Sender: TObject);
-    procedure txtMinExit(Sender: TObject);
-    procedure txtCurveExit(Sender: TObject);
-    procedure cbEnableDEClick(Sender: TObject);
+    procedure WeightChange(Sender: TObject);
+    procedure curveChange(Sender: TObject);
+    procedure btnResetCurvesClick(Sender: TObject);
 
   private
+    CurvesControl: TCurvesControl;
     Resetting: boolean;
     Render: TRenderer;
     bm: TBitmap;
@@ -366,6 +351,7 @@ type
     oldpos, offset: integer; // for display...? :-\
 
     procedure Apply;
+    procedure SetCurvesCp(ccp: TControlPoint);
     function Blur(const radius: integer; const pal: TColorMap): TColorMap;
     function Frequency(const times: Integer; const pal: TColorMap): TColorMap;
     procedure SaveMap(FileName: string);
@@ -407,9 +393,15 @@ implementation
 //uses Main, Global, Registry, Mutate, Editor, Save, Browser;
 uses
   RndFlame, Main, cmapdata, Math, Browser, Editor, Global,
-  Save, Mutate, ClipBrd, GradientHlpr, Registry;
+  Save, Mutate, ClipBrd, GradientHlpr, Registry, Curves;
 
 {$R *.DFM}
+
+procedure TAdjustForm.SetCurvesCp(ccp: TControlPoint);
+begin
+  if CurvesControl = nil then Exit;
+  CurvesControl.SetCp(ccp);
+end;
 
 procedure TAdjustForm.UpdateDisplay(PreviewOnly: boolean = false);
 var
@@ -417,6 +409,10 @@ var
   r: double;
 begin
   cp.copy(MainCp);
+  SetCurvesCp(MainCp);
+
+  tbWeightLeft.Position := Round(CurvesControl.WeightLeft * 10);
+  tbWeightRight.Position := Round(CurvesControl.WeightRight * 10);
 
   pw := PrevPnl.Width -2;
   ph := PrevPnl.Height -2;
@@ -483,9 +479,6 @@ begin
     txtPersp.Text := Format('%.6g', [cp.cameraPersp]);
     txtZpos.Text :=  Format('%.6g', [cp.cameraZpos]);
     txtDOF.Text :=   Format('%.6g', [cp.cameraDof]);
-
-    cbEnableDE.Checked := cp.enable_de;
-    cbEnableDEClick(nil);
   end; //***
   DrawPreview;
 end;
@@ -496,8 +489,12 @@ begin
     MainForm.StopThread;
   MainForm.UpdateUndo;
   MainCp.Copy(cp, true);
+  SetCurvesCp(cp);
+
   if EditForm.Visible then EditForm.UpdateDisplay;
   if MutateForm.Visible then MutateForm.UpdateDisplay;
+  if CurvesForm.Visible then CurvesForm.SetCp(cp);
+
   if bBgOnly then
     MainForm.tbShowAlphaClick(Self)
   else
@@ -618,6 +615,13 @@ begin
 	btnPreset1.Caption := TextByKey('adjustment-tab-size-preset');
 	btnPreset2.Caption := TextByKey('adjustment-tab-size-preset');
 	btnPreset3.Caption := TextByKey('adjustment-tab-size-preset');
+  TabSheet6.Caption := TextByKey('adjustment-tab-curves-title');
+  btnResetCurves.Caption := TextByKey('adjustment-tab-curves-reset');
+  Panel5.Caption := TextByKey('adjustment-tab-curves-selected');
+  cbChannel.Items[0] := TextByKey('adjustment-tab-curves-overall');
+  cbChannel.Items[1] := TextByKey('adjustment-tab-curves-red');
+  cbChannel.Items[2] := TextByKey('adjustment-tab-curves-green');
+  cbChannel.Items[3] := TextByKey('adjustment-tab-curves-blue');
 	chkResizeMain.Caption := TextByKey('adjustment-tab-size-resizemain');
 	mnuInstantPreview.Caption := TextByKey('adjustment-popup-quality-instantpreview');
 	mnuRandomize.Caption := TextByKey('adjustment-popup-gradient-randomize');
@@ -631,6 +635,18 @@ begin
 	SaveasMapfile1.Caption := TextByKey('adjustment-popup-gradient-saveasmap');
 	mnuSaveAsDefault.Caption := TextByKey('adjustment-popup-gradient-saveasdefault');
   btnMenu.Caption := TextByKey('adjustment-tab-gradient-moderotate');
+
+  cbChannel.ItemIndex := 0;
+
+  if not (assigned(curvesControl)) then
+  begin
+    CurvesControl := TCurvesControl.Create(self);
+    CurvesControl.Align := alClient;
+    CurvesControl.Parent := CurvesPanel;
+  end;
+
+  tbWeightLeft.Position := Round(CurvesControl.WeightLeft * 10);
+  tbWeightRight.Position := Round(CurvesControl.WeightRight * 10);
 
   bm := TbitMap.Create;
   cp := TControlPoint.Create;
@@ -651,6 +667,7 @@ begin
   end;
 
   Sendmessage(cmbPalette.Handle, CB_SETDROPPEDWIDTH , cmbPalette.width * 2, 0);
+  SetCurvesCp(MainCp);
 end;
 
 procedure TAdjustForm.FormClose(Sender: TObject; var Action: TCloseAction);
@@ -1074,6 +1091,14 @@ begin
   end;
 end;
 
+procedure TAdjustForm.curveChange(Sender: TObject);
+begin
+  if CurvesControl = nil then Exit;
+  CurvesControl.ActiveChannel := TCurvesChannel(cbChannel.ItemIndex);
+  tbWeightLeft.Position := Round(cp.curveWeights[cbChannel.ItemIndex][1] * 10); //Round(CurvesControl.WeightLeft * 10);
+  tbWeightRight.Position := Round(cp.curveWeights[cbChannel.ItemIndex][2] * 10); //Round(CurvesControl.WeightRight * 10);
+end;
+
 procedure TAdjustForm.scrollContrastScroll(Sender: TObject;
   ScrollCode: TScrollCode; var ScrollPos: Integer);
 begin
@@ -1143,9 +1168,11 @@ begin
 
   MainCp.CmapIndex := cmbPalette.ItemIndex;
   MainCp.cmap := Palette;
+  SetCurvesCp(MainCp);
 
   if EditForm.visible then EditForm.UpdateDisplay;
   if MutateForm.Visible then MutateForm.UpdateDisplay;
+  if CurvesForm.Visible then CurvesForm.SetCp(MainCp);
 
   if mnuInstantPreview.Checked then DrawPreview;
 
@@ -1885,6 +1912,35 @@ begin
   SetMainWindowSize;
 end;
 
+procedure TAdjustForm.WeightChange(Sender: TObject);
+begin
+  CurvesControl.WeightLeft := tbWeightLeft.Position / 10.0;
+  CurvesControl.WeightRight := tbWeightRight.Position / 10.0;
+
+  cp.curveWeights[cbChannel.ItemIndex][1] := tbWeightLeft.Position / 10.0;
+  cp.curveWeights[cbChannel.ItemIndex][2] := tbWeightRight.Position / 10.0;
+
+  DrawPreview;
+end;
+
+procedure TAdjustForm.WeightScroll(Sender: TObject; ScrollCode: TScrollCode;
+  var ScrollPos: Integer);
+begin
+  if ScrollCode <> scEndScroll then Exit;
+
+  MainForm.StopThread;
+  MainForm.UpdateUndo;
+  MainCp.Copy(cp, true);
+
+  if EditForm.Visible then EditForm.UpdateDisplay;
+  if MutateForm.Visible then MutateForm.UpdateDisplay;
+  if CurvesForm.Visible then CurvesForm.SetCp(cp);
+
+  MainForm.RedrawTimer.enabled := true;
+{  if ScrollCode = scEndScroll then
+    CurvesControl.UpdateFlame; }
+end;
+
 procedure TAdjustForm.WritePreset(n: integer);
 var
   Registry: TRegistry;
@@ -1932,7 +1988,7 @@ begin
     start := 2;
     
   for i:=start to length(s) do
-    if not (s[i] in ['0'..'9']) then
+    if not (CharInSet(s[i],['0'..'9'])) then
     begin
       Result := False;
       exit;
@@ -2153,12 +2209,6 @@ begin
     pnlDragValue := cp.cameraDOF
   else if (Sender = pnlGammaThreshold) then
     pnlDragValue := cp.gammaThreshRelative
-  else if (Sender = pnlERadius) then
-    pnlDragValue := cp.estimator
-  else if (Sender = pnlECurve) then
-    pnlDragValue := cp.estimator_curve
-  else if (Sender = pnlEMin) then
-    pnlDragValue := cp.estimator_min
   else enableDrag := false; //assert(false)};
 
   if enableDrag then begin
@@ -2270,18 +2320,6 @@ begin
       if v < 0 then v := 0;
       cp.gammaThreshRelative := v;
       txtGammaThreshold.Text := FloattoStr(cp.gammaThreshRelative);
-    end
-    else if (Sender = pnlECurve) then
-    begin
-      scrollECurve.Position := trunc(v * 100);
-    end
-    else if (Sender = pnlEMin) then
-    begin
-      scrollEMin.Position := trunc(v);
-    end
-    else if (Sender = pnlERadius) then
-    begin
-      scrollERadius.Position := trunc(v);
     end else exit;
     //pEdit^.Text := FloatToStr(v);
     //pEdit.Refresh;
@@ -2381,24 +2419,6 @@ begin
     if cp.gammaThreshRelative = defGammaThreshold then exit;
     cp.gammaThreshRelative := defGammaThreshold;
     txtGammaThreshold.Text := FloatToStr(defGammaThreshold);
-  end
-  else if (Sender = pnlECurve) then
-  begin
-    cp.estimator_curve := 0.4;
-    txtEcurve.Text := '0.4';
-    scrollECurve.Position := 40;
-  end
-  else if (Sender = pnlEMin) then
-  begin
-    cp.estimator_min := 0;
-    txtEmin.Text := '0';
-    scrollEmin.Position := 0;
-  end
-  else if (Sender = pnlERadius) then
-  begin
-    cp.estimator := 9;
-    txtEradius.Text := '9';
-    scrollEradius.Position := 9;
   end
   else exit;//assert(false);
 
@@ -2675,6 +2695,25 @@ begin
   ScrollBar.Position := 0;
 end;
 
+procedure TAdjustForm.btnResetCurvesClick(Sender: TObject);
+var i: integer;
+begin
+  tbWeightLeft.Position := 10;
+  tbWeightRight.Position := 10;
+
+  with cp do for i := 0 to 3 do
+  begin
+    curvePoints[i][0].x := 0.00; curvePoints[i][0].y := 0.00; curveWeights[i][0] := 1;
+    curvePoints[i][1].x := 0.00; curvePoints[i][1].y := 0.00; curveWeights[i][1] := 1;
+    curvePoints[i][2].x := 1.00; curvePoints[i][2].y := 1.00; curveWeights[i][2] := 1;
+    curvePoints[i][3].x := 1.00; curvePoints[i][3].y := 1.00; curveWeights[i][3] := 1;
+  end;
+  MainCp.Copy(cp, true);
+  SetCurvesCp(MainCp);
+
+  Apply;
+end;
+
 procedure TAdjustForm.txtValKeyPress(Sender: TObject; var Key: Char);
 begin
   if Key=#13 then begin
@@ -2686,150 +2725,6 @@ end;
 procedure TAdjustForm.TemplateRandomizeGradient;
 begin
   mnuRandomizeClick(nil);
-end;
-
-procedure TAdjustForm.scrollCurveChange(Sender: TObject);
-begin
-  cp.estimator_curve := scrollECurve.Position / 100;
-  txtECurve.text := FloatToStr(cp.estimator_curve);
-  txtECurve.Refresh;
-  DrawPreview;
-end;
-
-procedure TAdjustForm.scrollCurveScroll(Sender: TObject;
-  ScrollCode: TScrollCode; var ScrollPos: Integer);
-begin
-  if ScrollCode = scEndScroll then UpdateFlame;
-end;
-
-procedure TAdjustForm.scrollMinChange(Sender: TObject);
-begin
-  cp.estimator_min := scrollEMin.Position;
-  txtEMin.text := FloatToStr(cp.estimator_min);
-  txtEMin.Refresh;
-  DrawPreview;
-end;
-
-procedure TAdjustForm.scrollMinScroll(Sender: TObject;
-  ScrollCode: TScrollCode; var ScrollPos: Integer);
-begin
-  if ScrollCode = scEndScroll then UpdateFlame;
-end;
-
-procedure TAdjustForm.scrollRadiusChange(Sender: TObject);
-begin
-  cp.estimator := scrollERadius.Position / 18.0;
-  txtERadius.text := FloatToStr(cp.estimator * 18.0);
-  txtERadius.Refresh;
-  DrawPreview;
-end;
-
-procedure TAdjustForm.scrollRadiusScroll(Sender: TObject;
-  ScrollCode: TScrollCode; var ScrollPos: Integer);
-begin
-  if ScrollCode = scEndScroll then UpdateFlame;
-end;
-
-procedure TAdjustForm.txtRadiusEnter(Sender: TObject);
-begin
-  EditBoxValue := txtERadius.Text;
-end;
-
-procedure TAdjustForm.txtMinEnter(Sender: TObject);
-begin
-  EditBoxValue := txtEMin.Text;
-end;
-
-procedure TAdjustForm.txtCurveEnter(Sender: TObject);
-begin
-  EditBoxValue := txtECurve.Text;
-end;
-
-procedure TAdjustForm.txtERadiusKeyPress(Sender: TObject; var Key: Char);
-begin
-    if ((key = #13) and (txtGamma.Text <> EditBoxValue)) then
-  begin
-    key := #0;
-    txtRadiusExit(sender);
-  end;
-end;
-
-procedure TAdjustForm.txtEMinKeyPress(Sender: TObject; var Key: Char);
-begin
-  if ((key = #13) and (txtGamma.Text <> EditBoxValue)) then
-  begin
-    key := #0;
-    txtMinExit(sender);
-  end;
-end;
-
-procedure TAdjustForm.txtECurveKeyPress(Sender: TObject; var Key: Char);
-begin
-  if ((key = #13) and (txtGamma.Text <> EditBoxValue)) then
-  begin
-    key := #0;
-    txtCurveExit(sender);
-  end;
-end;
-
-procedure TAdjustForm.txtRadiusExit(Sender: TObject);
-var
-  v: integer;
-begin
-  if (txtERadius.Text <> EditBoxValue) then
-  try
-    v := Trunc(StrToFloat(txtERadius.Text) * 100);
-    if v > scrollERadius.Max then v := scrollERadius.Max;
-    if v < scrollERadius.Min then v := scrollERadius.Min;
-    ScrollERadius.Position := v;
-    UpdateFlame;
-  except on EConvertError do
-    txtERadius.Text := FloatToStr(cp.estimator);
-  end;
-end;
-
-procedure TAdjustForm.txtMinExit(Sender: TObject);
-var
-  v: integer;
-begin
-  if (txtEMin.Text <> EditBoxValue) then
-  try
-    v := Trunc(StrToFloat(txtEMin.Text) * 100);
-    if v > scrollEMin.Max then v := scrollEMin.Max;
-    if v < scrollEMin.Min then v := scrollEMin.Min;
-    scrollEMin.Position := v;
-    UpdateFlame;
-  except on EConvertError do
-    txtEMin.Text := FloatToStr(cp.estimator_min);
-  end;
-end;
-
-procedure TAdjustForm.txtCurveExit(Sender: TObject);
-var
-  v: integer;
-begin
-  if (txtECurve.Text <> EditBoxValue) then
-  try
-    v := Trunc(StrToFloat(txtECurve.Text) * 100);
-    if v > scrollECurve.Max then v := scrollECurve.Max;
-    if v < scrollECurve.Min then v := scrollECurve.Min;
-    scrollECurve.Position := v;
-    UpdateFlame;
-  except on EConvertError do
-    txtECurve.Text := FloatToStr(cp.estimator_curve);
-  end;
-end;
-
-procedure TAdjustForm.cbEnableDEClick(Sender: TObject);
-begin
-  cp.enable_de := cbEnableDE.Checked;
-  scrollERadius.Enabled := cp.enable_de;
-  scrollEMin.Enabled := cp.enable_de;
-  scrollECurve.Enabled := cp.enable_de;
-  txtERadius.Enabled := cp.enable_de;
-  txtEMin.Enabled := cp.enable_de;
-  txtECurve.Enabled := cp.enable_de;
-  if (sender <> nil) then UpdateFlame;
 end;
 
 end.

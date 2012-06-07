@@ -27,7 +27,7 @@ interface
 uses
   Windows, Messages, SysUtils, Classes, Graphics, Controls, Forms, Dialogs,
   ExtCtrls, StdCtrls, ControlPoint, ComCtrls, Menus, Buttons, Cmap,
-  Render, Translation;
+  RenderingInterface, Translation, Curves;
 
 type
   TMutateForm = class(TForm)
@@ -285,6 +285,8 @@ end;
 procedure TMutateForm.Interpolate;
 var i, j, k: Integer;
 begin
+  if MainCp = nil then Exit;
+  
   for i := 1 to 8 do
   begin
     if bstop then exit;
@@ -364,7 +366,7 @@ begin
   finally
     Registry.Free;
   end;
-  if cps[0].xform[0].density <> 0 then begin // hmm...!?
+  if (cps[0].xform[0].density <> 0) and Assigned(MainCp) then begin // hmm...!?
     Interpolate;
     ShowMain;
     ShowMutants;
@@ -689,4 +691,5 @@ begin
 end;
 
 end.
+
 

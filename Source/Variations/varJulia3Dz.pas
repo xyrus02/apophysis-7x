@@ -26,13 +26,20 @@ unit varJulia3Dz;
 interface
 
 uses
-  BaseVariation, XFormMan, AsmRandom;
+{$ifdef Apo7X64}
+{$else}
+AsmRandom,
+{$endif}
+  BaseVariation, XFormMan;
 
 const
   var_name = 'julia3Dz';
   var_n_name='julia3Dz_power';
 
-{$define _ASM_}
+{$ifdef Apo7X64}
+{$else}
+  {$define _ASM_}
+{$endif}
 
 type
   TVariationJulia3D = class(TBaseVariation)

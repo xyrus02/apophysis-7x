@@ -33,6 +33,12 @@ const
 var
   NumBuiltinVars: integer;
 
+type
+  TFNToVN = record
+    FileName: string;
+    VarName: string;
+  end;
+
 function NrVar: integer;
 function Varnames(const index: integer): String;
 procedure RegisterVariation(Variation: TVariationLoader; supports3D, supportsDC : boolean);
@@ -45,6 +51,8 @@ function GetVariationIndexFromVariableNameIndex(const Index: integer): integer;
 procedure VarSupports(index : integer; var supports3D : boolean; var supportsDC : boolean);
 procedure InitializeXFormMan;
 procedure DestroyXFormMan;
+procedure RegisterVariationFile(filename, name: string);
+function GetFileNameOfVariation(name: string): string;
 
 implementation
 
@@ -56,60 +64,48 @@ var
   VariableNames: TStringlist;
   loaderNum : integer;
   Variable2VariationIndex : array of integer;
+  FNToVNList : array of TFNToVN;
+  FNToVNCount: integer;
 
 procedure InitializeXFormMan;
 begin
   VariationList := TList.Create;
   VariableNames := TStringlist.create;
   SetLength(Variable2VariationIndex,0);
+  SetLength(FNToVNList, 0);
+  FNToVNCount := 0;
 end;
 
 procedure VarSupports(index : integer; var supports3D : boolean; var supportsDC : boolean);
 const
   supports3D_arr: array[0..NRLOCVAR-1] of boolean = (
-    true, //'linear3D',
-    false, //'linear',
-    false, //'sinusoidal',
-    false, //'spherical',
-    false, //'swirl',
-    false, //'horseshoe',
-    false, //'polar',
-//  false, //  'handkerchief',
-//  false, //  'heart',
-    false, //'disc',
-    false, //'spiral',
-    false, //'hyperbolic',
-    false, //'diamond',
-//  false, //  'ex',
-//  false, //  'julia',
-//  false, //  'bent',
-//  false, //  'waves',
-//  false, //  'fisheye',
-//  false, //  'popcorn',
-//  false, //  'exponential',
-//  false, //  'power',
-//  false, //  'cosine',
-//  false, //  'rings',
-//  false, //  'fan',
-    false, //'eyefish',
+    true, //'linear',
+    true, //'flatten',
+    true, //'sinusoidal',
+    true, //'spherical',
+    true, //'swirl',
+    true, //'horseshoe',
+    true, //'polar',
+    true, //'disc',
+    true, //'spiral',
+    true, //'hyperbolic',
+    true, //'diamond',
+    true, //'eyefish',
     true, //'bubble',
     true, //'cylinder',
-    false, //'noise',
-    false, //'blur',
-    false, //'gaussian_blur',
+    true, //'noise',
+    true, //'blur',
+    true, //'gaussian_blur',
     true, //'zblur',
     true, //'blur3D',
-
     true, //'pre_blur',
     true, //'pre_zscale',
     true, //'pre_ztranslate',
     true, //'pre_rotate_x',
     true, //'pre_rotate_y',
-
     true, //'zscale',
     true, //'ztranslate',
     true, //'zcone',
-
     true, //'post_rotate_x',
     true //'post_rotate_y',
     );
@@ -185,6 +181,7 @@ begin
   VariationList.Free;
 
   Finalize(Variable2VariationIndex);
+  Finalize(FNToVNList);
 end;
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -206,8 +203,8 @@ end;
 function Varnames(const index: integer): String;
 const
   cvarnames: array[0..NRLOCVAR-1] of string = (
-    'linear3D',
     'linear',
+    'flatten',
     'sinusoidal',
     'spherical',
     'swirl',
@@ -270,11 +267,33 @@ begin
 end;
 
 ///////////////////////////////////////////////////////////////////////////////
+
+procedure RegisterVariationFile(filename, name: string);
+begin
+  FNToVNCount := FNToVNCount + 1;
+  SetLength(FNToVNList, FNToVNCount);
+  FNToVNList[FNToVNCount - 1].FileName := filename;
+  FNToVNList[FNToVNCount - 1].VarName := name;
+end;
+function GetFileNameOfVariation(name: string): string;
+var i: integer;
+begin
+  for i := 0 to FNToVNCount - 1 do begin
+    if FNToVNList[i].VarName = name then begin
+      Result := FNToVNList[i].FileName;
+      Exit;
+    end;
+  end;
+  Result := '';
+end;
+
 procedure RegisterVariation(Variation: TVariationLoader; supports3D, supportsDC : boolean);
 var
   i: integer;
   prevNumVariables:integer;
 begin
+  OutputDebugString(PChar(Variation.GetName));
+
   VariationList.Add(Variation);
   Variation.Supports3D := supports3D;
   Variation.SupportsDC := supportsDC;

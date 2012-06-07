@@ -34,7 +34,7 @@ const
   var_c1_name='curl_c1';
   var_c2_name='curl_c2';
 
-{$define _ASM_}
+//{$define _ASM_}
 
 //                                 z
 //  The formula is: f(z) = ------------------- , where z = complex (x + i*y)
@@ -116,7 +116,6 @@ end;
 
 ///////////////////////////////////////////////////////////////////////////////
 procedure TVariationCurl.CalcFunction;
-{$ifndef _ASM_}
 var
   r: double;
   re, im: double;
@@ -128,58 +127,10 @@ begin
 
   FPx^ := FPx^  + (FTx^*re + FTy^*im) * r;
   FPy^ := FPy^  + (FTy^*re - FTx^*im) * r;
-{$else}
-asm
-    mov     edx, [eax + FTx]
-    fld     qword ptr [edx + 8] // FTy
-    fld     qword ptr [edx]     // FTx
-    fld     st(1)
-    fmul    st, st(1)
-    fmul    qword ptr [eax + c2x2]
-   fld     st(2)
-   fmul    qword ptr [eax + c1]
-   faddp
-    fld     st(2)
-    fmul    st, st
-    fld     st(2)
-    fmul    st, st
-    fsubrp
-    fmul    qword ptr [eax + c2]
-    fld1
-    faddp
-   fld     st(2)
-   fmul    qword ptr [eax + c1]
-   faddp
-
-    fld     st(1)
-    fmul    st, st
-    fld     st(1)
-    fmul    st, st
-    faddp
-    fdivr   qword ptr [eax + vvar]
-
-    fld     st(3)
-    fmul    st, st(2)
-    fld     st(5)
-    fmul    st, st(4)
-    faddp
-    fmul    st, st(1)
-    fadd    qword ptr [edx + 16] // FPx
-    fstp    qword ptr [edx + 16]
-
-    fxch    st(4)
-    fmulp
-    fxch    st(2)
-    fmulp
-    fsubp
-    fmulp
-    fadd    qword ptr [edx + 24] // FPy
-    fstp    qword ptr [edx + 24]
-{$endif}
+  FPz^ := FPz^  + vvar * FTz^;
 end;
 
 procedure TVariationCurl.CalcZeroC2;
-{$ifndef _ASM_}
 var
   r: double;
   re, im: double;
@@ -191,47 +142,10 @@ begin
 
   FPx^ := FPx^  + (FTx^*re + FTy^*im) * r;
   FPy^ := FPy^  + (FTy^*re - FTx^*im) * r;
-{$else}
-asm
-    mov     edx, [eax + FTx]
-    fld     qword ptr [edx + 8] // FTy
-    fld     qword ptr [edx]     // FTx
-    fld     st(1)
-    fld     qword ptr [eax + c1]
-    fmul    st(1), st
-    fmul    st, st(2)
-    fld1
-    faddp
-
-    fld     st(1)
-    fmul    st, st
-    fld     st(1)
-    fmul    st, st
-    faddp
-    fdivr   qword ptr [eax + vvar]
-
-    fld     st(3)
-    fmul    st, st(2)
-    fld     st(5)
-    fmul    st, st(4)
-    faddp
-    fmul    st, st(1)
-    fadd    qword ptr [edx + 16] // FPx
-    fstp    qword ptr [edx + 16]
-
-    fxch    st(4)
-    fmulp
-    fxch    st(2)
-    fmulp
-    fsubp
-    fmulp
-    fadd    qword ptr [edx + 24] // FPy
-    fstp    qword ptr [edx + 24]
-{$endif}
+  FPz^ := FPz^  + vvar * FTz^;
 end;
 
 procedure TVariationCurl.CalcZeroC1;
-{$ifndef _ASM_}
 var
   r: double;
   re, im: double;
@@ -243,69 +157,16 @@ begin
 
   FPx^ := FPx^  + (FTx^*re + FTy^*im) * r;
   FPy^ := FPy^  + (FTy^*re - FTx^*im) * r;
-{$else}
-asm
-    mov     edx, [eax + FTx]
-    fld     qword ptr [edx + 8] // FTy
-    fld     qword ptr [edx]     // FTx
-    fld     st(1)
-    fmul    st, st(1)
-    fmul    qword ptr [eax + c2x2]
-    fld     st(2)
-    fmul    st, st
-    fld     st(2)
-    fmul    st, st
-    fsubrp
-    fmul    qword ptr [eax + c2]
-    fld1
-    faddp
-
-    fld     st(1)
-    fmul    st, st
-    fld     st(1)
-    fmul    st, st
-    faddp
-    fdivr   qword ptr [eax + vvar]
-
-    fld     st(3)
-    fmul    st, st(2)
-    fld     st(5)
-    fmul    st, st(4)
-    faddp
-    fmul    st, st(1)
-    fadd    qword ptr [edx + 16] // FPx
-    fstp    qword ptr [edx + 16]
-
-    fxch    st(4)
-    fmulp
-    fxch    st(2)
-    fmulp
-    fsubp
-    fmulp
-    fadd    qword ptr [edx + 24] // FPy
-    fstp    qword ptr [edx + 24]
-{$endif}
+  FPz^ := FPz^  + vvar * FTz^;
 end;
 
 procedure TVariationCurl.CalcZeroC2C1;
-{$ifndef _ASM_}
 var
   r: double;
 begin
   FPx^ := FPx^  + vvar*FTx^;
   FPy^ := FPy^  + vvar*FTy^;
-{$else}
-asm
-    mov     edx, [eax + FTx]
-    fld     qword ptr [edx + 8] // FTy
-    fld     qword ptr [eax + vvar]
-    fmul    st(1), st
-    fmul    qword ptr [edx]     // FTx
-    fadd    qword ptr [edx + 16] // FPx
-    fstp    qword ptr [edx + 16]
-    fadd    qword ptr [edx + 24] // FPy
-    fstp    qword ptr [edx + 24]
-{$endif}
+  FPz^ := FPz^  + vvar * FTz^;
 end;
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -380,5 +241,5 @@ end;
 
 ///////////////////////////////////////////////////////////////////////////////
 initialization
-  RegisterVariation(TVariationClassLoader.Create(TVariationCurl), false, false);
+  RegisterVariation(TVariationClassLoader.Create(TVariationCurl), true, false);
 end.

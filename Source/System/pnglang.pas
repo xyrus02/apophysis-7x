@@ -1,13 +1,8 @@
-{*******************************************************}
-{                                                       }
-{       CodeGear Delphi Visual Component Library        }
-{                                                       }
-{           Copyright (c) 1995-2008 CodeGear            }
-{                                                       }
-{      Original version written by Gustavo Daud         }
-{                                                       }
-{*******************************************************}
+{Portable Network Graphics Delphi Language Info (24 July 2002)}
 
+{Feel free to change the text bellow to adapt to your language}
+{Also if you have a translation to other languages and want to}
+{share it, send me: gubadaud@terra.com.br                     }
 unit pnglang;
 
 interface
@@ -331,7 +326,7 @@ resourcestring
     'kodirana z neznano kompresijsko shemo, ki je ne morem prebrati.';
   EPNGUnknownInterlaceText = 'Ta "Portable Network Graphics" slika uporablja ' +
     'neznano shemo za preliv, ki je ne morem prebrati.';
-  EPNGCannotAssignChunkText = 'Košcki morajo biti med seboj kompatibilni za prireditev vrednosti.';
+  EPNGCannotAssignChunkText = Košcki morajo biti med seboj kompatibilni za prireditev vrednosti.';
   EPNGUnexpectedEndText = 'Ta "Portable Network Graphics" slika je neveljavna, ' +
     'ker je bralnik prišel do nepricakovanega konca datoteke.';
   EPNGNoImageDataText = 'Ta "Portable Network Graphics" ne vsebuje nobenih ' +

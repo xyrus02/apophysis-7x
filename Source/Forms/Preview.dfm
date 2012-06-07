@@ -23,7 +23,7 @@ object PreviewForm: TPreviewForm
     Left = 0
     Top = 0
     Width = 204
-    Height = 157
+    Height = 152
     Align = alClient
     BevelInner = bvLowered
     BevelOuter = bvLowered

@@ -27,7 +27,8 @@ interface
 
 uses
   Windows, Messages, SysUtils, Variants, Classes, Graphics, Controls, Forms, Translation,
-  Dialogs, StdCtrls, ComCtrls, ImgList, ControlPoint, cmap, Render, Main, Global, Adjust;
+  Dialogs, StdCtrls, ComCtrls, ImgList, ControlPoint, cmap, RenderingInterface, Main,
+  Global, Adjust;
 
 type
   TTemplateForm = class(TForm)
@@ -59,8 +60,6 @@ const
   procedure ListTemplateByFileName(filename:string);
 
 implementation
-
-uses ScriptForm;
 
 {$R *.dfm}
 
@@ -230,7 +229,7 @@ begin
         p := Pos('<flame ', LowerCase(FStrings[i]));
         if (p <> 0) then
         begin
-          MainForm.ListXMLScanner.LoadFromBuffer(PCHAR(FSTrings[i]));
+          MainForm.ListXMLScanner.LoadFromBuffer(PAnsiChar(AnsiString(FSTrings[i])));
           MainForm.ListXMLScanner.Execute;
 
           if Trim(pname) = '' then
@@ -316,7 +315,6 @@ begin
   if (TemplateList.Selected.Index = 0) then flameXML := BlankXML
   else flameXML := LoadXMLFlameText(fn, TemplateList.Selected.Caption);
   MainForm.UpdateUndo;
-  ScriptEditor.Stopped := True;
   MainForm.StopThread;
   MainForm.InvokeLoadXML(flameXML);
   Transforms := MainCp.TrianglesFromCP(MainTriangles);

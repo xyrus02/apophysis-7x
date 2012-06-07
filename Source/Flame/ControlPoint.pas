@@ -29,7 +29,7 @@ interface
 
 uses
   Classes, Windows, Cmap, XForm, XFormMan, Binary,
-  SysUtils, math, ZLib;
+  SysUtils, math, ZLib, Bezier;
 
 const
   SUB_BATCH_SIZE = 10000;
@@ -92,6 +92,8 @@ type
     finalXformEnabled: boolean;
     useFinalXform: boolean;
     soloXform: integer;
+    curvePoints: array [0..3] of BezierPoints;
+    curveWeights: array [0..3] of BezierWeights;
 
     Transparency: boolean;
 
@@ -101,6 +103,7 @@ type
 
     xform: array[0..NXFORMS] of TXForm;
 
+    noLinearFix: boolean;
     variation: TVariation;
     cmap: TColorMap;
     cmapindex: integer;
@@ -257,19 +260,29 @@ end;
 
 procedure TControlPoint.FillUsedPlugins;
 var
-  i, j, k : integer;
+  i, j, k, f : integer;
   v : double;
   s : String;
 begin
   used_plugins.Clear;
-  for i := 0 to Min(NumXForms+1, NXFORMS) do
+
+  f := -1; if self.finalXformEnabled then f := 0;
+  //MessageBox(0, PCHAR(IntToStr(NumXForms + f)), PCHAR(''), 0);
+
+  for i := 0 to Min(NumXForms+f, NXFORMS) do
     with xform[i] do begin
       for j := 0 to NRVAR - 1 do begin
         v := self.xform[i].GetVariation(j);
-        if (used_plugins.IndexOf(Varnames(j)) < 0) and (v <> 0) then
-          used_plugins.Add(Varnames(j))
+        if (v <> 0) and // uses variation
+          (used_plugins.IndexOf(Varnames(j)) < 0) // not listed yet
+        then begin
+          used_plugins.Add(Varnames(j));
+          s := s + Varnames(j) + ' on TX #' + IntToStr(i + 1) + #13#10; 
+        end;
       end;
     end;
+
+  //MessageBox(0, PCHAR(s), PCHAR(''), MB_OK);
 
   // Faulty...
   (*
@@ -319,6 +332,14 @@ begin
   background[0] := 0;
   background[1] := 0;
   background[2] := 0;
+
+  for i := 0 to 3 do
+  begin
+    curvePoints[i][0].x := 0.00; curvePoints[i][0].y := 0.00; curveWeights[i][0] := 1;
+    curvePoints[i][1].x := 0.00; curvePoints[i][1].y := 0.00; curveWeights[i][1] := 1;
+    curvePoints[i][2].x := 1.00; curvePoints[i][2].y := 1.00; curveWeights[i][2] := 1;
+    curvePoints[i][3].x := 1.00; curvePoints[i][3].y := 1.00; curveWeights[i][3] := 1;
+  end;
 
   center[0] := 0;
   center[1] := 0;
@@ -531,28 +552,13 @@ var
   i: Integer;
   p: TCPPoint;
   pPoint: PCPPoint;
+  depth: double;
 
   xf: TXform;
 begin
-//{$if false}
   p.x := 2 * random - 1;
   p.y := 2 * random - 1;
   p.c := random;
-//{$else}
-{asm
-    fld1
-    call    System.@RandExt
-    fadd    st, st
-    fsub    st, st(1)
-    fstp    qword ptr [p.x]
-    call    System.@RandExt
-    fadd    st, st
-    fsubrp  st(1), st
-    fstp    qword ptr [p.y]
-    call    System.@RandExt
-    fstp    qword ptr [p.c]
-end; }
-//{$ifend}
 
   try
     xf := xform[0];//random(NumXForms)];
@@ -568,23 +574,22 @@ end; }
         xf := xf.PropTable[Random(PROP_TABLE_SIZE)];
         xf.NextPoint(p);
 
-        if (xf.transOpacity = 0) then
-          pPoint^.x := MaxDouble // hack
-        else
-          finalXform.NextPointTo(p, pPoint^);
+        //if random >= xf.transOpacity then continue;
+        finalXform.NextPointTo(p, pPoint^);
+
         ProjectionFunc(pPoint);
+        pPoint^.o := xf.transOpacity;
         Inc(pPoint);
       end
     else
       for i := 0 to NrPoints - 1 do begin
         xf := xf.PropTable[Random(PROP_TABLE_SIZE)];
         xf.NextPoint(p);
-        if (xf.transOpacity = 0) then
-          pPoint^.x := MaxDouble // hack
-        else begin
-          pPoint^ := p;
-          ProjectionFunc(pPoint);
-        end;  
+
+        //if random >= xf.transOpacity then continue;
+        pPoint^ := p;
+        ProjectionFunc(pPoint);
+        pPoint^.o := xf.transOpacity;
         Inc(pPoint);
       end;
   except
@@ -602,6 +607,7 @@ begin
 
   pPoint^.x := pPoint^.x / zr;
   pPoint^.y := pPoint^.y / zr;
+  pPoint^.z := pPoint^.z - CameraZpos;
 end;
 
 procedure TControlPoint.ProjectPitch(pPoint: PCPPoint);
@@ -615,6 +621,7 @@ begin
 
   pPoint^.x := pPoint^.x / zr;
   pPoint^.y := y / zr;
+  pPoint^.z := pPoint^.z - CameraZpos;
 end;
 
 procedure TControlPoint.ProjectPitchYaw(pPoint: PCPPoint);
@@ -629,6 +636,7 @@ begin
 
   pPoint^.x := x / zr;
   pPoint^.y := y / zr;
+  pPoint^.z := pPoint^.z - CameraZpos;
 end;
 
 procedure TControlPoint.ProjectPitchDOF(pPoint: PCPPoint);
@@ -694,6 +702,7 @@ begin
 
   pPoint^.x := (pPoint^.x + dr*dcos) / zr;
   pPoint^.y := (y + dr*dsin) / zr;
+  pPoint^.z := pPoint^.z - CameraZpos;
 end;
 
 procedure TControlPoint.ProjectPitchYawDOF(pPoint: PCPPoint);
@@ -759,6 +768,7 @@ begin
 
   pPoint^.x := (x + dr*dcos) / zr;
   pPoint^.y := (y + dr*dsin) / zr;
+  pPoint^.z := pPoint^.z - CameraZpos;
 end;
 
 {
@@ -996,6 +1006,22 @@ begin
       except on EConvertError do
           background[2] := 0;
       end;
+    end else if AnsiCompareText(CurrentToken, 'curves') = 0 then begin
+      for i := 0 to 3 do
+      begin
+        Inc(ParsePos);curvePoints[i][0].x := StrToFloat(ParseValues[ParsePos]);
+        Inc(ParsePos);curvePoints[i][0].y := StrToFloat(ParseValues[ParsePos]);
+        Inc(ParsePos);curveWeights[i][0] := StrToFloat(ParseValues[ParsePos]);
+        Inc(ParsePos);curvePoints[i][1].x := StrToFloat(ParseValues[ParsePos]);
+        Inc(ParsePos);curvePoints[i][1].y := StrToFloat(ParseValues[ParsePos]);
+        Inc(ParsePos);curveWeights[i][1] := StrToFloat(ParseValues[ParsePos]);
+        Inc(ParsePos);curvePoints[i][2].x := StrToFloat(ParseValues[ParsePos]);
+        Inc(ParsePos);curvePoints[i][2].y := StrToFloat(ParseValues[ParsePos]);
+        Inc(ParsePos);curveWeights[i][2] := StrToFloat(ParseValues[ParsePos]);
+        Inc(ParsePos);curvePoints[i][3].x := StrToFloat(ParseValues[ParsePos]);
+        Inc(ParsePos);curvePoints[i][3].y := StrToFloat(ParseValues[ParsePos]);
+        Inc(ParsePos);curveWeights[i][3] := StrToFloat(ParseValues[ParsePos]);
+      end;
     end else if AnsiCompareText(CurrentToken, 'pulse') = 0 then begin
       Inc(ParsePos);
       pulse[0, 0] := StrToFloat(ParseValues[ParsePos]);
@@ -1092,7 +1118,7 @@ begin
       while true do begin
         if (ParsePos + 1) >= ParseValues.Count then
           break;
-        if ParseValues[ParsePos + 1][1] in ['a'..'z', 'A'..'Z'] then
+        if CharInSet(ParseValues[ParsePos + 1][1], ['a'..'z', 'A'..'Z']) then
           break;
 
         Inc(ParsePos);
@@ -1114,7 +1140,7 @@ begin
       while true do begin
         if (ParsePos + 1) >= ParseValues.Count then
           break;
-        if ParseValues[ParsePos + 1][1] in ['a'..'z', 'A'..'Z'] then
+        if CharInSet(ParseValues[ParsePos + 1][1], ['a'..'z', 'A'..'Z']) then
           break;
 
         Inc(ParsePos);
@@ -1128,7 +1154,7 @@ begin
       while true do begin
         if (ParsePos + 1) >= ParseValues.Count then
           break;
-        if ParseValues[ParsePos + 1][1] in ['a'..'z', 'A'..'Z'] then
+        if CharInSet(ParseValues[ParsePos + 1][1], ['a'..'z', 'A'..'Z']) then
           break;
 
         Inc(ParsePos);
@@ -1823,6 +1849,7 @@ var
   OldDecimalSperator: Char;
   v: double;
   str: string;
+  curves: string;
 begin
   OldDecimalSperator := DecimalSeparator;
   DecimalSeparator := '.';
@@ -1838,6 +1865,28 @@ begin
   sl.add(format('cam_persp %g', [cameraPersp]));
   sl.add(format('cam_zpos %g', [cameraZpos]));
   sl.add(format('cam_dof %g', [cameraDOF]));
+
+  for i := 0 to 3 do
+  begin
+    curves := curves + FloatToStr(curvePoints[i][0].x) + ' ';
+    curves := curves + FloatToStr(curvePoints[i][0].y) + ' ';
+    curves := curves + FloatToStr(curveWeights[i][0]) + ' ';
+
+    curves := curves + FloatToStr(curvePoints[i][1].x) + ' ';
+    curves := curves + FloatToStr(curvePoints[i][1].y) + ' ';
+    curves := curves + FloatToStr(curveWeights[i][1]) + ' ';
+
+    curves := curves + FloatToStr(curvePoints[i][2].x) + ' ';
+    curves := curves + FloatToStr(curvePoints[i][2].y) + ' ';
+    curves := curves + FloatToStr(curveWeights[i][2]) + ' ';
+
+    curves := curves + FloatToStr(curvePoints[i][3].x) + ' ';
+    curves := curves + FloatToStr(curvePoints[i][3].y) + ' ';
+    curves := curves + FloatToStr(curveWeights[i][3]) + ' ';
+  end;
+
+  curves := trim(curves);
+  sl.Add(Format('curves %s', [curves]));
 
   sl.add(format('image_size %d %d center %g %g pixels_per_unit %f',
     [Width, Height, center[0], center[1], pixels_per_unit]));
@@ -2128,7 +2177,7 @@ end;
 
 function TControlPoint.Clone: TControlPoint;
 var
-  i: integer;
+  i, j: integer;
   sl: TStringList;
 begin
   sl := TStringList.Create;
@@ -2148,6 +2197,17 @@ begin
   Result.enable_de := enable_de;
   Result.xdata := xdata;
 
+  Result.Background[0] := background[0];
+  Result.Background[1] := background[1];
+  Result.Background[2] := background[2];
+
+  for i := 0 to 3 do
+    for j := 0 to 3 do begin
+      Result.CurveWeights[i,j] := curveWeights[i,j];
+      Result.curvePoints[i,j].x := curvePoints[i,j].x;
+      Result.curvePoints[i,j].y := curvePoints[i,j].y;
+    end;
+
   result.used_plugins.Clear;
   for i := 0 to used_plugins.Count-1 do
     Result.used_plugins.Add(used_plugins[i]);
@@ -2160,7 +2220,7 @@ end;
 
 procedure TControlPoint.Copy(cp1: TControlPoint; KeepSizes: boolean = false);
 var
-  i: integer;
+  i, j: integer;
   sl: TStringList;
   w, h: integer;
 begin
@@ -2189,6 +2249,17 @@ begin
   enable_de := cp1.enable_de;
   used_plugins := cp1.used_plugins;
   xdata := cp1.xdata;
+
+  background[0] := cp1.background[0];
+  background[1] := cp1.background[1];
+  background[2] := cp1.background[2];
+
+  for i := 0 to 3 do
+    for j := 0 to 3 do begin
+      CurveWeights[i,j] := cp1.curveWeights[i,j];
+      curvePoints[i,j].x := cp1.curvePoints[i,j].x;
+      curvePoints[i,j].y := cp1.curvePoints[i,j].y;
+    end;
 
   if KeepSizes then
     AdjustScale(w, h);
@@ -2227,6 +2298,15 @@ begin
   for i := 0 to NXFORMS do xform[i].Clear;
   FinalXformEnabled := false;
   soloxform := -1;
+
+  for i := 0 to 3 do
+  begin
+    curvePoints[i][0].x := 0.00; curvePoints[i][0].y := 0.00; curveWeights[i][0] := 1;
+    curvePoints[i][1].x := 0.00; curvePoints[i][1].y := 0.00; curveWeights[i][1] := 1;
+    curvePoints[i][2].x := 1.00; curvePoints[i][2].y := 1.00; curveWeights[i][2] := 1;
+    curvePoints[i][3].x := 1.00; curvePoints[i][3].y := 1.00; curveWeights[i][3] := 1;
+  end;
+
   try
     if (used_plugins <> nil) then
       used_plugins.Clear

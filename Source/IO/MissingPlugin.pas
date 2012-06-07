@@ -3,10 +3,10 @@ unit MissingPlugin;
 interface
   uses Windows, Global, Classes, LoadTracker, ComCtrls, SysUtils,
        ControlPoint, Translation;
-  const RegisteredAttributes : array[0..12] of string = (
+  const RegisteredAttributes : array[0..13] of string = (
     'weight', 'color', 'symmetry', 'color_speed', 'coefs', 'chaos',
     'plotmode', 'opacity', 'post', 'var', 'var1', 'var_color',
-    'name'
+    'name', 'linear3D'
   );
   var  MissingPluginList : TStringList;
        Parsing : boolean;
@@ -71,6 +71,6 @@ implementation
   procedure AnnoyUser;
   begin
     if (ErrorMessageString = '') or (not WarnOnMissingPlugin) then exit;
-    MessageBox($00000000, PAnsiChar(ErrorMessageString), PAnsiChar('Apophysis'), MB_ICONHAND or MB_OK);
+    MessageBox($00000000, PChar(ErrorMessageString), PChar('Apophysis'), MB_ICONHAND or MB_OK);
   end;
 end.

@@ -297,7 +297,6 @@ object MutateForm: TMutateForm
       Style = csDropDownList
       Anchors = [akLeft, akTop, akRight]
       DropDownCount = 16
-      ItemHeight = 13
       TabOrder = 1
       OnChange = cmbTrendChange
       Items.Strings = (

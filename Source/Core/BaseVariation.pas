@@ -88,9 +88,16 @@ type
     VariationClass : TBaseVariationClass;
   end;
 
+function fmod(x, y: double) : double;
+
 implementation
 
 uses SysUtils;
+
+function fmod(x, y: double) : double;
+begin
+  Result := frac(x / y) * y;
+end;
 
 { TBaseVariation }
 

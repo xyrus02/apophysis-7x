@@ -84,6 +84,7 @@ begin
 
   FPx^ := FPx^ + r * FTx^;
   FPy^ := FPy^ + r * FTy^;
+  FPz^ := FPz^ + vvar * FTz^;
 end;
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -142,5 +143,5 @@ end;
 
 ///////////////////////////////////////////////////////////////////////////////
 initialization
-  RegisterVariation(TVariationClassLoader.Create(TVariationRings2), false, false);
+  RegisterVariation(TVariationClassLoader.Create(TVariationRings2), true, false);
 end.

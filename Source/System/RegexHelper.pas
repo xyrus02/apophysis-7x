@@ -1,7 +1,7 @@
 unit RegexHelper;
 
 interface
-  uses Global, SysUtils, StrUtils, PerlRegEx;
+  uses Global, SysUtils, StrUtils, RegularExpressionsCore;
 
   type T2Int = record
     i1, i2: integer;
@@ -27,14 +27,16 @@ implementation
 function GetStringPart(text, expression: string; group: integer; def: string): string;
 var Regex: TPerlRegEx;
 begin
-  Regex := TPerlRegEx.Create(nil);
-  Regex.RegEx := expression;
+  Regex := TPerlRegEx.Create;
+  Regex.RegEx := Utf8String(expression);
   Regex.Options := [preSingleLine, preCaseless];
-  Regex.Subject := text;
+  Regex.Subject := Utf8String(text);
 
-  if Regex.Match and (Regex.SubExpressionCount >= group) then
-    Result := Regex.SubExpressions[group]
+  if Regex.Match and (Regex.GroupCount >= group) then
+    Result := String(Regex.Groups[group])
   else Result := def;
+
+  Regex.Free;
 end;
 function GetBoolPart(text, expression: string; group: integer; def: boolean): boolean;
 begin

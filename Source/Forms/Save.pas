@@ -185,9 +185,9 @@ begin
   txtTitle.Text := Title;
   //btnSave.SetFocus;
   self.Caption := TextByKey(SaveTypeTextKey(SaveType));
-  if (SaveType = stSaveParameters) or (SaveType = stSaveAllParameters) then
+  {if (SaveType = stSaveParameters) or (SaveType = stSaveAllParameters) then
     self.Height := 160
-  else self.Height := 120;
+  else self.Height := 120;  }
 
   if (SaveType = stSaveAllParameters) then txtTitle.Text := '';
   txtTitle.Enabled := (SaveType = stSaveParameters) or (SaveType = stExportUPR) or (SaveType = stSaveGradient);

@@ -1,9 +1,9 @@
 object ScriptEditor: TScriptEditor
   Left = 312
   Top = 383
-  Width = 591
-  Height = 512
   Caption = 'Script Editor'
+  ClientHeight = 485
+  ClientWidth = 583
   Color = clBtnFace
   Font.Charset = DEFAULT_CHARSET
   Font.Color = clWindowText
@@ -71,7 +71,6 @@ object ScriptEditor: TScriptEditor
     Align = alRight
     AutoSize = True
     Caption = 'ToolBar'
-    Flat = True
     Images = MainForm.Buttons
     ParentShowHint = False
     ShowHint = True
@@ -165,6 +164,7 @@ object ScriptEditor: TScriptEditor
       AutoCompletion.Font.Name = 'MS Sans Serif'
       AutoCompletion.Font.Style = []
       AutoCompletion.Height = 120
+      AutoCompletion.StartToken = '(.'
       AutoCompletion.Width = 400
       AutoCorrect.Active = True
       AutoHintParameterPosition = hpBelowCode
@@ -173,6 +173,7 @@ object ScriptEditor: TScriptEditor
       BlockLineColor = clGray
       BkColor = clWindow
       BorderStyle = bsNone
+      ClipboardFormats = [cfText]
       CodeFolding.Enabled = False
       CodeFolding.LineColor = clGray
       Ctl3D = False
@@ -214,18 +215,17 @@ object ScriptEditor: TScriptEditor
       SelBkColor = clHighlight
       ShowRightMargin = True
       SmartTabs = False
-      SyntaxStyles = PascalStyler
+      SyntaxStyles = Styler
       TabOrder = 0
       TabSize = 4
       TabStop = True
       TrimTrailingSpaces = False
-      UndoLimit = 100
       UrlAware = False
       UrlStyle.TextColor = clBlue
       UrlStyle.BkColor = clWhite
       UrlStyle.Style = [fsUnderline]
       UseStyler = True
-      Version = '2.1.7.6'
+      Version = '2.3.7.6'
       WordWrap = wwNone
       OnChange = EditorChange
     end
@@ -245,20 +245,20 @@ object ScriptEditor: TScriptEditor
     DefaultExt = 'asc'
     Filter = 'Apophysis Script Files (*.asc)|*.asc|Text files (*.txt)|*.txt'
     Options = [ofHideReadOnly, ofFileMustExist, ofEnableSizing]
-    Left = 456
-    Top = 32
+    Left = 472
+    Top = 64
   end
   object MainSaveDialog: TSaveDialog
     DefaultExt = 'asc'
     Filter = 'Apophysis Script Files (*.asc)|*.asc|Text files (*.txt)|*.txt'
     Options = [ofOverwritePrompt, ofHideReadOnly, ofEnableSizing]
-    Left = 424
+    Left = 344
     Top = 32
   end
   object PopupMenu: TPopupMenu
     Images = MainForm.Buttons
-    Left = 392
-    Top = 32
+    Left = 280
+    Top = 112
     object mnuUndo: TMenuItem
       Caption = 'Undo'
       ImageIndex = 4
@@ -284,58 +284,139 @@ object ScriptEditor: TScriptEditor
       OnClick = mnuPasteClick
     end
   end
-  object PascalStyler: TAdvPascalMemoStyler
-    BlockStart = 'begin'
+  object Scripter: TatPascalScripter
+    SourceCode.Strings = (
+      '')
+    SaveCompiledCode = False
+    EventSupport = False
+    OnCompileError = ScripterCompileError
+    ShortBooleanEval = False
+    LibOptions.SearchPath.Strings = (
+      '$(CURDIR)'
+      '$(APPDIR)')
+    LibOptions.SourceFileExt = '.psc'
+    LibOptions.CompiledFileExt = '.pcu'
+    LibOptions.UseScriptFiles = False
+    CallExecHookEvent = False
+    Left = 480
+    Top = 200
+  end
+  object OpenDialog: TOpenDialog
+    DefaultExt = 'fla'
+    Filter = 
+      'Flame files (*.flame)|*.flame|Apophysis 1.0 parameters (*.apo;*.' +
+      'fla)|*.apo;*.fla|All files (*.*)|*.*'
+    Options = [ofHideReadOnly, ofFileMustExist, ofEnableSizing]
+    Left = 416
+    Top = 200
+  end
+  object SaveDialog: TSaveDialog
+    DefaultExt = 'flame'
+    Filter = 'Flame files (*.flame)|*.flame'
+    Options = [ofOverwritePrompt, ofHideReadOnly, ofPathMustExist, ofEnableSizing]
+    Left = 440
+    Top = 128
+  end
+  object Styler: TAdvPascalMemoStyler
+    BlockStart = 'begin,try,case,class,record'
     BlockEnd = 'end'
     LineComment = '//'
     MultiCommentLeft = '{'
     MultiCommentRight = '}'
     CommentStyle.TextColor = clNavy
-    CommentStyle.BkColor = clWindow
+    CommentStyle.BkColor = clWhite
     CommentStyle.Style = [fsItalic]
-    NumberStyle.TextColor = clNavy
-    NumberStyle.BkColor = clWindow
-    NumberStyle.Style = []
+    NumberStyle.TextColor = clFuchsia
+    NumberStyle.BkColor = clWhite
+    NumberStyle.Style = [fsBold]
     AllStyles = <
       item
         KeyWords.Strings = (
+          'absolute'
+          'abstract'
           'and'
+          'array'
+          'as'
+          'asm'
+          'assembler'
+          'automated'
           'begin'
           'break'
+          'case'
+          'cdecl'
           'class'
           'class'
           'const'
           'constructor'
           'continue'
           'default'
+          'deprecated'
           'destructor'
+          'dispid'
+          'dispinterface'
+          'div'
           'do'
+          'downto'
+          'dynamic'
           'else'
           'end'
           'except'
+          'exports'
+          'external'
+          'far'
+          'file'
           'finalise'
           'finally'
           'for'
+          'forward'
           'function'
           'if'
           'implementation'
+          'in'
           'inherited'
           'initialise'
+          'inline'
           'interface'
+          'is'
+          'label'
+          'library'
+          'message'
+          'mod'
+          'near'
           'nil'
           'not'
+          'object'
+          'of'
           'or'
+          'out'
+          'overload'
           'override'
+          'packed'
+          'pascal'
+          'platform'
           'private'
           'procedure'
+          'program'
+          'program'
           'property'
           'protected'
           'public'
           'published'
           'raise'
+          'record'
+          'register'
+          'reintroduce'
           'repeat'
+          'resourcestring'
+          'safecall'
+          'set'
+          'shl'
+          'shr'
+          'stdcall'
           'stored'
+          'string'
           'then'
+          'threadvar'
           'to'
           'try'
           'type'
@@ -345,13 +426,14 @@ object ScriptEditor: TScriptEditor
           'var'
           'virtual'
           'while'
-          'with')
+          'with'
+          'xor')
         Font.Charset = DEFAULT_CHARSET
-        Font.Color = clBlack
+        Font.Color = clGreen
         Font.Height = -11
         Font.Name = 'Courier New'
         Font.Style = [fsBold]
-        BGColor = clWindow
+        BGColor = clWhite
         StyleType = stKeyword
         BracketStart = #0
         BracketEnd = #0
@@ -359,231 +441,44 @@ object ScriptEditor: TScriptEditor
       end
       item
         Font.Charset = DEFAULT_CHARSET
-        Font.Color = clBlack
+        Font.Color = clBlue
         Font.Height = -11
         Font.Name = 'Courier New'
         Font.Style = []
-        BGColor = clWindow
+        BGColor = clWhite
         StyleType = stBracket
-        BracketStart = #0
-        BracketEnd = #0
+        BracketStart = #39
+        BracketEnd = #39
         Info = 'Simple Quote'
       end
       item
         Font.Charset = DEFAULT_CHARSET
-        Font.Color = clBlack
+        Font.Color = clBlue
         Font.Height = -11
         Font.Name = 'Courier New'
         Font.Style = []
-        BGColor = clWindowText
+        BGColor = clWhite
         StyleType = stBracket
-        BracketStart = #0
-        BracketEnd = #0
+        BracketStart = '"'
+        BracketEnd = '"'
         Info = 'Double Quote'
       end
       item
         Font.Charset = DEFAULT_CHARSET
-        Font.Color = clTeal
+        Font.Color = clRed
         Font.Height = -11
         Font.Name = 'Courier New'
         Font.Style = []
-        BGColor = clWindow
+        BGColor = clWhite
         StyleType = stSymbol
         BracketStart = #0
         BracketEnd = #0
-        Symbols = ' ,;:.(){}[]=-*/^%<>#'#13#10
+        Symbols = ' ,;:.(){}[]=+-*/^%<>#'#13#10
         Info = 'Symbols Delimiters'
       end>
     AutoCompletion.Strings = (
       'ShowMessage'
-      'InputQuery'
-      ''
-      'RotateFlame'
-      'RotateReference'
-      'Rotate'
-      'Multiply'
-      'StoreFlame'
-      'GetFlame'
-      'LoadFlame'
-      'Scale'
-      'Translate'
-      'ActiveTransform'
-      'SetActiveTransform'
-      'Transforms'
-      'FileCount'
-      'AddTransform'
-      'DeleteTransform'
-      'CopyTransform'
-      'Clear'
-      'Preview'
-      'Render'
-      'Print'
-      'AddSymmetry'
-      'Morph'
-      'SetRenderBounds'
-      'SetFlameFile'
-      'ListFile'
-      'SaveFlame'
-      'GetFileName'
-      'ShowStatus'
-      'RandomFlame'
-      'RandomGradient'
-      'SaveGradient'
-      'Variation'
-      'SetVariation'
-      'ProgramVersionString'
-      'VariationIndex'
-      'VariationName'
-      'CalculateScale'
-      'CalculateBounds'
-      'NormalizeVars'
-      'GetSaveFileName'
-      'CopyFile'
-      ''
-      'Renderer'
-      ''
-      'Filename'
-      'Width'
-      'Height'
-      'MaxMemory'
-      ''
-      'Flame'
-      ''
-      'Gamma'
-      'Brightness'
-      'Vibrancy'
-      'Time'
-      'Zoom'
-      'Width'
-      'Height'
-      'SampleDensity'
-      'Quality'
-      'Oversample'
-      'FilterRadius'
-      'Scale'
-      'Gradient'
-      'Background'
-      'Name'
-      'Batches'
-      'FinalXformEnabled'
-      ''
-      'Transform'
-      ''
-      'coefs'
-      'post'
-      'Color'
-      'Weight'
-      'Symmetry'
-      'Clear'
-      'Rotate'
-      'Scale'
-      'RotateOrigin'
-      'Variation'
-      ''
-      'Options'
-      ''
-      'JPEGQuality'
-      'BatchSize'
-      'ParameterFile'
-      'SmoothPaletteFile'
-      'NumTries'
-      'TryLength'
-      'ConfirmDelete'
-      'FixedReference'
-      'SampleDensity'
-      'Gamma'
-      'Brightness'
-      'Vibrancy'
-      'Oversample'
-      'FilterRadius'
-      'Transparency'
-      'PreviewLowQuality'
-      'PreviewMediumQuality'
-      'PreviewHighQuality'
-      'MinTransforms'
-      'MaxTransforms'
-      'MutateMinTransforms'
-      'MutateMaxTransforms'
-      'RandomPrefix'
-      'KeepBackground'
-      'SymmetryType'
-      'SymmetryOrder'
-      'Variations'
-      'GradientOnRandom'
-      'MinNodes'
-      'MaxNodes'
-      'MinHue'
-      'MaxHue'
-      'MinSaturation'
-      'MaxSaturation'
-      'MinLuminance'
-      'MaxLuminance'
-      'UPRSampleDensity'
-      'UPRFilterRadius'
-      'UPROversample'
-      'UPRAdjustDensity'
-      'UPRColoringIdent'
-      'UPRColoringFile'
-      'UPRFormulaFile'
-      'UPRFormulaIdent'
-      'UPRWidth'
-      'UPRHeight'
-      'ExportRenderer'
-      ''
-      'Pivot'
-      ''
-      'Mode'
-      'Set'
-      'Reset'
-      ''
-      'PI'
-      'NVARS'
-      'NXFORMS'
-      'INSTALLPATH'
-      'SYM_NONE'
-      'SYM_BILATERAL'
-      'SYM_ROTATIONAL'
-      ''
-      'V_LINEAR'
-      'V_SINUSOIDAL'
-      'V_SPHERICAL'
-      'V_SWIRL'
-      'V_HORSESHOE'
-      'V_POLAR'
-      'V_HANDKERCHIEF'
-      'V_HEART'
-      'V_DISC'
-      'V_SPIRAL'
-      'V_HYPERBOLIC'
-      'V_DIAMOND'
-      'V_EX'
-      'V_JULIA'
-      'V_BENT'
-      'V_WAVES'
-      'V_FISHEYE'
-      'V_POPCORN'
-      'V_EXPONENTIAL'
-      'V_POWER'
-      'V_COSINE'
-      'V_RINGS'
-      'V_FAN'
-      'V_EYEFISH'
-      'V_BUBBLE'
-      'V_CYLINDER'
-      'V_NOISE'
-      'V_BLUR'
-      'V_GAUSSIANBLUR'
-      'V_RADIALBLUR'
-      'V_RINGS2'
-      'V_FAN2'
-      'V_BLOB'
-      'V_PDJ'
-      'V_PERSPECTIVE'
-      'V_JULIAN'
-      'V_JULIASCOPE'
-      'V_CURL'
-      'V_RANDOM'
-      '')
+      'MessageDlg')
     HintParameter.TextColor = clBlack
     HintParameter.BkColor = clInfoBk
     HintParameter.HintCharStart = '('
@@ -593,34 +488,8 @@ object ScriptEditor: TScriptEditor
     HintParameter.Parameters.Strings = (
       'ShowMessage(const Msg: string);'
       
-        'InputQuery(const Caption: string; const Prompt: string; var Valu' +
-        'e: string)'
-      'DeleteFile(const filename: string)'
-      'RotateFlame(Angle: double)'
-      'RotateReference(Angle: double)'
-      'Rotate(Angle: double)'
-      'Multiply(a00: double, a01: double, a10: double, a11: double)'
-      'StoreFlame(FlameNumber: integer)'
-      'GetFlame(FlameNumber: integer)'
-      'LoadFlame(FlameNumber: integer)'
-      'Scale(Scale: double)'
-      'Translate(X: double, Y: double)'
-      'SetActiveTransform(TransformNumber: integer)'
-      'Print(something_printable)'
-      'AddSymmetry(symmetry_type: integer)'
-      
-        'Morph(FlameNumber1: integer, FlameNumber2: integer, Time: double' +
-        ')'
-      'SetFlameFile(const filename: string)'
-      'ListFile(const filename: string)'
-      'SaveFlame(const filename: string)'
-      'ShowStatus(const Text: string)'
-      'RandomFlame(randomness_type: integer)'
-      'SaveGradient(Title: string, FileName: string)'
-      'SetVariation(Number: integer)'
-      'VariationIndex(var_name: string): integer'
-      'VariationName(var_index: integer): string'
-      'CopyFile(Source: string, Destination: string)')
+        'MessageDlg(const Msg: string; DlgType: TMsgDlgType; Buttons: TMs' +
+        'gDlgButtons; HelpCtx: Longint): Integer);')
     HexIdentifier = '$'
     Description = 'Pascal'
     Filter = 'Pascal Files (*.pas,*.dpr,*.dpk,*.inc)|*.pas;*.dpr;*.dpk;*.inc'
@@ -630,6 +499,20 @@ object ScriptEditor: TScriptEditor
     RegionDefinitions = <
       item
         Identifier = 'procedure'
+        RegionStart = 'begin'
+        RegionEnd = 'end'
+        RegionType = rtClosed
+        ShowComments = False
+      end
+      item
+        Identifier = 'constructor'
+        RegionStart = 'begin'
+        RegionEnd = 'end'
+        RegionType = rtClosed
+        ShowComments = False
+      end
+      item
+        Identifier = 'destructor'
         RegionStart = 'begin'
         RegionEnd = 'end'
         RegionType = rtClosed
@@ -681,49 +564,7 @@ object ScriptEditor: TScriptEditor
         RegionType = rtClosed
         ShowComments = False
       end>
-    Left = 328
-    Top = 32
-  end
-  object Scripter: TatPascalScripter
-    SourceCode.Strings = (
-      '')
-    SaveCompiledCode = False
-    EventSupport = False
-    OnCompileError = ScripterCompileError
-    ShortBooleanEval = False
-    LibOptions.SearchPath.Strings = (
-      '$(CURDIR)'
-      '$(APPDIR)')
-    LibOptions.SourceFileExt = '.psc'
-    LibOptions.CompiledFileExt = '.pcu'
-    LibOptions.UseScriptFiles = False
-    CallExecHookEvent = False
-    Left = 360
-    Top = 32
-  end
-  object OpenDialog: TOpenDialog
-    DefaultExt = 'fla'
-    Filter = 
-      'Flame files (*.flame)|*.flame|Apophysis 1.0 parameters (*.apo;*.' +
-      'fla)|*.apo;*.fla|All files (*.*)|*.*'
-    Options = [ofHideReadOnly, ofFileMustExist, ofEnableSizing]
-    Left = 328
-    Top = 64
-  end
-  object SaveDialog: TSaveDialog
-    DefaultExt = 'flame'
-    Filter = 'Flame files (*.flame)|*.flame'
-    Options = [ofOverwritePrompt, ofHideReadOnly, ofPathMustExist, ofEnableSizing]
-    Left = 360
-    Top = 64
-  end
-  object F2SXML: TXmlScanner
-    Normalize = True
-    OnStartTag = F2SXMLStartTag
-    OnEmptyTag = F2SXMLEmptyTag
-    OnEndTag = F2SXMLEndTag
-    OnContent = F2SXMLContent
-    Left = 392
-    Top = 64
+    Left = 288
+    Top = 208
   end
 end

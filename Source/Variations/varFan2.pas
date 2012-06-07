@@ -97,16 +97,11 @@ begin
     a := Angle - dx2
   else
     a := Angle + dx2;
-  asm // SinCos(a, sinr, cosr);
-    FLD     qword ptr [a]
-    FSINCOS
-    FSTP    qword ptr [sinr]
-    FSTP    qword ptr [cosr]
-    FWAIT
-  end;
+  SinCos(a, sinr, cosr);
   r := vvar * sqrt(sqr(FTx^) + sqr(FTy^));
   FPx^ := FPx^ + r * cosr;
   FPy^ := FPy^ + r * sinr;
+  FPz^ := FPz^  + vvar * FTz^;
 end;
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -173,5 +168,5 @@ end;
 
 ///////////////////////////////////////////////////////////////////////////////
 initialization
-  RegisterVariation(TVariationClassLoader.Create(TVariationFan2), false, false);
+  RegisterVariation(TVariationClassLoader.Create(TVariationFan2), true, false);
 end.

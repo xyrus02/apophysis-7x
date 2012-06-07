@@ -1,13 +1,14 @@
 unit CommandLine;
 
 interface
-    uses Dialogs, PerlRegEx;
+    uses Dialogs, RegularExpressionsCore;
 
     type TCommandLine = class
     public
         CreateFromTemplate : boolean;
         TemplateFile : string;
         TemplateName : string;
+        Lite: boolean;
 
         procedure Load;
       
@@ -19,19 +20,29 @@ procedure TCommandLine.Load;
 var
   Regex: TPerlRegEx;
 begin
-  Regex := TPerlRegEx.Create(nil);
+  Regex := TPerlRegEx.Create;
   Regex.RegEx := '-template\s+"(.+)"\s+"(.+)"';
   Regex.Options := [preSingleLine, preCaseless];
-  Regex.Subject := CmdLine;
-
+  Regex.Subject := Utf8String(CmdLine);
   CreateFromTemplate := false;
   if Regex.Match then begin
-	  if Regex.SubExpressionCount = 2 then begin
+	  if Regex.GroupCount = 2 then begin
       CreateFromTemplate := true;
-      TemplateFile := Regex.SubExpressions[1];
-      TemplateName := Regex.SubExpressions[2];
+      TemplateFile := String(Regex.Groups[1]);
+      TemplateName := String(Regex.Groups[2]);
   	end;
   end;
+  Regex.Destroy;
+
+  Regex := TPerlRegEx.Create;
+  Regex.RegEx := '-lite';
+  Regex.Options := [preSingleLine, preCaseless];
+  Regex.Subject := Utf8String(CmdLine);
+  CreateFromTemplate := false;
+  if Regex.Match then begin
+    Lite := true;
+  end;
+  Regex.Destroy;
 end;
   
 end.

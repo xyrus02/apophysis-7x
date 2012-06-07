@@ -26,13 +26,20 @@ unit varJulia3Djf; // original variation code by Joel Faber, modified & optimize
 interface
 
 uses
-  BaseVariation, XFormMan, AsmRandom;
+{$ifdef Apo7X64}
+{$else}
+AsmRandom,
+{$endif}
+  BaseVariation, XFormMan;
 
 const
   var_name = 'julia3D';
   var_n_name='julia3D_power';
 
-{$define _ASM_}
+{$ifdef Apo7X64}
+{$else}
+  {$define _ASM_}
+{$endif}
 
 type
   TVariationJulia3DJF = class(TBaseVariation)

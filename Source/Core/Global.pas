@@ -27,7 +27,7 @@ interface
 
 uses
   Windows, SysUtils, Classes, SyncObjs, Controls, Graphics, Math,
-  cmap, ControlPoint, Xform, CommDlg, Mapm, MapmMonitor, MapmException;
+  cmap, ControlPoint, Xform, CommDlg;
 
 type
   EFormatInvalid = class(Exception);
@@ -58,12 +58,17 @@ function OpenSaveFileDialog(Parent: TWinControl;
                             NoChangeDir,
                             DoOpen: Boolean): Boolean;
 procedure LoadThumbnailPlaceholder(ThumbnailSize : integer);
+function GetEnvVarValue(const VarName: string): string;
 
 
 const
   APP_NAME: string = 'Apophysis 7x';
-  APP_VERSION: string = 'Version 16 [Build 1547]';
-  APP_BUILD: string = '';
+  APP_VERSION: string = 'Version 15C.9';
+  {$ifdef Apo7X64}
+  APP_BUILD: string = ' - 64 bit';
+  {$else}
+  APP_BUILD: string = ' - 32 bit';
+  {$endif}
   MAX_TRANSFORMS: integer = 100;
   prefilter_white: integer = 1024;
   eps: double = 1E-10;
@@ -78,11 +83,16 @@ const
   crEditMove   = 21;
   crEditRotate = 22;
   crEditScale  = 23;
+
+const
+  SingleBuffer : boolean =
+  {$ifdef Apo7X64}
+    false
+  {$else}
+    true
+  {$endif};
   
 var
-
-  PluginMonitor: TMapmMonitor;
-
   MainSeed: integer;
   MainTriangles: TTriangles;
   Transforms: integer; // Count of Tranforms
@@ -103,6 +113,7 @@ var
   EmbedThumbnails : boolean;
   LanguageFile : string;
   AvailableLanguages : TStringList;
+  PluginPath : string;
 
   { UPR Options }
 
@@ -228,6 +239,7 @@ var
   defLibrary: string;
   LimitVibrancy: Boolean;
   DefaultPalette: TColorMap;
+
   ChaoticaPath, ChaoticaPath64: string;
   UseX64IfPossible: boolean;
 
@@ -244,6 +256,25 @@ var
 function Round6(x: double): double;
 
 implementation
+
+function GetEnvVarValue(const VarName: string): string;
+var
+  BufSize: Integer;  // buffer size required for value
+begin
+  // Get required buffer size (inc. terminal #0)
+  BufSize := GetEnvironmentVariable(
+    PChar(VarName), nil, 0);
+  if BufSize > 0 then
+  begin
+    // Read env var value into result string
+    SetLength(Result, BufSize - 1);
+    GetEnvironmentVariable(PChar(VarName),
+      PChar(Result), BufSize);
+  end
+  else
+    // No such environment variable
+    Result := '';
+end;
 
 procedure LoadThumbnailPlaceholder(ThumbnailSize : integer);
 var
@@ -439,15 +470,6 @@ begin
     end;
   end;
   Result := str;
-end;
-
-procedure SinCos(const Theta: double; var Sin, Cos: double); // to avoid using 'extended' type
-asm
-    FLD     Theta
-    FSINCOS
-    FSTP    qword ptr [edx]    // Cos
-    FSTP    qword ptr [eax]    // Sin
-    FWAIT
 end;
 
 (*

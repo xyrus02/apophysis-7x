@@ -3,12 +3,12 @@ object SaveForm: TSaveForm
   Top = 432
   BorderStyle = bsDialog
   Caption = 'Save Parameters'
-  ClientHeight = 124
-  ClientWidth = 420
+  ClientHeight = 153
+  ClientWidth = 517
   Color = clBtnFace
   Font.Charset = DEFAULT_CHARSET
   Font.Color = clWindowText
-  Font.Height = -11
+  Font.Height = -14
   Font.Name = 'MS Sans Serif'
   Font.Style = []
   OldCreateOrder = False
@@ -16,21 +16,21 @@ object SaveForm: TSaveForm
   OnCreate = FormCreate
   OnShow = FormShow
   DesignSize = (
-    420
-    124)
-  PixelsPerInch = 96
-  TextHeight = 13
+    517
+    153)
+  PixelsPerInch = 120
+  TextHeight = 16
   object btnDefGradient: TSpeedButton
-    Left = 390
-    Top = 7
-    Width = 24
-    Height = 24
+    Left = 480
+    Top = 9
+    Width = 30
+    Height = 29
     Hint = 'Browse...'
     Anchors = [akTop, akRight]
     Flat = True
     Font.Charset = ANSI_CHARSET
     Font.Color = clWindowText
-    Font.Height = -11
+    Font.Height = -15
     Font.Name = 'Arial'
     Font.Style = [fsBold]
     Glyph.Data = {
@@ -66,10 +66,10 @@ object SaveForm: TSaveForm
     OnClick = btnDefGradientClick
   end
   object btnSave: TButton
-    Left = 262
-    Top = 94
-    Width = 75
-    Height = 25
+    Left = 322
+    Top = 116
+    Width = 93
+    Height = 30
     Anchors = [akRight, akBottom]
     Caption = '&Save'
     Default = True
@@ -77,20 +77,20 @@ object SaveForm: TSaveForm
     OnClick = btnSaveClick
   end
   object btnCancel: TButton
-    Left = 342
-    Top = 94
-    Width = 75
-    Height = 25
+    Left = 421
+    Top = 116
+    Width = 92
+    Height = 30
     Anchors = [akRight, akBottom]
     Caption = 'Cancel'
     TabOrder = 3
     OnClick = btnCancelClick
   end
   object pnlTarget: TPanel
-    Left = 8
-    Top = 8
-    Width = 101
-    Height = 21
+    Left = 10
+    Top = 10
+    Width = 124
+    Height = 26
     Cursor = crArrow
     BevelOuter = bvLowered
     Caption = 'Destination'
@@ -99,10 +99,10 @@ object SaveForm: TSaveForm
     TabOrder = 4
   end
   object pnlName: TPanel
-    Left = 8
-    Top = 32
-    Width = 101
-    Height = 21
+    Left = 10
+    Top = 39
+    Width = 124
+    Height = 26
     Cursor = crArrow
     BevelOuter = bvLowered
     Caption = 'Name'
@@ -111,28 +111,28 @@ object SaveForm: TSaveForm
     TabOrder = 5
   end
   object txtFilename: TEdit
-    Left = 104
-    Top = 8
-    Width = 287
-    Height = 21
+    Left = 128
+    Top = 10
+    Width = 353
+    Height = 24
     Anchors = [akLeft, akTop, akRight]
     TabOrder = 0
     Text = 'txtFilename'
   end
   object txtTitle: TEdit
-    Left = 104
-    Top = 32
-    Width = 311
-    Height = 21
+    Left = 128
+    Top = 39
+    Width = 383
+    Height = 24
     Anchors = [akLeft, akTop, akRight]
     TabOrder = 1
     Text = 'txtTitle'
   end
   object optUseOldFormat: TRadioButton
-    Left = 8
-    Top = 64
-    Width = 247
-    Height = 17
+    Left = 10
+    Top = 79
+    Width = 304
+    Height = 21
     Anchors = [akLeft, akTop, akRight]
     Caption = 'Use classic flame format'
     Checked = True
@@ -140,10 +140,10 @@ object SaveForm: TSaveForm
     TabStop = True
   end
   object optUseNewFormat: TRadioButton
-    Left = 8
-    Top = 82
-    Width = 247
-    Height = 17
+    Left = 10
+    Top = 101
+    Width = 304
+    Height = 21
     Anchors = [akLeft, akTop, akRight]
     Caption = 'Use new flame format'
     Enabled = False

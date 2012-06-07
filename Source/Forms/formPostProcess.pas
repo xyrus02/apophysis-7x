@@ -27,7 +27,8 @@ interface
 
 uses
   Windows, Messages, SysUtils, Variants, Classes, Graphics, Controls, Forms,
-  Dialogs, ExtCtrls, Render, controlpoint, StdCtrls, ComCtrls, imageenio, Translation;
+  Dialogs, ExtCtrls, RenderingInterface, controlpoint, StdCtrls, ComCtrls,
+  Translation;
 
 type
   TfrmPostProcess = class(TForm)
@@ -93,10 +94,6 @@ type
 
   public
     cp : TControlPoint;
-    en : TImageEnIO;
-    DoStoreExif : boolean;
-    DoStoreExifParams : boolean;
-    author :string;
 
     procedure SetRenderer(Renderer: TBaseRenderer);
     procedure SetControlPoint(CP: TControlPoint);
@@ -307,24 +304,6 @@ end;
 procedure TfrmPostProcess.btnSaveClick(Sender: TObject);
 begin
   FRenderer.SaveImage(FImagename);
-  if DoStoreExif then begin
-    en.ParamsFromFile(FImagename);
-    en.Params.EXIF_HasExifData := true;
-    en.Params.EXIF_XPTitle := cp.name;
-    en.Params.EXIF_XPKeywords := 'Apophysis ' + cp.name;
-    en.Params.EXIF_XPAuthor := author;
-    en.Params.EXIF_Artist := author;
-    en.Params.EXIF_Software := AppVersionString;
-    en.Params.EXIF_DateTime := FormatDateTime('yyyy.mm.dd hh:nn:ss',Now);
-    en.Params.EXIF_DateTimeOriginal := en.Params.EXIF_DateTime;
-    en.Params.EXIF_DateTimeDigitized := en.Params.EXIF_DateTime;
-    en.Params.EXIF_Make := 'Apophysis';
-    en.Params.EXIF_Model := AppVersionString;
-    if (DoStoreExifParams) then begin
-      en.Params.EXIF_UserComment := MainForm.RetrieveXML(cp);
-    end;
-    en.InjectJpegEXIF(FImagename);
-  end;
 end;
 
 ///////////////////////////////////////////////////////////////////////////////

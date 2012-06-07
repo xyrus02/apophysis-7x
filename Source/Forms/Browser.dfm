@@ -1,8 +1,8 @@
 object GradientBrowser: TGradientBrowser
   Left = 494
   Top = 299
-  Width = 418
-  Height = 282
+  Width = 544
+  Height = 335
   BorderIcons = [biSystemMenu, biMinimize]
   Caption = 'Gradient Browser'
   Color = clBtnFace
@@ -54,19 +54,20 @@ object GradientBrowser: TGradientBrowser
   OnClose = FormClose
   OnCreate = FormCreate
   OnDestroy = FormDestroy
+  OnResize = FormResize
   OnShow = FormShow
   DesignSize = (
-    410
-    255)
+    536
+    306)
   PixelsPerInch = 96
   TextHeight = 13
   object btnDefGradient: TSpeedButton
-    Left = 384
-    Top = 226
+    Left = 411
+    Top = 7
     Width = 23
-    Height = 22
+    Height = 21
     Hint = 'Open...'
-    Anchors = [akRight, akBottom]
+    Anchors = [akTop, akRight]
     Flat = True
     Font.Charset = ANSI_CHARSET
     Font.Color = clWindowText
@@ -106,10 +107,10 @@ object GradientBrowser: TGradientBrowser
     OnClick = btnDefGradientClick
   end
   object ListView: TListView
-    Left = 0
-    Top = 4
-    Width = 410
-    Height = 214
+    Left = 7
+    Top = 7
+    Width = 398
+    Height = 234
     Anchors = [akLeft, akTop, akRight, akBottom]
     Columns = <
       item
@@ -136,7 +137,7 @@ object GradientBrowser: TGradientBrowser
   object pnlMain: TPanel
     Left = 0
     Top = 0
-    Width = 410
+    Width = 536
     Height = 4
     Align = alTop
     BevelOuter = bvNone
@@ -144,8 +145,8 @@ object GradientBrowser: TGradientBrowser
   end
   object pnlPreview: TPanel
     Left = 0
-    Top = 225
-    Width = 384
+    Top = 268
+    Width = 487
     Height = 25
     Anchors = [akLeft, akRight, akBottom]
     BevelOuter = bvLowered
@@ -153,7 +154,7 @@ object GradientBrowser: TGradientBrowser
     object Image: TImage
       Left = 1
       Top = 1
-      Width = 382
+      Width = 485
       Height = 23
       Align = alClient
       Stretch = True

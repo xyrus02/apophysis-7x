@@ -1,9 +1,0 @@
-﻿<?xml version="1.0" encoding="utf-8"?>
-<BorlandProject>
-	<Transactions>
-    <Transaction>2010-07-15 13:08:39.405.pas,E:\Georg Kiehne\Projects\apophysis-7x\trunk\Project\Delphi2005\Unit1.pas=E:\Georg Kiehne\Projects\apophysis-7x\trunk\Source\SplashForm.pas</Transaction>
-    <Transaction>2010-07-15 13:08:39.405.dfm,E:\Georg Kiehne\Projects\apophysis-7x\trunk\Project\Delphi2005\Unit1.dfm=E:\Georg Kiehne\Projects\apophysis-7x\trunk\Source\SplashForm.dfm</Transaction>
-    <Transaction>2010-07-16 19:29:47.671.pas,E:\Georg Kiehne\Projects\apophysis-7x\trunk\Project\Delphi2005\Unit1.pas=E:\Georg Kiehne\Projects\apophysis-7x\trunk\Source\ThumbnailThread.pas</Transaction>
-    <Transaction>2010-07-16 20:06:53.037.pas,E:\Georg Kiehne\Projects\apophysis-7x\trunk\Source\ThumbnailThread.pas=</Transaction>
-  </Transactions>
-</BorlandProject>

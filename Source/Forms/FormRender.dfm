@@ -4,7 +4,7 @@ object RenderForm: TRenderForm
   BorderIcons = [biSystemMenu, biMinimize]
   BorderStyle = bsSingle
   Caption = 'Render to Disk'
-  ClientHeight = 496
+  ClientHeight = 469
   ClientWidth = 497
   Color = clBtnFace
   Font.Charset = DEFAULT_CHARSET
@@ -20,63 +20,59 @@ object RenderForm: TRenderForm
   OnShow = FormShow
   DesignSize = (
     497
-    496)
+    469)
   PixelsPerInch = 96
   TextHeight = 13
-  object ProgressBar: TProgressBar
-    Left = 488
-    Top = 475
-    Width = 9
-    Height = 13
-    TabOrder = 0
-    Visible = False
-  end
   object btnRender: TButton
     Left = 256
-    Top = 439
+    Top = 420
     Width = 75
     Height = 25
     Anchors = [akRight, akBottom]
     Caption = 'Start'
     Default = True
-    TabOrder = 1
+    TabOrder = 0
     OnClick = btnRenderClick
   end
   object btnCancel: TButton
     Left = 416
-    Top = 439
+    Top = 420
     Width = 75
     Height = 25
     Anchors = [akRight, akBottom]
     Caption = 'Close'
-    TabOrder = 2
+    TabOrder = 1
     OnClick = btnCancelClick
   end
   object btnPause: TButton
     Left = 336
-    Top = 439
+    Top = 420
     Width = 75
     Height = 25
     Anchors = [akRight, akBottom]
     Caption = 'Pause'
-    TabOrder = 3
+    TabOrder = 2
     OnClick = btnPauseClick
   end
   object PageCtrl: TPageControl
     Left = 8
     Top = 8
     Width = 481
-    Height = 393
+    Height = 373
     ActivePage = TabSettings
     Anchors = [akLeft, akTop, akRight, akBottom]
     Images = MainForm.Buttons
-    TabOrder = 4
+    TabOrder = 3
     object TabSettings: TTabSheet
       Caption = 'Settings'
       ImageIndex = 18
+      ExplicitLeft = 0
+      ExplicitTop = 0
+      ExplicitWidth = 0
+      ExplicitHeight = 0
       DesignSize = (
         473
-        364)
+        344)
       object btnBrowse: TSpeedButton
         Left = 416
         Top = 11
@@ -215,14 +211,13 @@ object RenderForm: TRenderForm
           Width = 351
           Height = 21
           Style = csDropDownList
-          ItemHeight = 13
           TabOrder = 0
           OnChange = cmbPresetChange
         end
       end
       object GroupBox2: TGroupBox
         Left = 8
-        Top = 66
+        Top = 42
         Width = 233
         Height = 95
         Anchors = [akLeft, akTop, akRight]
@@ -293,7 +288,6 @@ object RenderForm: TRenderForm
           Anchors = [akLeft, akTop, akRight]
           BiDiMode = bdLeftToRight
           Enabled = False
-          ItemHeight = 13
           ParentBiDiMode = False
           TabOrder = 2
           OnChange = txtHeightChange
@@ -317,7 +311,6 @@ object RenderForm: TRenderForm
           Anchors = [akLeft, akTop, akRight]
           BiDiMode = bdLeftToRight
           Enabled = False
-          ItemHeight = 13
           ParentBiDiMode = False
           TabOrder = 1
           OnChange = txtWidthChange
@@ -336,7 +329,7 @@ object RenderForm: TRenderForm
       end
       object GroupBox3: TGroupBox
         Left = 248
-        Top = 66
+        Top = 42
         Width = 218
         Height = 95
         Anchors = [akTop, akRight]
@@ -394,7 +387,6 @@ object RenderForm: TRenderForm
           Height = 21
           AutoComplete = False
           Anchors = [akLeft, akTop, akRight]
-          ItemHeight = 13
           TabOrder = 0
           OnChange = txtDensityChange
           OnCloseUp = txtDensityChange
@@ -434,15 +426,15 @@ object RenderForm: TRenderForm
       end
       object GroupBox4: TGroupBox
         Left = 8
-        Top = 166
+        Top = 142
         Width = 458
-        Height = 83
+        Height = 99
         Anchors = [akLeft, akTop, akRight]
         Caption = 'Resource usage'
         TabOrder = 3
         DesignSize = (
           458
-          83)
+          99)
         object lblApproxMem: TLabel
           Left = 439
           Top = 100
@@ -491,15 +483,31 @@ object RenderForm: TRenderForm
           Visible = False
         end
         object lblMemory: TLabel
-          Left = 8
-          Top = 16
+          Left = 11
+          Top = 18
           Width = 442
-          Height = 33
+          Height = 24
           Anchors = [akLeft, akTop, akRight]
           AutoSize = False
           Caption = 
             'The render process will use 0000 Mb of 0000MB available physical' +
             ' memory'
+          Font.Charset = DEFAULT_CHARSET
+          Font.Color = clWindowText
+          Font.Height = -11
+          Font.Name = 'MS Sans Serif'
+          Font.Style = []
+          ParentFont = False
+          Layout = tlCenter
+          WordWrap = True
+        end
+        object lblCPUCores: TLabel
+          Left = 11
+          Top = 43
+          Width = 442
+          Height = 14
+          Anchors = [akLeft, akTop, akRight]
+          AutoSize = False
           Font.Charset = DEFAULT_CHARSET
           Font.Color = clWindowText
           Font.Height = -11
@@ -518,35 +526,23 @@ object RenderForm: TRenderForm
           TabOrder = 0
           Visible = False
         end
-        object PBMem: TdwProgressBar
-          Left = 232
-          Top = 54
-          Width = 218
-          Height = 17
-          Anchors = [akLeft, akTop, akRight]
-          Smooth = True
-          TabOrder = 2
-          DoubleBuffered = False
-          MarqueeInterval = 50
-        end
         object pnlLimit: TPanel
           Left = 8
-          Top = 52
+          Top = 68
           Width = 121
           Height = 21
           Cursor = crArrow
           BevelOuter = bvLowered
           Caption = 'Memory limit'
-          TabOrder = 3
+          TabOrder = 2
         end
         object cbMaxMemory: TComboBox
           Left = 128
-          Top = 52
+          Top = 68
           Width = 97
           Height = 21
           Style = csDropDownList
           BiDiMode = bdLeftToRight
-          ItemHeight = 13
           ItemIndex = 0
           ParentBiDiMode = False
           TabOrder = 1
@@ -562,17 +558,24 @@ object RenderForm: TRenderForm
             '1024'
             '1536')
         end
+        object PBMem: TProgressBar
+          Left = 232
+          Top = 68
+          Width = 217
+          Height = 21
+          TabOrder = 3
+        end
       end
       object GroupBox1: TGroupBox
         Left = 8
-        Top = 256
+        Top = 253
         Width = 217
-        Height = 97
+        Height = 81
         Caption = 'Output options'
         TabOrder = 5
         DesignSize = (
           217
-          97)
+          81)
         object chkSave: TCheckBox
           Left = 8
           Top = 24
@@ -584,39 +587,28 @@ object RenderForm: TRenderForm
           State = cbChecked
           TabOrder = 0
         end
-        object cbEXIF: TCheckBox
+        object chkSaveIncompleteRenders: TCheckBox
           Left = 8
           Top = 48
           Width = 201
           Height = 17
           Anchors = [akLeft, akTop, akRight]
-          Caption = 'Write EXIF-Header (JPEG only)'
-          Enabled = False
+          Caption = 'Save incomplete renders'
           TabOrder = 1
-          OnClick = cbEXIFClick
-        end
-        object cbParEXIF: TCheckBox
-          Left = 8
-          Top = 72
-          Width = 201
-          Height = 17
-          Anchors = [akLeft, akTop, akRight]
-          Caption = 'Include parameters in EXIF-Header'
-          Enabled = False
-          TabOrder = 2
+          OnClick = chkSaveIncompleteRendersClick
         end
       end
       object GroupBox6: TGroupBox
         Left = 232
-        Top = 256
+        Top = 253
         Width = 234
-        Height = 97
+        Height = 81
         Anchors = [akLeft, akTop, akRight]
         Caption = 'Completion options'
         TabOrder = 6
         DesignSize = (
           234
-          97)
+          81)
         object chkPostProcess: TCheckBox
           Left = 8
           Top = 24
@@ -635,16 +627,6 @@ object RenderForm: TRenderForm
           Caption = 'Shut down computer when complete'
           TabOrder = 1
         end
-        object chkSaveIncompleteRenders: TCheckBox
-          Left = 8
-          Top = 72
-          Width = 217
-          Height = 17
-          Anchors = [akLeft, akTop, akRight]
-          Caption = 'Save incomplete renders'
-          TabOrder = 2
-          OnClick = chkSaveIncompleteRendersClick
-        end
       end
       object pnlTarget: TPanel
         Left = 8
@@ -654,17 +636,7 @@ object RenderForm: TRenderForm
         Cursor = crArrow
         BevelOuter = bvLowered
         Caption = 'Destination'
-        TabOrder = 8
-      end
-      object pnlAuthor: TPanel
-        Left = 8
-        Top = 36
-        Width = 121
-        Height = 21
-        Cursor = crArrow
-        BevelOuter = bvLowered
-        Caption = 'Author (EXIF)'
-        TabOrder = 9
+        TabOrder = 7
       end
       object txtFilename: TEdit
         Left = 128
@@ -675,23 +647,32 @@ object RenderForm: TRenderForm
         TabOrder = 4
         OnChange = txtFilenameChange
       end
-      object txtAuthor: TEdit
-        Left = 128
-        Top = 36
-        Width = 336
-        Height = 21
+      object chkBinary: TCheckBox
+        Left = 8
+        Top = 349
+        Width = 457
+        Height = 17
         Anchors = [akLeft, akTop, akRight]
-        TabOrder = 7
+        Caption = 
+          'Write raw data (WARNING: this is experimental and slows down the' +
+          ' rendering!!!)'
+        Enabled = False
+        TabOrder = 8
+        Visible = False
       end
     end
     object TabOutput: TTabSheet
       Caption = 'Output'
       ImageIndex = 38
+      ExplicitLeft = 0
+      ExplicitTop = 0
+      ExplicitWidth = 0
+      ExplicitHeight = 0
       object Output: TMemo
         Left = 0
         Top = 0
         Width = 473
-        Height = 378
+        Height = 344
         Align = alClient
         BorderStyle = bsNone
         Color = clBtnFace
@@ -707,20 +688,9 @@ object RenderForm: TRenderForm
       end
     end
   end
-  object ProgressBar2: TdwProgressBar
-    Left = 8
-    Top = 413
-    Width = 481
-    Height = 17
-    Anchors = [akLeft, akRight, akBottom]
-    Smooth = True
-    TabOrder = 6
-    DoubleBuffered = False
-    MarqueeInterval = 50
-  end
   object StatusBar: TStatusBar
     Left = 0
-    Top = 477
+    Top = 450
     Width = 497
     Height = 19
     Panels = <
@@ -734,83 +704,38 @@ object RenderForm: TRenderForm
         Width = 50
       end>
   end
-  object chkThreadPriority: TCheckBox
-    Left = 488
-    Top = 361
-    Width = 161
-    Height = 17
-    Anchors = [akLeft, akBottom]
-    Caption = 'Render at low priority'
-    Enabled = False
-    TabOrder = 7
-    Visible = False
-    OnClick = chkThreadPriorityClick
-  end
-  object TEST_btnSnapshot: TButton
+  object btnDonate: TButton
     Left = 8
-    Top = 440
-    Width = 113
+    Top = 420
+    Width = 73
     Height = 25
-    Caption = 'Snap!'
-    TabOrder = 8
-    Visible = False
-    OnClick = TEST_btnSnapshotClick
+    Anchors = [akLeft, akBottom]
+    Caption = 'Donate'
+    TabOrder = 6
+    OnClick = btnDonateClick
   end
-  object cbBitsPerSample: TComboBox
+  object btnSaveLog: TButton
     Left = 88
-    Top = 452
-    Width = 97
-    Height = 21
-    Style = csDropDownList
-    Enabled = False
-    ItemHeight = 13
-    TabOrder = 9
-    Visible = False
-    OnSelect = cbBitsPerSampleSelect
-    Items.Strings = (
-      '32-bit integer'
-      '32-bit floating-point'
-      '48-bit integer')
-  end
-  object pnlBufferDepth: TPanel
-    Left = 88
-    Top = 452
-    Width = 121
-    Height = 21
-    Cursor = crArrow
-    BevelOuter = bvLowered
-    Caption = 'Buffer depth'
-    Enabled = False
-    Font.Charset = DEFAULT_CHARSET
-    Font.Color = clGrayText
-    Font.Height = -11
-    Font.Name = 'MS Sans Serif'
-    Font.Style = []
-    ParentFont = False
-    TabOrder = 10
-    Visible = False
-  end
-  object TEST_btnUseSnapshot: TButton
-    Left = 128
-    Top = 440
-    Width = 113
+    Top = 420
+    Width = 73
     Height = 25
-    Caption = 'Scan!'
-    TabOrder = 11
+    Anchors = [akLeft, akBottom]
+    Caption = 'Save log'
+    Enabled = False
+    TabOrder = 5
     Visible = False
-    OnClick = TEST_btnUseSnapshotClick
+    OnClick = btnSaveLogClick
+  end
+  object ProgressBar2: TProgressBar
+    Left = 8
+    Top = 388
+    Width = 481
+    Height = 25
+    Anchors = [akLeft, akRight, akBottom]
+    TabOrder = 7
   end
   object SaveDialog: TSaveDialog
-    Left = 184
-    Top = 448
-  end
-  object en: TImageEnIO
-    PreviewFont.Charset = DEFAULT_CHARSET
-    PreviewFont.Color = clWindowText
-    PreviewFont.Height = -11
-    PreviewFont.Name = 'MS Sans Serif'
-    PreviewFont.Style = []
-    Left = 216
-    Top = 448
+    Left = 168
+    Top = 464
   end
 end

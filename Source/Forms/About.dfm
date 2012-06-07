@@ -3,7 +3,7 @@ object AboutForm: TAboutForm
   Top = 320
   BorderStyle = bsDialog
   Caption = 'Apophysis'
-  ClientHeight = 484
+  ClientHeight = 342
   ClientWidth = 417
   Color = clWindow
   Font.Charset = DEFAULT_CHARSET
@@ -1523,7 +1523,7 @@ object AboutForm: TAboutForm
   end
   object Label3: TLabel
     Left = 16
-    Top = 220
+    Top = 196
     Width = 166
     Height = 13
     Caption = 'This application was created using:'
@@ -1552,21 +1552,21 @@ object AboutForm: TAboutForm
   end
   object Label10: TLabel
     Left = 16
-    Top = 380
+    Top = 246
     Width = 178
     Height = 13
     Caption = 'flame - cosmic recursive fractal flames'
   end
   object Label11: TLabel
     Left = 16
-    Top = 404
+    Top = 270
     Width = 178
     Height = 13
-    Caption = 'Copyright '#169' 1992-2007  Scott Draves'
+    Caption = 'Copyright '#169' 1992-2012  Scott Draves'
   end
   object lblFlamecom: TLabel
     Left = 16
-    Top = 420
+    Top = 286
     Width = 79
     Height = 13
     Cursor = crHandPoint
@@ -1582,7 +1582,7 @@ object AboutForm: TAboutForm
   end
   object Bevel1: TBevel
     Left = 16
-    Top = 392
+    Top = 258
     Width = 385
     Height = 9
     Shape = bsBottomLine
@@ -1603,11 +1603,11 @@ object AboutForm: TAboutForm
   object Label7: TLabel
     Left = 140
     Top = 148
-    Width = 115
+    Width = 71
     Height = 13
     Cursor = crHandPoint
     Hint = 'http://zueuk.deviantart.com'
-    Caption = 'Peter "Zueuk" Sdobnov'
+    Caption = 'Peter Sdobnov'
     Font.Charset = DEFAULT_CHARSET
     Font.Color = clBlue
     Font.Height = -11
@@ -1619,11 +1619,11 @@ object AboutForm: TAboutForm
   object Label8: TLabel
     Left = 140
     Top = 164
-    Width = 96
+    Width = 53
     Height = 13
     Cursor = crHandPoint
     Hint = 'http://utak3r.pl'
-    Caption = 'Piotr "utak3r" Borys '
+    Caption = 'Piotr Borys '
     Font.Charset = DEFAULT_CHARSET
     Font.Color = clBlue
     Font.Height = -11
@@ -1633,8 +1633,8 @@ object AboutForm: TAboutForm
     OnClick = DevelopersClick
   end
   object Label9: TLabel
-    Left = 140
-    Top = 180
+    Left = 16
+    Top = 164
     Width = 70
     Height = 13
     Caption = 'Ronald Hordijk'
@@ -1654,7 +1654,7 @@ object AboutForm: TAboutForm
   end
   object Label13: TLabel
     Left = 16
-    Top = 244
+    Top = 220
     Width = 69
     Height = 13
     Cursor = crHandPoint
@@ -1670,28 +1670,12 @@ object AboutForm: TAboutForm
   end
   object Label14: TLabel
     Left = 96
-    Top = 244
+    Top = 220
     Width = 55
     Height = 13
     Cursor = crHandPoint
     Hint = 'http://www.destructor.de/'
     Caption = 'XML Parser'
-    Font.Charset = DEFAULT_CHARSET
-    Font.Color = clBlue
-    Font.Height = -11
-    Font.Name = 'MS Sans Serif'
-    Font.Style = [fsUnderline]
-    ParentFont = False
-    OnClick = DevelopersClick
-  end
-  object Label15: TLabel
-    Left = 208
-    Top = 244
-    Width = 175
-    Height = 13
-    Cursor = crHandPoint
-    Hint = 'http://www.torry.net/authorsmore.php?id=6929'
-    Caption = 'Portable Network Graphics for Delphi'
     Font.Charset = DEFAULT_CHARSET
     Font.Color = clBlue
     Font.Height = -11
@@ -1710,11 +1694,11 @@ object AboutForm: TAboutForm
   object Label17: TLabel
     Left = 264
     Top = 148
-    Width = 104
+    Width = 65
     Height = 13
     Cursor = crHandPoint
-    Hint = 'http://xyrus.clan-boa.com'
-    Caption = 'Georg "Xyrus" Kiehne'
+    Hint = 'http://xyrus-worx.org'
+    Caption = 'Georg Kiehne'
     Font.Charset = DEFAULT_CHARSET
     Font.Color = clBlue
     Font.Height = -11
@@ -1728,31 +1712,13 @@ object AboutForm: TAboutForm
     Top = 116
     Width = 110
     Height = 13
-    Caption = 'Copyright '#169' 2009-2011'
+    Caption = 'Copyright '#169' 2009-2012'
     Font.Charset = DEFAULT_CHARSET
     Font.Color = clWindowText
     Font.Height = -11
     Font.Name = 'MS Sans Serif'
     Font.Style = []
     ParentFont = False
-  end
-  object Label21: TLabel
-    Left = 16
-    Top = 260
-    Width = 189
-    Height = 13
-    Cursor = crHandPoint
-    Hint = 
-      'http://www.gumpi.com/Blog/2009/01/20/Alpha1OfWindows7ControlsFor' +
-      'Delphi.aspx'
-    Caption = 'Windows 7 Compatibility pack for Delphi'
-    Font.Charset = DEFAULT_CHARSET
-    Font.Color = clBlue
-    Font.Height = -11
-    Font.Name = 'MS Sans Serif'
-    Font.Style = [fsUnderline]
-    ParentFont = False
-    OnClick = DevelopersClick
   end
   object Label16: TLabel
     Left = 8
@@ -1773,32 +1739,16 @@ object AboutForm: TAboutForm
     Height = 13
     Caption = 'Mark Townsend'
   end
-  object Label35: TLabel
-    Left = 160
-    Top = 244
-    Width = 42
-    Height = 13
-    Cursor = crHandPoint
-    Hint = 'http://www.hicomponents.com/'
-    Caption = 'ImageEn'
-    Font.Charset = DEFAULT_CHARSET
-    Font.Color = clBlue
-    Font.Height = -11
-    Font.Name = 'MS Sans Serif'
-    Font.Style = [fsUnderline]
-    ParentFont = False
-    OnClick = DevelopersClick
-  end
   object Bevel2: TBevel
     Left = 16
-    Top = 230
+    Top = 206
     Width = 385
     Height = 11
     Shape = bsBottomLine
   end
   object Label19: TLabel
-    Left = 212
-    Top = 260
+    Left = 160
+    Top = 220
     Width = 77
     Height = 13
     Cursor = crHandPoint
@@ -1822,51 +1772,14 @@ object AboutForm: TAboutForm
   end
   object Label20: TLabel
     Left = 16
-    Top = 450
+    Top = 316
     Width = 297
     Height = 13
     AutoSize = False
   end
-  object Label22: TLabel
-    Left = 16
-    Top = 308
-    Width = 385
-    Height = 13
-    AutoSize = False
-    Caption = 'This application is able to use Chaotica'
-    Font.Charset = DEFAULT_CHARSET
-    Font.Color = clWindowText
-    Font.Height = -11
-    Font.Name = 'MS Sans Serif'
-    Font.Style = []
-    ParentFont = False
-    WordWrap = True
-  end
-  object Label23: TLabel
-    Left = 16
-    Top = 332
-    Width = 385
-    Height = 13
-    AutoSize = False
-    Caption = 'Chaotica is Copyright '#169' 2010-2011 Thomas Ludwig.'
-    Font.Charset = DEFAULT_CHARSET
-    Font.Color = clWindowText
-    Font.Height = -11
-    Font.Name = 'MS Sans Serif'
-    Font.Style = []
-    ParentFont = False
-    WordWrap = True
-  end
-  object Bevel4: TBevel
-    Left = 16
-    Top = 318
-    Width = 385
-    Height = 11
-    Shape = bsBottomLine
-  end
   object btnOK: TButton
     Left = 320
-    Top = 444
+    Top = 310
     Width = 91
     Height = 25
     Caption = 'OK'

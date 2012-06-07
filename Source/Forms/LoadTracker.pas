@@ -36,6 +36,7 @@ type
     Button2: TButton;
     Bevel1: TBevel;
     Output: TMemo;
+    procedure FormResize(Sender: TObject);
     procedure Button1Click(Sender: TObject);
     procedure CheckBox1Click(Sender: TObject);
     procedure FormCreate(Sender: TObject);
@@ -75,6 +76,29 @@ end;
 procedure TLoadForm.Button2Click(Sender: TObject);
 begin
   Output.Text := '';
+end;
+
+procedure TLoadForm.FormResize(Sender: TObject);
+begin
+  CheckBox1.Left := 2;
+  Checkbox1.Top := self.ClientHeight - Checkbox1.Height - 2;
+  CheckBox1.Width := self.ClientWidth - button1.Width - button2.Width - 8;
+
+  Button1.Left := self.ClientWidth - button1.Width - button2.Width - 4;
+  Button1.Top := self.ClientHeight - Checkbox1.Height - 2 + Checkbox1.Height div 2 - Button1.Height div 2;
+
+  Button2.Left := self.ClientWidth - button2.Width - 2;
+  Button2.Top := Button1.Top;
+
+  Bevel1.Left := 2;
+  Bevel1.Top := 2;
+  Bevel1.Width := self.ClientWidth - 4;
+  Bevel1.Height := self.ClientHeight - 6 - checkbox1.Height;
+
+  Output.Left := Bevel1.Left + 2;
+  Output.Top := Bevel1.Top + 2;
+  Output.Width := Bevel1.Width - 4;
+  Output.Height := Bevel1.Height -4;
 end;
 
 end.

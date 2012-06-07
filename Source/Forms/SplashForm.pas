@@ -27,7 +27,7 @@ implementation
 
 procedure TSplashWindow.FormCreate(Sender: TObject);
 begin
-  lblVersion.Caption := APP_VERSION;
+  lblVersion.Caption := APP_VERSION + APP_BUILD;
 end;
 
 procedure TSplashWindow.SetInfo(info:string);

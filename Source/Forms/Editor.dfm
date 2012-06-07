@@ -1,9 +1,9 @@
 object EditForm: TEditForm
   Left = 509
   Top = 87
-  Width = 773
-  Height = 799
   Caption = 'Transform Editor'
+  ClientHeight = 772
+  ClientWidth = 765
   Color = clBtnFace
   Constraints.MinHeight = 400
   Constraints.MinWidth = 200
@@ -63,7 +63,7 @@ object EditForm: TEditForm
   TextHeight = 13
   object StatusBar: TStatusBar
     Left = 0
-    Top = 750
+    Top = 757
     Width = 765
     Height = 15
     Panels = <
@@ -90,14 +90,12 @@ object EditForm: TEditForm
     object EditorToolBar: TToolBar
       Left = 1
       Top = 1
-      Width = 560
+      Width = 763
       Height = 22
-      Align = alLeft
+      Align = alClient
       ButtonHeight = 23
       Caption = 'EditorToolBar'
       Color = clBtnFace
-      EdgeBorders = []
-      Flat = True
       Images = EditorTB
       ParentColor = False
       TabOrder = 0
@@ -249,16 +247,8 @@ object EditForm: TEditForm
         Style = tbsCheck
         OnClick = tbEditModeClick
       end
-      object ToolButton6: TToolButton
-        Left = 300
-        Top = 0
-        Width = 8
-        Caption = 'ToolButton6'
-        ImageIndex = 16
-        Style = tbsSeparator
-      end
       object tbPivotMode: TToolButton
-        Left = 308
+        Left = 300
         Top = 0
         Hint = 'Toggle world pivot mode'
         Caption = 'tbPivotMode'
@@ -268,17 +258,16 @@ object EditForm: TEditForm
         Style = tbsCheck
         OnClick = btnPivotModeClick
       end
-      object ToolButton5: TToolButton
-        Left = 331
+      object ToolButton6: TToolButton
+        Left = 323
         Top = 0
         Width = 8
-        Caption = 'ToolButton5'
-        ImageIndex = 7
+        Caption = 'ToolButton6'
+        ImageIndex = 16
         Style = tbsSeparator
-        Visible = False
       end
       object tbRotate90CCW: TToolButton
-        Left = 339
+        Left = 331
         Top = 0
         Hint = 'Rotate triangle 90'#176' counter-clockwise'
         Caption = 'tbRotate90CCW'
@@ -288,7 +277,7 @@ object EditForm: TEditForm
         OnClick = btTrgRotateLeft90Click
       end
       object tbRotate90CW: TToolButton
-        Left = 362
+        Left = 354
         Top = 0
         Hint = 'Rotate triangle 90'#176' clockwise'
         Caption = 'tbRotate90CW'
@@ -298,7 +287,7 @@ object EditForm: TEditForm
         OnClick = btTrgRotateRight90Click
       end
       object tbFlipHorz: TToolButton
-        Left = 385
+        Left = 377
         Top = 0
         Hint = 'Flip triangle horizontal'
         Caption = 'Flip Horizontal'
@@ -308,7 +297,7 @@ object EditForm: TEditForm
         OnClick = mnuFlipHorizontalClick
       end
       object tbFlipVert: TToolButton
-        Left = 408
+        Left = 400
         Top = 0
         Hint = 'Flip triangle vertical'
         Caption = 'Flip Vertical'
@@ -318,7 +307,7 @@ object EditForm: TEditForm
         OnClick = mnuFlipVerticalClick
       end
       object ToolButton2: TToolButton
-        Left = 431
+        Left = 423
         Top = 0
         Width = 8
         Caption = 'ToolButton2'
@@ -326,7 +315,7 @@ object EditForm: TEditForm
         Style = tbsSeparator
       end
       object tbVarPreview: TToolButton
-        Left = 439
+        Left = 431
         Top = 0
         Hint = 'Show/hide variation preview'
         Caption = 'Variation Preview'
@@ -337,7 +326,7 @@ object EditForm: TEditForm
         OnClick = tbVarPreviewClick
       end
       object ToolButton3: TToolButton
-        Left = 462
+        Left = 454
         Top = 0
         Width = 8
         Caption = 'ToolButton3'
@@ -345,7 +334,7 @@ object EditForm: TEditForm
         Style = tbsSeparator
       end
       object tbPostXswap: TToolButton
-        Left = 470
+        Left = 462
         Top = 0
         Hint = 'Enable post-triangle editing'
         Caption = 'tbPostXswap'
@@ -356,7 +345,7 @@ object EditForm: TEditForm
         OnClick = tbPostXswapClick
       end
       object tbEnableFinalXform: TToolButton
-        Left = 493
+        Left = 485
         Top = 0
         Hint = 'Enable final transform'
         Caption = 'Show Final Xform'
@@ -367,7 +356,7 @@ object EditForm: TEditForm
         OnClick = tbEnableFinalXformClick
       end
       object ToolButton8: TToolButton
-        Left = 516
+        Left = 508
         Top = 0
         Width = 8
         Caption = 'ToolButton8'
@@ -375,7 +364,7 @@ object EditForm: TEditForm
         Style = tbsSeparator
       end
       object ToolButton7: TToolButton
-        Left = 524
+        Left = 516
         Top = 0
         Hint = 'Adds a new linked triangle'
         Caption = 'ToolButton7'
@@ -384,20 +373,50 @@ object EditForm: TEditForm
         ShowHint = True
         OnClick = mnuLinkPostxformClick
       end
+      object ToolButton5: TToolButton
+        Left = 539
+        Top = 0
+        Width = 8
+        Caption = 'ToolButton5'
+        ImageIndex = 32
+        Style = tbsSeparator
+      end
+      object ToolButton12: TToolButton
+        Left = 547
+        Top = 0
+        Caption = 'ToolButton12'
+        ImageIndex = 32
+        Visible = False
+        OnClick = ToolButton12Click
+      end
+      object ToolButton13: TToolButton
+        Left = 570
+        Top = 0
+        Caption = 'ToolButton13'
+        ImageIndex = 33
+        Visible = False
+      end
+      object ToolButton14: TToolButton
+        Left = 593
+        Top = 0
+        Caption = 'ToolButton14'
+        ImageIndex = 34
+        Visible = False
+      end
     end
   end
   object EditPnl: TPanel
     Left = 0
     Top = 24
     Width = 765
-    Height = 726
+    Height = 733
     Align = alClient
     TabOrder = 2
     object Splitter1: TSplitter
       Left = 454
       Top = 1
       Width = 10
-      Height = 724
+      Height = 731
       Align = alRight
       AutoSnap = False
       Beveled = True
@@ -408,7 +427,7 @@ object EditForm: TEditForm
       Left = 1
       Top = 1
       Width = 453
-      Height = 724
+      Height = 731
       Align = alClient
       BevelOuter = bvNone
       Color = clAppWorkSpace
@@ -425,7 +444,7 @@ object EditForm: TEditForm
       Left = 464
       Top = 1
       Width = 300
-      Height = 724
+      Height = 731
       Align = alRight
       Alignment = taLeftJustify
       BevelOuter = bvNone
@@ -447,13 +466,13 @@ object EditForm: TEditForm
         Left = 0
         Top = 185
         Width = 300
-        Height = 539
+        Height = 546
         Align = alClient
         TabOrder = 0
         OnResize = ControlPanelResize
         DesignSize = (
           300
-          539)
+          546)
         object PageControl: TPageControl
           Left = 1
           Top = 71
@@ -502,7 +521,6 @@ object EditForm: TEditForm
                   Caption = 'ToolBar1'
                   EdgeInner = esNone
                   EdgeOuter = esNone
-                  Flat = True
                   Images = EditorTB
                   TabOrder = 0
                   object tbCopyTriangle: TToolButton
@@ -937,7 +955,6 @@ object EditForm: TEditForm
                     Width = 65
                     Height = 21
                     AutoComplete = False
-                    ItemHeight = 0
                     ItemIndex = 1
                     TabOrder = 0
                     Text = '125'
@@ -957,7 +974,6 @@ object EditForm: TEditForm
                     Width = 65
                     Height = 21
                     AutoComplete = False
-                    ItemHeight = 0
                     TabOrder = 1
                     Text = '15'
                     OnExit = txtValidateValue
@@ -979,7 +995,6 @@ object EditForm: TEditForm
                     Width = 65
                     Height = 21
                     AutoComplete = False
-                    ItemHeight = 0
                     ItemIndex = 3
                     TabOrder = 2
                     Text = '0.1'
@@ -1764,6 +1779,28 @@ object EditForm: TEditForm
             DesignSize = (
               290
               420)
+            object Label4: TLabel
+              Left = 2
+              Top = 8
+              Width = 37
+              Height = 13
+              Caption = 'Search:'
+            end
+            object SpeedButton1: TSpeedButton
+              Left = 268
+              Top = 7
+              Width = 17
+              Height = 17
+              Caption = 'r'
+              Flat = True
+              Font.Charset = SYMBOL_CHARSET
+              Font.Color = clWindowText
+              Font.Height = -11
+              Font.Name = 'Marlett'
+              Font.Style = []
+              ParentFont = False
+              OnClick = btnResetSearchClick
+            end
             object btnLoadVVAR: TButton
               Left = 0
               Top = 392
@@ -1778,10 +1815,9 @@ object EditForm: TEditForm
             end
             object VEVars: TValueListEditor
               Left = 0
-              Top = 0
+              Top = 32
               Width = 290
-              Height = 367
-              Align = alTop
+              Height = 335
               Anchors = [akLeft, akTop, akRight, akBottom]
               DefaultColWidth = 90
               ScrollBars = ssVertical
@@ -1820,6 +1856,15 @@ object EditForm: TEditForm
               Caption = 'Clear'
               TabOrder = 2
               OnClick = bClearClick
+            end
+            object txtSearchBox: TEdit
+              Left = 48
+              Top = 5
+              Width = 217
+              Height = 21
+              Anchors = [akLeft, akTop, akRight]
+              TabOrder = 4
+              OnChange = txtSearchBoxChange
             end
           end
           object TabSheet4: TTabSheet
@@ -2028,8 +2073,8 @@ object EditForm: TEditForm
   end
   object EditPopup: TPopupMenu
     Images = EditorTB
-    Left = 352
-    Top = 40
+    Left = 400
+    Top = 112
     object mnuUndo: TMenuItem
       Caption = 'Undo'
       Enabled = False
@@ -2161,7 +2206,7 @@ object EditForm: TEditForm
     Left = 313
     Top = 40
     Bitmap = {
-      494C010120002200040010001000FFFFFFFFFF10FFFFFFFFFFFFFFFF424D3600
+      494C010120003000180010001000FFFFFFFFFF10FFFFFFFFFFFFFFFF424D3600
       0000000000003600000028000000400000009000000001002000000000000090
       0000000000000000000000000000000000000000000000000000000000000000
       0000000000000000000000000000000000000000000000000000000000000000
@@ -3359,8 +3404,8 @@ object EditForm: TEditForm
   object TrianglePopup: TPopupMenu
     AutoPopup = False
     Images = EditorTB
-    Left = 353
-    Top = 73
+    Left = 329
+    Top = 129
     object mnuReset: TMenuItem
       Caption = 'Reset triangle'
       Hint = 'Reset triangle'

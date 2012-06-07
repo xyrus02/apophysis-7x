@@ -28,7 +28,7 @@ interface
 uses
   Windows, Messages, SysUtils, Classes, Graphics, Controls, Forms, Dialogs,
   StdCtrls, ComCtrls, ExtCtrls, Buttons, Registry, Mask, CheckLst,
-  MMSystem, Translation, PerlRegEx, RegexHelper;
+  MMSystem, Translation, RegexHelper, FileCtrl, StrUtils, ShellAPI, ShlObj;
 
 type
   TOptionsForm = class(TForm)
@@ -36,105 +36,27 @@ type
     btnCancel: TButton;
     OpenDialog: TOpenDialog;
     Label45: TLabel;
+    GroupBox15: TGroupBox;
+    btnBrowseSound: TSpeedButton;
+    btnPlay: TSpeedButton;
+    Label44: TLabel;
+    txtSoundFile: TEdit;
+    chkPlaysound: TCheckBox;
     Tabs: TPageControl;
     GeneralPage: TTabSheet;
+    SpeedButton1: TSpeedButton;
+    pnlJPEGQuality: TPanel;
     chkConfirmDel: TCheckBox;
     chkOldPaletteFormat: TCheckBox;
     chkConfirmExit: TCheckBox;
     chkConfirmStopRender: TCheckBox;
     cbUseTemplate: TCheckBox;
-    EditorPage: TTabSheet;
-    GroupBox1: TGroupBox;
-    chkUseXFormColor: TCheckBox;
-    chkHelpers: TCheckBox;
-    rgReferenceMode: TRadioGroup;
-    GroupBox21: TGroupBox;
-    chkAxisLock: TCheckBox;
-    chkExtendedEdit: TCheckBox;
-    chkXaosRebuild: TCheckBox;
-    DisplayPage: TTabSheet;
-    GroupBox2: TGroupBox;
-    txtLowQuality: TEdit;
-    txtMediumQuality: TEdit;
-    txtHighQuality: TEdit;
-    grpRendering: TGroupBox;
-    txtSampleDensity: TEdit;
-    txtGamma: TEdit;
-    txtBrightness: TEdit;
-    txtVibrancy: TEdit;
-    txtOversample: TEdit;
-    txtFilterRadius: TEdit;
-    txtGammaThreshold: TEdit;
-    GroupBox20: TGroupBox;
-    Label48: TLabel;
-    chkShowTransparency: TCheckBox;
-    chkExtendMainPreview: TCheckBox;
-    cbExtendPercent: TComboBox;
-    RandomPage: TTabSheet;
-    gpNumberOfTransforms: TGroupBox;
-    txtMinXForms: TEdit;
-    txtMaxXforms: TEdit;
-    udMinXforms: TUpDown;
-    udMaxXForms: TUpDown;
-    gpFlameTitlePrefix: TGroupBox;
-    txtRandomPrefix: TEdit;
-    txtBatchSize: TEdit;
-    udBatchSize: TUpDown;
-    gpMutationTransforms: TGroupBox;
-    txtMinMutate: TEdit;
-    txtMaxMutate: TEdit;
-    udMinMutate: TUpDown;
-    udMaxMutate: TUpDown;
-    gpForcedSymmetry: TGroupBox;
-    cmbSymType: TComboBox;
-    txtSymOrder: TEdit;
-    udSymOrder: TUpDown;
-    txtSymNVars: TEdit;
-    udSymNVars: TUpDown;
-    VariationsPage: TTabSheet;
-    btnSetAll: TButton;
-    btnClearAll: TButton;
-    TabSheet1: TTabSheet;
-    GroupBox13: TGroupBox;
-    txtNumtries: TEdit;
-    txtTryLength: TEdit;
-    TabSheet6: TTabSheet;
-    UPRPage: TPageControl;
-    GroupBox11: TGroupBox;
-    txtUPRWidth: TEdit;
-    txtUPRHeight: TEdit;
-    GroupBox9: TGroupBox;
-    txtFIterDensity: TEdit;
-    txtUPRFilterRadius: TEdit;
-    txtUPROversample: TEdit;
-    GroupBox4: TGroupBox;
-    txtFCIdent: TEdit;
-    txtFCFile: TEdit;
-    GroupBox5: TGroupBox;
-    txtFFIdent: TEdit;
-    txtFFFile: TEdit;
-    chkAdjustDensity: TCheckBox;
-    TabSheet2: TTabSheet;
-    GroupBox6: TGroupBox;
-    Label5: TLabel;
-    Label6: TLabel;
-    Label15: TLabel;
-    txtNick: TEdit;
-    txtURL: TEdit;
-    txtPassword: TEdit;
-    GroupBox8: TGroupBox;
-    Label17: TLabel;
-    txtServer: TEdit;
-    PathsPage: TTabSheet;
     cbMissingPlugin: TCheckBox;
     cbEmbedThumbs: TCheckBox;
     chkShowRenderStats: TCheckBox;
     pnlMultithreading: TPanel;
     cbNrTheads: TComboBox;
-    pnlJPEGQuality: TPanel;
-    txtJPEGquality: TComboBox;
     pnlPNGTransparency: TPanel;
-    cbPNGTransparency: TComboBox;
     grpGuidelines: TGroupBox;
     cbGL: TCheckBox;
     pnlCenterLine: TPanel;
@@ -148,7 +70,25 @@ type
     pnlGoldenRatio: TPanel;
     rgRotationMode: TRadioGroup;
     rgZoomingMode: TRadioGroup;
+    Panel46: TPanel;
+    txtLanguageFile: TComboBox;
+    cbPNGTransparency: TComboBox;
+    txtJPEGquality: TComboBox;
+    cbSinglePrecision: TCheckBox;
+    EditorPage: TTabSheet;
+    GroupBox1: TGroupBox;
+    chkUseXFormColor: TCheckBox;
+    chkHelpers: TCheckBox;
+    rgReferenceMode: TRadioGroup;
+    GroupBox21: TGroupBox;
+    chkAxisLock: TCheckBox;
+    chkExtendedEdit: TCheckBox;
+    chkXaosRebuild: TCheckBox;
     grpEditorColors: TGroupBox;
+    pnlBackground: TPanel;
+    pnlReferenceC: TPanel;
+    pnlHelpers: TPanel;
+    pnlGrid: TPanel;
     pnlBackColor: TPanel;
     shBackground: TShape;
     pnlReference: TPanel;
@@ -159,13 +99,19 @@ type
     shGC1: TShape;
     pnlGridColor2: TPanel;
     shGC2: TShape;
-    pnlBackground: TPanel;
-    pnlReferenceC: TPanel;
-    pnlHelpers: TPanel;
-    pnlGrid: TPanel;
     chkShowAllXforms: TCheckBox;
-    pnlExtension: TPanel;
-    chkUseSmallThumbs: TCheckBox;
+    chkEnableEditorPreview: TCheckBox;
+    Panel48: TPanel;
+    tbEPTransparency: TTrackBar;
+    DisplayPage: TTabSheet;
+    GroupBox2: TGroupBox;
+    Panel8: TPanel;
+    Panel9: TPanel;
+    Panel10: TPanel;
+    txtHighQuality: TEdit;
+    txtMediumQuality: TEdit;
+    txtLowQuality: TEdit;
+    grpRendering: TGroupBox;
     Panel1: TPanel;
     Panel2: TPanel;
     Panel3: TPanel;
@@ -173,31 +119,72 @@ type
     Panel5: TPanel;
     Panel6: TPanel;
     Panel7: TPanel;
-    Panel8: TPanel;
-    Panel9: TPanel;
-    Panel10: TPanel;
+    txtGammaThreshold: TEdit;
+    txtFilterRadius: TEdit;
+    txtOversample: TEdit;
+    txtVibrancy: TEdit;
+    txtBrightness: TEdit;
+    txtGamma: TEdit;
+    txtSampleDensity: TEdit;
+    GroupBox20: TGroupBox;
+    Label48: TLabel;
+    chkShowTransparency: TCheckBox;
+    chkExtendMainPreview: TCheckBox;
+    pnlExtension: TPanel;
+    cbExtendPercent: TComboBox;
+    chkUseSmallThumbs: TCheckBox;
+    RandomPage: TTabSheet;
+    gpNumberOfTransforms: TGroupBox;
+    udMinXforms: TUpDown;
+    udMaxXForms: TUpDown;
+    Panel15: TPanel;
+    Panel16: TPanel;
+    txtMaxXforms: TEdit;
+    txtMinXForms: TEdit;
+    gpFlameTitlePrefix: TGroupBox;
+    udBatchSize: TUpDown;
     chkKeepBackground: TCheckBox;
     Panel11: TPanel;
     Panel12: TPanel;
+    txtBatchSize: TEdit;
+    txtRandomPrefix: TEdit;
+    gpMutationTransforms: TGroupBox;
+    udMinMutate: TUpDown;
+    udMaxMutate: TUpDown;
     Panel13: TPanel;
     Panel14: TPanel;
-    Panel15: TPanel;
-    Panel16: TPanel;
+    txtMaxMutate: TEdit;
+    txtMinMutate: TEdit;
+    gpForcedSymmetry: TGroupBox;
+    udSymOrder: TUpDown;
+    udSymNVars: TUpDown;
     Panel17: TPanel;
     Panel18: TPanel;
     Panel19: TPanel;
-    clbVarEnabled: TCheckListBox;
+    txtSymNVars: TEdit;
+    txtSymOrder: TEdit;
+    cmbSymType: TComboBox;
     grpGradient: TRadioGroup;
     GroupBox16: TGroupBox;
     btnGradientsFile: TSpeedButton;
     txtGradientsFile: TEdit;
+    VariationsPage: TTabSheet;
+    btnSetAll: TButton;
+    btnClearAll: TButton;
+    clbVarEnabled: TCheckListBox;
+    TabSheet1: TTabSheet;
+    GroupBox13: TGroupBox;
+    Panel28: TPanel;
+    Panel29: TPanel;
+    txtTryLength: TEdit;
+    txtNumtries: TEdit;
     GroupBox17: TGroupBox;
     udMinHue: TUpDown;
-    txtMinHue: TEdit;
     Panel20: TPanel;
     Panel21: TPanel;
     udMaxHue: TUpDown;
     txtMaxHue: TEdit;
+    txtMinHue: TEdit;
     GroupBox18: TGroupBox;
     Panel22: TPanel;
     Panel23: TPanel;
@@ -219,60 +206,77 @@ type
     txtMinNodes: TEdit;
     udMaxNodes: TUpDown;
     txtMaxNodes: TEdit;
-    Panel28: TPanel;
-    Panel29: TPanel;
-    Panel30: TPanel;
-    Panel31: TPanel;
-    Panel32: TPanel;
-    Panel33: TPanel;
+    TabSheet6: TTabSheet;
+    chkAdjustDensity: TCheckBox;
+    UPRPage: TPageControl;
+    GroupBox11: TGroupBox;
+    Panel37: TPanel;
+    Panel38: TPanel;
+    txtUPRHeight: TEdit;
+    txtUPRWidth: TEdit;
+    GroupBox9: TGroupBox;
     Panel34: TPanel;
     Panel35: TPanel;
     Panel36: TPanel;
-    Panel37: TPanel;
-    Panel38: TPanel;
+    txtUPROversample: TEdit;
+    txtUPRFilterRadius: TEdit;
+    txtFIterDensity: TEdit;
+    GroupBox4: TGroupBox;
+    Panel30: TPanel;
+    Panel31: TPanel;
+    txtFCFile: TEdit;
+    txtFCIdent: TEdit;
+    GroupBox5: TGroupBox;
+    Panel32: TPanel;
+    Panel33: TPanel;
+    txtFFFile: TEdit;
+    txtFFIdent: TEdit;
+    TabSheet2: TTabSheet;
+    GroupBox6: TGroupBox;
+    Label5: TLabel;
+    Label6: TLabel;
+    Label15: TLabel;
+    txtNick: TEdit;
+    txtURL: TEdit;
+    txtPassword: TEdit;
+    GroupBox8: TGroupBox;
+    Label17: TLabel;
+    txtServer: TEdit;
+    PathsPage: TTabSheet;
+    btnDefGradient: TSpeedButton;
+    btnSmooth: TSpeedButton;
+    SpeedButton2: TSpeedButton;
+    btnRenderer: TSpeedButton;
+    btnHelp: TSpeedButton;
+    Label49: TLabel;
+    btnFindDefaultSaveFile: TSpeedButton;
     chkRememberLastOpen: TCheckBox;
     Panel39: TPanel;
     txtDefParameterFile: TEdit;
-    btnDefGradient: TSpeedButton;
-    txtDefSmoothFile: TEdit;
     Panel40: TPanel;
-    btnSmooth: TSpeedButton;
-    txtLibrary: TEdit;
-    txtRenderer: TEdit;
-    txtHelp: TEdit;
-    SpeedButton2: TSpeedButton;
+    txtDefSmoothFile: TEdit;
     Panel41: TPanel;
     Panel42: TPanel;
     Panel43: TPanel;
-    btnRenderer: TSpeedButton;
-    btnHelp: TSpeedButton;
-    cbFreq: TComboBox;
-    txtDefaultSaveFile: TEdit;
+    txtLibrary: TEdit;
+    txtRenderer: TEdit;
+    txtHelp: TEdit;
     cbEnableAutosave: TCheckBox;
-    Label49: TLabel;
-    btnFindDefaultSaveFile: TSpeedButton;
     Panel44: TPanel;
+    txtDefaultSaveFile: TEdit;
     Panel45: TPanel;
-    GroupBox15: TGroupBox;
-    btnBrowseSound: TSpeedButton;
-    btnPlay: TSpeedButton;
-    Label44: TLabel;
-    txtSoundFile: TEdit;
-    chkPlaysound: TCheckBox;
-    Panel46: TPanel;
-    SpeedButton1: TSpeedButton;
-    txtLanguageFile: TComboBox;
-    chkEnableEditorPreview: TCheckBox;
-    Panel48: TPanel;
-    tbEPTransparency: TTrackBar;
+    cbFreq: TComboBox;
     GroupBox3: TGroupBox;
-    txtChaotica: TEdit;
-    Panel47: TPanel;
     btnChaotica: TSpeedButton;
-    cbC64: TCheckBox;
     btnChaotica64: TSpeedButton;
+    Panel47: TPanel;
+    cbC64: TCheckBox;
+    txtChaotica: TEdit;
     Panel49: TPanel;
     txtChaotica64: TEdit;
+    btnPluginPath: TSpeedButton;
+    Panel50: TPanel;
+    txtPluginFolder: TEdit;
     procedure chkEnableEditorPreviewClick(Sender: TObject);
     procedure btnChaoticaClick(Sender: TObject);
     procedure SpeedButton1Click(Sender: TObject);
@@ -331,6 +335,7 @@ type
     procedure cbEnableAutosaveClick(Sender: TObject);
     procedure btnHelpClick(Sender: TObject);
     procedure cbGLClick(Sender: TObject);
+    procedure btnPluginPathClick(Sender: TObject);
 
   private
     { Private declarations }
@@ -404,8 +409,16 @@ begin
     cbNrTheads.ItemIndex := 0;
     case NrTreads of
       2: cbNrTheads.ItemIndex := 1;
-      4: cbNrTheads.ItemIndex := 2;
-      8: cbNrTheads.ItemIndex := 3;
+      3: cbNrTheads.ItemIndex := 2;
+      4: cbNrTheads.ItemIndex := 3;
+      5: cbNrTheads.ItemIndex := 4;
+      6: cbNrTheads.ItemIndex := 5;
+      7: cbNrTheads.ItemIndex := 6;
+      8: cbNrTheads.ItemIndex := 7;
+      9: cbNrTheads.ItemIndex := 8;
+      10: cbNrTheads.ItemIndex := 9;
+      11: cbNrTheads.ItemIndex := 10;
+      12: cbNrTheads.ItemIndex := 11;
     end;
   end;
 
@@ -418,6 +431,7 @@ begin
   cbUseTemplate.Checked := AlwaysCreateBlankFlame;
   cbMissingPlugin.Checked := WarnOnMissingPlugin;
   cbEmbedThumbs.Checked := EmbedThumbnails;
+  //cbSinglePrecision.Checked := SingleBuffer;
 
   rgRotationMode.ItemIndex := MainForm_RotationMode;
   if PreserveQuality then
@@ -538,7 +552,14 @@ begin
   cbGLClick(nil);
   txtChaotica.Text := ChaoticaPath;
   txtChaotica64.Text := ChaoticaPath64;
+
+  {$ifdef Apo7X64}
+  cbc64.Checked := true;
+  {$else}
   cbC64.Checked := UseX64IfPossible;
+  {$endif}
+
+  txtPluginFolder.Text := PluginPath;
 
   UpdateShapeColors;
 
@@ -609,6 +630,7 @@ begin
   EmbedThumbnails := cbEmbedThumbs.Checked;
   WarnOnMissingPlugin := cbMissingPlugin.Checked;
   LanguageFile := AvailableLanguages.Strings[txtLanguageFile.ItemIndex];
+  //SingleBuffer := cbSinglePrecision.Checked;
 
   MainForm_RotationMode := rgRotationMode.ItemIndex;
   PreserveQuality := (rgZoomingMode.ItemIndex = 0);
@@ -717,17 +739,28 @@ begin
   HelpPath := txtHelp.Text;
   ChaoticaPath := txtChaotica.text;
   ChaoticaPath64 := txtChaotica64.text;
+
+  {$ifdef Apo7X64}
+  {$else}
   UseX64IfPossible := cbC64.Checked;
+  PluginPath := txtPluginFolder.Text;
+  if (RightStr(PluginPath, 1) <> '\') then
+    PluginPath := PluginPath + '\';
+  {$endif}
 
   AutoSaveEnabled := cbEnableAutosave.Checked;
   AutoSavePath := txtDefaultSaveFile.Text;
   AutoSaveFreq := cbFreq.ItemIndex;
 
+
+
+
   MainForm.mnuExportFLame.Enabled := FileExists(flam3Path);
-  MainForm.mnuExportChaotica.Enabled := FileExists(chaoticaPath);
+  //MainForm.mnuExportChaotica.Enabled := FileExists(chaoticaPath);
+  MainForm.mnuExportChaotica.Enabled := FileExists(chaoticaPath + '\32bit\chaotica.exe');
 
   if (warn) then
-    Application.MessageBox(PAnsiChar(TextByKey('options-restartnotice')), PAnsiChar('Apophysis'), MB_ICONWARNING); 
+    Application.MessageBox(PChar(TextByKey('options-restartnotice')), PChar('Apophysis'), MB_ICONWARNING);
 
   Close;
 end;
@@ -948,8 +981,9 @@ begin
 	Panel24.Caption := TextByKey('common-maximum');
 	Panel27.Caption := TextByKey('common-maximum');
 	Label49.Caption := TextByKey('common-minutes');
-  Panel47.Caption := TextByKey('common-filename') + ' (x86)';
-  Panel49.Caption := TextByKey('common-filename') + ' (x64)';
+  Panel47.Caption := TextByKey('common-filename');
+  Panel50.Caption := TextByKey('options-tab-general-pluginpath');
+  //Panel49.Caption := TextByKey('common-filename') + ' (x64)';
   Panel48.Caption := TextByKey('options-tab-editor-previewtransparency');
   cbC64.Caption := textbykey('options-tab-environment-usex64chaotica');
   chkEnableEditorPreview.Caption := TextByKey('options-tab-editor-enablepreview');
@@ -1055,7 +1089,18 @@ begin
 	chkRememberLastOpen.Caption := TextByKey('options-tab-environment-rememberlastopen');
 	cbEnableAutosave.Caption := TextByKey('options-tab-environment-autosave');
 	panel45.Caption := TextByKey('options-tab-environment-savefrequency');
-  
+  cbSinglePrecision.Caption := TextByKey('options-tab-general-singleprecision');
+  grpEditorColors.Caption := TextByKey('editor-tab-color-title');
+
+  {$ifdef Apo7X64}
+  Panel50.Enabled := false;
+  btnPluginPath.Enabled := false;
+  txtPluginFolder.Enabled := false;
+  Panel50.Font.Color := clGrayText;
+  cbc64.Enabled := false;
+  cbc64.Font.Color := clGrayText;
+  {$endif}
+
   for i:= 0 to NRVAR - 1 do begin
     clbVarEnabled.AddItem(varnames(i),nil);
   end;
@@ -1172,6 +1217,28 @@ begin
     sndPlaySound(PChar(txtSoundFile.text), SND_FILENAME or SND_ASYNC)
   else
     sndPlaySound(pchar(SND_ALIAS_SYSTEMASTERISK), SND_ALIAS_ID or SND_NOSTOP or SND_ASYNC);
+end;
+
+procedure TOptionsForm.btnPluginPathClick(Sender: TObject);
+var
+  TitleName : string;
+  lpItemID : PItemIDList;
+  BrowseInfo : TBrowseInfo;
+  DisplayName : array[0..MAX_PATH] of char;
+  TempPath : array[0..MAX_PATH] of char;
+begin
+  FillChar(BrowseInfo, sizeof(TBrowseInfo), #0);
+  BrowseInfo.hwndOwner := self.Handle;
+  BrowseInfo.pszDisplayName := @DisplayName;
+  TitleName := 'Please specify the plugin folder';
+  BrowseInfo.lpszTitle := PChar(TitleName);
+  BrowseInfo.ulFlags := BIF_RETURNONLYFSDIRS;
+  lpItemID := SHBrowseForFolder(BrowseInfo);
+  if lpItemId <> nil then begin
+    SHGetPathFromIDList(lpItemID, TempPath);
+    txtPluginFolder.Text := TempPath;
+    GlobalFreePtr(lpItemID);
+  end;
 end;
 
 procedure TOptionsForm.btnGradientsFileClick(Sender: TObject);
@@ -1327,9 +1394,9 @@ begin
     LanguageInfo(fn, s1, s2);
     if s1 <> '' then begin
       if not DirectoryExists(ExtractFilePath(Application.ExeName) + 'Languages\') then
-        CreateDirectory(PAnsiChar(ExtractFilePath(Application.ExeName) + 'Languages\'), nil);
+        CreateDirectory(PChar(ExtractFilePath(Application.ExeName) + 'Languages\'), nil);
       if (lowercase(ExtractFilePath(fn)) <> lowercase(ExtractFilePath(Application.ExeName) + 'Languages\')) then
-        CopyFile(PAnsiChar(fn), PAnsiChar(fn2), False);
+        CopyFile(PChar(fn), PChar(fn2), False);
       AvailableLanguages.Add(fn2);
       i := AvailableLanguages.Count - 1;
       if (s2 <> '') then
@@ -1337,7 +1404,7 @@ begin
       txtLanguageFile.Items.Add(s1);
       txtLanguageFile.ItemIndex := txtLanguageFile.Items.Count - 1;
     end else begin
-      Application.MessageBox(PAnsichar(TextByKey('common-invalidformat')), PAnsiChar('Apophysis'), MB_ICONERROR);
+      Application.MessageBox(PChar(TextByKey('common-invalidformat')), PChar('Apophysis'), MB_ICONERROR);
     end;
   end;
 end;
@@ -1345,7 +1412,29 @@ end;
 procedure TOptionsForm.btnChaoticaClick(Sender: TObject);
 var fn: string;
 begin
-  OpenDialog.Filter := TextBykey('common-filter-allfiles') + '|*.*';
+
+  // new b. 1550
+  fn := ChaoticaPath;
+  if SelectDirectory(fn, [sdAllowCreate, sdPerformCreate, sdPrompt], 0) then
+  begin
+    txtChaotica.Text := fn;
+    if not FileExists(fn + '\32bit\chaotica.exe') then
+    begin
+      MessageBox(0,
+        PCHAR('Could not find "' + fn + '\32bit\chaotica.exe" - invalid Chaotica 0.45+ path'),
+        PCHAR('Apophysis 7X'), MB_ICONHAND or MB_OK);
+      txtChaotica.Text := ChaoticaPath;
+      fn := ChaoticaPath;
+    end;
+
+    if not FileExists(fn + '\64bit\chaotica.exe') then
+    begin
+      cbc64.Enabled := false;
+      cbc64.Checked := false;
+    end;
+  end;
+
+  {OpenDialog.Filter := TextBykey('common-filter-allfiles') + '|*.*';
   if sender = TSpeedButton(btnChaotica) then
     OpenDialog.InitialDir := ExtractFilePath(ChaoticaPath)
   else
@@ -1356,7 +1445,9 @@ begin
   begin
     if sender = TSpeedButton(btnChaotica) then txtChaotica.text := fn
     else txtChaotica64.text := fn;
-  end;
+  end; }
+
+
 end;
 
 procedure TOptionsForm.chkEnableEditorPreviewClick(Sender: TObject);

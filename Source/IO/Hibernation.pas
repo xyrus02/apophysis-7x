@@ -2,7 +2,7 @@ unit Hibernation;
 
 interface
 
-uses RenderTypes, SysUtils, Windows, Forms, Classes, Binary, ControlPoint;
+uses RenderingCommon, RenderingInterface, SysUtils, Windows, Forms, Classes, Binary, ControlPoint;
 
 const
   HIB_VERSION_MAJOR     = 2;   // Apophysis7X.15

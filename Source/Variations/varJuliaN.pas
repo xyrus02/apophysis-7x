@@ -3,14 +3,17 @@ unit varJuliaN;
 interface
 
 uses
-  BaseVariation, XFormMan, AsmRandom;
+  BaseVariation, XFormMan;
 
 const
   var_name = 'julian';
   var_n_name='julian_power';
   var_c_name='julian_dist';
 
-{$define _ASM_}
+{$ifdef Apo7X64}
+{$else}
+  {$define _ASM_}
+{$endif}
 
 type
   TVariationJulian = class(TBaseVariation)
@@ -81,7 +84,6 @@ end;
 
 ///////////////////////////////////////////////////////////////////////////////
 procedure TVariationJulian.CalcFunction;
-{$ifndef _ASM_}
 var
   r: double;
   sina, cosa: extended;
@@ -91,59 +93,10 @@ begin
 
   FPx^ := FPx^ + r * cosa;
   FPy^ := FPy^ + r * sina;
-{$else}
-asm
-    mov     edx, [eax + FTx]
-    fld     qword ptr [edx]     // FTx
-    fld     qword ptr [edx + 8] // FTy
-    fld     qword ptr [eax + cN]
-    fld     st(2)
-    fmul    st, st
-    fld     st(2)
-    fmul    st, st
-    faddp
-//  ---  x^y = 2^(y*log2(x))
-    fyl2x
-    fld     st
-    frndint
-    fsub    st(1), st
-    fxch    st(1)
-    f2xm1
-    fld1
-    fadd
-    fscale
-    fstp    st(1)
-//  ---
-    fmul    qword ptr [eax + vvar]
-
-    fxch    st(2)
-    fpatan
-    mov     ecx, eax
-    mov     eax, dword ptr [eax + absN]
-    call    AsmRandInt
-    push    eax
-    fild    dword ptr [esp]
-    add     esp, 4
-    fldpi
-    fadd    st, st
-    fmulp
-    faddp
-    fidiv   dword ptr [ecx + N]
-    fsincos
-
-    fmul    st, st(2)
-    mov     edx, [ecx + FPx]
-    fadd    qword ptr [edx] // FPx
-    fstp    qword ptr [edx]
-    fmulp
-    fadd    qword ptr [edx + 8] // FPy
-    fstp    qword ptr [edx + 8]
-    fwait
-{$endif}
+  FPz^ := FPz^ + vvar * FTz^;
 end;
 
 procedure TVariationJulian.CalcPower2;
-{$ifndef _ASM_}
 var
   d: double;
 begin
@@ -157,44 +110,11 @@ begin
     FPx^ := FPx^ - vvar2 * d;
     FPy^ := FPy^ - vvar2 / d * FTy^;
   end;
-{$else}
-asm
-    mov     edx, [eax + FTx]
-    fld     qword ptr [edx + 8] // FTy
-    fld     qword ptr [edx]     // FTx
-    fld     st(1)
-    fmul    st,st
-    fld     st(1)
-    fmul    st,st
-    faddp
-    fsqrt
-    faddp
-    fsqrt
-
-    fld     qword ptr [eax + vvar2]
-    mov     ecx,eax
-    mov     eax,2
-    call    AsmRandInt;
-    shr eax,1
-    jc      @skip
-    fchs
-@skip:
-
-    fmul    st(2),st
-    fmul    st,st(1)
-
-    mov     edx, [ecx + FPx]
-    fadd    qword ptr [edx]
-    fstp    qword ptr [edx]
-    fdivp   st(1),st
-    fadd    qword ptr [edx + 8]
-    fstp    qword ptr [edx + 8]
-    fwait
-{$endif}
+  FPz^ := FPz^ + vvar * FTz^;
 end;
 
 procedure TVariationJulian.CalcPowerMinus2;
-{$ifndef _ASM_}
+
 var
   r, xd: double;
 begin
@@ -211,75 +131,17 @@ begin
     FPx^ := FPx^ - r * xd;
     FPy^ := FPy^ + r * FTy^;
   end;
-{$else}
-asm
-
-    mov     edx, [eax + FTx]
-    fld     qword ptr [edx + 8]
-    fld     qword ptr [edx]
-    fld     st(1)
-    fmul    st,st
-    fld     st(1)
-    fmul    st,st
-    faddp
-    fsqrt
-    fadd    st(1),st
-    fld     st(1)
-    fmul    st,st
-    fld     st(3)
-    fmul    st,st
-    faddp
-    fmulp
-    fsqrt
-
-    fdivr   qword ptr [eax + vvar]
-
-    mov     ecx,eax
-    mov     eax,2
-    call    AsmRandInt;
-    shr eax,1
-    jc      @skip
-    fchs
-@skip:
-
-    fmul    st(1),st
-    fmulp   st(2),st
-
-    mov     edx, [ecx + FPx]
-    fsubr   qword ptr [edx]
-    fstp    qword ptr [edx]
-    fadd    qword ptr [edx + 8]
-    fstp    qword ptr [edx + 8]
-    fwait
-{$endif}
+  FPz^ := FPz^ + vvar * FTz^;
 end;
 
 procedure TVariationJulian.CalcPower1;
-{$ifndef _ASM_}
 begin
   FPx^ := FPx^ + vvar * FTx^;
   FPy^ := FPy^ + vvar * FTy^;
-{$else}
-asm
-    mov     edx, [eax + FTx] //[eax + FTy]
-    fld     qword ptr [edx]
-//    mov     edx, [eax + FTx]
-    fld     qword ptr [edx + 8]
-    fld     qword ptr [eax + vvar]
-    fmul    st(2), st
-    fmulp
-//    mov     edx, [eax + FPx]
-    fadd    qword ptr [edx + 16]
-    fstp    qword ptr [edx + 16]
-//    mov     edx, [eax + FPy]
-    fadd    qword ptr [edx + 24]
-    fstp    qword ptr [edx + 24]
-    fwait
-{$endif}
+  FPz^ := FPz^ + vvar * FTz^;
 end;
 
 procedure TVariationJulian.CalcPowerMinus1;
-{$ifndef _ASM_}
 var
   r: double;
 begin
@@ -287,28 +149,7 @@ begin
 
   FPx^ := FPx^ + r * FTx^;
   FPy^ := FPy^ - r * FTy^;
-{$else}
-asm
-    mov     edx, [eax + FTx]
-    fld     qword ptr [edx + 8] // FTy
-//    mov     edx, [eax + FTx]
-    fld     qword ptr [edx]     // FTx
-    fld     st(1)
-    fmul    st, st
-    fld     st(1)
-    fmul    st, st
-    faddp
-    fdivr   qword ptr [eax + vvar]
-    fmul    st(2), st
-    fmulp
-//    mov     edx, [eax + FPx]
-    fadd    qword ptr [edx + 16] // FPx
-    fstp    qword ptr [edx + 16] // FPx
-//    mov     edx, [eax + FPy]
-    fsubr   qword ptr [edx + 24] // FPy
-    fstp    qword ptr [edx + 24] // FPy
-    fwait
-{$endif}
+  FPz^ := FPz^ + vvar * FTz^;
 end;
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -386,6 +227,6 @@ end;
 
 ///////////////////////////////////////////////////////////////////////////////
 initialization
-  RegisterVariation(TVariationClassLoader.Create(TVariationJulian), false, false);
+  RegisterVariation(TVariationClassLoader.Create(TVariationJulian), true, false);
 end.
 

@@ -1,9 +1,10 @@
 object LoadForm: TLoadForm
   Left = 443
   Top = 274
-  Width = 552
-  Height = 388
+  Width = 678
+  Height = 426
   ActiveControl = Button1
+  Anchors = [akLeft, akTop, akRight, akBottom]
   Caption = 'Messages'
   Color = clBtnFace
   Constraints.MinHeight = 275
@@ -53,23 +54,24 @@ object LoadForm: TLoadForm
     0000000100000001000000010000000100000001000000010000FFFF0000}
   OldCreateOrder = False
   OnCreate = FormCreate
+  OnResize = FormResize
   DesignSize = (
-    544
-    361)
+    670
+    399)
   PixelsPerInch = 96
   TextHeight = 13
   object Bevel1: TBevel
-    Left = 4
-    Top = 4
-    Width = 536
-    Height = 311
+    Left = 7
+    Top = 7
+    Width = 533
+    Height = 308
     Anchors = [akLeft, akTop, akRight, akBottom]
     Style = bsRaised
   end
   object Button1: TButton
-    Left = 424
-    Top = 328
-    Width = 113
+    Left = 527
+    Top = 359
+    Width = 112
     Height = 25
     Anchors = [akRight, akBottom]
     Caption = 'Close'
@@ -78,9 +80,9 @@ object LoadForm: TLoadForm
   end
   object CheckBox1: TCheckBox
     Left = 8
-    Top = 320
-    Width = 281
-    Height = 41
+    Top = 360
+    Width = 384
+    Height = 24
     Anchors = [akLeft, akRight, akBottom]
     Caption = 'Automatically open this window when loading flame'
     TabOrder = 1
@@ -88,8 +90,8 @@ object LoadForm: TLoadForm
     OnClick = CheckBox1Click
   end
   object Button2: TButton
-    Left = 304
-    Top = 328
+    Left = 406
+    Top = 359
     Width = 113
     Height = 25
     Anchors = [akRight, akBottom]
@@ -102,13 +104,12 @@ object LoadForm: TLoadForm
     Top = 8
     Width = 528
     Height = 303
-    Anchors = [akLeft, akTop, akRight, akBottom]
     BevelOuter = bvRaised
     BorderStyle = bsNone
     Color = clBtnFace
     Font.Charset = DEFAULT_CHARSET
     Font.Color = clBtnText
-    Font.Height = -11
+    Font.Height = -12
     Font.Name = 'Courier New'
     Font.Style = []
     ParentFont = False

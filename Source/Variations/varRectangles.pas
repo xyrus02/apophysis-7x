@@ -81,24 +81,28 @@ procedure TVariationRectangles.CalcFunction;
 begin
   FPx^ := FPx^ + vvar * ((2*floor(FTx^/FRectanglesX) + 1)*FRectanglesX - FTx^);
   FPy^ := FPy^ + vvar * ((2*floor(FTy^/FRectanglesY) + 1)*FRectanglesY - FTy^);
+  FPz^ := FPz^ + vvar * FTz^;
 end;
 
 procedure TVariationRectangles.CalcZeroX;
 begin
   FPx^ := FPx^ + vvar * FTx^;
   FPy^ := FPy^ + vvar * ((2*floor(FTy^/FRectanglesY) + 1)*FRectanglesY - FTy^);
+  FPz^ := FPz^ + vvar * FTz^;
 end;
 
 procedure TVariationRectangles.CalcZeroY;
 begin
   FPx^ := FPx^ + vvar * ((2*floor(FTx^/FRectanglesX) + 1)*FRectanglesX - FTx^);
   FPy^ := FPy^ + vvar * FTy^;
+  FPz^ := FPz^ + vvar * FTz^;
 end;
 
 procedure TVariationRectangles.CalcZeroXY;
 begin
   FPx^ := FPx^ + vvar * FTx^;
   FPy^ := FPy^ + vvar * FTy^;
+  FPz^ := FPz^ + vvar * FTz^;
 end;
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -167,5 +171,5 @@ end;
 
 ///////////////////////////////////////////////////////////////////////////////
 initialization
-  RegisterVariation(TVariationClassLoader.Create(TVariationRectangles), false, false);
+  RegisterVariation(TVariationClassLoader.Create(TVariationRectangles), true, false);
 end.

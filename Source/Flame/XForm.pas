@@ -30,6 +30,10 @@ unit XForm;
 interface
 
 uses
+{$ifdef Apo7X64}
+{$else}
+AsmRandom,
+{$endif}
   XFormMan, BaseVariation;
 
 const
@@ -46,7 +50,7 @@ const
 
 type
   TCPpoint = record
-    x, y, z, c: double;
+    x, y, z, c, o: double;
   end;
   PCPpoint = ^TCPpoint;
 
@@ -61,7 +65,10 @@ type
 
   TMatrix = array[0..2, 0..2] of double;
 
-{$define _ASM_}
+{$ifdef Apo7X64}
+{$else}
+  //{$define _ASM_}
+{$endif}
 
 type
   TXForm = class
@@ -167,7 +174,7 @@ type
     procedure PreRotateX;
     procedure PreRotateY;
 
-    procedure Linear;
+    procedure Flatten;
     procedure ZScale;
     procedure ZTranslate;
     procedure ZCone;
@@ -218,7 +225,7 @@ type
 implementation
 
 uses
-  SysUtils, Math, StrUtils, AsmRandom;
+  SysUtils, Math, StrUtils;
 
 const
   EPS: double = 1E-300;
@@ -241,14 +248,6 @@ begin
   vars[index] := value;
 end;
 
-procedure SinCos(const Theta: double; var Sin, Cos: double); // to avoid using 'extended' type
-asm
-    FLD     Theta
-    FSINCOS
-    FSTP    qword ptr [edx]    // Cos
-    FSTP    qword ptr [eax]    // Sin
-    FWAIT
-end;
 
 { TXForm }
 
@@ -364,7 +363,9 @@ begin
   // Normal variations
   for i := 0 to NrVar - 1 do begin
     if (vars[i] <> 0.0) then begin
-      if (LeftStr(Varnames(i), 4) = 'pre_') or (LeftStr(Varnames(i), 5) = 'post_') then continue;
+      if (LeftStr(Varnames(i), 4) = 'pre_') or
+        (LeftStr(Varnames(i), 5) = 'post_') or
+        (Varnames(i) = 'flatten') then continue;
 
       FCalcFunctionList[FNrFunctions] := FFunctionList[i];
       Inc(FNrFunctions);
@@ -373,7 +374,9 @@ begin
 
   // Post- variations
   for i := 0 to NrVar - 1 do begin
-    if (vars[i] <> 0.0) and (LeftStr(Varnames(i), 5) = 'post_') then begin
+    if (vars[i] <> 0.0) and (
+      (LeftStr(Varnames(i), 5) = 'post_') or
+      (Varnames(i) = 'flatten')) then begin
       FCalcFunctionList[FNrFunctions] := FFunctionList[i];
       Inc(FNrFunctions);
     end;
@@ -605,25 +608,9 @@ asm
 end;
 
 ///////////////////////////////////////////////////////////////////////////////
-procedure TXForm.Linear;
-{$ifndef _ASM_}
+procedure TXForm.Flatten;
 begin
-  FPx := FPx + vars[1] * FTx;
-  FPy := FPy + vars[1] * FTy;
-{$else}
-asm
-    mov     edx, [eax + vars]
-    fld     qword ptr [edx + 1*8]
-    fld     qword ptr [eax + FTx]
-    fmul    st, st(1)
-    fadd    qword ptr [eax + FPx]
-    fstp    qword ptr [eax + FPx]
-    fld     qword ptr [eax + FTy]
-    fmulp
-    fadd    qword ptr [eax + FPy]
-    fstp    qword ptr [eax + FPy]
-    fwait
-{$endif}
+  FPz := 0;
 end;
 
 //--1--////////////////////////////////////////////////////////////////////////
@@ -632,10 +619,15 @@ procedure TXForm.Sinusoidal;
 begin
   FPx := FPx + vars[2] * sin(FTx);
   FPy := FPy + vars[2] * sin(FTy);
+  FPz := FPz + FTz * vars[2];
 {$else}
 asm
     mov     edx, [eax + vars]
     fld     qword ptr [edx + 2*8]
+    fld     qword ptr [eax + FTz]
+    fmul    st, st(1)
+    fadd    qword ptr [eax + FPz]
+    fstp    qword ptr [eax + FPz]
     fld     qword ptr [eax + FTx]
     fsin
     fmul    st, st(1)
@@ -659,8 +651,17 @@ begin
   r := vars[3] / (sqr(FTx) + sqr(FTy) + EPS);
   FPx := FPx + FTx * r;
   FPy := FPy + FTy * r;
+  FPz := FPz + FTz * vars[3];
 {$else}
 asm
+    mov     edx, [eax + vars]
+    fld     qword ptr [edx + 3*8]
+    fld     qword ptr [eax + FTz]
+    fmul    st, st(1)
+    fadd    qword ptr [eax + FPz]
+    fstp    qword ptr [eax + FPz]
+    fstp    st
+
     fld     qword ptr [eax + FTy]
     fld     qword ptr [eax + FTx]
     fld     st(1)
@@ -669,7 +670,6 @@ asm
     fmul    st, st
     faddp
     fadd    qword ptr [EPS]
-    mov     edx, [eax + vars]
     fdivr   qword ptr [edx + 3*8]
     fmul    st(2), st
     fmulp
@@ -683,203 +683,33 @@ end;
 
 //--3--////////////////////////////////////////////////////////////////////////
 procedure TXForm.Swirl;
-{$ifndef _ASM_}
-{
-  r2 := FTx * FTx + FTy * FTy;
-  c1 := sin(r2);
-  c2 := cos(r2);
-  FPx := FPx + vars[3] * (c1 * FTx - c2 * FTy);
-  FPy := FPy + vars[3] * (c2 * FTx + c1 * FTy);
-}
 var
   sinr, cosr: double;
 begin
   SinCos(sqr(FTx) + sqr(FTy), sinr, cosr);
   FPx := FPx + vars[4] * (sinr * FTx - cosr * FTy);
   FPy := FPy + vars[4] * (cosr * FTx + sinr * FTy);
-{$else}
-asm
-    mov     edx, [eax + vars]
-    fld     qword ptr [edx + 4*8]
-    fld     qword ptr [eax + FTy]
-    fld     qword ptr [eax + FTx]
-    fld     st(1)
-    fmul    st, st
-    fld     st(1)
-    fmul    st, st
-    faddp
-    fsincos
-    fld     st(1)
-    fmul    st, st(3)
-    fld     st(1)
-    fmul    st, st(5)
-    fsubp   st(1), st
-    fmul    st, st(5)
-    fadd    qword ptr [eax + FPx]
-    fstp    qword ptr [eax + FPx]
-    fmulp    st(2), st
-    fmulp    st(2), st
-    faddp
-    fmulp
-    fadd    qword ptr [eax + FPy]
-    fstp    qword ptr [eax + FPy]  
-    fwait
-{$endif}
+  FPz := FPz + FTz * vars[4];
 end;
 
 //--4--////////////////////////////////////////////////////////////////////////
 procedure TXForm.Horseshoe;
-{$ifndef _ASM_}
-// --Z-- he he he...
-//                       FTx/FLength   FTy/FLength
-//  FPx := FPx + vars[4] * (FSinA * FTx - FCosA * FTy);
-//  FPy := FPy + vars[4] * (FCosA* FTx + FSinA * FTy);
 var
   r: double;
 begin
   r := vars[5] / (sqrt(sqr(FTx) + sqr(FTy)) + EPS);
   FPx := FPx + (FTx - FTy) * (FTx + FTy) * r;
   FPy := FPy + (2*FTx*FTy) * r;
-{$else}
-asm
-    fld     qword ptr [eax + FTx]
-    fld     qword ptr [eax + FTy]
-    fld     st(1)
-    fmul    st, st
-    fld     st(1)
-    fmul    st, st
-    faddp
-    fsqrt
-    fadd    qword ptr [EPS]
-    mov     edx, [eax + vars]
-    fdivr   qword ptr [edx + 5*8]
-    fld     st(2)
-    fadd    st, st(2)
-    fld     st(3)
-    fsub    st, st(3)
-    fmulp
-    fmul    st, st(1)
-    fadd    qword ptr [eax + FPx]
-    fstp    qword ptr [eax + FPx]
-    fmulp
-    fmulp
-    fadd    st, st
-    fadd    qword ptr [eax + FPy]
-    fstp    qword ptr [eax + FPy]
-    fwait
-{$endif}
+  FPz := FPz + FTz * vars[5];
 end;
 
 //--5--////////////////////////////////////////////////////////////////////////
 procedure TXForm.Polar;
-{$ifndef _ASM_}
-{
-var
-  ny: double;
-  rPI: double;
-begin
-  rPI := 0.31830989;
-  ny := sqrt(FTx * FTx + FTy * FTy) - 1.0;
-  FPx := FPx + vars[5] * (FAngle*rPI);
-  FPy := FPy + vars[5] * ny;
-}
 begin
   FPx := FPx + polar_vpi * FAngle; //vars[5] * FAngle / PI;
   FPy := FPy + vars[6] * (sqrt(sqr(FTx) + sqr(FTy)) - 1.0);
-{$else}
-asm
-    fld     qword ptr [eax + FAngle]
-    fmul    qword ptr [eax + polar_vpi]
-    fadd    qword ptr [eax + FPx]
-    fstp    qword ptr [eax + FPx]
-    fld     qword ptr [eax + FTx]
-    fmul    st, st
-    fld     qword ptr [eax + FTy]
-    fmul    st, st
-    faddp
-    fsqrt
-    fld1
-    fsubp   st(1), st
-    mov     edx, [eax + vars]
-    fmul    qword ptr [edx + 6*8]
-    fadd    qword ptr [eax + FPy]
-    fstp    qword ptr [eax + FPy]
-    fwait
-{$endif}
+  FPz := FPz + FTz * vars[6];
 end;
-
-(*
-//--6--////////////////////////////////////////////////////////////////////////
-procedure TXForm.FoldedHandkerchief;
-{$ifndef _ASM_}
-var
-  r: double;
-begin
-  r := sqrt(sqr(FTx) + sqr(FTy));
-  FPx := FPx + vars[6] * sin(FAngle + r) * r;
-  FPy := FPy + vars[6] * cos(FAngle - r) * r;
-{$else}
-asm
-    mov     edx, [eax + vars]
-    fld     qword ptr [edx + 6*8]
-    fld     qword ptr [eax + FTx]
-    fmul    st, st
-    fld     qword ptr [eax + FTy]
-    fmul    st, st
-    faddp
-    fsqrt
-    fld     qword ptr [eax + FAngle]
-    fld     st
-    fadd    st, st(2)
-    fsin
-    fmul    st, st(2)
-    fmul    st, st(3)
-    fadd    qword ptr [eax + FPx]
-    fstp    qword ptr [eax + FPx]
-    fsub    st, st(1)
-    fcos
-    fmulp
-    fmulp
-    fadd    qword ptr [eax + FPy]
-    fstp    qword ptr [eax + FPy]
-    fwait
-{$endif}
-end;
-
-//--7--////////////////////////////////////////////////////////////////////////
-procedure TXForm.Heart;
-{$ifndef _ASM_}
-var
-  r, sinr, cosr: double;
-begin
-  r := sqrt(sqr(FTx) + sqr(FTy));
-  Sincos(r*FAngle, sinr, cosr);
-  r := r * vars[7];
-  FPx := FPx + r * sinr;
-  FPy := FPy - r * cosr;
-{$else}
-asm
-    mov     edx, [eax + vars]
-    fld     qword ptr [edx + 7*8]
-    fld     qword ptr [eax + FTx]
-    fmul    st, st
-    fld     qword ptr [eax + FTy]
-    fmul    st, st
-    faddp
-    fsqrt
-    fmul    st(1), st
-    fmul    qword ptr [eax + FAngle]
-    fsincos
-    fmul    st, st(2)
-    fsubr   qword ptr [eax + FPy]
-    fstp    qword ptr [eax + FPy]
-    fmulp
-    fadd    qword ptr [eax + FPx]
-    fstp    qword ptr [eax + FPx]
-    fwait
-{$endif}
-end;
-*)
 
 //--6--////////////////////////////////////////////////////////////////////////
 procedure TXForm.Disc;
@@ -891,14 +721,19 @@ begin
   r := disc_vpi * FAngle; //vars[7] * FAngle / PI;
   FPx := FPx + sinr * r;
   FPy := FPy + cosr * r;
+  FPz := FPz + FTz * vars[7];
 {$else}
 asm
+    mov     edx, [eax + vars]
+    fld     qword ptr [edx + 7*8]
+    fld     qword ptr [eax + FTz]
+    fmul    st, st(1)
+    fadd    qword ptr [eax + FPz]
+    fstp    qword ptr [eax + FPz]
+    fstp    st
+
     fld     qword ptr [eax + disc_vpi]
-//    mov     edx, [eax + vars]
-//    fld     qword ptr [edx + 7*8]
     fmul    qword ptr [eax + FAngle]
-//    fldpi
-//    fdivp   st(1), st
     fld     qword ptr [eax + FTx]
     fmul    st, st
     fld     qword ptr [eax + FTy]
@@ -920,7 +755,6 @@ end;
 
 //--7--////////////////////////////////////////////////////////////////////////
 procedure TXForm.Spiral;
-{$ifndef _ASM_}
 var
   r, sinr, cosr: double;
 begin
@@ -929,707 +763,37 @@ begin
   r := vars[8] / r;
   FPx := FPx + (FCosA + sinr) * r;
   FPy := FPy + (FsinA - cosr) * r;
-{$else}
-asm
-    mov     edx, [eax + vars]
-    fld     qword ptr [edx + 8*8]
-    fld     qword ptr [eax + FLength]
-    fadd    qword ptr [EPS]
-    fdiv    st(1), st
-    fsincos
-    fsubr   qword ptr [eax + FSinA]
-    fmul    st, st(2)
-    fadd    qword ptr [eax + FPy]
-    fstp    qword ptr [eax + FPy]
-    fadd    qword ptr [eax + FCosA]
-    fmulp
-    fadd    qword ptr [eax + FPx]
-    fstp    qword ptr [eax + FPx]
-    fwait
-{$endif}
+  FPz := FPz + FTz * vars[8];
 end;
 
 //--10--///////////////////////////////////////////////////////////////////////
 procedure TXForm.Hyperbolic;
-{$ifndef _ASM_}
-{
-var
-  r: double;
-begin
-  r := Flength + 1E-6;
-  FPx := FPx + vars[10] * FSinA / r;
-  FPy := FPy + vars[10] * FCosA * r;
-}
-// --Z-- Yikes!!! SOMEONE SHOULD GO BACK TO SCHOOL!!!!!!!
-// Now watch and learn how to do this WITHOUT calculating sin and cos:
 begin
   FPx := FPx + vars[9] * FTx / (sqr(FTx) + sqr(FTy) + EPS);
   FPy := FPy + vars[9] * FTy;
-{$else}
-asm
-    mov     edx, [eax + vars]
-    fld     qword ptr [edx + 9*8]
-    fld     qword ptr [eax + FTy]
-    fld     qword ptr [eax + FTx]
-    fld     st(1)
-    fmul    st, st
-    fld     st(1)
-    fmul    st, st
-    faddp
-    fadd    qword ptr [EPS]
-    fdivp   st(1), st
-    fmul    st, st(2)
-    fadd    qword ptr [eax + FPx]
-    fstp    qword ptr [eax + FPx]
-    fmulp
-    fadd    qword ptr [eax + FPy]
-    fstp    qword ptr [eax + FPy]
-    fwait
-{$endif}
+  FPz := FPz + FTz * vars[9];
 end;
 
 //--11--///////////////////////////////////////////////////////////////////////
 procedure TXForm.Square;
-{$ifndef _ASM_}
 var
   sinr, cosr: double;
 begin
   SinCos(FLength, sinr, cosr);
   FPx := FPx + vars[10] * FSinA * cosr;
   FPy := FPy + vars[10] * FCosA * sinr;
-{$else}
-asm
-    mov     edx, [eax + vars]
-    fld     qword ptr [edx + 10*8]
-    fld     qword ptr [eax + FLength]
-    fsincos
-    fmul    qword ptr [eax + FSinA]
-    fmul    st, st(2)
-    fadd    qword ptr [eax + FPx]
-    fstp    qword ptr [eax + FPx]
-    fmul    qword ptr [eax + FCosA]
-    fmulp
-    fadd    qword ptr [eax + FPy]
-    fstp    qword ptr [eax + FPy]
-    fwait
-{$endif}
+  FPz := FPz + FTz * vars[10];
 end;
 
-(*
 //--12--///////////////////////////////////////////////////////////////////////
-procedure TXForm.Ex;
-{$ifndef _ASM_}
-var
-  r: double;
-  n0, n1, m0, m1: double;
-begin
-  r := sqrt(sqr(FTx) + sqr(FTy));
-  n0 := sin(FAngle + r);
-  n1 := cos(FAngle - r);
-  m0 := sqr(n0) * n0;
-  m1 := sqr(n1) * n1;
-  r := r * vars[12];
-  FPx := FPx + r * (m0 + m1);
-  FPy := FPy + r * (m0 - m1);
-{$else}
-asm
-    fld     qword ptr [eax + FTx]
-    fmul    st, st
-    fld     qword ptr [eax + FTy]
-    fmul    st, st
-    faddp
-    fsqrt
-    fld     qword ptr [eax + FAngle]
-    fld     st
-    fadd    st, st(2)
-    fsin
-    fld     st
-    fld     st
-    fmulp
-    fmulp
-    fxch    st(1)
-    fsub    st, st(2)
-    fcos
-    fld     st
-    fld     st
-    fmulp
-    fmulp
-    mov     edx, [eax + vars]
-    fld     qword ptr [edx + 12*8]
-    fmulp   st(3), st
-    fld     st
-    fadd    st, st(2)
-    fmul    st, st(3)
-    fadd    qword ptr [eax + FPx]
-    fstp    qword ptr [eax + FPx]
-    fsubp   st(1), st
-    fmulp
-    fadd    qword ptr [eax + FPy]
-    fstp    qword ptr [eax + FPy]
-    fwait
-{$endif}
-end;
-
-//--13--///////////////////////////////////////////////////////////////////////
-procedure TXForm.Julia;
-{$ifndef _ASM_}
-var
-  r, sina, cosa: double;
-begin
-  SinCos(FAngle/2 + pi*random(2), sina, cosa);
-  r := vars[13] * sqrt(sqrt(sqr(FTx) + sqr(FTy)));
-  FPx := FPx + r * cosa;
-  FPy := FPy + r * sina;
-{$else}
-asm
-    fld     qword ptr [ebx + FAngle] // assert: self is in ebx
-    fld1
-    fld1
-    faddp
-    fdivp   st(1), st
-    mov     eax, 2
-    call    System.@RandInt
-
-    shr     eax, 1
-    jnc     @skip
-    fldpi
-    faddp
-@skip:
-{
-    push    eax
-    fild    dword ptr [esp]
-    add     esp, 4
-    fldpi
-    fmulp
-    faddp
-}
-    fsincos
-    fld     qword ptr [ebx + FTx]
-    fmul    st, st
-    fld     qword ptr [ebx + FTy]
-    fmul    st, st
-    faddp
-    fsqrt
-    fsqrt
-    mov     edx, [ebx + vars]
-    fmul    qword ptr [edx + 13*8]
-    fmul    st(2), st
-    fmulp   st(1), st
-    fadd    qword ptr [ebx + FPx]
-    fstp    qword ptr [ebx + FPx]
-    fadd    qword ptr [ebx + FPy]
-    fstp    qword ptr [ebx + FPy]
-    fwait
-{$endif}
-end;
-
-//--14--///////////////////////////////////////////////////////////////////////
-procedure TXForm.Bent;
-{$ifndef _ASM_}
-{
-var
-  nx, ny: double;
-begin
-  nx := FTx;
-  ny := FTy;
-  if (nx < 0) and (nx > -1E100) then
-     nx := nx * 2;
-  if ny < 0 then
-    ny := ny / 2;
-  FPx := FPx + vars[14] * nx;
-  FPy := FPy + vars[14] * ny;
-}
-// --Z-- This variation is kinda weird...
-begin
-  if FTx < 0 then
-    FPx := FPx + vars[14] * (FTx*2)
-  else
-    FPx := FPx + vars[14] * FTx;
-  if FTy < 0 then
-    FPy := FPy + vars[14] * (FTy/2)
-  else
-    FPy := FPy + vars[14] * FTy;
-{$else}
-// haven't noticed any improvement here... :-/
-asm
-    mov     edx, [eax + vars]
-    fld     qword ptr [edx + 14*8]
-    fld     qword ptr [ebx + FTx]
-    ftst
-    fstsw   ax
-    sahf
-    ja      @posx
-    fadd    st, st
-@posx:
-    fmul    st, st(1)
-    fadd    qword ptr [ebx + FPx]
-    fstp    qword ptr [ebx + FPx]
-    fld     qword ptr [ebx + FTy]
-    ftst
-    fstsw   ax
-    sahf
-    ja      @posy
-    fld1
-    fadd    st, st
-    fdivp   st(1), st
-@posy:
-    fmulp
-    fadd    qword ptr [ebx + FPy]
-    fstp    qword ptr [ebx + FPy]
-    fwait
-{$endif}
-end;
-
-//--15--///////////////////////////////////////////////////////////////////////
-procedure TXForm.Waves;
-{$ifndef _ASM_}
-{
-var
-  dx,dy,nx,ny: double;
-begin
-  dx := c20;
-  dy := c21;
-  nx := FTx + c10 * sin(FTy / ((dx * dx) + EPS));
-  ny := FTy + c11 * sin(FTx / ((dy * dy) + EPS));
-  FPx := FPx + vars[15] * nx;
-  FPy := FPy + vars[15] * ny;
-}
-begin
-  //FPx := FPx + vars[15] * (FTx + c10 * sin(FTy / (sqr(c20) + EPS)));
-  //FPy := FPy + vars[15] * (FTy + c11 * sin(FTx / (sqr(c21) + EPS)));
-  FPx := FPx + vars[15] * (FTx + c10 * sin(FTy * waves_f1));
-  FPy := FPy + vars[15] * (FTy + c11 * sin(FTx * waves_f2));
-{$else}
-asm
-    mov     edx, [eax + vars]
-    fld     qword ptr [edx + 15*8]
-    fld     qword ptr [eax + FTy]
-    fld     qword ptr [eax + FTx]
-    fld     st(1)
-    fmul    qword ptr [eax + waves_f1]
-    fsin
-    fmul    qword ptr [eax + c10]
-    fadd    st, st(1)
-    fmul    st, st(3)
-    fadd    qword ptr [eax + FPx]
-    fstp    qword ptr [eax + FPx]
-    fmul    qword ptr [eax + waves_f2]
-    fsin
-    fmul    qword ptr [eax + c11]
-    faddp
-    fmulp
-    fadd    qword ptr [eax + FPy]
-    fstp    qword ptr [eax + FPy]
-    fwait
-{$endif}
-end;
-
-//--16--///////////////////////////////////////////////////////////////////////
-procedure TXForm.Fisheye;
-{$ifndef _ASM_}
-var
-  r: double;
-begin
-{
-//  r := sqrt(FTx * FTx + FTy * FTy);
-//  a := arctan2(FTx, FTy);
-//  r := 2 * r / (r + 1);
-  r := 2 * Flength / (Flength + 1);
-  FPx := FPx + vars[16] * r * FCosA;
-  FPy := FPy + vars[16] * r * FSinA;
-}
-// --Z-- and again, sin & cos are NOT necessary here:
-  r := 2 * vars[16] / (sqrt(sqr(FTx) + sqr(FTy)) + 1);
-// by the way, now we can clearly see that the original author messed X and Y:
-  FPx := FPx +  r * FTy;
-  FPy := FPy +  r * FTx;
-{$else}
-asm
-    mov     edx, [eax + vars]
-    fld     qword ptr [edx + 16*8]
-    fadd    st, st
-    fld     qword ptr [eax + FTx]
-    fld     qword ptr [eax + FTy]
-    fld     st(1)
-    fmul    st, st
-    fld     st(1)
-    fmul    st, st
-    faddp
-    fsqrt
-    fld1
-    faddp
-    fdivp   st(3), st
-    fmul    st, st(2)
-    fadd    qword ptr [eax + FPx]
-    fstp    qword ptr [eax + FPx]
-    fmulp
-    fadd    qword ptr [eax + FPy]
-    fstp    qword ptr [eax + FPy]
-    fwait
-{$endif}
-end;
-
-//--17--///////////////////////////////////////////////////////////////////////
-procedure TXForm.Popcorn;
-{$ifndef _ASM_}
-var
-  dx, dy: double;
-//  nx, ny: double;
-begin
-  dx := tan(3 * FTy);
-  if (dx <> dx) then
-    dx := 0.0;                  // < probably won't work in Delphi
-  dy := tan(3 * FTx);            // NAN will raise an exception...
-  if (dy <> dy) then
-    dy := 0.0;                  // remove for speed?
-//  nx := FTx + c20 * sin(dx);
-//  ny := FTy + c21 * sin(dy);
-//  FPx := FPx + vars[17] * nx;
-//  FPy := FPy + vars[17] * ny;
-  FPx := FPx + vars[17] * (FTx + c20 * sin(dx));
-  FPy := FPy + vars[17] * (FTy + c21 * sin(dy));
-{$else}
-asm
-    mov     edx, [eax + vars]
-    fld     qword ptr [edx + 17*8]
-    fld     qword ptr [eax + FTy]
-    fld     qword ptr [eax + FTx]
-    fld     st(1)
-    fld     st
-    fld     st
-    faddp
-    faddp
-    fptan
-    fstp    st
-    fsin
-    fmul    qword ptr [eax + c20]
-    fadd    st, st(1)
-    fmul    st, st(3)
-    fadd    qword ptr [ebx + FPx]
-    fstp    qword ptr [ebx + FPx]
-    fld     st
-    fld     st
-    faddp
-    faddp
-    fptan
-    fstp    st
-    fsin
-    fmul    qword ptr [eax + c21]
-    faddp
-    fmulp
-    fadd    qword ptr [ebx + FPy]
-    fstp    qword ptr [ebx + FPy]
-    fwait
-{$endif}
-end;
-
-//--18--///////////////////////////////////////////////////////////////////////
-procedure TXForm.Exponential;
-{$ifndef _ASM_}
-var
-  d: double;
-  sinr, cosr: double;
-begin
-  SinCos(PI * FTy, sinr, cosr);
-  d := vars[18] * exp(FTx - 1); // --Z-- (e^x)/e = e^(x-1)
-  FPx := FPx +  cosr * d;
-  FPy := FPy +  sinr * d;
-{$else}
-asm
-    fld     qword ptr [eax + FTx]
-    fld1
-    fsubp   st(1), st
-// --Z-- here goes exp(x) code from System.pas
-    FLDL2E
-    FMUL
-    FLD     ST(0)
-    FRNDINT
-    FSUB    ST(1), ST
-    FXCH    ST(1)
-    F2XM1
-    FLD1
-    FADD
-    FSCALE
-    FSTP    ST(1)
-// -----
-    mov     edx, [eax + vars]
-    fmul    qword ptr [edx + 18*8]
-    fld     qword ptr [eax + FTy]
-    fldpi
-    fmulp
-    fsincos
-    fmul    st, st(2)
-    fadd    qword ptr [ebx + FPx]
-    fstp    qword ptr [ebx + FPx]
-    fmulp
-    fadd    qword ptr [ebx + FPy]
-    fstp    qword ptr [ebx + FPy]
-    fwait
-{$endif}
-end;
-
-//--19--///////////////////////////////////////////////////////////////////////
-procedure TXForm.Power;
-{$ifndef _ASM_}
-var
-  r: double;
-begin
-  r := vars[19] * Math.Power(FLength, FSinA);
-  FPx := FPx + r * FCosA;
-  FPy := FPy + r * FSinA;
-{$else}
-// --Z-- x^y = 2^(y*log2(x))
-asm
-    fld     qword ptr [ebx + FSinA]
-    fld     st
-    fld     qword ptr [ebx + FLength]
-    fyl2x
-    fld     st
-    frndint
-    fsub    st(1), st
-    fxch    st(1)
-    f2xm1
-    fld1
-    fadd
-    fscale
-    fstp    st(1)
-    mov     edx, [eax + vars]
-    fmul    qword ptr [edx + 19*8]
-    fmul    st(1), st
-    fmul    qword ptr [ebx + FCosA]
-    fadd    qword ptr [ebx + FPx]
-    fstp    qword ptr [ebx + FPx]
-    fadd    qword ptr [ebx + FPy]
-    fstp    qword ptr [ebx + FPy]
-    fwait
-{$endif}
-end;
-
-//--20--///////////////////////////////////////////////////////////////////////
-procedure TXForm.Cosine;
-{$ifndef _ASM_}
-var
-  sinr, cosr: double;
-  e1, e2: double;
-begin
-//  SinCos(FTx * PI, sinr, cosr);
-//  FPx := FPx + vars[20] * cosr * cosh(FTy);
-//  FPy := FPy - vars[20] * sinr * sinh(FTy);
-  SinCos(FTx * PI, sinr, cosr);
-  if FTy = 0 then
-  begin
-    // sinh(0) = 0, cosh(0) = 1
-    FPx := FPx + vars[20] * cosr;
-  end
-  else begin
-    // --Z-- sinh() and cosh() both calculate exp(y) and exp(-y)
-    e1 := exp(FTy);
-    e2 := exp(-FTy);
-    FPx := FPx + vars[20] * cosr * (e1 + e2)/2;
-    FPy := FPy - vars[20] * sinr * (e1 - e2)/2;
-  end;
-{$else}
-asm
-    fld     qword ptr [eax + FTx]
-    fldpi
-    fmulp
-    fsincos
-    fld     qword ptr [eax + cosine_var2]
-    fmul    st(2), st
-    fmulp
-    fld     qword ptr [eax + FTy]
-// --Z-- here goes exp(x) modified to compute both exp(x) and exp(-x)
-    FLDL2E
-    FMUL
-    FLD     ST(0)
-    FRNDINT
-    FSUB    ST(1), ST
-    fld     st
-    fchs
-    fld     st(2)
-    fchs
-    F2XM1
-    FLD1
-    FADD
-    FSCALE
-    FSTP    ST(1)
-    fxch    st(2)
-    F2XM1
-    FLD1
-    FADD
-    FSCALE
-    FST     ST(1)
-// -----
-    fadd    st, st(2)
-    fmulp   st(3), st
-    fsubp   st(1), st
-    fmulp   st(2), st
-    fadd    qword ptr [ebx + FPx]
-    fstp    qword ptr [ebx + FPx]
-    fadd    qword ptr [ebx + FPy] // "add" because:
-    fstp    qword ptr [ebx + FPy] // FPy := FPy + vars[20] * sinr * (e2 - e1)/2;
-    fwait
-{$endif}
-end;
-
-//--21--///////////////////////////////////////////////////////////////////////
-procedure TXForm.Rings;
-{$ifndef _ASM_}
-var
-  r: double;
-  //dx: double;
-begin
-  //dx := sqr(c20) + EPS;
-//  r := FLength;
-//  r := r + dx - System.Int((r + dx)/(2 * dx)) * 2 * dx - dx + r * (1-dx);
-// --Z--   ^^^^               heheeeee :-)               ^^^^
-
-  r := vars[21] * (
-         2 * FLength - rings_dx * (System.Int((FLength/rings_dx + 1)/2) * 2 + FLength)
-       );
-  FPx := FPx + r * FCosA;
-  FPy := FPy + r * FSinA;
-{$else}
-asm
-    fld     qword ptr [eax + FLength]
-    fld     qword ptr [eax + rings_dx]
-    fld     st(1)
-    fdiv    st, st(1)
-    fld1
-    faddp
-    fld1
-    fld1
-    faddp
-    fdivp   st(1), st
-    call    System.@Int
-    fadd    st, st
-    fadd    st, st(2)
-    fmulp
-    fsub    st, st(1)
-    fsubp   st(1), st
-    mov     edx, [eax + vars]
-    fmul    qword ptr [edx + 21*8]
-    fld     st
-    fmul    qword ptr [eax + FCosA]
-    fadd    qword ptr [ebx + FPx]
-    fstp    qword ptr [ebx + FPx]
-    fmul    qword ptr [eax + FSinA]
-    fadd    qword ptr [ebx + FPy]
-    fstp    qword ptr [ebx + FPy]
-    fwait
-{$endif}
-end;
-
-//--22--///////////////////////////////////////////////////////////////////////
-procedure TXForm.Fan;
-{$ifndef _ASM_}
-var
-  r, a : double;
-  sinr, cosr: double;
-  //dx, dy, dx2: double;
-begin
-  //dy := c21;
-  //dx := PI * (sqr(c20) + EPS);
-  //dx2 := dx/2;
-
-//  if (FAngle+c21 - System.Int((FAngle + c21)/fan_dx) * fan_dx) > fan_dx2 then
-//  if (FAngle + c21)/fan_dx - System.Int((FAngle + c21)/fan_dx) > 0.5 then
-  if System.Frac((FAngle + c21)/fan_dx) > 0.5 then
-    a := FAngle - fan_dx2
-  else
-    a := FAngle + fan_dx2;
-  SinCos(a, sinr, cosr);
-  r := vars[22] * sqrt(sqr(FTx) + sqr(FTy));
-  FPx := FPx + r * cosr;
-  FPy := FPy + r * sinr;
-{$else}
-asm
-    fld     qword ptr [ebx + FAngle]
-    fld     st
-    fadd    qword ptr [ebx + c21]
-    fdiv    qword ptr [ebx + fan_dx]
-// --Z-- here goes Frac() code from System.pas
-    FLD     ST(0)
-    SUB     ESP,4
-    FNSTCW  [ESP].Word     // save
-    FNSTCW  [ESP+2].Word   // scratch
-    FWAIT
-    OR      [ESP+2].Word, $0F00  // trunc toward zero, full precision
-    FLDCW   [ESP+2].Word
-    FRNDINT
-    FWAIT
-    FLDCW   [ESP].Word
-    ADD     ESP,4
-    FSUB
-// -----
-    fadd    st, st
-    fld1
-//    fcompp        <-- replaced with FCOMIP
-//    fnstsw  ax
-//    shr     ah, 1
-//    jnc     @else
-    fcomip  st, st(1)
-    fstp    st
-    //fwait?
-    ja @else
-    fsub    qword ptr [ebx + fan_dx2]
-    jmp     @skip
-@else:
-    fadd    qword ptr [ebx + fan_dx2]
-@skip:
-    fsincos
-    fld     qword ptr [ebx + FTx]
-    fmul    st, st
-    fld     qword ptr [ebx + FTy]
-    fmul    st, st
-    faddp
-    fsqrt
-    mov     edx, [ebx + vars]
-    fmul    qword ptr [edx + 22*8]
-    fmul    st(2), st
-    fmulp
-    fadd    qword ptr [ebx + FPx]
-    fstp    qword ptr [ebx + FPx]
-    fadd    qword ptr [ebx + FPy]
-    fstp    qword ptr [ebx + FPy]
-    fwait
-{$endif}
-end;
-*)
-
-///////////////////////////////////////////////////////////////////////////////
 procedure TXForm.Eyefish;
-{$ifndef _ASM_}
 var
   r: double;
 begin
   r := 2 * vars[11] / (sqrt(sqr(FTx) + sqr(FTy)) + 1);
   FPx := FPx + r * FTx;
   FPy := FPy + r * FTy;
-{$else}
-asm
-    mov     edx, [eax + vars]
-    fld     qword ptr [edx + 11*8]
-    fadd    st, st
-    fld     qword ptr [eax + FTy]
-    fld     qword ptr [eax + FTx]
-    fld     st(1)
-    fmul    st, st
-    fld     st(1)
-    fmul    st, st
-    faddp
-    fsqrt
-    fld1
-    faddp
-    fdivp   st(3), st
-    fmul    st, st(2)
-    fadd    qword ptr [eax + FPx]
-    fstp    qword ptr [eax + FPx]
-    fmulp
-    fadd    qword ptr [eax + FPy]
-    fstp    qword ptr [eax + FPy]
-    fwait
-{$endif}
+  FPz := FPz + FTz * vars[11];
 end;
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -1645,13 +809,6 @@ begin
 
   FPx := FPx + r * FTx;
   FPy := FPy + r * FTy;
-{
-  t := 4 / (sqr(FTx) + sqr(FTy) + 4);
-
-  FPx := FPx + FTx * t * vars[26];
-  FPy := FPy + FTy * t * vars[26];
-  FPz := FPz + (2 * t - 1) * vars[26];
-}
 {$else}
 asm
     fld     qword ptr [eax + FTy]
@@ -1721,142 +878,55 @@ end;
 
 ///////////////////////////////////////////////////////////////////////////////
 procedure TXForm.Noise;
-{$ifndef _ASM_}
 var
-  r, sinr, cosr: double;
+  r, s, sinr, cosr: double;
 begin
-  SinCos(random * 2*pi, sinr, cosr);
-  r := vars[14] * random;
+  // Randomize here = HACK! Fix me...
+  Randomize; SinCos(random * 2*pi, sinr, cosr);
+  s := vars[14];
+  r := s * random;
   FPx := FPx + FTx * r * cosr;
   FPy := FPy + FTy * r * sinr;
-{$else}
-asm
-    mov     edx, [ebx + vars]
-    fld     qword ptr [edx + 14*8]
-    call    AsmRandExt
-    fmulp
-    call    AsmRandExt
-    fadd    st, st
-    fldpi
-    fmulp
-    fsincos
-    fmul    st, st(2)
-    fmul    qword ptr [ebx + FTx]
-    fadd    qword ptr [ebx + FPx]
-    fstp    qword ptr [ebx + FPx]
-    fmulp
-    fmul    qword ptr [ebx + FTy]
-    fadd    qword ptr [ebx + FPy]
-    fstp    qword ptr [ebx + FPy]
-    fwait  
-{$endif}
+  FPz := FPz + FTz * s;
 end;
 
 ///////////////////////////////////////////////////////////////////////////////
 procedure TXForm.Blur;
-{$ifndef _ASM_}
 var
-  r, sina, cosa: double;
+  r, s, z, sina, cosa: double;
 begin
-  SinCos(random * 2*pi, sina, cosa);
-  r := vars[15] * random;
+  // Randomize here = HACK! Fix me...
+  Randomize; SinCos(random * 2*pi, sina, cosa);
+  s := vars[15]; z := FTz;
+  r := s * random;
   FPx := FPx + r * cosa;
   FPy := FPy + r * sina;
-{$else}
-asm
-    mov     edx, [ebx + vars]
-    fld     qword ptr [edx + 15*8]
-    call    AsmRandExt
-    fmulp
-    call    AsmRandExt
-    fadd    st, st
-    fldpi
-    fmulp
-    fsincos
-    fmul    st, st(2)
-    fadd    qword ptr [ebx + FPx]
-    fstp    qword ptr [ebx + FPx]
-    fmulp
-    fadd    qword ptr [ebx + FPy]
-    fstp    qword ptr [ebx + FPy]
-    fwait 
-{$endif}
+  FPz := FPz + s * z;
 end;
 
 ///////////////////////////////////////////////////////////////////////////////
 procedure TXForm.Gaussian;
-{$ifndef _ASM_}
 var
-  r, sina, cosa: double;
+  r, s, z, sina, cosa: double;
 begin
-  SinCos(random * 2*pi, sina, cosa);
-  r := vars[16] * (gauss_rnd[0] + gauss_rnd[1] + gauss_rnd[2] + gauss_rnd[3] - 2);
+  // Randomize here = HACK! Fix me...
+  Randomize; SinCos(random * 2*pi, sina, cosa);
+  s := vars[16]; z := FTz;
+  r := s * (gauss_rnd[0] + gauss_rnd[1] + gauss_rnd[2] + gauss_rnd[3] - 2);
   gauss_rnd[gauss_N] := random;
   gauss_N := (gauss_N+1) and $3;
 
   FPx := FPx + r * cosa;
   FPy := FPy + r * sina;
-{$else}
-asm
-    fld     qword ptr [ebx + gauss_rnd]
-    fadd    qword ptr [ebx + gauss_rnd+8]
-    fadd    qword ptr [ebx + gauss_rnd+16]
-    fadd    qword ptr [ebx + gauss_rnd+24]
-    fld1
-    fadd    st,st
-    fsubp   st(1),st
-    mov     edx, [ebx + vars]
-    fmul    qword ptr [edx + 16*8]
-    call    AsmRandExt
-    mov     edx, [ebx + gauss_N]
-    fst     qword ptr [ebx + gauss_rnd + edx*8]
-    inc     edx
-    and     edx,$03
-    mov     [eax + gauss_N], edx
-
-    fadd    st, st
-    fldpi
-    fmulp
-    fsincos
-    fmul    st, st(2)
-    fadd    qword ptr [ebx + FPx]
-    fstp    qword ptr [ebx + FPx]
-    fmulp
-    fadd    qword ptr [ebx + FPy]
-    fstp    qword ptr [ebx + FPy]
-    fwait             
-{$endif}
+  FPz := FPz + s * z;
 end;
 
 ///////////////////////////////////////////////////////////////////////////////
 procedure TXForm.ZBlur;
-{$ifndef _ASM_}
 begin
   FPz := FPz + vars[17] * (gauss_rnd[0] + gauss_rnd[1] + gauss_rnd[2] + gauss_rnd[3] - 2);
   gauss_rnd[gauss_N] := random;
   gauss_N := (gauss_N+1) and $3;
-{$else}
-asm
-    fld     qword ptr [ebx + gauss_rnd]
-    fadd    qword ptr [ebx + gauss_rnd+8]
-    fadd    qword ptr [ebx + gauss_rnd+16]
-    fadd    qword ptr [ebx + gauss_rnd+24]
-    fld1
-    fadd    st,st
-    fsubp   st(1),st
-    mov     edx, [ebx + vars]
-    fmul    qword ptr [edx + 17*8]
-    call    AsmRandExt
-    mov     edx, [ebx + gauss_N]
-    fstp    qword ptr [ebx + gauss_rnd + edx*8]
-    inc     edx
-    and     edx,$03
-    mov     [eax + gauss_N], edx
-
-    fadd    qword ptr [ebx + FPz]
-    fstp    qword ptr [ebx + FPz]
-    fwait
-{$endif}
 end;
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -1864,7 +934,8 @@ procedure TXForm.Blur3D;
 var
   r, sina, cosa, sinb, cosb: double;
 begin
-  SinCos(random * 2*pi, sina, cosa);
+  // Randomize here = HACK! Fix me...
+  Randomize; SinCos(random * 2*pi, sina, cosa);
   r := vars[18] * (gauss_rnd[0] + gauss_rnd[1] + gauss_rnd[2] + gauss_rnd[3] - 2);
   gauss_rnd[gauss_N] := random;
   gauss_N := (gauss_N+1) and $3;
@@ -1877,47 +948,17 @@ end;
 
 ///////////////////////////////////////////////////////////////////////////////
 procedure TXForm.PreBlur;
-{$ifndef _ASM_}
 var
   r, sina, cosa: double;
 begin
-  SinCos(random * 2*pi, sina, cosa);
+  // Randomize here = HACK! Fix me...
+  Randomize; SinCos(random * 2*pi, sina, cosa);
   r := vars[19] * (gauss_rnd[0] + gauss_rnd[1] + gauss_rnd[2] + gauss_rnd[3] - 2);
   gauss_rnd[gauss_N] := random;
   gauss_N := (gauss_N+1) and $3;
 
   FTx := FTx + r * cosa;
   FTy := FTy + r * sina;
-{$else}
-asm
-    fld     qword ptr [ebx + gauss_rnd]
-    fadd    qword ptr [ebx + gauss_rnd+8]
-    fadd    qword ptr [ebx + gauss_rnd+16]
-    fadd    qword ptr [ebx + gauss_rnd+24]
-    fld1
-    fadd    st,st
-    fsubp   st(1),st
-    mov     edx, [ebx + vars]
-    fmul    qword ptr [edx + 19*8]
-    call    AsmRandExt
-    mov     edx, [ebx + gauss_N]
-    fst     qword ptr [ebx + gauss_rnd + edx*8]
-    inc     edx
-    and     edx,$03
-    mov     [eax + gauss_N], edx
-
-    fadd    st, st
-    fldpi
-    fmulp
-    fsincos
-    fmul    st, st(2)
-    fadd    qword ptr [ebx + FTx]
-    fstp    qword ptr [ebx + FTx]
-    fmulp
-    fadd    qword ptr [ebx + FTy]
-    fstp    qword ptr [ebx + FTy]
-    fwait
-{$endif}
 end;
 
 
@@ -2016,35 +1057,6 @@ begin
   FPx := x;
 end;
 
-
-//***************************************************************************//
-
-(*
-procedure TXForm.NextPoint(var px, py, pc: double);
-var
-  i: Integer;
-begin
-  // first compute the color coord
-// --Z-- no, first let's optimize this huge expression ;)
-//  pc := (pc + color) * 0.5 * (1 - symmetry) + symmetry * pc;
-// ---> = pc*(1 + symmetry)/2 + color*(1 - symmetry)/2;
-//           ^^^^^^const^^^^^   ^^^^^^^^^const^^^^^^^^
-  pc := pc * colorC1 + colorC2; // heh! :-)
-
-  FTx := c00 * px + c10 * py + c20;
-  FTy := c01 * px + c11 * py + c21;
-
-  Fpx := 0;
-  Fpy := 0;
-
-  for i := 0 to FNrFunctions - 1 do
-    FCalcFunctionList[i];
-
-  px := FPx;
-  py := FPy;
-end;
-*)
-
 ///////////////////////////////////////////////////////////////////////////////
 procedure TXForm.NextPoint(var CPpoint: TCPpoint);
 var
@@ -2095,83 +1107,6 @@ begin
   ToPoint.y := FPy;
   ToPoint.z := FPz; //?
 end;
-
-{
-///////////////////////////////////////////////////////////////////////////////
-procedure TXForm.NextPoint(var px, py, pz, pc: double);
-var
-  i: Integer;
-  tpx, tpy: double;
-begin
-  // first compute the color coord
-  pc := (pc + color) * 0.5 * (1 - symmetry) + symmetry * pc;
-
-  case Orientationtype of
-  1:
-     begin
-       tpx := px;
-       tpy := pz;
-     end;
-  2:
-     begin
-       tpx := py;
-       tpy := pz;
-     end;
-  else
-    tpx := px;
-    tpy := py;
-  end;
-
-  FTx := c00 * tpx + c10 * tpy + c20;
-  FTy := c01 * tpx + c11 * tpy + c21;
-
-(*
-  if CalculateAngle then begin
-    if (FTx < -EPS) or (FTx > EPS) or (FTy < -EPS) or (FTy > EPS) then
-       FAngle := arctan2(FTx, FTy)
-    else
-       FAngle := 0.0;
-  end;
-
-  if CalculateSinCos then begin
-    Flength := sqrt(sqr(FTx) + sqr(FTy));
-    if FLength = 0 then begin
-      FSinA := 0;
-      FCosA := 1;
-    end else begin
-      FSinA := FTx/FLength;
-      FCosA := FTy/FLength;
-    end;
-  end;
-
-//  if CalculateLength then begin
-//    FLength := sqrt(FTx * FTx + FTy * FTy);
-//  end;
-*)
-
-  Fpx := 0;
-  Fpy := 0;
-
-  for i:= 0 to FNrFunctions-1 do
-    FFunctionList[i];
-
-  case Orientationtype of
-  1:
-     begin
-       px := FPx;
-       pz := FPy;
-     end;
-  2:
-     begin
-       py := FPx;
-       pz := FPy;
-     end;
-  else
-    px := FPx;
-    py := FPy;
-  end;
-end;
-}
 
 ///////////////////////////////////////////////////////////////////////////////
 procedure TXForm.NextPoint2C(var p: T2CPoint);
@@ -2368,29 +1303,16 @@ begin
 
   //fixed
   FFunctionList[0] := Linear3D;
-  FFunctionList[1] := Linear;
+  FFunctionList[1] := Flatten;
   FFunctionList[2] := Sinusoidal;
   FFunctionList[3] := Spherical;
   FFunctionList[4] := Swirl;
   FFunctionList[5] := Horseshoe;
   FFunctionList[6] := Polar;
-//  FFunctionList[6] := FoldedHandkerchief;
-//  FFunctionList[7] := Heart;
   FFunctionList[7] := Disc;
   FFunctionList[8] := Spiral;
   FFunctionList[9] := Hyperbolic;
   FFunctionList[10] := Square;
-//  FFunctionList[12] := Ex;
-//  FFunctionList[13] := Julia;
-//  FFunctionList[14] := Bent;
-//  FFunctionList[15] := Waves;
-//  FFunctionList[16] := Fisheye;
-//  FFunctionList[17] := Popcorn;
-//  FFunctionList[18] := Exponential;
-//  FFunctionList[19] := Power;
-//  FFunctionList[20] := Cosine;
-//  FFunctionList[21] := Rings;
-//  FFunctionList[22] := Fan;
   FFunctionList[11] := Eyefish;
   FFunctionList[12] := Bubble;
   FFunctionList[13] := Cylinder;
@@ -2401,7 +1323,7 @@ begin
   FFunctionList[18] := Blur3D;
 
   FFunctionList[19] := PreBlur;
-  FFunctionList[20] := PreZScale; // vars[20] used in ControlPoint.pas
+  FFunctionList[20] := PreZScale;
   FFunctionList[21] := PreZTranslate;
   FFunctionList[22] := PreRotateX;
   FFunctionList[23] := PreRotateY;
@@ -2412,10 +1334,6 @@ begin
 
   FFunctionList[27] := PostRotateX;
   FFunctionList[28] := PostRotateY;
-
-  //registered
-//  for i := 0 to High(FRegVariations) do
-//    FFunctionList[NRLOCVAR + i] := FRegVariations[i].CalcFunction;
 end;
 
 ///////////////////////////////////////////////////////////////////////////////

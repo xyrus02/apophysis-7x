@@ -26,13 +26,16 @@ unit varRadialBlur;
 interface
 
 uses
-  BaseVariation, XFormMan, AsmRandom;
+  BaseVariation, XFormMan;
 
 const
   var_name = 'radial_blur';
   var_a_name = 'radial_blur_angle';
 
-{$define _ASM_}
+{$ifdef Apo7X64}
+{$else}
+  {$define _ASM_}
+{$endif}
 
 type
   TVariationRadialBlur = class(TBaseVariation)
@@ -99,7 +102,6 @@ end;
 
 ///////////////////////////////////////////////////////////////////////////////
 procedure TVariationRadialBlur.CalcFunction;
-{$ifndef _ASM_}
 var
   rndG, rz, ra: double;
   sina, cosa: extended;
@@ -114,66 +116,11 @@ begin
 
   FPx^ := FPx^ + ra * cosa + rz * FTx^;
   FPy^ := FPy^ + ra * sina + rz * FTy^;
-{$else}
-asm
-    mov     edx, [eax + FTx]
-    fld     qword ptr [edx + 8] // FTy
-    fld     qword ptr [edx]     // FTx
-
-    fld     st(1)
-    fmul    st, st
-    fld     st(1)
-    fmul    st, st
-    faddp
-    fsqrt
-
-    fld     st(2)
-    fld     st(2)
-    fpatan
-
-    fld     qword ptr [eax + rnd]
-    fadd    qword ptr [eax + rnd+8]
-    fadd    qword ptr [eax + rnd+16]
-    fadd    qword ptr [eax + rnd+24]
-    fld1
-    fsub    st(1), st
-    fsub    st(1), st
-
-    fld     st(1)
-    fmul    qword ptr [eax + zoom_var]
-    fsubrp
-
-    fmul    st(4), st
-    fmulp   st(5), st
-
-    fmul    qword ptr [eax + spin_var]
-    faddp
-
-    call    AsmRandExt
-    mov     edx, [eax + N]
-    fstp    qword ptr [eax + rnd + edx*8]
-    inc     edx
-    and     edx,$03
-    mov     [eax + N], edx
-
-    fsincos
-
-    fmul    st, st(2)
-    faddp   st(3), st
-    fmulp
-    faddp   st(2), st
-    mov     edx, [eax + FPx]
-    fadd    qword ptr [edx]
-    fstp    qword ptr [edx]
-    fadd    qword ptr [edx + 8]
-    fstp    qword ptr [edx + 8]
-    fwait
-{$endif}
+  FPz^ := FPz^ + vvar * FTz^;
 end;
 
 ///////////////////////////////////////////////////////////////////////////////
 procedure TVariationRadialBlur.CalcZoom;
-{$ifndef _ASM_}
 var
   r: double;
 begin
@@ -184,44 +131,11 @@ begin
 
   FPx^ := FPx^ + r * FTx^;
   FPy^ := FPy^ + r * FTy^;
-{$else}
-asm
-    fld     qword ptr [eax + rnd]
-    fadd    qword ptr [eax + rnd+8]
-    fadd    qword ptr [eax + rnd+16]
-    fadd    qword ptr [eax + rnd+24]
-    fld1
-    fadd    st, st
-    fsubp   st(1), st
-    fmul    qword ptr [eax + zoom_var]
-
-    call    AsmRandExt
-    mov     edx, [eax + N]
-    fstp    qword ptr [eax + rnd + edx*8]
-    inc     edx
-    and     edx,$03
-    mov     [eax + N], edx
-
-    mov     edx, [eax + FTx]
-    fld     qword ptr [edx + 8] // FTy
-//    mov     ecx, [eax + FTx]
-    fld     qword ptr [edx]
-
-    fmul    st, st(2)
-//    mov     edx, [eax + FPx]
-    fadd    qword ptr [edx + 16]
-    fstp    qword ptr [edx + 16]
-    fmulp
-//    mov     edx, [eax + FPy]
-    fadd    qword ptr [edx + 24]
-    fstp    qword ptr [edx + 24]
-    fwait
-{$endif}
+  FPz^ := FPz^ + vvar * FTz^;
 end;
 
 ///////////////////////////////////////////////////////////////////////////////
 procedure TVariationRadialBlur.CalcSpin;
-{$ifndef _ASM_}
 var
   r: double;
   sina, cosa: extended;
@@ -235,54 +149,7 @@ begin
 
   FPx^ := FPx^ + r * cosa - FTx^;
   FPy^ := FPy^ + r * sina - FTy^;
-{$else}
-asm
-    mov     edx, [eax + FTx]
-//    mov     edx, [eax + FTy]
-    fld     qword ptr [edx + 8]
-//    mov     edx, [eax + FTx]
-    fld     qword ptr [edx]
-    fld     st(1)
-    fld     st(1)
-    fpatan
-
-    fld     qword ptr [eax + rnd]
-    fadd    qword ptr [eax + rnd+8]
-    fadd    qword ptr [eax + rnd+16]
-    fadd    qword ptr [eax + rnd+24]
-    fld1
-    fadd    st, st
-    fsubp   st(1), st
-    fmul    qword ptr [eax + spin_var]
-
-    call    AsmRandExt
-    mov     edx, [eax + N]
-    fstp    qword ptr [eax + rnd + edx*8]
-    inc     edx
-    and     edx,$03
-    mov     [eax + N], edx
-
-    faddp
-    fsincos
-
-    fld     st(3)
-    fmul    st,st
-    fld     st(3)
-    fmul    st,st
-    faddp
-    fsqrt
-    fmul    st(2), st
-    fmulp   st(1), st
-    mov     edx, [eax + FPx]
-    fadd    qword ptr [edx]
-    fsubrp  st(2),st
-//    mov     edx, [eax + FPy]
-    fadd    qword ptr [edx + 8]
-    fsubrp  st(2), st
-    fstp    qword ptr [edx]
-    fstp    qword ptr [edx + 8]
-    fwait
-{$endif}
+  FPz^ := FPz^ + vvar * FTz^;
 end;
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -344,5 +211,5 @@ end;
 
 ///////////////////////////////////////////////////////////////////////////////
 initialization
-  RegisterVariation(TVariationClassLoader.Create(TVariationRadialBlur), false, false);
+  RegisterVariation(TVariationClassLoader.Create(TVariationRadialBlur), true, false);
 end.

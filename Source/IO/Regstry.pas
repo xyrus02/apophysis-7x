@@ -51,8 +51,7 @@ var
   i, maxVars: integer;
   VariationOptions: int64;
 begin
-  DefaultPath := ExtractFilePath(Application.Exename);
-//  ShowMessage(DefaultPath);
+  DefaultPath := GetEnvVarValue('USERPROFILE');///ExtractFilePath(Application.Exename);
   Registry := TRegistry.Create;
   try
     Registry.RootKey := HKEY_CURRENT_USER;
@@ -96,7 +95,7 @@ begin
         if Registry.ValueExists('SavePath') then
           SavePath := Registry.ReadString('SavePath')
         else
-          SavePath := DefaultPath + 'Parameters\My 3D Flames.flame';
+          SavePath := DefaultPath + '\Flames.flame';
       end;
 
       if Registry.ValueExists('EmbedThumbnails') then
@@ -122,7 +121,7 @@ begin
       end
       else
       begin
-        defSmoothPaletteFile := DefaultPath + 'smooth.ugr';
+        defSmoothPaletteFile := DefaultPath + '\SmoothPalette.ugr';
       end;
 
       if Registry.ValueExists('PlaySoundOnRenderComplete') then
@@ -239,7 +238,7 @@ begin
       end
       else
       begin
-        ParamFolder := DefaultPath + 'Parameters\';
+        ParamFolder := DefaultPath + '\';
       end;
 
       if Registry.ValueExists('UPRPath') then
@@ -248,7 +247,7 @@ begin
       end
       else
       begin
-        UPRPath := DefaultPath;
+        UPRPath := DefaultPath + '\';
       end;
 
       if Registry.ValueExists('ImageFolder') then
@@ -257,7 +256,7 @@ begin
       end
       else
       begin
-        ImageFolder := DefaultPath;
+        ImageFolder := DefaultPath + '\';
       end;
 
       if Registry.ValueExists('UPRWidth') then
@@ -283,7 +282,7 @@ begin
       end
       else
       begin
-        BrowserPath := DefaultPath;
+        BrowserPath := DefaultPath + '\';
       end;
       if Registry.ValueExists('EditPreviewQaulity') then
       begin
@@ -475,7 +474,7 @@ begin
       end
       else
       begin
-        ScriptPath := DefaultPath + 'Scripts\';
+        ScriptPath := DefaultPath + '\Scripts\';
       end;
       if Registry.ValueExists('FunctionLibrary') then
       begin
@@ -483,7 +482,7 @@ begin
       end
       else
       begin
-        defLibrary := DefaultPath + 'Scripts\Functions.asc';
+        defLibrary := ExtractFilePath(Application.ExeName) + 'Functions.asc';
       end;
       if Registry.ValueExists('ExportFileFormat') then
       begin
@@ -577,7 +576,7 @@ begin
       end
       else
       begin
-        flam3Path := DefaultPath + 'flam3.exe';
+        flam3Path := ExtractFilePath(Application.ExeName) + 'flam3.exe';
       end;
       if Registry.ValueExists('Server') then
       begin
@@ -756,7 +755,7 @@ begin
       if Registry.ValueExists('HelpPath') then begin
         HelpPath := Registry.ReadString('HelpPath');
       end else begin
-        HelpPath := DefaultPath + 'Apophysis 2.0.chm';
+        HelpPath := ExtractFilePath(Application.ExeName) + 'Apophysis 7X.chm';
       end;
 
       if Registry.ValueExists('ChaoticaPath') then begin
@@ -774,10 +773,24 @@ begin
       end else begin
         UseX64IfPossible := false;
       end;
+
+      if Registry.ValueExists('PluginPath') then begin
+        PluginPath := Registry.ReadString('PluginPath');
+      end else begin
+        PluginPath := ExtractFilePath(Application.ExeName) + 'Plugins\';
+      end;
+
+      {if Registry.ValueExists('SingleBuffer') then begin
+        SingleBuffer := Registry.ReadBool('SingleBuffer');
+      end else begin
+        SingleBuffer := false;
+      end;}
     end
     else
     begin
 //      ReferenceMode := 0;
+      //SingleBuffer := false;
+      PluginPath := ExtractFilePath(Application.ExeName) + 'Plugins\';
       StartupCheckForUpdates := true;
       AlwaysCreateBlankFlame := false;
       MainForm_RotationMode := 0;
@@ -786,12 +799,12 @@ begin
       AdjustPrevQual := 1;
       GradientFile := '';
       defFlameFile := '';
-      SavePath := DefaultPath + 'Parameters\My 3D Flames.flame';
+      SavePath := DefaultPath + '\Flames.flame';
       EmbedThumbnails := false;
       WarnOnMissingPlugin := true;
       LanguageFile := '';
-      HelpPath := DefaultPath + 'Apophysis 2.0.chm';
-      defSmoothPaletteFile := DefaultPath + 'smooth.ugr';
+      HelpPath := ExtractFilePath(Application.ExeName) + 'Apophysis 7X.chm';
+      defSmoothPaletteFile := DefaultPath + '\SmoothPalette.ugr';
       ConfirmDelete := True;
       ConfirmExit := True;
       OldPaletteFormat := false;
@@ -804,12 +817,12 @@ begin
       randGradient := 0;
       PreserveQuality := false;
       KeepBackground := False;
-      UPRPath := DefaultPath;
-      ImageFolder := DefaultPath;
-      ParamFolder := DefaultPath + 'Parameters\';
+      UPRPath := DefaultPath + '\';
+      ImageFolder := DefaultPath + '\';
+      ParamFolder := DefaultPath + '\';
       UPRWidth := 640;
       UPRHeight := 480;
-      RandomPrefix := 'Apo3D-';
+      RandomPrefix := 'Apo7X-';
       RandomIndex := 0;
       RandomDate := '';
       SymmetryType := 0;
@@ -827,8 +840,8 @@ begin
       MaxLum := 100;
       randGradientFile := '';
       BatchSize := 100;
-      ScriptPath := DefaultPath + 'Scripts\';
-      defLibrary := DefaultPath + 'Scripts\Functions.asc';
+      ScriptPath := DefaultPath + '\';
+      defLibrary := ExtractFilePath(Application.ExeName) + 'Functions.asc';
       ExportFileFormat := 1;
       ExportWidth := 640;
       ExportHeight := 480;
@@ -839,7 +852,7 @@ begin
       SheepNick := '';
       SheepURL := '';
       SheepPW := '';
-      flam3Path := DefaultPath + 'flam3.exe';
+      flam3Path := ExtractFilePath(Application.ExeName) + 'flam3.exe';
       SheepServer := 'http://v2d5.sheepserver.net/';
       ShowProgress := true;
       SaveIncompleteRenders := false;
@@ -909,7 +922,7 @@ begin
       if Registry.ValueExists('EnableEditorPreview') then
         EnableEditorPreview := Registry.ReadBool('EnableEditorPreview')
       else
-        EnableEditorPreview := true;
+        EnableEditorPreview := false;
       if Registry.ValueExists('EditorPreviewTransparency') then
         EditorPreviewTransparency := Registry.ReadInteger('EditorPreviewTransparency')
       else
@@ -949,7 +962,7 @@ begin
       UseTransformColors := false;
       HelpersEnabled := true;
       ShowAllXforms := true;
-      EnableEditorPreview := true;
+      EnableEditorPreview := false;
       EditorPreviewTransparency := 192;
       EditorBkgColor := $000000;
       GridColor1 := $444444;
@@ -971,7 +984,7 @@ begin
       end
       else
       begin
-        RenderPath := DefaultPath;
+        RenderPath := DefaultPath + '\';
       end;
       if Registry.ValueExists('SampleDensity') then
       begin
@@ -1059,7 +1072,7 @@ begin
     begin
       renderFileFormat := 2;
       JPEGQuality := 100;
-      renderPath := DefaultPath;
+      renderPath := DefaultPath + '\';
       renderDensity := 200;
       renderOversample := 2;
       renderFilterRadius := 0.4;
@@ -1284,12 +1297,12 @@ begin
       end
       else
       begin
-        AutoSavePath := 'autosave.flame';
+        AutoSavePath := GetEnvVarValue('USERPROFILE') + '\autosave.flame';
       end;
     end else begin
       AutoSaveEnabled := false;
       AutoSaveFreq := 2;
-      AutoSavePath := 'autosave.flame';
+      AutoSavePath := GetEnvVarValue('USERPROFILE') + '\autosave.flame';
     end;
     Registry.CloseKey;
   finally
@@ -1336,6 +1349,8 @@ begin
       Registry.WriteString('ChaoticaPath', ChaoticaPath);
       Registry.WriteString('ChaoticaPath64', ChaoticaPath64);
       Registry.WriteBool('UseX64IfPossible', UseX64IfPossible);
+      Registry.WriteString('PluginPath', PluginPath);
+      //Registry.WriteBool('SingleBuffer', SingleBuffer);
 
       Registry.WriteBool('ConfirmDelete', ConfirmDelete);
       Registry.WriteBool('OldPaletteFormat', OldPaletteFormat);

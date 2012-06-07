@@ -220,12 +220,12 @@ begin
   test := s;
   while (Length(Test) > 0) do
   begin
-    while (Length(Test) > 0) and (test[1] in [#32]) do
+    while (Length(Test) > 0) and CharInSet(test[1],[#32]) do
       Delete(test, 1, 1);
     if (Length(Test) = 0) then
       exit;
     token := '';
-    while (Length(Test) > 0) and (not (test[1] in [#32])) do
+    while (Length(Test) > 0) and (not CharInSet(test[1],[#32])) do
     begin
       token := token + test[1];
       Delete(test, 1, 1);

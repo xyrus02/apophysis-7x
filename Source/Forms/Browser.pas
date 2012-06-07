@@ -28,7 +28,7 @@ uses
   Windows, Messages, SysUtils, Classes, Graphics, Controls, Forms, Dialogs,
   ExtCtrls, ComCtrls, ControlPoint, ToolWin, ImgList, StdCtrls,
   Cmap, Menus, Global, Buttons, Translation,
-  Render;
+  RenderingInterface;
 
 const
   PixelCountMax = 32768;
@@ -48,6 +48,7 @@ type
     pnlPreview: TPanel;
     Image: TImage;
     btnDefGradient: TSpeedButton;
+    procedure FormResize(Sender: TObject);
     procedure ListViewChange(Sender: TObject; Item: TListItem;
       Change: TItemChange);
     procedure FormCreate(Sender: TObject);
@@ -601,6 +602,19 @@ procedure TGradientBrowser.TooltipTimerTimer(Sender: TObject);
 begin
   ListView.Repaint;
   TooltipTimer.Enabled := false;
+end;
+
+procedure TGradientBrowser.FormResize(Sender: TObject);
+begin
+  Listview.Width := self.ClientWidth - 4;
+  btnDefGradient.Left := self.ClientWidth - 2 - btnDefGradient.Width;
+  ListView.Height := self.ClientHeight - pnlPreview.Height - 6;
+  btnDefGradient.Top := self.ClientHeight - pnlPreview.Height - 2 + pnlPreview.Height div 2 - btnDefGradient.Height div 2;
+  ListView.Top := 2;
+  ListView.Left := 2;
+  pnlPreview.Top := self.ClientHeight - pnlPreview.Height - 2;
+  pnlPreview.Left := 2;
+  pnlPreview.Width := self.ClientWidth - btnDefGradient.Width - 6;
 end;
 
 end.

@@ -52,9 +52,9 @@ type
     PluginHandle: THandle;
     PluginClass: TPluginVariationClass;
 
-    PluginVarGetName:           function: PChar; cdecl;
+    PluginVarGetName:           function: PAnsiChar; cdecl;
     PluginVarGetNrVariables:    function: Integer; cdecl;
-    PluginVarGetVariableNameAt: function(const Index: integer): PChar; cdecl;
+    PluginVarGetVariableNameAt: function(const Index: integer): PAnsiChar; cdecl;
 
     PluginVarCreate:       function: Pointer; cdecl;
     PluginVarDestroy:      function(var MyVariation: Pointer): LongBool; cdecl;
@@ -63,9 +63,9 @@ type
     PluginVarInitDC:       function(MyVariation, FPx, FPy, FPz, FTx, FTy, FTz, color: Pointer; vvar, a, b, c, d, e, f: double): LongBool; cdecl;
     PluginVarPrepare:      function(MyVariation: Pointer): LongBool; cdecl;
     PluginVarCalc:         function(MyVariation: Pointer): LongBool; cdecl;
-    PluginVarGetVariable:  function(MyVariation: Pointer; const Name: PChar; var value: double): LongBool; cdecl;
-    PluginVarSetVariable:  function(MyVariation: Pointer; const Name: PChar; var value: double): LongBool; cdecl;
-    PluginVarResetVariable:function(MyVariation: Pointer; const Name: PChar) : LongBool; cdecl;
+    PluginVarGetVariable:  function(MyVariation: Pointer; const Name: PAnsiChar; var value: double): LongBool; cdecl;
+    PluginVarSetVariable:  function(MyVariation: Pointer; const Name: PAnsiChar; var value: double): LongBool; cdecl;
+    PluginVarResetVariable:function(MyVariation: Pointer; const Name: PAnsiChar) : LongBool; cdecl;
   end;
   PPluginData = ^TPluginData;
 
@@ -75,7 +75,6 @@ type
   private
     PluginData : TPluginData;
     MyVariation : Pointer;
-
   public
     constructor Create(varData : TPluginData);
     destructor Destroy; override;
@@ -116,7 +115,9 @@ implementation
 
 uses
   Windows, //LoadLibrary
-  Math;
+  Math,
+  Global,
+  Registry;
 
 { TPluginVariation }
 
@@ -134,7 +135,7 @@ end;
 
 function TVariationPluginLoader.GetName : string;
 begin
-  Result := PluginData.PluginVarGetName;
+  Result := String(PluginData.PluginVarGetName);
 end;
 
 function TVariationPluginLoader.GetInstance: TBaseVariation;
@@ -149,7 +150,7 @@ end;
 
 function TVariationPluginLoader.GetVariableNameAt(const Index: integer): string;
 begin
-  Result := PluginData.PluginVarGetVariableNameAt(Index);
+  Result := String(PluginData.PluginVarGetVariableNameAt(Index));
 end;
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -208,19 +209,19 @@ end;
 ///////////////////////////////////////////////////////////////////////////////
 function TPluginVariation.GetVariableNameAt(const Index: integer): string;
 begin
-  Result := PluginData.PluginVarGetVariableNameAt(Index);
+  Result := String(PluginData.PluginVarGetVariableNameAt(Index));
 end;
 
 ///////////////////////////////////////////////////////////////////////////////
 function TPluginVariation.SetVariable(const Name: string; var value: double): boolean;
 begin
-  Result := PluginData.PluginVarSetVariable(MyVariation,PChar(Name),value);
+  Result := PluginData.PluginVarSetVariable(MyVariation,PAnsiChar(AnsiString(Name)),value);
 end;
 
 ///////////////////////////////////////////////////////////////////////////////
 function TPluginVariation.GetVariable(const Name: string; var value: double): boolean;
 begin
-  Result := PluginData.PluginVarGetVariable(MyVariation,PChar(Name),value);
+  Result := PluginData.PluginVarGetVariable(MyVariation,PAnsiChar(AnsiString(Name)),value);
 end;
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -229,16 +230,17 @@ var
   dummy: double;
 begin
   if @PluginData.PluginVarResetVariable <> nil then
-    Result := PluginData.PluginVarResetVariable(MyVariation, PChar(Name))
+    Result := PluginData.PluginVarResetVariable(MyVariation, PAnsiChar(AnsiString(Name)))
   else begin
     dummy := 0;
-    Result := PluginData.PluginVarSetVariable(MyVariation,PChar(Name), dummy);
+    Result := PluginData.PluginVarSetVariable(MyVariation,PAnsiChar(AnsiString(Name)), dummy);
   end;
 end;
 
 ///////////////////////////////////////////////////////////////////////////////
 procedure InitializePlugins;
 var
+  Registry: TRegistry;
   searchResult: TSearchRec;
   name, msg: string;
   PluginData : TPluginData;
@@ -246,19 +248,30 @@ var
   errstr:string;
 begin
   NumBuiltinVars := NRLOCVAR + GetNrRegisteredVariations;
-  Exit;
 
-
-  /////// DECEPRATED - TAKEN OVER BY MAPM
-
+  Registry := TRegistry.Create;
+  try
+    Registry.RootKey := HKEY_CURRENT_USER;
+    { Defaults }
+    if Registry.OpenKey('Software\' + APP_NAME + '\Defaults', False) then
+      if Registry.ValueExists('PluginPath') then begin
+        PluginPath := Registry.ReadString('PluginPath');
+      end else begin
+        PluginPath := ExtractFilePath(Application.ExeName) + 'Plugins\';
+      end
+    else PluginPath := ExtractFilePath(Application.ExeName) + 'Plugins\';
+    Registry.CloseKey;
+  finally
+    Registry.Free;
+  end;
 
   // Try to find regular files matching *.dll in the plugins dir
-  if FindFirst(ExtractFilePath(Application.ExeName) + 'Plugins\*.dll', faAnyFile, searchResult) = 0 then
+  if FindFirst(PluginPath + '*.dll', faAnyFile, searchResult) = 0 then
   begin
     repeat
       with PluginData do begin
         //Load DLL and initialize plugins!
-        PluginHandle := LoadLibrary(PChar(ExtractFilePath(Application.ExeName) + 'Plugins\' + searchResult.Name));
+        PluginHandle := LoadLibrary(PChar(PluginPath + searchResult.Name));
         if PluginHandle<>0 then begin
           @PluginVarGetName := GetProcAddress(PluginHandle,'PluginVarGetName');
           if @PluginVarGetName = nil then begin  // Must not be a valid plugin!
@@ -266,7 +279,7 @@ begin
             msg := msg + 'Invalid plugin type: "' + searchResult.Name + '" is not a plugin' + #13#10;
             continue;
           end;
-          name := PluginVarGetName;
+          name := String(PluginVarGetName);
           if GetVariationIndex(name) >= 0 then begin
             FreeLibrary(PluginHandle);
             msg := msg + 'Cannot load plugin from ' + searchResult.Name + ': variation "' + name + '" already exists!' + #13#10;
@@ -286,6 +299,7 @@ begin
             @PluginVarResetVariable     := GetProcAddress(PluginHandle,'PluginVarResetVariable');
 
             RegisterVariation(TVariationPluginLoader.Create(PluginData), @PluginVarInit3D <> nil, @PluginVarInitDC <> nil);
+            RegisterVariationFile(ExtractFilePath(Application.ExeName) + 'Plugins\' + searchResult.Name, name);
           end;
         end else begin
           errno := GetLastError;
@@ -304,7 +318,6 @@ begin
 end;
 
 ///////////////////////////////////////////////////////////////////////////////
-initialization
-  InitializePlugins;
+
 end.
 

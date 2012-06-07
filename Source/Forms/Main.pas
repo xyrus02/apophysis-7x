@@ -33,14 +33,13 @@ uses
   Windows, Forms, Dialogs, Menus, Controls, ComCtrls,
   ToolWin, StdCtrls, Classes, Messages, ExtCtrls, ImgList,
   Jpeg, SyncObjs, SysUtils, ClipBrd, Graphics, Math,
-  ExtDlgs, AppEvnts, ShellAPI, Registry,
+  ExtDlgs, AppEvnts, ShellAPI, Registry, Curves,
   Global, Xform, XFormMan, ControlPoint, CMap,
-  RenderThread, RenderTypes, (*ParameterIO,*)
-  LibXmlParser, LibXmlComps, PngImage, XPMan, dwTaskbarComponents,
-  dwTaskbarThumbnails, StrUtils, LoadTracker, CheckLst,
-  CommandLine, PerlRegEx, MissingPlugin, Base64, Translation,
-  Mapm, MapmMonitor, MapmPlugin, MapmException,
-  RegexHelper;//, WinInet;
+  RenderThread, RenderingCommon, RenderingInterface, (*ParameterIO,*)
+  LibXmlParser, LibXmlComps, PngImage, XPMan,
+  StrUtils, LoadTracker, CheckLst,
+  CommandLine, RegularExpressionsCore, MissingPlugin, Base64, Translation,
+  RegexHelper, Chaotica;//, WinInet;
 
 const
   PixelCountMax = 32768;
@@ -166,9 +165,7 @@ type
     N20: TMenuItem;
     mnuExportFLame: TMenuItem;
     mnuPostSheep: TMenuItem;
-    ListXmlScanner: TEasyXmlScanner;
     N21: TMenuItem;
-    XmlScanner: TXmlScanner;
     mnuFlamepdf: TMenuItem;
     mnuimage: TMenuItem;
     mnuSaveAllAs: TMenuItem;
@@ -240,8 +237,11 @@ type
     mnuExportChaotica: TMenuItem;
     mnuResumeRender: TMenuItem;
     mnuManual: TMenuItem;
+    ToolButton19: TToolButton;
+    mnuCurves: TMenuItem;
+    N17: TMenuItem;
+    mnuTrace: TMenuItem;
     procedure mnuManualClick(Sender: TObject);
-    procedure mnuExportChaoticaClick(Sender: TObject);
     procedure mnuReportFlameClick(Sender: TObject);
     procedure mnuTurnFlameToScriptClick(Sender: TObject);
     procedure tbzoomoutwindowClick(Sender: TObject);
@@ -317,6 +317,7 @@ type
     procedure mnuPasteClick(Sender: TObject);
     procedure mnuCopyClick(Sender: TObject);
     procedure mnuExportFlameClick(Sender: TObject);
+    procedure mnuExportChaoticaClick(Sender: TObject);
 
     procedure ListXmlScannerStartTag(Sender: TObject; TagName: string;
       Attributes: TAttrList);
@@ -348,7 +349,6 @@ type
       var InfoTip: String);
     procedure btnViewIconsClick(Sender: TObject);
     procedure btnViewListClick(Sender: TObject);
-    procedure TBThumbThumbnailClick(Sender: TdwTaskbarThumbnailItem);
     procedure ListView1Click(Sender: TObject);
     procedure XmlScannerEndTag(Sender: TObject; TagName: String);
     procedure ToolButton7Click(Sender: TObject);
@@ -359,9 +359,15 @@ type
     procedure AutoSaveTimerTimer(Sender: TObject);
     procedure Restorelastautosave1Click(Sender: TObject);
     procedure tbGuidesClick(Sender: TObject);
+    procedure ToolButton19Click(Sender: TObject);
+    procedure mnuTraceClick(Sender: TObject);
 
   private
+    SubstSource: TStringList;
+    SubstTarget: TStringList;
+
     Renderer: TRenderThread;
+    FNrThreads: integer;
 
     FMouseMoveState: TMouseMoveState;
     FSelectRect, FClickRect: TRect;
@@ -387,13 +393,12 @@ type
     camDragPos, camDragOld: TPoint;
     camDragValueX, camDragValueY: double;
 
+    procedure CreateSubstMap;
     procedure InsertStrings;
     procedure DrawImageView;
     procedure DrawZoomWindow;
     procedure DrawRotatelines(Angle: double);
     procedure DrawPitchYawLines(YawAngle: double; PitchAngle:double);
-
-    function GetExportChaoticaCP(var fn: string; var cp1: TControlPoint) : boolean;
 
     procedure FillVariantMenu;
     procedure VariantMenuClick(Sender: TObject);
@@ -418,14 +423,20 @@ type
     UsedThumbnails: TImageList;
     ParseLoadingBatch : boolean;
     SurpressHandleMissingPlugins : boolean;
+    LastCaptionSel, LastCaptionFoc: string;
+    LastDecision: boolean;
 
     VarMenus: array of TMenuItem;
 
+    ListXmlScanner : TEasyXmlScanner;
+    XmlScanner : TXmlScanner;
+
+    function ReadWithSubst(Attributes: TAttrList; attrname: string): string;
     procedure InvokeLoadXML(xmltext:string);
     procedure LoadXMLFlame(filename, name: string);
     procedure DisableFavorites;
     procedure EnableFavorites;
-    procedure ParseXML(var cp1: TControlPoint; const params: PCHAR; const ignoreErrors : boolean);
+    procedure ParseXML(var cp1: TControlPoint; const params: string; const ignoreErrors : boolean);
     function SaveFlame(cp1: TControlPoint; title, filename: string): boolean;
     function SaveXMLFlame(const cp1: TControlPoint; title, filename: string): boolean;
     procedure DisplayHint(Sender: TObject);
@@ -449,10 +460,6 @@ type
     function SystemErrorMessage: string;
     function SystemErrorMessage2(errno:cardinal): string;
     function RetrieveXML(cp : TControlPoint):string;
-
-{$IFDEF DEBUG}
-    procedure AppException(Sender: TObject; E: Exception);
-{$ENDIF}
   end;
 
 procedure ListXML(FileName: string; sel: integer);
@@ -478,6 +485,7 @@ var
   MainForm: TMainForm;
   pname, ptime: string;
   nxform: integer;
+  TbBreakWidth: integer;
 
   EnumPlugins: Boolean;
   MainCp: TControlPoint;
@@ -488,42 +496,21 @@ var
   UpdateError:boolean;
   AboutToExit:boolean;
 
-  KnownPlugins: TList;
-
   ApophysisSVN:string; //APP_VERSION;
   AppVersionString:string; //APP_NAME+'.'+APP_VERSION;
-
-  procedure MapmPluginAdd(sender: TObject; plugin: HPLUGIN);
-  procedure MapmPluginRemove(sender: TObject; plugin: HPLUGIN);
 
 implementation
 
 uses
-{$IFDEF DEBUG}
-  JclDebug, ExceptForm,
-{$ENDIF}
-  Editor, Options, Regstry,  Render, Template,
+  Editor, Options, Regstry, Template,
   FullScreen, FormRender, Mutate, Adjust, Browser, Save, About, CmapData,
-  (*HtmlHlp,*) ScriptForm, FormFavorites, FormExport,
-  (*ImageColoring,*) RndFlame,
-  Tracer, Types, SplashForm, FormExportC;
+  {$ifdef DisableScripting}
+  {$else}
+    ScriptForm, FormFavorites,
+  {$endif}
+  FormExport, RndFlame, Tracer, Types, SplashForm, varGenericPlugin;
 
 {$R *.DFM}
-
-procedure MapmPluginAdd(sender: TObject; plugin: HPLUGIN);
-var info : PLUGININFO;
-begin
-  info := MapmCreateZeroPluginInfo;
-  MapmCheck(PluginGetInfo(plugin, @info));
-  if EnumPlugins then
-    SplashWindow.SetInfo('Loading ' + info.DisplayName + '...');
-  KnownPlugins.Add(Pointer(plugin));
-  Application.ProcessMessages;
-end;
-procedure MapmPluginRemove(sender: TObject; plugin: HPLUGIN);
-begin
-  KnownPlugins.Remove(Pointer(plugin));
-end;
 
 procedure AssignBitmapProperly(var Bitmap:TBitmap; Source:TBitmap);
 begin
@@ -703,6 +690,8 @@ begin
     end;
 
     ListView.Items.Clear;
+
+
 end;
 
 procedure TMainForm.InsertStrings;
@@ -754,6 +743,8 @@ begin
 	ToolButton12.Hint := TextByKey('main-menu-view-imagesize');
 	mnuMessages.Caption := TextByKey('main-menu-view-messages');
 	toolButton13.Hint := TextByKey('main-menu-view-messages');
+  ToolButton19.Hint := TextByKey('main-menu-view-curves');
+  mnuCurves.Caption := TextByKey('main-menu-view-curves');
 	F1.Caption := TextByKey('main-menu-flame-title');
 	mnuResetLocation.Caption := TextByKey('main-menu-flame-reset');
 	mnuPopResetLocation.Caption := TextByKey('main-menu-flame-reset');
@@ -1157,7 +1148,8 @@ end;
 procedure TMainForm.UpdateUndo;
 begin
   MainCp.FillUsedPlugins;
-  SaveFlame(MainCp, Format('%.4d-', [UndoIndex]) + MainCp.name, AppPath + undoFilename);
+  SaveFlame(MainCp, Format('%.4d-', [UndoIndex]) + MainCp.name,
+    GetEnvVarValue('APPDATA') + '\' + undoFilename);
   Inc(UndoIndex);
   UndoMax := UndoIndex; //Inc(UndoMax);
   mnuSaveUndo.Enabled := true;
@@ -1326,7 +1318,7 @@ begin
     CloseFile(UPRFile);
   except on E: EInOutError do
     begin
-      Application.MessageBox(PAnsiChar(Format(TextByKey('common-genericsavefailure'), [FileName])), 'Apophysis', 16);
+      Application.MessageBox(PChar(Format(TextByKey('common-genericsavefailure'), [FileName])), 'Apophysis', 16);
       Result := False;
     end;
   end;
@@ -1473,7 +1465,7 @@ begin
 
     except on E: EFormatInvalid do
       begin
-        Application.MessageBox(PAnsiChar(TextByKey('common-invalidformat')), PChar('Apophysis'), 16);
+        Application.MessageBox(PChar(TextByKey('common-invalidformat')), PChar('Apophysis'), 16);
       end;
     end;
   finally
@@ -1520,7 +1512,7 @@ begin
     CloseFile(IFile);
   except on E: EInOutError do
     begin
-      Application.MessageBox(PAnsiChar(Format(TextByKey('common-genericsavefailure'), [FileName])), 'Apophysis', 16);
+      Application.MessageBox(PChar(Format(TextByKey('common-genericsavefailure'), [FileName])), 'Apophysis', 16);
       Result := False;
     end;
   end;
@@ -1564,7 +1556,7 @@ begin
 
   except on EInOutError do
     begin
-      Application.MessageBox(PAnsiChar(Format(TextByKey('common-genericsavefailure'), [FileName])), 'Apophysis', 16);
+      Application.MessageBox(PChar(Format(TextByKey('common-genericsavefailure'), [FileName])), 'Apophysis', 16);
       Result := False;
     end;
   end;
@@ -1605,7 +1597,7 @@ var
   FileList: TStringList;
   x, y: double;
   parameters: string;
-  str: string;
+  curves, str: string;
 begin
   FileList := TStringList.create;
   x := cp1.center[0];
@@ -1677,7 +1669,29 @@ begin
       if (i = cp1.used_plugins.Count-1) then break;
       str := str + ' ';
     end;
-    parameters := parameters + format('plugins="%s" ', [str]);
+    parameters := parameters + format('plugins="%s" new_linear="1" ', [str]);
+
+    for i := 0 to 3 do
+    begin
+      curves := curves + FloatToStr(cp1.curvePoints[i][0].x) + ' ';
+      curves := curves + FloatToStr(cp1.curvePoints[i][0].y) + ' ';
+      curves := curves + FloatToStr(cp1.curveWeights[i][0]) + ' ';
+
+      curves := curves + FloatToStr(cp1.curvePoints[i][1].x) + ' ';
+      curves := curves + FloatToStr(cp1.curvePoints[i][1].y) + ' ';
+      curves := curves + FloatToStr(cp1.curveWeights[i][1]) + ' ';
+
+      curves := curves + FloatToStr(cp1.curvePoints[i][2].x) + ' ';
+      curves := curves + FloatToStr(cp1.curvePoints[i][2].y) + ' ';
+      curves := curves + FloatToStr(cp1.curveWeights[i][2]) + ' ';
+
+      curves := curves + FloatToStr(cp1.curvePoints[i][3].x) + ' ';
+      curves := curves + FloatToStr(cp1.curvePoints[i][3].y) + ' ';
+      curves := curves + FloatToStr(cp1.curveWeights[i][3]) + ' ';
+    end;
+
+    curves := trim(curves);
+    parameters := parameters + format('curves="%s" ', [curves]);
 
     FileList.Add('<flame name="' + title + '" ' + parameters + '>');
    { Write transform parameters }
@@ -1759,13 +1773,13 @@ begin
   result := base64;
 end;
 
-function FlameToXML(const cp1: TControlPoint; exporting, embedthumb: boolean): string;
+function FlameToXML(const cp1: TControlPoint; exporting, embedthumb: boolean): String;
 var
   t, i{, j}, pos: integer;
   FileList: TStringList;
   x, y: double;
   parameters: string;
-  str, buf, xdata: string;
+  curves, str, buf, xdata: string;
 begin
   FileList := TStringList.create;
   x := cp1.center[0];
@@ -1840,7 +1854,29 @@ begin
       if (i = cp1.used_plugins.Count-1) then break;
       str := str + ' ';
     end;
-    parameters := parameters + format('plugins="%s" ', [str]);
+    parameters := parameters + format('plugins="%s" new_linear="1" ', [str]);
+
+    for i := 0 to 3 do
+    begin
+      curves := curves + FloatToStr(cp1.curvePoints[i][0].x) + ' ';
+      curves := curves + FloatToStr(cp1.curvePoints[i][0].y) + ' ';
+      curves := curves + FloatToStr(cp1.curveWeights[i][0]) + ' ';
+
+      curves := curves + FloatToStr(cp1.curvePoints[i][1].x) + ' ';
+      curves := curves + FloatToStr(cp1.curvePoints[i][1].y) + ' ';
+      curves := curves + FloatToStr(cp1.curveWeights[i][1]) + ' ';
+
+      curves := curves + FloatToStr(cp1.curvePoints[i][2].x) + ' ';
+      curves := curves + FloatToStr(cp1.curvePoints[i][2].y) + ' ';
+      curves := curves + FloatToStr(cp1.curveWeights[i][2]) + ' ';
+
+      curves := curves + FloatToStr(cp1.curvePoints[i][3].x) + ' ';
+      curves := curves + FloatToStr(cp1.curvePoints[i][3].y) + ' ';
+      curves := curves + FloatToStr(cp1.curveWeights[i][3]) + ' ';
+    end;
+
+    curves := trim(curves);
+    parameters := parameters + format('curves="%s" ', [curves]);
 
     FileList.Add('<flame name="' + CleanXMLName(cp1.name) + '" ' + parameters + '>');
    { Write transform parameters }
@@ -1938,8 +1974,10 @@ function TMainForm.SaveXMLFlame(const cp1: TControlPoint; title, filename: strin
 { Saves Flame parameters to end of file }
 var
   Tag: string;
-  IFile: TextFile;
+  IFile: File;
   FileList: TStringList;
+  RB: RawByteString;
+
   i, p: integer;
   bakname: string;
 begin
@@ -2009,16 +2047,15 @@ begin
     else
     begin
     // New file ... easy
-      AssignFile(IFile, filename);
-      ReWrite(IFile);
-      Writeln(IFile, '<flames name="' + Tag + '">');
-      Write(IFile, FlameToXML(cp1, false, true));
-      Writeln(IFile, '</flames>');
-      CloseFile(IFile);
+      FileList := TStringList.Create;
+      FileList.Text := '<flames name="' + Tag + '">' + #$0D#$0A +
+        FlameToXML(cp1, false, true) + #$0D#$0A + '</flames>';
+      FileList.SaveToFile(filename, TEncoding.UTF8);
+      FileList.Destroy;
     end;
   except 
     begin
-      Application.MessageBox(PAnsiChar(Format(TextByKey('common-genericsavefailure'), [FileName])), 'Apophysis', 16);
+      Application.MessageBox(PChar(Format(TextByKey('common-genericsavefailure'), [FileName])), 'Apophysis', 16);
       Result := False;
     end;
   end;
@@ -2044,7 +2081,7 @@ begin
     CloseFile(IFile);
   except on EInOutError do
     begin
-      Application.MessageBox(PAnsiChar(Format(TextByKey('common-genericsavefailure'), [FileName])), 'Apophysis', 16);
+      Application.MessageBox(PChar(Format(TextByKey('common-genericsavefailure'), [FileName])), 'Apophysis', 16);
       Result := False;
     end;
   end;
@@ -2235,7 +2272,7 @@ begin
 
   FViewImage := Renderer.GetTransparentImage;
 
-  if FViewImage <> nil then begin
+  if (FViewImage <> nil) and (FViewImage.Width > 0) then begin
     FViewScale := FViewImage.Width / Image.Width;
 
     FViewPos.X := FViewScale/oldscale * (FViewPos.X - FViewOldPos.X);
@@ -2300,7 +2337,8 @@ begin
   cp.sample_density := 1;
   cp.spatial_oversample := 1;
   cp.spatial_filter_radius := 1;
-  
+
+  Render.NrThreads := NrTreads;
   Render.SetCP(cp);
   Render.Render;
   BM.Assign(Render.GetImage);
@@ -2312,6 +2350,7 @@ var
   GlobalMemoryInfo: TMemoryStatus; // holds the global memory status information
   RenderCP: TControlPoint;
   Mem, ApproxMem: cardinal;
+  bs: integer;
 begin
   RedrawTimer.Enabled := False;
   if Assigned(Renderer) then begin
@@ -2350,11 +2389,14 @@ begin
     GlobalMemoryStatus(GlobalMemoryInfo);
     Mem := GlobalMemoryInfo.dwAvailPhys;
 
+    if (singleBuffer) then bs := 16
+    else bs := 32;
+
 //    if Output.Lines.Count >= 1000 then Output.Lines.Clear;
     Trace1('--- Previewing "' + RenderCP.name + '" ---');
     Trace1(Format('  Available memory: %f Mb', [Mem / (1024*1024)]));
     ApproxMem := int64(RenderCp.Width) * int64(RenderCp.Height) {* sqr(Oversample)}
-                 * (SizeOfBucket[InternalBitsPerSample] + 4 + 4); // +4 for temp image(s)...?
+                 * (bs + 4 + 4); // +4 for temp image(s)...?
     assert(MainPreviewScale <> 0);
     if ApproxMem * sqr(MainPreviewScale) < Mem then begin
       if ExtendMainPreview then begin
@@ -2377,6 +2419,7 @@ begin
       if TraceLevel > 0 then Renderer.Output := TraceForm.MainTrace.Lines;
       Renderer.OnProgress := OnProgress;
       Renderer.SetCP(RenderCP);
+      Renderer.NrThreads := FNrThreads;
 
       Trace2('Starting RenderThread #' + inttostr(Renderer.ThreadID));
       Renderer.Resume;
@@ -2430,8 +2473,8 @@ begin
   inc(MainSeed);
   RandSeed := MainSeed;
   try
-    AssignFile(F, AppPath + randFilename);
-    OpenFile := AppPath + randFilename;
+    AssignFile(F, GetEnvVarValue('APPDATA') + '\' + randFilename);
+    OpenFile := GetEnvVarValue('APPDATA') + '\' + randFilename;
     ReWrite(F);
     WriteLn(F, '<random_batch>');
     for i := 0 to BatchSize - 1 do
@@ -2457,9 +2500,9 @@ begin
     Write(F, '</random_batch>');
     CloseFile(F);
   except
-    on EInOutError do Application.MessageBox(PAnsiChar(TextByKey('main-status-batcherror')), PChar('Apophysis'), 16);
+    on EInOutError do Application.MessageBox(PChar(TextByKey('main-status-batcherror')), PChar('Apophysis'), 16);
   end;
-  RandFile := AppPath + randFilename;
+  RandFile := GetEnvVarValue('APPDATA') + '\' + randFilename;
   MainCp.name := '';
 end;
 
@@ -2497,7 +2540,7 @@ begin
       p := Pos('<flame ', LowerCase(FileStrings[i]));
       if (p <> 0) then
       begin
-        MainForm.ListXMLScanner.LoadFromBuffer(PCHAR(FileStrings[i]));
+        MainForm.ListXMLScanner.LoadFromBuffer(TCharType(TStringType(FileStrings[i])));
         MainForm.ListXMLScanner.Execute;
         if pname <> '' then
         begin
@@ -2576,6 +2619,15 @@ begin
       exit;
     end;
   end;
+  for i := 0 to MainForm.SubstSource.Count - 1 do
+  begin
+    vname := MainForm.SubstSource[i];
+    if (vname = name) then
+    begin
+      Result := true;
+      exit;
+    end;
+  end;
   Result := false;
 end;
 function ScanVariables(name:string):boolean;
@@ -2591,6 +2643,14 @@ begin
       exit;
     end;
   end;
+  for i := 0 to MainForm.SubstSource.Count - 1 do
+  begin
+    if (MainForm.SubstSource[i] = name) then
+    begin
+      Result := true;
+      exit;
+    end;
+  end;
   Result := false;
 end;
 
@@ -2598,7 +2658,10 @@ procedure TMainForm.mnuOpenClick(Sender: TObject);
 var
   fn:string;
 begin
+{$ifdef DisableScripting}
+{$else}
   ScriptEditor.Stopped := True;
+{$endif}
   OpenDialog.Filter := TextByKey('common-filter-flamefiles') + '|*.flame;*.xml|' + TextByKey('common-filter-allfiles') + '|*.*';
   OpenDialog.InitialDir := ParamFolder;
   OpenDialog.FileName := '';
@@ -2689,7 +2752,8 @@ begin
         ListView1.Items.Delete(ListView1.Selected.Index);
         Application.ProcessMessages;
         ListView1.Selected := ListView1.ItemFocused;
-        RebuildListView;
+        //RebuildListView;
+        ListXML(OpenFile, ListView1.ItemIndex);
       end;
   end;
 //end;
@@ -2735,11 +2799,14 @@ end;
 
 procedure TMainForm.mnuRandomBatchClick(Sender: TObject);
 begin
+{$ifdef DisableScripting}
+{$else}
   ScriptEditor.Stopped := True;
+{$endif}
   inc(MainSeed);
   RandSeed := MainSeed;
   RandomBatch;
-  OpenFile := AppPath + randFilename;
+  OpenFile := GetEnvVarValue('APPDATA') + '\' + randFilename;
   OpenFileType := ftXML;
   MainForm.Caption := AppVersionString + ' - ' + TextByKey('main-common-randombatch');
   ListXML(OpenFile, 1);
@@ -2899,7 +2966,10 @@ end;
 
 procedure TMainForm.mnuExitClick(Sender: TObject);
 begin
+{$ifdef DisableScripting}
+{$else}
   ScriptEditor.Stopped := True;
+{$endif}
   Close;
 end;
 
@@ -2993,17 +3063,26 @@ end;
 
 procedure TMainForm.MainFileClick(Sender: TObject);
 begin
+{$ifdef DisableScripting}
+{$else}
   ScriptEditor.Stopped := True;
+{$endif}
 end;
 
 procedure TMainForm.MainViewClick(Sender: TObject);
 begin
+{$ifdef DisableScripting}
+{$else}
   ScriptEditor.Stopped := True;
+{$endif}
 end;
 
 procedure TMainForm.MainToolsClick(Sender: TObject);
 begin
+{$ifdef DisableScripting}
+{$else}
   ScriptEditor.Stopped := True;
+{$endif}
 end;
 
 procedure TMainForm.MainHelpClick(Sender: TObject);
@@ -3011,28 +3090,33 @@ begin
 end;
 
 { ********************************* Form ************************************ }
-
-
 procedure TMainForm.FavoriteClick(Sender: TObject);
 var
   i: integer;
   s: string;
 begin
+{$ifdef DisableScripting}
+{$else}
   i := TMenuItem(Sender).Tag;
   Script := favorites[i];
   ScriptEditor.Editor.Lines.LoadFromFile(Script);
+
   s := ExtractFileName(Script);
   s := Copy(s, 0, length(s) - Length(ExtractFileExt(s)));
   mnuRun.Caption := Format(TextByKey('main-menu-script-run2'), [s]);//'Run "' + s + '"';
   btnRunScript.Hint := Format(TextByKey('main-menu-script-run2'), [s]);//'Run Script (F8)|Runs the ' + s + ' script.';
   //ScriptEditor.Caption := s;
   ScriptEditor.RunScript;
+
+{$endif}
 end;
 
 procedure TMainForm.ScriptItemClick(Sender: TObject);
 var
   s: string;
 begin
+{$ifdef DisableScripting}
+{$else}
   Script := ExtractFilePath(Application.ExeName) + scriptPath + '\' + TMenuItem(Sender).Hint + '.asc';
   ScriptEditor.Editor.Lines.LoadFromFile(Script);
   s := ExtractFileName(Script);
@@ -3041,6 +3125,7 @@ begin
   btnRunScript.Hint := Format(TextByKey('main-menu-script-run2'), [s]);//'Run Script (F8)|Runs the ' + s + ' script.';
   //ScriptEditor.Caption := s;
   ScriptEditor.RunScript;
+{$endif}
 end;
 
 procedure TMainForm.GetScripts;
@@ -3061,6 +3146,8 @@ begin
   NewItem := mnuScript.Find(TextByKey('main-menu-script-more'));
   if (NewItem <> nil) then mnuScript.Remove(NewItem);
 
+  {$ifdef DisableScripting}
+  {$else}
   if FileExists(ExtractFilePath(Application.ExeName) + scriptFavsFilename) then begin
     Favorites.LoadFromFile(AppPath + scriptFavsFilename);
     if Trim(Favorites.Text) <> '' then begin
@@ -3133,20 +3220,56 @@ begin
       FindClose(searchResult);
       mnuScript.Add(NewItem);
   end;
+
+  {$endif}
 end;
 
 procedure TMainForm.FormCreate(Sender: TObject);
 var
   dte: string;
+  cmdl : TCommandLine;
 begin
-  KnownPlugins := TList.Create;
+  //KnownPlugins := TList.Create;
+
+  FNrThreads := 1;
 
   ApophysisSVN:=APP_VERSION;
   AppVersionString:=APP_NAME+' '+APP_VERSION;
-  
+
+  SubstSource := TStringList.Create;
+  SubstTarget := TStringList.Create;
+
+  CreateSubstMap;
+  TbBreakWidth := 802;
+
+  {$ifdef DisableScripting}
+  mnuScript.Visible := false;
+  {btnRunScript.Visible := false;
+  btnStopScript.Visible := false;
+  ToolButton17.Visible := false;
+  ToolButton18.Visible := false;}
+
+  ToolBar.Perform(CM_CONTROLCHANGE, WPARAM(btnRunScript), 0);
+  ToolBar.Perform(CM_CONTROLCHANGE, WPARAM(btnStopScript), 0);
+  ToolBar.Perform(CM_CONTROLCHANGE, WPARAM(ToolButton17), 0);
+  ToolBar.Perform(CM_CONTROLCHANGE, WPARAM(ToolButton18), 0);
+  TbBreakWidth := TbBreakWidth - (3 * 26 + 1 * 8);
+  {$endif}
+
+  ListXmlScanner := TEasyXmlScanner.Create(nil);
+  XmlScanner := TXmlScanner.Create(nil);
+
+  MainForm.ListXmlScanner.Normalize := True;
+  MainForm.ListXmlScanner.OnStartTag := ListXmlScannerStartTag;
+
+  MainForm.XmlScanner.Normalize := False;
+  MainForm.XmlScanner.OnContent := XmlScannerContent;
+  MainForm.XmlScanner.OnEmptyTag := XMLScannerEmptyTag;
+  MainForm.XmlScanner.OnEndTag := XmlScannerEndTag;
+  MainForm.XmlScanner.OnStartTag := XMLScannerStartTag;
+
   ReadSettings;
 
-  //Temporary: force all users have 32 bit integer set as IBD
   InternalBitsPerSample := 0;
   renderBitsPerSample := 0;
 
@@ -3160,8 +3283,13 @@ begin
   AvailableLanguages.Add('');
   ListLanguages;
 
+  C_SyncDllPlugins;
+
+  cmdl := TCommandLine.Create;
+  cmdl.Load;
+
   if (NXFORMS > 100) then AppVersionString := AppVersionString + ' (' + TextByKey('main-common-title-t500') + ')'
-  else if (NXFORMS < 100) then AppVersionString := AppVersionString + ' (' + TextByKey('main-common-title-lite') + ')';
+  else if (NXFORMS < 100) or (cmdl.Lite) then AppVersionString := AppVersionString + ' (' + TextByKey('main-common-title-lite') + ')';
 
   SplashWindow.SetInfo(TextByKey('splash-loadingui'));
   LockListChangeUpdate := false;
@@ -3172,19 +3300,7 @@ begin
   Caption := AppVersionString + APP_BUILD;
 
   mnuExportFLame.Enabled := FileExists(flam3Path);
-  mnuExportChaotica.Enabled := FileExists(chaoticaPath);
-(*
-{$IFDEF DEBUG}
-  // Enable raw mode (default mode uses stack frames which aren't always generated by the compiler)
-  Include(JclStackTrackingOptions, stRawMode);
-  // Disable stack tracking in dynamically loaded modules (it makes stack tracking code a bit faster)
-  Include(JclStackTrackingOptions, stStaticModuleList);
-
-  // Initialize Exception tracking
-  JclStartExceptionTracking;
-  Application.OnException := AppException;
-{$ENDIF}
-*)
+  mnuExportChaotica.Enabled := FileExists(chaoticaPath + '\32bit\chaotica.exe');
 
   FMouseMoveState := msDrag;
   LimitVibrancy := False;
@@ -3196,7 +3312,6 @@ begin
   ParseCp := TControlPoint.create;
   OpenFileType := ftXML;
   Application.OnHint := DisplayHint;
-  Application.OnHelp := ApplicationOnHelp;
   AppPath := ExtractFilePath(Application.ExeName);
   CanDrawOnResize := False;
 
@@ -3208,16 +3323,13 @@ begin
   RandomDate := Dte;
   mnuExit.ShortCut := TextToShortCut('Alt+F4');
 
-  //if VariationOptions = 0 then VariationOptions := 16383; // it shouldn't hapen but just in case;
-  //UnpackVariations(VariationOptions);
-
   SplashWindow.SetInfo(TextByKey('splash-loadingplugins'));
   FillVariantMenu;
 
   tbQualityBox.Text := FloatToStr(defSampleDensity);
   tbShowAlpha.Down := ShowTransparency;
   DrawSelection := true;
-  FViewScale := 1; // prevent divide by zero (?)
+  FViewScale := 1;
   ThumbnailSize := 128;
   UsedThumbnails := Thumbnails;
   if (UseSmallThumbnails) then begin
@@ -3228,20 +3340,20 @@ begin
   LoadThumbnailPlaceholder(ThumbnailSize);
 
   ListView1.LargeImages := UsedThumbnails;
-  //ListView1.SmallImages := UsedThumbnails;
   ListBackPanel.Width := ThumbnailSize + 90;
   Splitter.Left := ListBackPanel.Width;
 
-  if NXFORMS >= 100 then begin
+  if not cmdl.Lite then begin
   if ClassicListMode = true then
     btnViewListClick(nil)
   else
     btnViewIconsClick(nil);
   end else begin
   ListView1.ViewStyle := vsReport;
-  btnViewList.Visible := false;
-  btnViewIcons.Visible := false;
-  ToolButton9.Visible := false;
+  ToolBar.Perform(CM_CONTROLCHANGE, WPARAM(btnViewList), 0);
+  ToolBar.Perform(CM_CONTROLCHANGE, WPARAM(btnViewIcons), 0);
+  ToolBar.Perform(CM_CONTROLCHANGE, WPARAM(ToolButton9), 0);
+  TbBreakWidth := TbBreakWidth - (2 * 26 + 1 * 8);
   end;
 
 end;
@@ -3258,10 +3370,6 @@ var
   fn, flameXML : string;
   openScript : string;
 begin
-  EnumPlugins := true;
-  PluginMonitor.Enumerate;
-  EnumPlugins := false;
-
   tbGuides.Down := EnableGuides;
   DoNotAskAboutChange := true;
   { Read position from registry }
@@ -3322,8 +3430,8 @@ begin
     GetCMap(cmap_index, 1, maincp.cmap);
     DefaultPalette := maincp.cmap;
   end;
-  if FileExists(AppPath + randFilename) then
-    DeleteFile(AppPath + randFilename);
+  if FileExists(GetEnvVarValue('APPDATA') + '\' + randFilename) then
+    DeleteFile(GetEnvVarValue('APPDATA') + '\' + randFilename);
 
   cmdl := TCommandLine.Create;
   cmdl.Load;
@@ -3354,7 +3462,7 @@ begin
     RandomBatch;
     if APP_BUILD = '' then MainForm.Caption := AppVersionString + ' - ' + TextByKey('main-common-randombatch')
     else MainForm.Caption := AppVersionString + ' ' + APP_BUILD + ' - ' + TextByKey('main-common-randombatch');
-    OpenFile := AppPath + randFilename;
+    OpenFile := GetEnvVarValue('APPDATA') + '\' + randFilename;
     ListXML(OpenFile, 1);
     OpenFileType := ftXML;
     if batchsize = 1 then DrawFlame;
@@ -3371,7 +3479,7 @@ begin
       RandomBatch;
       if APP_BUILD = '' then MainForm.Caption := AppVersionString + ' - ' + TextByKey('main-common-randombatch')
       else MainForm.Caption := AppVersionString + ' ' + APP_BUILD + ' - ' + TextByKey('main-common-randombatch');
-      OpenFile := AppPath + randFilename;
+      OpenFile := GetEnvVarValue('APPDATA') + '\' + randFilename;
       ListXML(OpenFile, 1);
       OpenFileType := ftXML;
       if batchsize = 1 then DrawFlame;
@@ -3421,7 +3529,10 @@ begin
       fn:=cmdl.TemplateFile;
       flameXML := LoadXMLFlameText(fn, cmdl.TemplateName);
       UpdateUndo;
-      ScriptEditor.Stopped := True;
+{$ifdef DisableScripting}
+{$else}
+  ScriptEditor.Stopped := True;
+{$endif}
       StopThread;
       InvokeLoadXML(flameXML);
       Transforms := MainCp.TrianglesFromCP(MainTriangles);
@@ -3435,7 +3546,8 @@ begin
   end;
 
   // .. and run autoexec.asc
-
+{$ifdef DisableScripting}
+{$else}
   SplashWindow.SetInfo(TextByKey('splash-execstartupscript'));
   if (FileExists(AppPath + 'autoexec.asc')) then begin
     ScriptEditor.LoadRunAndClear(AppPath + 'autoexec.asc');
@@ -3447,7 +3559,9 @@ begin
     ScriptEditor.LoadScriptFile(openScript);
     ScriptEditor.Show;
   end;
+{$endif}
 
+  //FNrThreads := Nrtreads;
 
   SplashWindow.Hide;
   SplashWindow.Free;
@@ -3495,13 +3609,16 @@ var
   Registry: TRegistry;
 begin
   if ConfirmExit and (UndoIndex <> 0) then
-    if Application.MessageBox(PAnsiChar(TextByKey('common-confirmexit')), 'Apophysis', MB_ICONWARNING or MB_YESNO) <> IDYES then
+    if Application.MessageBox(PChar(TextByKey('common-confirmexit')), 'Apophysis', MB_ICONWARNING or MB_YESNO) <> IDYES then
     begin
       Action := caNone;
       exit;
     end;
 
+{$ifdef DisableScripting}
+{$else}
   ScriptEditor.Stopped := True;
+{$endif}
   HtmlHelp(0, nil, HH_CLOSE_ALL, 0);
   { To capture secondary window positions }
   if EditForm.visible then EditForm.Close;
@@ -3509,7 +3626,11 @@ begin
   if GradientBrowser.visible then GradientBrowser.close;
   if MutateForm.visible then MutateForm.Close;
 //  if GradientForm.visible then GradientForm.Close;
+{$ifdef DisableScripting}
+{$else}
   if ScriptEditor.visible then ScriptEditor.Close;
+{$endif}
+
   { Stop the render thread }
   if RenderForm.Visible then RenderForm.Close;
   if assigned(Renderer) then Renderer.Terminate;
@@ -3532,8 +3653,10 @@ begin
   end;
   Application.ProcessMessages;
   CanDrawOnResize := False;
-  if FileExists(randFilename) then DeleteFile(randFilename);
-  if FileExists(undoFilename) then DeleteFile(undoFilename);
+  if FileExists(GetEnvVarValue('APPDATA') + '\' + randFilename) then
+    DeleteFile(GetEnvVarValue('APPDATA') + '\' + randFilename);
+  if FileExists(GetEnvVarValue('APPDATA') + '\' + undoFilename) then
+    DeleteFile(GetEnvVarValue('APPDATA') + '\' + undoFilename);
   SaveSettings;
 end;
 
@@ -3571,7 +3694,10 @@ begin
     end;
     DrawImageView;
   end;
+{$ifdef DisableScripting}
+{$else}
   ScriptEditor.Stopped := True;
+{$endif}
 end;
 
 { ****************************** Misc controls ****************************** }
@@ -3617,7 +3743,7 @@ begin
       p := Pos('<flame ', LowerCase(FileStrings[i]));
       if (p <> 0) then
       begin
-        MainForm.ListXMLScanner.LoadFromBuffer(PCHAR(FileStrings[i]));
+        MainForm.ListXMLScanner.LoadFromBuffer(TCharType(TStringType(FileStrings[i])));
         MainForm.ListXMLScanner.Execute;
         if pname <> '' then
         begin
@@ -3643,10 +3769,12 @@ begin
       ParamStrings.Add(FileStrings[i]);
     until pos('</flame>', Lowercase(FileStrings[i])) <> 0;
 
-    ScriptEditor.Stopped := True;
-    px:=PCHAR(PAramStrings.Text);
+{$ifdef DisableScripting}
+{$else}
+  ScriptEditor.Stopped := True;
+{$endif}
     StopThread;
-    ParseXML(MainCp,px, true);
+    ParseXML(MainCp,PAramStrings.Text, true);
 
     mnuSaveUndo.Enabled := false;
     mnuUndo.Enabled := False;
@@ -3666,7 +3794,8 @@ begin
 
     UndoIndex := 0;
     UndoMax := 0;
-    if fileExists(AppPath + undoFilename) then DeleteFile(AppPath + undoFilename);
+    if fileExists(GetEnvVarValue('APPDATA') + '\' + undoFilename) then
+      DeleteFile(GetEnvVarValue('APPDATA') + '\' + undoFilename);
     Statusbar.Panels[3].Text := Maincp.name;
     RedrawTimer.Enabled := True;
     Application.ProcessMessages;
@@ -3735,7 +3864,10 @@ begin
     begin
 
       SavedPal := false;
-      ScriptEditor.Stopped := True;
+{$ifdef DisableScripting}
+{$else}
+  ScriptEditor.Stopped := True;
+{$endif}
       FStrings := TStringList.Create;
       IFSStrings := TStringList.Create;
       Tokens := TStringList.Create;
@@ -3823,7 +3955,8 @@ begin
         if SavedPal then maincp.cmap := Palette;
         UndoIndex := 0;
         UndoMax := 0;
-        if fileExists(AppPath + undoFilename) then DeleteFile(AppPath + undoFilename);
+        if fileExists(GetEnvVarValue('APPDATA') + '\' + undoFilename) then
+          DeleteFile(GetEnvVarValue('APPDATA') + '\' + undoFilename);
         maincp.name := ListView.Selected.Caption;
         Statusbar.Panels[3].Text := maincp.name;
         RedrawTimer.Enabled := True;
@@ -3847,6 +3980,8 @@ begin
   if AdjustForm.visible then AdjustForm.UpdateDisplay;
   if EditForm.visible then EditForm.UpdateDisplay;
   if MutateForm.visible then MutateForm.UpdateDisplay;
+  if CurvesForm.Visible then CurvesForm.SetCp(MainCp);
+  
 end;
 
 procedure TMainForm.LoadUndoFlame(index: integer; filename: string);
@@ -3859,7 +3994,10 @@ var
   s: string;
   Palette: TColorMap;
 begin
+{$ifdef DisableScripting}
+{$else}
   ScriptEditor.Stopped := True;
+{$endif}
   FStrings := TStringList.Create;
   IFSStrings := TStringList.Create;
   Tokens := TStringList.Create;
@@ -4190,6 +4328,11 @@ begin
   mnuToolbar.Checked := Toolbar.visible;
 end;
 
+procedure TMainForm.mnuTraceClick(Sender: TObject);
+begin
+  TraceForm.Show;
+end;
+
 procedure TMainForm.mnuStatusBarClick(Sender: TObject);
 begin
   Statusbar.Visible := not Statusbar.Visible;
@@ -4206,10 +4349,11 @@ end;
 procedure TMainForm.Undo;
 begin
   if UndoIndex = UndoMax then
-    SaveFlame(maincp, Format('%.4d-', [UndoIndex]) + maincp.name, AppPath + undoFilename);
+    SaveFlame(maincp, Format('%.4d-', [UndoIndex]) + maincp.name,
+      GetEnvVarValue('APPDATA') + '\' + undoFilename);
   StopThread;
   Dec(UndoIndex);
-  LoadUndoFlame(UndoIndex, AppPath + undoFilename);
+  LoadUndoFlame(UndoIndex, GetEnvVarValue('APPDATA') + '\' + undoFilename);
   mnuRedo.Enabled := True;
   mnuPopRedo.Enabled := True;
   btnRedo.Enabled := True;
@@ -4239,7 +4383,7 @@ begin
 
   assert(UndoIndex <= UndoMax, 'Undo list index out of range!');
 
-  LoadUndoFlame(UndoIndex, AppPath + undoFilename);
+  LoadUndoFlame(UndoIndex, GetEnvVarValue('APPDATA') + '\' + undoFilename);
   mnuUndo.Enabled := True;
   mnuPopUndo.Enabled := True;
   btnUndo.Enabled := True;
@@ -4294,7 +4438,7 @@ begin
   NewRender := True;
 
   if Assigned(RenderForm.Renderer) then
-    if Application.MessageBox(PAnsiChar(TextByKey('render-status-confirmstop')), 'Apophysis', 36) = ID_NO then
+    if Application.MessageBox(PChar(TextByKey('render-status-confirmstop')), 'Apophysis', 36) = ID_NO then
       NewRender := false;
 
   if NewRender then
@@ -4334,7 +4478,7 @@ begin
   NewRender := True;
 
   if Assigned(RenderForm.Renderer) then
-    if Application.MessageBox(PAnsiChar(TextByKey('render-status-confirmstop')), 'Apophysis', 36) = ID_NO then
+    if Application.MessageBox(PChar(TextByKey('render-status-confirmstop')), 'Apophysis', 36) = ID_NO then
       NewRender := false;
 
   if NewRender then
@@ -4430,7 +4574,7 @@ end;
 procedure TMainForm.FormCloseQuery(Sender: TObject; var CanClose: Boolean);
 begin
   if Assigned(RenderForm.Renderer) then
-    if Application.MessageBox(PAnsiChar(TextByKey('render-status-confirmstop')), 'Apophysis', 36) = ID_NO then
+    if Application.MessageBox(PChar(TextByKey('render-status-confirmstop')), 'Apophysis', 36) = ID_NO then
       CanClose := False;
 
   AboutToExit := CanClose;
@@ -4475,27 +4619,42 @@ end;
 
 procedure TMainForm.mnuEditScriptClick(Sender: TObject);
 begin
+{$ifdef DisableScripting}
+{$else}
   ScriptEditor.Show;
+{$endif}
 end;
 
 procedure TMainForm.btnRunClick(Sender: TObject);
 begin
+  {$ifdef DisableScripting}
+{$else}
   ScriptEditor.RunScript;
+{$endif}
 end;
 
 procedure TMainForm.mnuRunClick(Sender: TObject);
 begin
+{$ifdef DisableScripting}
+{$else}
   ScriptEditor.RunScript;
+{$endif}
 end;
 
 procedure TMainForm.mnuOpenScriptClick(Sender: TObject);
 begin
+{$ifdef DisableScripting}
+{$else}
   ScriptEditor.OpenScript;
+{$endif}
 end;
 
 procedure TMainForm.mnuStopClick(Sender: TObject);
 begin
+{$ifdef DisableScripting}
+{$else}
   ScriptEditor.Stopped := True;
+{$endif}
 end;
 
 procedure TMainForm.mnuImportGimpClick(Sender: TObject);
@@ -4532,6 +4691,8 @@ var
   i: integer;
   s: string;
 begin
+{$ifdef DisableScripting}
+{$else}
   if FavoritesForm.ShowModal = mrOK then
   begin
     if favorites.count <> 0 then
@@ -4548,6 +4709,7 @@ begin
     end;
     GetScripts;
   end;
+{$endif}
 end;
 
 procedure TMainForm.DisableFavorites;
@@ -4622,7 +4784,7 @@ begin
   end;
 end;
 
-procedure TMainForm.ParseXML(var cp1: TControlPoint; const params: PCHAR; const ignoreErrors : boolean);
+procedure TMainForm.ParseXML(var cp1: TControlPoint; const params: string; const ignoreErrors : boolean);
 var
   i: integer; temp: string;
   h, s, v: real;
@@ -4645,7 +4807,7 @@ begin
 
   //LoadCpFromXmlCompatible(params, ParseCP, temp);
 
-  XMLScanner.LoadFromBuffer(params);
+  XMLScanner.LoadFromBuffer(TCharType(TStringType(params)));
   XMLScanner.Execute;
 
   cp1.copy(ParseCp);
@@ -4691,7 +4853,10 @@ procedure TMainForm.mnuPasteClick(Sender: TObject);
 begin
   if Clipboard.HasFormat(CF_TEXT) then begin
     UpdateUndo;
-    ScriptEditor.Stopped := True;
+{$ifdef DisableScripting}
+{$else}
+  ScriptEditor.Stopped := True;
+{$endif}
     StopThread;
     ParseXML(MainCP, PCHAR(Clipboard.AsText), false);
     AnnoyUser;
@@ -4752,7 +4917,7 @@ var
 begin
   if not FileExists(flam3Path) then
   begin
-    Application.MessageBox(PAnsiChar(TextByKey('main-status-noflam3')), 'Apophysis', 16);
+    Application.MessageBox(PChar(TextByKey('main-status-noflam3')), 'Apophysis', 16);
     exit;
   end;
   case ExportFileFormat of
@@ -4876,7 +5041,7 @@ begin
   for i := 1 to Length(in_data) do
   begin
     c := in_data[i];
-    if c in ['0'..'9']+['A'..'F']+['a'..'f'] then data := data + c;
+    if CharInSet(c,['0'..'9']+['A'..'F']+['a'..'f']) then data := data + c;
   end;
 
   if alpha then len := count * 8
@@ -4896,24 +5061,24 @@ end;
 procedure TMainForm.ListXmlScannerStartTag(Sender: TObject;
   TagName: string; Attributes: TAttrList);
 begin
-  pname := Attributes.value('name');
-  ptime := Attributes.value('time');
+  pname := String(Attributes.value(TStringType('name')));
+  ptime := String(Attributes.value(TStringType('time')));
 end;
 
 procedure TMainForm.XMLScannerStartTag(Sender: TObject; TagName: string;
   Attributes: TAttrList);
 var
   Tokens: TStringList;
-  v: string;
-  i : integer;
+  v: TStringType;
+  ParsePos, i : integer;
 begin
   Tokens := TStringList.Create;
  try
 
   if TagName='xformset' then // unused in this release...
   begin
-    v := Attributes.Value('enabled');
-    if v <> '' then ParseCP.finalXformEnabled := (StrToInt(v) <> 0)
+    v := Attributes.Value(TStringType('enabled'));
+    if v <> '' then ParseCP.finalXformEnabled := (StrToInt(String(v)) <> 0)
     else ParseCP.finalXformEnabled := true;
 
     inc(activeXformSet);
@@ -4922,71 +5087,97 @@ begin
   begin
     BeginParsing;
     
-    v := Attributes.value('name');
-    if v <> '' then Parsecp.name := v else Parsecp.name := 'untitled';
+    v := Attributes.value(TStringType('name'));
+    if v <> '' then Parsecp.name := String(v) else Parsecp.name := 'untitled';
     v := Attributes.Value('time');
-    if v <> '' then Parsecp.Time := StrToFloat(v);
+    if v <> '' then Parsecp.Time := StrToFloat(String(v));
     v := Attributes.value('palette');
     if v <> '' then
-      Parsecp.cmapindex := StrToInt(v)
+      Parsecp.cmapindex := StrToInt(String(v))
     else
       Parsecp.cmapindex := -1;
     v := Attributes.value('gradient');
     if v <> '' then
-      Parsecp.cmapindex := StrToInt(v)
+      Parsecp.cmapindex := StrToInt(String(v))
     else
       Parsecp.cmapindex := -1;
     ParseCP.hue_rotation := 1;
 
     v := Attributes.value('hue');
-    if v <> '' then Parsecp.hue_rotation := StrToFloat(v);
+    if v <> '' then Parsecp.hue_rotation := StrToFloat(String(v));
     v := Attributes.Value('brightness');
-    if v <> '' then Parsecp.Brightness := StrToFloat(v);
+    if v <> '' then Parsecp.Brightness := StrToFloat(String(v));
     v := Attributes.Value('gamma');
-    if v <> '' then Parsecp.gamma := StrToFloat(v);
+    if v <> '' then Parsecp.gamma := StrToFloat(String(v));
     v := Attributes.Value('vibrancy');
-    if v <> '' then Parsecp.vibrancy := StrToFloat(v);
+    if v <> '' then Parsecp.vibrancy := StrToFloat(String(v));
     if (LimitVibrancy) and (Parsecp.vibrancy > 1) then Parsecp.vibrancy := 1;
     v := Attributes.Value('gamma_threshold');
-    if v <> '' then Parsecp.gamma_threshold := StrToFloat(v)
+    if v <> '' then Parsecp.gamma_threshold := StrToFloat(String(v))
     else Parsecp.gamma_threshold := 0;
 
     v := Attributes.Value('zoom');
-    if v <> '' then Parsecp.zoom := StrToFloat(v);
+    if v <> '' then Parsecp.zoom := StrToFloat(String(v));
     v := Attributes.Value('scale');
-    if v <> '' then Parsecp.pixels_per_unit := StrToFloat(v);
+    if v <> '' then Parsecp.pixels_per_unit := StrToFloat(String(v));
     v := Attributes.Value('rotate');
-    if v <> '' then Parsecp.FAngle := -PI * StrToFloat(v)/180;
+    if v <> '' then Parsecp.FAngle := -PI * StrToFloat(String(v))/180;
     v := Attributes.Value('angle');
-    if v <> '' then Parsecp.FAngle := StrToFloat(v);
+    if v <> '' then Parsecp.FAngle := StrToFloat(String(v));
 
     // 3d
     v := Attributes.Value('cam_pitch');
-    if v <> '' then Parsecp.cameraPitch := StrToFloat(v);
+    if v <> '' then Parsecp.cameraPitch := StrToFloat(String(v));
     v := Attributes.Value('cam_yaw');
-    if v <> '' then Parsecp.cameraYaw := StrToFloat(v);
+    if v <> '' then Parsecp.cameraYaw := StrToFloat(String(v));
     v := Attributes.Value('cam_dist');
-    if v <> '' then Parsecp.cameraPersp := 1/StrToFloat(v);
+    if v <> '' then Parsecp.cameraPersp := 1/StrToFloat(String(v));
     v := Attributes.Value('cam_perspective');
-    if v <> '' then Parsecp.cameraPersp := StrToFloat(v);
+    if v <> '' then Parsecp.cameraPersp := StrToFloat(String(v));
     v := Attributes.Value('cam_zpos');
-    if v <> '' then Parsecp.cameraZpos := StrToFloat(v);
+    if v <> '' then Parsecp.cameraZpos := StrToFloat(String(v));
     v := Attributes.Value('cam_dof');
-    if v <> '' then Parsecp.cameraDOF := abs(StrToFloat(v));
+    if v <> '' then Parsecp.cameraDOF := abs(StrToFloat(String(v)));
 
     //density estimation
     v := Attributes.Value('estimator_radius');
-    if v <> '' then Parsecp.estimator := StrToFloat(v);
+    if v <> '' then Parsecp.estimator := StrToFloat(String(v));
     v := Attributes.Value('estimator_minimum');
-    if v <> '' then Parsecp.estimator_min := StrToFloat(v);
+    if v <> '' then Parsecp.estimator_min := StrToFloat(String(v));
     v := Attributes.Value('estimator_curve');
-    if v <> '' then Parsecp.estimator_curve := StrToFloat(v);
+    if v <> '' then Parsecp.estimator_curve := StrToFloat(String(v));
     v := Attributes.Value('enable_de');
     if (v = '1') then Parsecp.enable_de := true;
 
+    v := Attributes.Value('new_linear');
+    if (v = '1') then Parsecp.noLinearFix := true
+    else ParseCp.noLinearFix := false;
+
+    v := Attributes.Value('curves');
+    if (v <> '') then begin
+      GetTokens(String(v), tokens);
+      ParsePos := -1;
+      for i := 0 to 3 do
+      begin
+        Inc(ParsePos);ParseCp.curvePoints[i][0].x := StrToFloat(Tokens[ParsePos]);
+        Inc(ParsePos);ParseCp.curvePoints[i][0].y := StrToFloat(Tokens[ParsePos]);
+        Inc(ParsePos);ParseCp.curveWeights[i][0] := StrToFloat(Tokens[ParsePos]);
+        Inc(ParsePos);ParseCp.curvePoints[i][1].x := StrToFloat(Tokens[ParsePos]);
+        Inc(ParsePos);ParseCp.curvePoints[i][1].y := StrToFloat(Tokens[ParsePos]);
+        Inc(ParsePos);ParseCp.curveWeights[i][1] := StrToFloat(Tokens[ParsePos]);
+        Inc(ParsePos);ParseCp.curvePoints[i][2].x := StrToFloat(Tokens[ParsePos]);
+        Inc(ParsePos);ParseCp.curvePoints[i][2].y := StrToFloat(Tokens[ParsePos]);
+        Inc(ParsePos);ParseCp.curveWeights[i][2] := StrToFloat(Tokens[ParsePos]);
+        Inc(ParsePos);ParseCp.curvePoints[i][3].x := StrToFloat(Tokens[ParsePos]);
+        Inc(ParsePos);ParseCp.curvePoints[i][3].y := StrToFloat(Tokens[ParsePos]);
+        Inc(ParsePos);ParseCp.curveWeights[i][3] := StrToFloat(Tokens[ParsePos]);
+      end;
+
+    end;
+
     try
       v := Attributes.Value('center');
-      GetTokens(v, tokens);
+      GetTokens(String(v), tokens);
 
       Parsecp.center[0] := StrToFloat(Tokens[0]);
       Parsecp.center[1] := StrToFloat(Tokens[1]);
@@ -4996,14 +5187,14 @@ begin
     end;
 
     v := Attributes.Value('size');
-    GetTokens(v, tokens);
+    GetTokens(String(v), tokens);
 
     Parsecp.width := StrToInt(Tokens[0]);
     Parsecp.height := StrToInt(Tokens[1]);
 
     try
       v := Attributes.Value('background');
-      GetTokens(v, tokens);
+      GetTokens(String(v), tokens);
 
       Parsecp.background[0] := Floor(StrToFloat(Tokens[0]) * 255);
       Parsecp.background[1] := Floor(StrToFloat(Tokens[1]) * 255);
@@ -5015,10 +5206,10 @@ begin
     end;
 
     v := Attributes.Value('soloxform');
-    if v <> '' then Parsecp.soloXform := StrToInt(v);
+    if v <> '' then Parsecp.soloXform := StrToInt(String(v));
 
     v := Attributes.Value('plugins');
-    GetTokens(v, tokens);
+    GetTokens(String(v), tokens);
     if (tokens.Count > 0) then begin
       ParseCP.used_plugins.Clear;
 
@@ -5027,27 +5218,95 @@ begin
     end;
 
     v := Attributes.Value('nick');
-    if Trim(v) = '' then v := SheepNick;
-    Parsecp.Nick := v;
+    if Trim(String(v)) = '' then v := TStringType(SheepNick);
+    Parsecp.Nick := String(v);
     v := Attributes.Value('url');
-    if Trim(v) = '' then v := SheepUrl;
-    Parsecp.URL := v;
+    if Trim(String(v)) = '' then v := TStringType(SheepUrl);
+    Parsecp.URL := String(v);
   end
   else if TagName='palette' then
   begin
-    XMLPaletteFormat := Attributes.Value('format');
-    XMLPaletteCount := StrToIntDef(Attributes.Value('count'), 256);
+    XMLPaletteFormat := String(Attributes.Value('format'));
+    XMLPaletteCount := StrToIntDef(String(Attributes.Value('count')), 256);
   end;
  finally
     Tokens.free;
  end;
 end;
 
+function flatten_val(Attributes: TAttrList): double;
+var
+  vv: array of double;
+  vn: array of string;
+  i: integer;
+  s: string;
+  d: boolean;
+begin
+
+  SetLength(vv, 24);
+  SetLength(vn, 24);
+
+  d := false;
+
+  vn[0] := 'linear3D'; vn[1] := 'bubble';
+  vn[2] := 'cylinder'; vn[3] := 'zblur';
+  vn[4] := 'blur3D'; vn[5] := 'pre_ztranslate';
+  vn[6] := 'pre_rotate_x'; vn[7] := 'pre_rotate_y';
+  vn[8] := 'ztranslate'; vn[9] := 'zcone';
+  vn[10] := 'post_rotate_x'; vn[11] := 'post_rotate_y';
+  vn[12] := 'julia3D'; vn[13] := 'julia3Dz';
+  vn[14] := 'curl3D_cz'; vn[15] := 'hemisphere';
+  vn[16] := 'bwraps2'; vn[17] := 'bwraps';
+  vn[18] := 'falloff2'; vn[19] := 'crop';
+  vn[20] := 'pre_falloff2'; vn[21] := 'pre_crop';
+  vn[22] := 'post_falloff2'; vn[23] := 'post_crop';
+
+
+  for i := 0 to 23 do
+  begin
+    s := String(Attributes.Value(TStringType(vn[i])));
+    if (s <> '') then vv[i] := StrToFloat(s)
+    else vv[i] := 0;
+    d := d or (vv[i] <> 0);
+  end;
+
+  if (d) then Result := 0
+  else Result := 1;
+
+  SetLength(vv, 0);
+  SetLength(vn, 0);
+end;
+function linear_val(Attributes: TAttrList): double;
+var
+  vv: array of double;
+  vn: array of string;
+  i: integer;
+  s: string;
+begin
+  SetLength(vv, 2);
+  SetLength(vn, 2);
+
+  Result := 0;
+
+  vn[0] := 'linear3D';
+  vn[1] := 'linear';
+  for i := 0 to 1 do
+  begin
+    s := String(Attributes.Value(TStringType(vn[i])));
+    if (s <> '') then vv[i] := StrToFloat(s)
+    else vv[i] := 0;
+    Result := Result + vv[i];
+  end;
+
+  SetLength(vv, 0);
+  SetLength(vn, 0);
+end;
+
 procedure TMainForm.XmlScannerContent(Sender: TObject; Content: String);
 begin
   if XMLPaletteCount <= 0 then begin
     //ShowMessage('ERROR: No colors in palette!');
-    Application.MessageBox(PAnsiChar(TextByKey('common-invalidformat')), 'Apophysis', MB_ICONERROR);
+    Application.MessageBox(PChar(TextByKey('common-invalidformat')), 'Apophysis', MB_ICONERROR);
     exit;
   end;
   if XMLPaletteFormat = 'RGB' then
@@ -5059,7 +5318,7 @@ begin
     ParseCompactColors(ParseCP, XMLPaletteCount, Content);
   end
   else begin
-    Application.MessageBox(PAnsiChar(TextByKey('common-invalidformat')), 'Apophysis', MB_ICONERROR);
+    Application.MessageBox(PChar(TextByKey('common-invalidformat')), 'Apophysis', MB_ICONERROR);
     exit;
   end;
   Parsecp.cmapindex := -1;
@@ -5072,46 +5331,46 @@ procedure TMainForm.XMLScannerEmptyTag(Sender: TObject; TagName: string;
   Attributes: TAttrList);
 var
   i: integer;
-  v: string;
-  d, floatcolor: double;
+  v, l, l3d: TStringType;
+  d, floatcolor, vl, vl3d: double;
   Tokens: TStringList;
 begin
 
   Tokens := TStringList.Create;
   try
     if (TagName = 'xform') or (TagName = 'finalxform') then
-     if {(TagName = 'finalxform') and} (FinalXformLoaded) then Application.MessageBox(PAnsiChar(TextByKey('common-invalidformat')), 'Apophysis', MB_ICONERROR)
+     if {(TagName = 'finalxform') and} (FinalXformLoaded) then Application.MessageBox(PChar(TextByKey('common-invalidformat')), 'Apophysis', MB_ICONERROR)
      else
     begin
       for i := 0 to Attributes.Count - 1 do begin
-        if not ScanVariations(attributes.Name(i)) and
-           not ScanVariables(attributes.Name(i)) then
-           CheckAttribute(Attributes.Name(i));
+        if not ScanVariations(String(attributes.Name(i))) and
+           not ScanVariables(String(attributes.Name(i))) then
+           CheckAttribute(String(Attributes.Name(i)));
       end;
       if (TagName = 'finalxform') or (activeXformSet > 0) then FinalXformLoaded := true;
 
      with ParseCP.xform[nXform] do begin
       Clear;
       v := Attributes.Value('weight');
-      if (v <> '') and (TagName = 'xform') then density := StrToFloat(v);
+      if (v <> '') and (TagName = 'xform') then density := StrToFloat(String(v));
       if (TagName = 'finalxform') then
       begin
         v := Attributes.Value('enabled');
-        if v <> '' then ParseCP.finalXformEnabled := (StrToInt(v) <> 0)
+        if v <> '' then ParseCP.finalXformEnabled := (StrToInt(String(v)) <> 0)
         else ParseCP.finalXformEnabled := true;
       end;
 
       if activexformset > 0 then density := 0; // tmp...
 
       v := Attributes.Value('color');
-      if v <> '' then color := StrToFloat(v);
+      if v <> '' then color := StrToFloat(String(v));
       v := Attributes.Value('var_color');
-      if v <> '' then pluginColor := StrToFloat(v);
+      if v <> '' then pluginColor := StrToFloat(String(v));
       v := Attributes.Value('symmetry');
-      if v <> '' then symmetry := StrToFloat(v);
+      if v <> '' then symmetry := StrToFloat(String(v));
       v := Attributes.Value('coefs');
-      GetTokens(v, tokens);
-      if Tokens.Count < 6 then Application.MessageBox(PAnsiChar(TextByKey('common-invalidformat')), 'Apophysis', MB_ICONERROR);
+      GetTokens(String(v), tokens);
+      if Tokens.Count < 6 then Application.MessageBox(PChar(TextByKey('common-invalidformat')), 'Apophysis', MB_ICONERROR);
       c[0][0] := StrToFloat(Tokens[0]);
       c[0][1] := StrToFloat(Tokens[1]);
       c[1][0] := StrToFloat(Tokens[2]);
@@ -5121,8 +5380,8 @@ begin
 
       v := Attributes.Value('post');
       if v <> '' then begin
-        GetTokens(v, tokens);
-        if Tokens.Count < 6 then Application.MessageBox(PAnsiChar(TextByKey('common-invalidformat')), 'Apophysis', MB_ICONERROR);
+        GetTokens(String(v), tokens);
+        if Tokens.Count < 6 then Application.MessageBox(PChar(TextByKey('common-invalidformat')), 'Apophysis', MB_ICONERROR);
         p[0][0] := StrToFloat(Tokens[0]);
         p[0][1] := StrToFloat(Tokens[1]);
         p[1][0] := StrToFloat(Tokens[2]);
@@ -5133,7 +5392,7 @@ begin
 
       v := Attributes.Value('chaos');
       if v <> '' then begin
-        GetTokens(v, tokens);
+        GetTokens(String(v), tokens);
         for i := 0 to Tokens.Count-1 do
           modWeights[i] := Abs(StrToFloat(Tokens[i]));
       end;
@@ -5142,17 +5401,17 @@ begin
       // for 2.09 flames compatibility
       v := Attributes.Value('opacity');
       if v <> '' then begin
-        if StrToFloat(v) = 0.0 then begin
+        if StrToFloat(String(v)) = 0.0 then begin
           transOpacity := 0;
         end else begin
-          transOpacity := StrToFloat(v);
+          transOpacity := StrToFloat(String(v));
         end;
       end;
 
       // 7x.9 name tag
       v := Attributes.Value('name');
       if v <> '' then begin
-        TransformName := v;
+        TransformName := String(v);
       end;
 
       v := Attributes.Value('plotmode');
@@ -5162,42 +5421,62 @@ begin
         end;
       end;
 
-      for i := 0 to NRVAR - 1 do
-      begin
-        SetVariation(i, 0);
-        v := Attributes.Value(varnames(i));
-        if v <> '' then
-          SetVariation(i, StrToFloat(v));
+      // tricky: attempt to convert parameters to 15C+-format if necessary
+      if (ParseCp.noLinearFix) then
+        for i := 0 to 1 do
+        begin
+          SetVariation(i, 0);
+          v := TStringType(ReadWithSubst(Attributes, varnames(i)));
+          //v := Attributes.Value(AnsiString(varnames(i)));
+          if v <> '' then
+              SetVariation(i, StrToFloat(String(v)));
+        end
+      else begin
+        SetVariation(0, linear_val(Attributes));
+        SetVariation(1, flatten_val(Attributes));
       end;
 
+      // now parse the rest of the variations...as usual
+      for i := 2 to NRVAR - 1 do
+      begin
+        SetVariation(i, 0);
+        v := TStringType(ReadWithSubst(Attributes, varnames(i)));
+        //v := Attributes.Value(AnsiString(varnames(i)));
+        if v <> '' then
+            SetVariation(i, StrToFloat(String(v)));
+      end;
+
+      // and the variables
+      for i := 0 to GetNrVariableNames - 1 do begin
+        v := TStringType(ReadWithSubst(Attributes, GetVariableNameAt(i)));
+        //v := Attributes.Value(AnsiString(GetVariableNameAt(i)));
+        if v <> '' then begin
+          {$ifndef VAR_STR}
+          d := StrToFloat(String(v));
+          SetVariable(GetVariableNameAt(i), d);
+          {$else}
+          SetVariableStr(GetVariableNameAt(i), String(v));
+          {$endif}
+        end;
+      end;
+
+      // legacy variation/variable notation
       v := Attributes.Value('var1');
       if v <> '' then
       begin
         for i := 0 to NRVAR - 1 do
           SetVariation(i, 0);
-        SetVariation(StrToInt(v), 1);
+        SetVariation(StrToInt(String(v)), 1);
       end;
       v := Attributes.Value('var');
       if v <> '' then
       begin
         for i := 0 to NRVAR - 1 do
           SetVariation(i, 0);
-        GetTokens(v, tokens);
-        if Tokens.Count > NRVAR then Application.MessageBox(PAnsiChar(TextByKey('common-invalidformat')), 'Apophysis', MB_ICONERROR);
+        GetTokens(String(v), tokens);
+        if Tokens.Count > NRVAR then Application.MessageBox(PChar(TextByKey('common-invalidformat')), 'Apophysis', MB_ICONERROR);
         for i := 0 to Tokens.Count - 1 do
           SetVariation(i, StrToFloat(Tokens[i]));
-      end;
-
-      for i := 0 to GetNrVariableNames - 1 do begin
-        v := Attributes.Value(GetVariableNameAt(i));
-        if v <> '' then begin
-{$ifndef VAR_STR}
-          d := StrToFloat(v);
-          SetVariable(GetVariableNameAt(i), d);
-{$else}
-          SetVariableStr(GetVariableNameAt(i), v);
-{$endif}
-        end;
       end;
      end;
       Inc(nXform);
@@ -5208,9 +5487,9 @@ begin
       //if Parsecp.cmapindex = -2 then
         Parsecp.cmapindex := -1;
 
-      i := StrToInt(Attributes.value('index'));
+      i := StrToInt(String(Attributes.value('index')));
       v := Attributes.value('rgb');
-      GetTokens(v, tokens);
+      GetTokens(String(v), tokens);
       floatcolor := StrToFloat(Tokens[0]);
       Parsecp.cmap[i][0] := round(floatcolor);
       floatcolor := StrToFloat(Tokens[1]);
@@ -5220,17 +5499,18 @@ begin
     end;
     if TagName = 'colors' then
     begin
-      ParseCompactcolors(Parsecp, StrToInt(Attributes.value('count')), Attributes.value('data'));
+      ParseCompactcolors(Parsecp, StrToInt(String(Attributes.value('count'))),
+        String(Attributes.value('data')));
       Parsecp.cmapindex := -1;
     end;
     if TagName = 'symmetry' then
     begin
-      i := StrToInt(Attributes.value('kind'));
+      i := StrToInt(String(Attributes.value('kind')));
       Parsecp.symmetry := i;
     end;
     if TagName = 'xdata' then
     begin
-      Parsecp.xdata := Parsecp.xdata + Attributes.value('content');
+      Parsecp.xdata := Parsecp.xdata + String(Attributes.value('content'));
     end;
   finally
     Tokens.free;
@@ -5914,23 +6194,6 @@ begin
   else mnuResetLocationClick(Sender);
 end;
 
-{$IFDEF DEBUG}
-///////////////////////////////////////////////////////////////////////////////
-procedure TMainForm.AppException(Sender: TObject; E: Exception);
-var
-  frmException: TfrmException;
-begin
-  frmException := TfrmException.Create(nil);
-
-  JclLastExceptStackListToStrings(frmException.Memo1.Lines, False, True, True, False);
-
-  frmException.Memo1.Lines.Insert(0,e.Message);
-  frmException.Memo1.Lines.Insert(1,'');
-
-  frmException.ShowModal;
-end;
-{$ENDIF}
-
 ///////////////////////////////////////////////////////////////////////////////
 procedure TMainForm.tbShowAlphaClick(Sender: TObject);
 begin
@@ -5972,9 +6235,15 @@ end;
 
 procedure TMainForm.ListViewChanging(Sender: TObject; Item: TListItem;
   Change: TItemChange; var AllowChange: Boolean);
+var sc, fc: string;
 begin
-{  if (Item = nil) then exit;
-  if (Trim(Item.Caption) = Trim(maincp.name)) and
+  if (Item = nil) or (Sender <> ListView1) then exit;
+
+  sc := ''; fc := '';
+  if (ListView1.Selected <> nil) then sc := ListView1.Selected.Caption;
+  if (ListView1.ItemFocused <> nil) then fc := ListView1.ItemFocused.Caption;
+
+  if (Trim(Item.Caption) = Trim(maincp.name)) and (Item.Selected) and
      (Item.Selected) and (Change = ctState) then
   begin
     if (DoNotAskAboutChange = true) then
@@ -5983,19 +6252,41 @@ begin
     end;
     if (UndoIndex <> 0) then
     begin
+      // hack
+      if (LastCaptionSel = sc) and (LastCaptionFoc = fc) then begin
+        AllowChange := LastDecision;
+        if Not AllowChange then begin
+          ListView1.OnChange := nil;
+          ListView1.OnChanging := nil;
+          ListView1.Selected := Item;
+          ListView1.ItemFocused := Item;
+          ListView1.OnChanging := ListViewChanging;
+          ListView1.OnChange := ListViewChange;
+        end;
+        Exit;
+      end;
+
+      LastCaptionSel := sc;
+      LastCaptionFoc := fc;
+
       if Application.MessageBox('Do you really want to open another flame? All changes made to the current flame will be lost.', 'Apophysis', MB_ICONWARNING or MB_YESNO) <> IDYES then
       begin
         AllowChange := false;
+        ListView1.OnChange := nil;
         ListView1.OnChanging := nil;
-        ListView1.Selected := nil;
+        ListView1.Selected := Item;
+        ListView1.ItemFocused := Item;
         ListView1.OnChanging := ListViewChanging;
+        ListView1.OnChange := ListViewChange;
       end
       else
       begin
         AllowChange := true;
       end;
+
+      LastDecision := AllowChange;
     end;
-  end;  }
+  end;
 end;
 
 procedure TMainForm.ListViewInfoTip(Sender: TObject; Item: TListItem;
@@ -6065,27 +6356,6 @@ begin
   ClassicListMode := true;
 end;
 
-procedure TMainForm.TBThumbThumbnailClick(Sender: TdwTaskbarThumbnailItem);
-var
-  idx:integer;
-begin
-  idx:=Sender.Index;
-  if (idx = 0) then
-    mnuSaveAsClick(nil)
-  else if (idx = 1) then
-    mnuRenderClick(nil)
-  else if (idx = 2) then
-    mnuCopyClick(nil)
-  else if (idx = 3) then
-    mnuPasteClick(nil)
-  else if (idx = 4) then
-    mnuMutateClick(nil)
-  else if (idx = 5) then
-    mnuEditorClick(nil)
-  else if (idx = 6) then
-    mnuAdjustClick(nil);
-end;
-
 procedure TMainForm.ListView1Click(Sender: TObject);
 begin
   //MissingStuff := '';
@@ -6098,6 +6368,13 @@ begin
     EndParsing(ParseCP, sb);
     MainForm.StatusBar.Panels[0].Text := sb;
   end;
+end;
+
+procedure TMainForm.ToolButton19Click(Sender: TObject);
+begin
+  AdjustForm.UpdateDisplay;
+  AdjustForm.PageControl.TabIndex:=4;
+  AdjustForm.Show;
 end;
 
 procedure TMainForm.ToolButton7Click(Sender: TObject);
@@ -6116,8 +6393,9 @@ end;
 
 procedure TMainForm.FormResize(Sender: TObject);
 begin
-  if (MainForm.Width <= 756) then ToolBar.Height := 60
-  else ToolBar.Height := 26;
+  if (MainForm.Width <= TbBreakWidth) then
+    Toolbar.Height := 26 * 2 + 8
+  else Toolbar.Height := 26;
 end;
 
 function Split(const fText: String; const fSep: Char; fTrim: Boolean=false; fQuotes: Boolean=false):TStringList;
@@ -6279,11 +6557,14 @@ procedure TMainForm.Restorelastautosave1Click(Sender: TObject);
 var fn:string;
 begin
   if (not fileexists(AutoSavePath)) then begin
-    Application.MessageBox(PAnsiChar(TextByKey('main-status-noautosave')), PAnsiChar('Apophysis'), MB_ICONERROR);
+    Application.MessageBox(PChar(TextByKey('main-status-noautosave')), PChar('Apophysis'), MB_ICONERROR);
     exit;
   end;
 
+{$ifdef DisableScripting}
+{$else}
   ScriptEditor.Stopped := True;
+{$endif}
     fn := AutoSavePath;
     MainForm.CurrentFileName := fn;
     LastOpenFile := fn;
@@ -6367,8 +6648,11 @@ var
   txt: string;
 begin
   txt := Trim(FlameToXML(Maincp, false, false));
+  {$ifdef DisableScripting}
+{$else}
   ScriptEditor.ScriptFromFlame(txt);
   ScriptEditor.Show;
+{$endif}
 end;
 
 constructor TThumbnailThread.Create(SourceFile : string; FlameNames : TstringList);
@@ -6544,7 +6828,7 @@ begin
         p := Pos('<flame ', LowerCase(FStrings[i]));
         if (p <> 0) then
         begin
-          MainForm.ListXMLScanner.LoadFromBuffer(PCHAR(FSTrings[i]));
+          MainForm.ListXMLScanner.LoadFromBuffer(TCharType(TStringType(FSTrings[i])));
           MainForm.ListXMLScanner.Execute;
 
           if Trim(pname) = '' then
@@ -6608,7 +6892,7 @@ begin
         p := Pos('<flame ', LowerCase(FStrings[i]));
         if (p <> 0) then
         begin
-          MainForm.ListXMLScanner.LoadFromBuffer(PCHAR(FSTrings[i]));
+          MainForm.ListXMLScanner.LoadFromBuffer(PANSICHAR(AnsiString(FSTrings[i])));
           MainForm.ListXMLScanner.Execute;
 
           if Trim(pname) = '' then
@@ -6672,191 +6956,72 @@ begin
   LoadForm.Output.Text := LoadForm.Output.Text + #13#10 + str + #13#10;
 end;
 
-function TMainForm.GetExportChaoticaCP(var fn: string; var cp1: TControlPoint) : boolean;
-begin
-  cp1 := TControlPoint.Create;
-  cp1.copy(Maincp);
-  ExportCDialog.ImageWidth := ExportWidth;
-  ExportCDialog.ImageHeight := ExportHeight;
-  ExportCDialog.Sample_density := ExportDensity;
-  ExportCDialog.Filter_Radius := ExportFilter;
-  ExportCDialog.Oversample := ExportOversample;
-
-  ExportCDialog.Filename := RenderPath + Maincp.name + '.png';
-  if ExportCDialog.ShowModal = mrOK then begin
-    fn := ChangeFileExt(ExportCDialog.Filename, '.flame');
-
-    ExportWidth := ExportCDialog.ImageWidth;
-    ExportHeight := ExportCDialog.ImageHeight;
-    //ExportDensity := ExportCDialog.Sample_density;
-    ExportFilter := ExportCDialog.Filter_Radius;
-    ExportOversample := ExportCDialog.Oversample;
-    ExportGammaTreshold := ExportCDialog.GammaTreshold;
-
-    //cp1.sample_density := ExportDensity;
-    cp1.spatial_oversample := ExportOversample;
-    cp1.spatial_filter_radius := ExportFilter;
-    cp1.gamma_threshold := ExportGammaTreshold;
-
-    if (cp1.width <> ExportWidth) or (cp1.Height <> ExportHeight) then
-      cp1.AdjustScale(ExportWidth, ExportHeight);
-
-    Result := true;
-  end else begin
-    cp1.Destroy;
-    fn := '';
-    Result := false;
-  end;
-end;
-
 procedure TMainForm.mnuExportChaoticaClick(Sender: TObject);
-const
-  re_root     : string = '<variation_compatibility(.*?)>(.*?)</variation_compatibility>';
-  re_var      : string = '<variation(.*?)/>';
-  re_attrib   : string = '([0-9a-z_]+)="(.*?)"';
-var
-  compatfile: string;
-  exepath   : string;
-
-  root_attribs    : string;
-  root_content    : string;
-  var_attribs     : string;
-
-  find_attribs : TPerlRegEx;
-  found_attrib : boolean;
-  attrib_name  : string;
-  attrib_match : string;
-
-  find_var     : TPerlRegEx;
-  found_var    : boolean;
-  var_index : integer;
-
-  fileptr : TextFile;
-  buffer, xml : string;
-
-  dll_supported : boolean;
-  supported_variations : TStringList;
-
-  used_var : integer;
-  supported_var : integer;
-  found_in_supported : boolean;
-  unsupported_present : boolean;
-  do_continue : boolean;
-
-  out_fn   : string;
-  out_list : TStringList;
-  out_cp   : TControlPoint;
 begin
-  if (not fileExists(ChaoticaPath)) then begin
-    MessageBox(0, PAnsiChar(TextByKey('main-status-nochaotica')), 'Apophysis', MB_ICONERROR);
-    exit;
-  end;
-
-  compatFile := ExtractFilePath(ChaoticaPath) + 'Variation_Compatibility.xml';
-  if (not fileExists(compatFile)) then
-    if MessageBox(0, PAnsiChar(TextByKey('main-status-chaoticacompatmissing')),
-       'Apophysis', MB_ICONWARNING or MB_YESNO) = ID_NO then exit
-  else begin
-    AssignFile(fileptr, compatFile);
-    Reset(fileptr);
-    while not EOF(fileptr) do begin
-      ReadLn(fileptr, buffer) ;
-      xml := xml + #13#10 + buffer;
-    end;
-    CloseFile(fileptr);
-  end;
-
-  find_attribs := TPerlRegEx.Create(nil);
-  find_var := TPerlRegEx.Create(nil);
-
-  find_attribs.RegEx := re_attrib;
-  find_var.RegEx := re_var;
-
-  find_attribs.Options := [preSingleLine, preCaseless];
-  find_var.Options := [preSingleLine, preCaseless];
-
-  root_attribs := GetStringPart(xml, re_root, 1, '');
-  root_content := GetStringPart(xml, re_root, 2, '');
-
-  find_attribs.Subject := root_attribs;
-  found_attrib := find_attribs.Match;
-
-  while found_attrib do begin
-    attrib_match := find_attribs.MatchedExpression;
-    attrib_name := Lowercase(find_attribs.SubExpressions[1]);
-
-    if (attrib_name = 'supports_dll_plugins') then
-      dll_supported := Lowercase(GetStringPart(attrib_match, re_attrib, 2, '')) = 'true';
-
-    found_attrib := find_attribs.MatchAgain;
-  end;
-
-  find_var.Subject := root_content;
-  found_var := find_var.Match;
-  var_index := 0;
-  supported_variations := TStringList.Create;
-  dll_supported := false;
-
-  while found_var do begin
-    find_attribs.Subject := find_var.SubExpressions[1];
-    found_attrib := find_attribs.Match;
-
-    while found_attrib do begin
-      attrib_match := find_attribs.MatchedExpression;
-      attrib_name := Lowercase(find_attribs.SubExpressions[1]);
-
-      if (attrib_name = 'name') then
-        supported_variations.Add(GetStringPart(attrib_match, re_attrib, 2, ''));
-
-      found_attrib := find_attribs.MatchAgain;
-    end;
-
-    found_var := find_var.MatchAgain;
-  end;
-
-  unsupported_present := false;
-  if (not dll_supported) then for used_var := 0 to MainCp.used_plugins.Count - 1 do
-    unsupported_present := unsupported_present or
-      (supported_variations.IndexOf(MainCp.used_plugins[used_var]) < 0);
-
-  do_continue := true;
-  if unsupported_present then do_continue := MessageBox(0,
-    PAnsiChar(TextByKey('main-status-oldchaotica')),
-    'Apophysis', MB_ICONWARNING or MB_YESNO) = ID_YES;
-
-  if do_continue then begin
-    if (not GetExportChaoticaCp(out_fn, out_cp)) then begin
-      supported_variations.Destroy;
-      find_attribs.Destroy;
-      find_var.Destroy;
-      exit;
-    end;
-
-    out_list := TstringList.Create;
-    out_list.Text := FlameToXML(out_cp, false, false);
-    out_list.SaveToFile(GetEnvironmentVariable('TEMP') + '\chaotica_export.flame');
-    out_list.Destroy;
-
-    if dll_supported then ShellExecute(
-      application.handle, PChar('open'), pchar(ChaoticaPath),
-      PChar('"' + GetEnvironmentVariable('TEMP') + '\chaotica_export.flame" "' +
-        ExtractFilePath(Application.ExeName) + 'Plugins' + '"'),
-      PChar(ExtractFilePath(ChaoticaPath)), SW_SHOWNORMAL)
-    else ShellExecute(
-      application.handle, PChar('open'), pchar(ChaoticaPath),
-      PChar('"' + GetEnvironmentVariable('TEMP') + '\chaotica_export.flame"'),
-      PChar(ExtractFilePath(ChaoticaPath)), SW_SHOWNORMAL);
-  end;
-
-  supported_variations.Destroy;
-  find_attribs.Destroy;
-  find_var.Destroy;
+  //
+  MainCP.FillUsedPlugins;
+  C_ExecuteChaotica(FlameToXml(MainCp, false, false), MainCp.used_plugins, UseX64IfPossible);
 end;
-
 
 procedure TMainForm.mnuManualClick(Sender: TObject);
 begin
   WinShellOpen('http://dl.dropbox.com/u/20949676/ApophysisUserManual/index.html');
+end;
+
+procedure TMainForm.CreateSubstMap;
+begin
+  SubstSource.Add('cross2'); SubstTarget.Add('cross');
+  SubstSource.Add('Epispiral'); SubstTarget.Add('epispiral');
+  SubstSource.Add('Epispiral_n'); SubstTarget.Add('epispiral_n');
+  SubstSource.Add('Epispiral_thickness'); SubstTarget.Add('epispiral_thickness');
+  SubstSource.Add('Epispiral_holes'); SubstTarget.Add('epispiral_holes');
+  SubstSource.Add('bwraps2'); SubstTarget.Add('bwraps');
+  SubstSource.Add('bwraps2_cellsize'); SubstTarget.Add('bwraps_cellsize');
+  SubstSource.Add('bwraps2_space'); SubstTarget.Add('bwraps_space');
+  SubstSource.Add('bwraps2_gain'); SubstTarget.Add('bwraps_gain');
+  SubstSource.Add('bwraps2_inner_twist'); SubstTarget.Add('bwraps_inner_twist');
+  SubstSource.Add('bwraps2_outer_twist'); SubstTarget.Add('bwraps_outer_twist');
+  SubstSource.Add('pre_bwraps2'); SubstTarget.Add('pre_bwraps');
+  SubstSource.Add('pre_bwraps2_cellsize'); SubstTarget.Add('pre_bwraps_cellsize');
+  SubstSource.Add('pre_bwraps2_space'); SubstTarget.Add('pre_bwraps_space');
+  SubstSource.Add('pre_bwraps2_gain'); SubstTarget.Add('pre_bwraps_gain');
+  SubstSource.Add('pre_bwraps2_inner_twist'); SubstTarget.Add('pre_bwraps_inner_twist');
+  SubstSource.Add('pre_bwraps2_outer_twist'); SubstTarget.Add('pre_bwraps_outer_twist');
+  SubstSource.Add('post_bwraps2'); SubstTarget.Add('post_bwraps');
+  SubstSource.Add('post_bwraps2_cellsize'); SubstTarget.Add('post_bwraps_cellsize');
+  SubstSource.Add('post_bwraps2_space'); SubstTarget.Add('post_bwraps_space');
+  SubstSource.Add('post_bwraps2_gain'); SubstTarget.Add('post_bwraps_gain');
+  SubstSource.Add('post_bwraps2_inner_twist'); SubstTarget.Add('post_bwraps_inner_twist');
+  SubstSource.Add('post_bwraps2_outer_twist'); SubstTarget.Add('post_bwraps_outer_twist');
+  SubstSource.Add('bwraps7'); SubstTarget.Add('bwraps');
+  SubstSource.Add('bwraps7_cellsize'); SubstTarget.Add('bwraps_cellsize');
+  SubstSource.Add('bwraps7_space'); SubstTarget.Add('bwraps_space');
+  SubstSource.Add('bwraps7_gain'); SubstTarget.Add('bwraps_gain');
+  SubstSource.Add('bwraps7_inner_twist'); SubstTarget.Add('bwraps_inner_twist');
+  SubstSource.Add('bwraps7_outer_twist'); SubstTarget.Add('bwraps_outer_twist');
+  SubstSource.Add('logn'); SubstTarget.Add('log');
+  SubstSource.Add('logn_base'); SubstTarget.Add('log_base');
+end;
+function TMainForm.ReadWithSubst(Attributes: TAttrList; attrname: string): string;
+var i: integer; v: TStringType;
+begin
+  v := Attributes.Value(TStringType(attrname));
+  if (v <> '') then begin
+    Result := String(v);
+    Exit;
+  end;
+
+  for i := 0 to SubstTarget.Count - 1 do begin
+    if (SubstTarget[i] = attrname) then begin
+      v := Attributes.Value(TStringType(SubstSource[i]));
+      if (v <> '') then begin
+        Result := String(v);
+        Exit;
+      end;
+    end;
+  end;
+
+  Result := '';
 end;
 
 end.
