@@ -1,0 +1,79 @@
+<topic template="Default" lasteditedby="Georg Kiehne" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../helpproject.xsd" status="Needs Review">
+  <title translate="true">Editor options</title>
+  <a-keywords>
+    <a-keyword>Window Interface Program Options Editor</a-keyword>
+  </a-keywords>
+  <body>
+    <header>
+      <para styleclass="Heading1"><text styleclass="Heading1" translate="true">Editor options</text></para>
+    </header>
+    <para styleclass="Normal"><image src="o-editor.jpg" scale="100.00%" styleclass="Image Caption"></image></para>
+    <para styleclass="Normal"></para>
+    <para styleclass="Normal"><table styleclass="Default" rowcount="7" colcount="2" style="width:654px;">
+      <tr style="vertical-align:top">
+        <td style="width:227px;">
+          <para styleclass="Heading3"><text styleclass="Heading3" translate="true">Use transform color</text></para>
+        </td>
+        <td style="width:427px;">
+          <para styleclass="Normal"><text styleclass="Normal" translate="true">Displays the triangles in their individual transform colors (which you can specify in the corresponding color tab) if enabled.</text></para>
+          <para styleclass="Normal"></para>
+        </td>
+      </tr>
+      <tr style="vertical-align:top">
+        <td style="width:227px;">
+          <para styleclass="Heading3"><text styleclass="Heading3" translate="true">Helper lines</text></para>
+        </td>
+        <td style="width:427px;">
+          <para styleclass="Normal"><text styleclass="Normal" translate="true">Displays guidelines in the editor if enabled.</text></para>
+          <para styleclass="Normal"></para>
+        </td>
+      </tr>
+      <tr style="vertical-align:top">
+        <td style="width:227px;">
+          <para styleclass="Heading3"><text styleclass="Heading3" translate="true">Always show both type of transforms.</text></para>
+        </td>
+        <td style="width:427px;">
+          <para styleclass="Normal"><text styleclass="Normal" translate="true">Also shows post-transform triangles when editing a normal triangle and vice versa if enabled.</text></para>
+          <para styleclass="Normal"></para>
+        </td>
+      </tr>
+      <tr style="vertical-align:top">
+        <td style="width:227px;">
+          <para styleclass="Heading3"><text styleclass="Heading3" translate="true">Background, Grid colors, Reference, Helpers</text></para>
+        </td>
+        <td style="width:427px;">
+          <para styleclass="Normal"><text styleclass="Normal" translate="true">You can customize the editor colors with these fields. Click a colored box to select another color.</text></para>
+          <para styleclass="Normal"></para>
+        </td>
+      </tr>
+      <tr style="vertical-align:top">
+        <td style="width:227px;">
+          <para styleclass="Heading3"><text styleclass="Heading3" translate="true">Extended edit mode</text></para>
+        </td>
+        <td style="width:427px;">
+          <para styleclass="Normal"><text styleclass="Normal" translate="true">Enables or disables the extended edit mode in which you can rotate and scale triangles by additional grips in the editor panel.</text></para>
+          <para styleclass="Normal"></para>
+        </td>
+      </tr>
+      <tr style="vertical-align:top">
+        <td style="width:227px;">
+          <para styleclass="Heading3"><text styleclass="Heading3" translate="true">Lock transform axis</text></para>
+        </td>
+        <td style="width:427px;">
+          <para styleclass="Normal"><text styleclass="Normal" translate="true">Locks the angle between the transform axis when rotating a transform if enabled.</text></para>
+          <para styleclass="Normal"></para>
+        </td>
+      </tr>
+      <tr style="vertical-align:top">
+        <td style="width:227px;">
+          <para styleclass="Heading3"><text styleclass="Heading3" translate="true">Rebuild xaos links</text></para>
+        </td>
+        <td style="width:427px;">
+          <para styleclass="Normal"><text styleclass="Normal" translate="true">Restores xaos links when deleting a linked transform if enabled.</text></para>
+        </td>
+      </tr>
+    </table></para>
+    <para styleclass="Normal"></para>
+    <para styleclass="Image Caption"><text styleclass="Image Caption" translate="true">See also: </text><link displaytype="text" defaultstyle="true" type="topiclink" href="General" styleclass="Image Caption" translate="true">General</link><text styleclass="Image Caption" translate="true"> - </text><link displaytype="text" defaultstyle="true" type="topiclink" href="Editor2" styleclass="Image Caption" translate="true">Editor</link><text styleclass="Image Caption" translate="true"> - </text><link displaytype="text" defaultstyle="true" type="topiclink" href="Display" styleclass="Image Caption" translate="true">Display</link><text styleclass="Image Caption" translate="true"> - </text><link displaytype="text" defaultstyle="true" type="topiclink" href="Random" styleclass="Image Caption" translate="true">Random</link><text styleclass="Image Caption" translate="true"> - </text><link displaytype="text" defaultstyle="true" type="topiclink" href="Variations2" styleclass="Image Caption" translate="true">Variations</link><text styleclass="Image Caption" translate="true"> - </text><link displaytype="text" defaultstyle="true" type="topiclink" href="Gradient" styleclass="Image Caption" translate="true">Gradient</link><text styleclass="Image Caption" translate="true"> - </text><link displaytype="text" defaultstyle="true" type="topiclink" href="UPR" styleclass="Image Caption" translate="true">UPR</link><text styleclass="Image Caption" translate="true"> - </text><link displaytype="text" defaultstyle="true" type="topiclink" href="Paths" styleclass="Image Caption" translate="true">Paths</link><text styleclass="Image Caption" translate="true"> - </text><link displaytype="text" defaultstyle="true" type="topiclink" href="Autosave" styleclass="Image Caption" translate="true">Autosave</link></para>
+  </body>
+</topic>

@@ -1,0 +1,64 @@
+<topic template="Default" lasteditedby="Georg Kiehne" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../helpproject.xsd" status="Needs Review">
+  <title translate="true">Main window</title>
+  <a-keywords>
+    <a-keyword>Window Interface Program Main</a-keyword>
+  </a-keywords>
+  <body>
+    <header>
+      <para styleclass="Heading1"><text styleclass="Heading1" translate="true">Main window</text></para>
+    </header>
+    <para styleclass="Normal" style="text-indent:0px; margin-right:0px; margin-left:0px;"><image src="main-window.jpg" scale="72.35%" width="658" height="492" styleclass="Image Caption"></image><br/><text styleclass="Image Caption" translate="true">The main window of Apophysis 7X.13</text><br/></para>
+    <para styleclass="Normal" style="text-indent:0px; margin-right:0px; margin-left:0px;"><table styleclass="Default" rowcount="4" colcount="2" style="width:658px;">
+      <tr style="vertical-align:top">
+        <td colspan="2">
+          <para styleclass="Normal" style="text-indent:0px; margin-right:0px; margin-left:0px;"><text styleclass="Image Caption" style="font-size:10pt; font-weight:normal;" translate="true">The main window is the first thing you will see when Apophysis starts. It consists of various areas which are explained below.</text></para>
+          <para styleclass="Normal" style="text-indent:0px; margin-right:0px; margin-left:0px;"></para>
+          <para styleclass="Normal" style="text-indent:0px; margin-right:0px; margin-left:0px;"><text styleclass="Heading3" translate="true">The menu- and toolbar area at the top</text><br/><text styleclass="Image Caption" style="font-size:10pt; font-weight:normal;" translate="true">This area offers you full control of all Apophysis features. You can reach every other part of the program from there. Read the topics </text><link displaytype="text" defaultstyle="true" type="topiclink" href="Menu" styleclass="Image Caption" style="font-size:10pt; font-weight:normal;" translate="true">Main menu</link><text styleclass="Image Caption" style="font-size:10pt; font-weight:normal;" translate="true"> and </text><link displaytype="text" defaultstyle="true" type="topiclink" href="Toolbar" styleclass="Image Caption" style="font-size:10pt; font-weight:normal;" translate="true">Main toolbar</link><text styleclass="Image Caption" style="font-size:10pt; font-weight:normal;" translate="true"> to learn more about this area.</text></para>
+          <para styleclass="Normal" style="text-indent:0px; margin-right:0px; margin-left:0px;"></para>
+          <para styleclass="Normal" style="text-indent:0px; margin-right:0px; margin-left:0px;"><text styleclass="Heading3" translate="true">The batch listing on the left</text><br/><text styleclass="Image Caption" style="font-size:10pt; font-weight:normal;" translate="true">All loaded flames in the current batch (collection of flames) are listed in the batch listing. You can use the batch as either a library of your fractal flames or as a collection of different versions of one fractal flame. All entries in this list are saved in a single file.</text></para>
+          <para styleclass="Normal" style="text-indent:0px; margin-right:0px; margin-left:0px;"></para>
+          <para styleclass="Normal" style="text-indent:0px; margin-right:0px; margin-left:0px;"><text styleclass="Heading3" translate="true">The main preview in the center of the window</text><br/><text styleclass="Image Caption" style="font-size:10pt; font-weight:normal;" translate="true">This is the largest and most detailed preview panel in Apophysis. You can review your flame before rendering there. Use the quality drop-down in the toolbar to select the point density of the preview (often referenced as &quot;Quality&quot;)</text><br/><text styleclass="Image Caption" style="font-size:10pt; font-weight:normal;" translate="true">When the main preview is updating or a batch file loads, a progress bar will appear on the bottom of the main preview to tell you how far the current operation is done.</text></para>
+          <para styleclass="Normal" style="text-indent:0px; margin-right:0px; margin-left:0px;"></para>
+          <para styleclass="Normal" style="text-indent:0px; margin-right:0px; margin-left:0px;"><text styleclass="Heading3" translate="true">The status area at the bottom</text><br/><text styleclass="Image Caption" style="font-size:10pt; font-weight:normal;" translate="true">You can read all important information there. From left to right, there are the following panels:</text></para>
+          <para styleclass="Normal" style="text-indent:0px; margin-right:0px; margin-left:0px;"></para>
+        </td>
+      </tr>
+      <tr style="vertical-align:top">
+        <td style="width:209px;">
+          <para styleclass="Heading3" style="text-indent:0px; margin-right:0px; margin-left:0px;"><text styleclass="Heading3" translate="true">Loading status</text></para>
+        </td>
+        <td style="width:449px;">
+          <para styleclass="Normal" style="text-indent:0px; margin-right:0px; margin-left:0px;"><text styleclass="Image Caption" style="font-size:10pt; font-weight:normal; font-style:normal;" translate="true">If something went wrong during loading a batch you can see it there.</text></para>
+          <para styleclass="Normal" style="text-indent:0px; margin-right:0px; margin-left:0px;"></para>
+        </td>
+      </tr>
+      <tr style="vertical-align:top">
+        <td style="width:209px;">
+          <para styleclass="Heading3" style="text-indent:0px; margin-right:0px; margin-left:0px;"><text styleclass="Heading3" translate="true">Elapsed and remaining times</text></para>
+        </td>
+        <td style="width:449px;">
+          <para styleclass="Normal" style="text-indent:0px; margin-right:0px; margin-left:0px;"><text styleclass="Image Caption" style="font-size:10pt; font-weight:normal; font-style:normal;" translate="true">These two panels show you the elapsed and remaining times of an operation. (like updating the main preview)</text></para>
+          <para styleclass="Normal" style="text-indent:0px; margin-right:0px; margin-left:0px;"></para>
+        </td>
+      </tr>
+      <tr style="vertical-align:top">
+        <td style="width:209px;">
+          <para styleclass="Heading3" style="text-indent:0px; margin-right:0px; margin-left:0px;"><text styleclass="Heading3" translate="true">Selected flame name</text></para>
+        </td>
+        <td style="width:449px;">
+          <para styleclass="Normal" style="text-indent:0px; margin-right:0px; margin-left:0px;"><text styleclass="Image Caption" style="font-size:10pt; font-weight:normal; font-style:normal;" translate="true">This panel shows you the name of the selected flame within the currently loaded batch.</text></para>
+        </td>
+      </tr>
+    </table></para>
+    <para styleclass="Normal"></para>
+    <para styleclass="Heading2"><text styleclass="Heading2" translate="true">The main menu</text></para>
+    <para styleclass="Heading2"></para>
+    <para styleclass="Heading2" style="text-indent:11px; margin-right:0px; margin-left:0px;"><snippet src="Menu"/></para>
+    <para styleclass="Heading2"></para>
+    <para styleclass="Heading2"><text styleclass="Heading2" translate="true">The main toolbar</text></para>
+    <para styleclass="Normal"></para>
+    <para styleclass="Normal" style="text-indent:11px; margin-right:0px; margin-left:0px;"><snippet src="Toolbar"/></para>
+    <para styleclass="Normal" style="text-indent:11px; margin-right:0px; margin-left:0px;"></para>
+    <para styleclass="Image Caption"><text styleclass="Image Caption" translate="true">Jump to: </text><link displaytype="text" defaultstyle="true" type="topiclink" href="Main_window" styleclass="Image Caption" translate="true">Main window</link><text styleclass="Image Caption" translate="true"> - </text><link displaytype="text" defaultstyle="true" type="topiclink" href="Editor_window" styleclass="Image Caption" translate="true">Editor window</link><text styleclass="Image Caption" translate="true"> - </text><link displaytype="text" defaultstyle="true" type="topiclink" href="Adjustment" styleclass="Image Caption" translate="true">Adjustment window</link><text styleclass="Image Caption" translate="true"> - </text><link displaytype="text" defaultstyle="true" type="topiclink" href="Rendering" styleclass="Image Caption" translate="true">Rendering window</link><text styleclass="Image Caption" translate="true"> - </text><link displaytype="text" defaultstyle="true" type="topiclink" href="Mutation" styleclass="Image Caption" translate="true">Mutation window</link><text styleclass="Image Caption" translate="true"> - </text><link displaytype="text" defaultstyle="true" type="topiclink" href="Options" styleclass="Image Caption" translate="true">Options window</link></para>
+  </body>
+</topic>

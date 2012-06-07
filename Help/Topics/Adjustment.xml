@@ -1,0 +1,124 @@
+<topic template="Default" lasteditedby="Georg Kiehne" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../helpproject.xsd" status="Needs Review">
+  <title translate="true">Adjustment window</title>
+  <a-keywords>
+    <a-keyword>Window Interface Program Adjust Adjustment</a-keyword>
+  </a-keywords>
+  <body>
+    <header>
+      <para styleclass="Heading1"><text styleclass="Heading1" translate="true">Adjustment window</text></para>
+    </header>
+    <para styleclass="Normal"><image src="adjust.jpg" scale="100.00%" styleclass="Image Caption"></image></para>
+    <para styleclass="Image Caption"><text styleclass="Image Caption" translate="true">The adjustment window</text></para>
+    <para styleclass="Normal"></para>
+    <para styleclass="Normal"><table styleclass="Default" rowcount="11" colcount="2" style="width:654px;">
+      <tr style="vertical-align:top">
+        <td colspan="2">
+          <para styleclass="Normal"><text styleclass="Normal" translate="true">The adjustment window offers controls to change overall properties within the selected flame. From here you can change the camera settings, set a global color map and adjust the flame brightness and gamma values.</text></para>
+          <para styleclass="Normal"></para>
+          <para styleclass="Normal"><text styleclass="Normal" translate="true">In the top section you will find a mini preview (clicking and dragging changes the 3D-properties of the camera - unlike the main preview which changes the 2D-properties) and a set of boxes where you can input the camera properties:</text></para>
+          <para styleclass="Normal"></para>
+        </td>
+      </tr>
+      <tr style="vertical-align:top">
+        <td style="width:201px;">
+          <para styleclass="Heading3"><text styleclass="Heading3" translate="true">Depth blur</text></para>
+        </td>
+        <td style="width:448px;">
+          <para styleclass="Normal"><text styleclass="Normal" translate="true">This field controls the optional depth-of-field effect you can set up for your 3D-flames. This only works properly if you adjusted pitch and yaw first. Setting it to zero disables the effect.</text></para>
+          <para styleclass="Normal"></para>
+        </td>
+      </tr>
+      <tr style="vertical-align:top">
+        <td style="width:201px;">
+          <para styleclass="Heading3"><text styleclass="Heading3" translate="true">Pitch and Yaw</text></para>
+        </td>
+        <td style="width:448px;">
+          <para styleclass="Normal"><text styleclass="Normal" translate="true">These two fields allow you to rotate the camera in the 3D space. If you set both to zero, the camera will look from top down to your flame.</text></para>
+          <para styleclass="Normal"></para>
+        </td>
+      </tr>
+      <tr style="vertical-align:top">
+        <td style="width:201px;">
+          <para styleclass="Heading3"><text styleclass="Heading3" translate="true">Height</text></para>
+        </td>
+        <td style="width:448px;">
+          <para styleclass="Normal"><text styleclass="Normal" translate="true">This field lets you adjust the vertical offset of the base plane of your flame. Positive values move it up, negative values move it down. By default, this offset is zero.</text></para>
+          <para styleclass="Normal"></para>
+        </td>
+      </tr>
+      <tr style="vertical-align:top">
+        <td style="width:201px;">
+          <para styleclass="Heading3"><text styleclass="Heading3" translate="true">Perspective</text></para>
+        </td>
+        <td style="width:448px;">
+          <para styleclass="Normal"><text styleclass="Normal" translate="true">With this field you can set the perspective distortion of your flame. It is commonly used to strengthen the 3D-effect of flames which where adjusted using pitch and yaw.</text></para>
+          <para styleclass="Normal"></para>
+        </td>
+      </tr>
+      <tr style="vertical-align:top">
+        <td style="width:201px;">
+          <para styleclass="Heading3"><text styleclass="Heading3" translate="true">Scale</text></para>
+        </td>
+        <td style="width:448px;">
+          <para styleclass="Normal"><text styleclass="Normal" translate="true">This field sets the point scale relative to the image size. It acts as a zoom feature but higher values will decrease the overall quality of the rendered image. If you want to preserve the quality, use the zoom feature instead. If you want to preserve the render speed, use this field.</text></para>
+          <para styleclass="Normal"></para>
+        </td>
+      </tr>
+      <tr style="vertical-align:top">
+        <td colspan="2">
+          <para styleclass="Heading3"></para>
+          <para styleclass="Normal"><text styleclass="Normal" translate="true">The bottom section features a set of tabs which group several features into meaningful categories:</text></para>
+          <para styleclass="Normal"></para>
+        </td>
+      </tr>
+      <tr style="vertical-align:top">
+        <td style="width:201px;">
+          <para styleclass="Heading3"><text styleclass="Heading3" translate="true">Camera</text></para>
+        </td>
+        <td style="width:448px;">
+          <para styleclass="Normal"><text styleclass="Normal" translate="true">This tab contains the 2D-related camera controls. </text></para>
+          <para styleclass="Normal"><text styleclass="Normal" translate="true">The &quot;zoom&quot;-slider offers a zoom feature which preserves the flame quality but drastically decreases the render speed when using values greater than zero. </text></para>
+          <para styleclass="Normal"><text styleclass="Normal" translate="true">The X- and Y-position-sliders let you pan the camera after the 3D-transformations have been applied while the rotation-slider lets you rotate the camera after the values given in pitch and yaw have been applied.</text></para>
+          <para styleclass="Normal"></para>
+        </td>
+      </tr>
+      <tr style="vertical-align:top">
+        <td style="width:201px;">
+          <para styleclass="Heading3"><text styleclass="Heading3" translate="true">Rendering</text></para>
+        </td>
+        <td style="width:448px;">
+          <para styleclass="Normal"><text styleclass="Normal" translate="true">This tab contains fields which let you control the properties of image generation.</text></para>
+          <para styleclass="Normal"><text styleclass="Normal" translate="true">The gamma-slider lets you adjust the gamma-correction in order to improve the visibility of fine structures while the brightness-slider lets you adjust the overall brightness of the image. The vibrancy-slider lets you control the richness of the flames colors. You can also set the flame background color here.</text></para>
+          <para styleclass="Normal"><text styleclass="Normal" translate="true">The gamma treshold-box lets you fine-adjust the gamma correction in order to reduce the grain effect occuring on lower density areas. Higher values tend to make the image darker.</text></para>
+          <para styleclass="Normal"></para>
+        </td>
+      </tr>
+      <tr style="vertical-align:top">
+        <td style="width:201px;">
+          <para styleclass="Heading3"><text styleclass="Heading3" translate="true">Gradient</text></para>
+        </td>
+        <td style="width:448px;">
+          <para styleclass="Normal"><text styleclass="Normal" translate="true">The gradient tab offers you a powerful tool to create or adjust a gradient used as the main color map for your flame. On this tab, there is a black drop-down which provides a vast amount of built-in gradients. The slider above can take various modes which let you adjust the selected gradient. Click the text on the left of this slider to select the edit mode. With the text field on the right you can enter a value for the slider using your keyboard rather than adjusting it with your mouse using the slider. The button captioned &quot;reset&quot; restores the state of the gradient prior to opening the gradient tab or selecting an edit mode. </text></para>
+          <para styleclass="Normal"><text styleclass="Normal" translate="true">The top section of this tab contains a preview of the current gradient. Clicking and dragging on this section rotates the gradient even if you selected a different edit mode in the field below.</text></para>
+          <para styleclass="Normal"><text styleclass="Normal" translate="true">On the bottom right you will find a set of buttons:</text></para>
+          <para styleclass="Normal"></para>
+          <para styleclass="Normal" style="text-indent:-16px; margin-right:0px; margin-left:16px;"><image src="copy.png" scale="100.00%" styleclass="Normal"></image><text styleclass="Normal" translate="true"> Copies the current gradient into the clipboard (UltraFractal-formatted)</text></para>
+          <para styleclass="Normal" style="text-indent:-22px; margin-right:0px; margin-left:22px;"><image src="paste.png" scale="100.00%" styleclass="Normal"></image><text styleclass="Normal" translate="true"> Pastes the current gradient from the clipboard. This does only work if there is a valid UltraFractal-formatted gradient in the clipboard. You may also copy a gradient from UltraFractal and paste it into Apophysis.</text></para>
+          <para styleclass="Normal" style="text-indent:-22px; margin-right:0px; margin-left:22px;"><image src="new_gradient.png" scale="100.00%" styleclass="Normal"></image><text styleclass="Normal" translate="true"> Opens the gradient browser in which you can open, save and explore a gradient file. </text></para>
+          <para styleclass="Normal" style="text-indent:-16px; margin-right:0px; margin-left:16px;"><image src="EditBrightContrastHS.png" scale="100.00%" styleclass="Normal"></image><text styleclass="Normal" translate="true"> Lets you open an image and create a gradient from its colors.</text></para>
+          <para styleclass="Normal" style="text-indent:-16px; margin-right:0px; margin-left:16px;"></para>
+        </td>
+      </tr>
+      <tr style="vertical-align:top">
+        <td style="width:201px;">
+          <para styleclass="Heading3"><text styleclass="Heading3" translate="true">Image size</text></para>
+        </td>
+        <td style="width:448px;">
+          <para styleclass="Normal"><text styleclass="Normal" translate="true">This tab is grouped into three columns. The one on the left lets you enter an  size for the main preview, the one in the middle lets you manage up to three presets for the main preview sizes (click the wide button to load a preset or the button right next to it to save it) and the one on the right lets you apply your selected size. If the box on the right (captioned &quot;resize main window&quot;) is not checked, the size image will be centered within the main preview area, elsewise the main window will be resized in order to match the preview size you entered.</text></para>
+        </td>
+      </tr>
+    </table></para>
+    <para styleclass="Normal"></para>
+    <para styleclass="Image Caption"><text styleclass="Image Caption" translate="true">Jump to: </text><link displaytype="text" defaultstyle="true" type="topiclink" href="Main_window" styleclass="Image Caption" translate="true">Main window</link><text styleclass="Image Caption" translate="true"> - </text><link displaytype="text" defaultstyle="true" type="topiclink" href="Editor_window" styleclass="Image Caption" translate="true">Editor window</link><text styleclass="Image Caption" translate="true"> - </text><link displaytype="text" defaultstyle="true" type="topiclink" href="Adjustment" styleclass="Image Caption" translate="true">Adjustment window</link><text styleclass="Image Caption" translate="true"> - </text><link displaytype="text" defaultstyle="true" type="topiclink" href="Rendering" styleclass="Image Caption" translate="true">Rendering window</link><text styleclass="Image Caption" translate="true"> - </text><link displaytype="text" defaultstyle="true" type="topiclink" href="Mutation" styleclass="Image Caption" translate="true">Mutation window</link><text styleclass="Image Caption" translate="true"> - </text><link displaytype="text" defaultstyle="true" type="topiclink" href="Options" styleclass="Image Caption" translate="true">Options window</link></para>
+  </body>
+</topic>

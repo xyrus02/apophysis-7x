@@ -1,0 +1,104 @@
+﻿<topic template="Default" status="Needs Review" lasteditedby="Georg Kiehne" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../helpproject.xsd">
+  <title translate="true">Pre-defined procedures and constants</title>
+  <body>
+    <header>
+      <para styleclass="Heading1"><text styleclass="Heading1" translate="true">Pre-defined procedures and constants</text></para>
+    </header>
+    <para styleclass="Normal"><table styleclass="Default" rowcount="1" colcount="1" style="width:654px;">
+      <tr style="vertical-align:top">
+        <td>
+          <para styleclass="Heading2"><anchor id="ProcFunc" styleclass="Heading2"></anchor><text styleclass="Heading2" translate="true">General procedures and functions</text></para>
+          <para styleclass="Heading3"></para>
+          <para styleclass="Heading3"><text styleclass="Heading3" translate="true">Preview;</text></para>
+          <para styleclass="Normal"><text styleclass="Normal" translate="true">Opens the preview window and displays the current flame.</text></para>
+          <para styleclass="Normal"></para>
+          <para styleclass="Heading3"><text styleclass="Heading3" translate="true">print( &apos;string&apos; );</text></para>
+          <para styleclass="Normal"><text styleclass="Normal" translate="true">Prints a string or variable to the debug box in the script editor.</text></para>
+          <para styleclass="Normal"></para>
+          <para styleclass="Heading3"><text styleclass="Heading3" translate="true">ShowMessage( &apos;string&apos; );</text></para>
+          <para styleclass="Normal"><text styleclass="Normal" translate="true">Opens a message box and displays the string to the user. The script will halt until the user pressed &quot;OK&quot;.</text></para>
+          <para styleclass="Normal"></para>
+          <para styleclass="Heading3"><text styleclass="Heading3" translate="true">ShowStatus( &apos;string&apos; );</text></para>
+          <para styleclass="Normal"><text styleclass="Normal" translate="true">Sends a text message to the status bar in the </text><link displaytype="text" defaultstyle="true" type="topiclink" href="Main_window" styleclass="Normal" translate="true">main window</link><text styleclass="Normal" translate="true">.</text></para>
+          <para styleclass="Normal"></para>
+          <para styleclass="Heading3"><text styleclass="Heading3" translate="true">InputQuery( &apos;title&apos; , &apos;description&apos; , variable );</text></para>
+          <para styleclass="Normal"><text styleclass="Normal" translate="true">Requires the user to input a value which is then stored into the variable at the third parameter. This is a function and it will return FALSE if the user pressed cancel.</text></para>
+          <para styleclass="Normal"></para>
+          <para styleclass="Heading3"><text styleclass="Heading3" translate="true">ExtractFilePath( &apos;string&apos; );</text></para>
+          <para styleclass="Normal"><text styleclass="Normal" translate="true">Returns a string containing the directory of the file given as the parameter.</text></para>
+          <para styleclass="Normal"></para>
+          <para styleclass="Heading3"><text styleclass="Heading3" translate="true">CurrentFile;</text></para>
+          <para styleclass="Normal"><text styleclass="Normal" translate="true">Returns the path of the currently loaded batch file.</text></para>
+          <para styleclass="Normal"></para>
+          <para styleclass="Heading3"><text styleclass="Heading3" translate="true">GetSaveFileName;</text></para>
+          <para styleclass="Normal"><text styleclass="Normal" translate="true">Opens a save dialog which requires the user to specify a file path. Returns an empty string if the user pressed cancel.</text></para>
+          <para styleclass="Normal"></para>
+          <para styleclass="Heading3"><text styleclass="Heading3" translate="true">SetFlameFile( &apos;string&apos; );</text></para>
+          <para styleclass="Normal"><text styleclass="Normal" translate="true">Loads a batch file into memory but does not list it in the batch list within the main window.</text></para>
+          <para styleclass="Normal"></para>
+          <para styleclass="Heading3"><text styleclass="Heading3" translate="true">ListFile( &apos;string&apos; );</text></para>
+          <para styleclass="Normal"><text styleclass="Normal" translate="true">Loads a batch file into memory but contrary to SetFlameFile, this will also list the flames into the batch list within the main window.</text></para>
+          <para styleclass="Normal"></para>
+          <para styleclass="Heading3"><text styleclass="Heading3" translate="true">CopyFile( &apos;string&apos; , &apos;string&apos; , TRUE/FALSE);</text></para>
+          <para styleclass="Normal"><text styleclass="Normal" translate="true">Copies the file given with the first parameter to the target given by the second parameter. The third parameter determines whether to overwrite existing files.</text></para>
+          <para styleclass="Normal"></para>
+          <para styleclass="Heading3"><text styleclass="Heading3" translate="true">SaveFlame( &apos;string&apos; );</text></para>
+          <para styleclass="Normal"><text styleclass="Normal" translate="true">Saves a single flame into a batch file given as the parameter.</text></para>
+          <para styleclass="Normal"></para>
+          <para styleclass="Heading3"><text styleclass="Heading3" translate="true">DeleteFile( &apos;string&apos; );</text></para>
+          <para styleclass="Normal"><text styleclass="Normal" translate="true">Deletes a file from the users hard disk. WARNING: this does not move the file into the recycle bin but deletes it permanently. Use this procedure with caution.</text></para>
+          <para styleclass="Normal"></para>
+          <para styleclass="Heading3"><text styleclass="Heading3" translate="true">Sin( number ); / Cos( number ); / Tan( number );</text></para>
+          <para styleclass="Normal"><text styleclass="Normal" translate="true">Returns the sine/cosine/tangent of a number in radians.</text></para>
+          <para styleclass="Normal"></para>
+          <para styleclass="Heading3"><text styleclass="Heading3" translate="true">Random;</text></para>
+          <para styleclass="Normal"><text styleclass="Normal" translate="true">Returns a random number between zero and one.</text></para>
+          <para styleclass="Normal"></para>
+          <para styleclass="Heading3"><text styleclass="Heading3" translate="true">Trunc( number );</text></para>
+          <para styleclass="Normal"><text styleclass="Normal" translate="true">Returns the integral part of a number.</text></para>
+          <para styleclass="Normal"></para>
+          <para styleclass="Heading3"><text styleclass="Heading3" translate="true">Inc( variable ); / Dec( variable );</text></para>
+          <para styleclass="Normal"><text styleclass="Normal" translate="true">Increases or decreases a numeric variable by one.</text></para>
+          <para styleclass="Normal"></para>
+          <para styleclass="Heading3"><text styleclass="Heading3" translate="true">StrToInt( integer ); / IntToStr( integer ); / FloatToStr( float ); / StrToFloat( string );</text></para>
+          <para styleclass="Normal"><text styleclass="Normal" translate="true">Converts an integer to a string, a float to a string or vice versa.</text></para>
+          <para styleclass="Normal"></para>
+          <para styleclass="Heading3"><text styleclass="Heading3" translate="true">Clear;</text></para>
+          <para styleclass="Normal"><text styleclass="Normal" translate="true">Removes all transforms from the current flame.</text></para>
+          <para styleclass="Normal"></para>
+          <para styleclass="Heading3"><text styleclass="Heading3" translate="true">Sqr( number ); / Sqrt( number );</text></para>
+          <para styleclass="Normal"><text styleclass="Normal" translate="true">Returns the square or the square root of the given number.</text></para>
+          <para styleclass="Normal"></para>
+          <para styleclass="Normal"></para>
+          <para styleclass="Heading2"><anchor id="Const" styleclass="Heading2"></anchor><text styleclass="Heading2" translate="true">Constants and read-only variables</text></para>
+          <para styleclass="Normal"></para>
+          <para styleclass="Heading3"><text styleclass="Heading3" translate="true">Transforms</text></para>
+          <para styleclass="Normal"><text styleclass="Normal" translate="true">The total number of transforms within the currently selected flame.</text></para>
+          <para styleclass="Normal"></para>
+          <para styleclass="Heading3"><text styleclass="Heading3" translate="true">NXforms</text></para>
+          <para styleclass="Normal"><text styleclass="Normal" translate="true">The amount of allowed transforms per flame. This constant is 100 for normal Apophysis 7X-versions and 500 for the T500-versions.</text></para>
+          <para styleclass="Normal"></para>
+          <para styleclass="Heading3"><text styleclass="Heading3" translate="true">NVars</text></para>
+          <para styleclass="Normal"><text styleclass="Normal" translate="true">The amount of loaded variations.</text></para>
+          <para styleclass="Normal"></para>
+          <para styleclass="Heading3"><text styleclass="Heading3" translate="true">FileCount</text></para>
+          <para styleclass="Normal"><text styleclass="Normal" translate="true">The total number of flames within the currently loaded batch.</text></para>
+          <para styleclass="Normal"></para>
+          <para styleclass="Heading3"><text styleclass="Heading3" translate="true">InstallPath</text></para>
+          <para styleclass="Normal"><text styleclass="Normal" translate="true">The path to the directory where Apophysis is located.</text></para>
+          <para styleclass="Normal"></para>
+          <para styleclass="Heading3"><text styleclass="Heading3" translate="true">DateCode</text></para>
+          <para styleclass="Normal"><text styleclass="Normal" translate="true">The current date in the form of YYMMDD.</text></para>
+          <para styleclass="Normal"></para>
+          <para styleclass="Heading3"><text styleclass="Heading3" translate="true">Stopped</text></para>
+          <para styleclass="Normal"><text styleclass="Normal" translate="true">Is TRUE when the user hit the stop button to halt a script.</text></para>
+          <para styleclass="Normal"></para>
+          <para styleclass="Heading3"><text styleclass="Heading3" translate="true">Pi</text></para>
+          <para styleclass="Normal"><text styleclass="Normal" translate="true">The number PI (3.1415926535897932384626433832795...)</text></para>
+        </td>
+      </tr>
+    </table></para>
+    <para styleclass="Normal"></para>
+    <para styleclass="Image Caption"><text styleclass="Image Caption" translate="true">Jump to: </text><link displaytype="text" defaultstyle="true" type="topiclink" href="Language" styleclass="Image Caption" translate="true">Language</link><text styleclass="Image Caption" translate="true"> - </text><link displaytype="text" defaultstyle="true" type="topiclink" href="General_interface" styleclass="Image Caption" translate="true">Pre-defined procedures</link><text styleclass="Image Caption" translate="true"> - </text><link displaytype="text" defaultstyle="true" type="topiclink" href="Flame_interface" styleclass="Image Caption" translate="true">Flame interface</link><text styleclass="Image Caption" translate="true"> - </text><link displaytype="text" defaultstyle="true" type="topiclink" href="Transform_interface" styleclass="Image Caption" translate="true">Transform interface</link></para>
+  </body>
+</topic>

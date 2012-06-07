@@ -1,0 +1,22 @@
+<topic template="Default" lasteditedby="Georg Kiehne" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../helpproject.xsd" status="Needs Review">
+  <title translate="true">Comments</title>
+  <body>
+    <header>
+      <para styleclass="Heading1"><text styleclass="Heading1" translate="true">Comments</text></para>
+    </header>
+    <para styleclass="Normal"><table styleclass="Default" rowcount="1" colcount="1" style="width:654px;">
+      <tr style="vertical-align:top">
+        <td style="width:642px;">
+          <para styleclass="Code Example"><text styleclass="Normal" translate="true">Comments can assist you and others while reading the script. There are three types of comments:</text></para>
+          <para styleclass="Code Example"></para>
+          <list id="1" type="ul" listtype="bullet" formatstring="·" format-charset="SYMBOL_CHARSET" levelreset="true" legalstyle="false" startfrom="1" styleclass="Code Example" style="font-family:Symbol; font-size:10pt; color:#000000;">
+            <li styleclass="Code Example"><text styleclass="Normal" translate="true">Single-line comments (starting with &quot;//&quot;)</text></li>
+            <li styleclass="Code Example"><text styleclass="Normal" translate="true">Block comments (starting with either &quot;(*&quot; or &quot;{&quot; and ending with &quot;*)&quot; or &quot;}&quot;)</text><br/><br/><text styleclass="Code Example" translate="true">//This is a comment before ShowMessage </text><br/><text styleclass="Code Example" translate="true">ShowMessage(&apos;Ok&apos;); </text><br/><br/><text styleclass="Code Example" translate="true">(* This is another comment *) </text><br/><text styleclass="Code Example" translate="true">ShowMessage(&apos;More ok!&apos;); </text><br/><br/><text styleclass="Code Example" translate="true">{ And this is a comment </text><br/><text styleclass="Code Example" translate="true">with two lines } </text><br/><text styleclass="Code Example" translate="true">ShowMessage(&apos;End of okays&apos;); </text></li>
+          </list>
+        </td>
+      </tr>
+    </table></para>
+    <para styleclass="Normal"></para>
+    <para styleclass="Image Caption"><text styleclass="Image Caption" translate="true">Jump to: </text><link displaytype="text" defaultstyle="true" type="topiclink" href="Identifiers" styleclass="Image Caption" translate="true">Identifiers</link><text styleclass="Image Caption" translate="true"> - </text><link displaytype="text" defaultstyle="true" type="topiclink" href="Literals_and_operators" styleclass="Image Caption" translate="true">Literals and Operators</link><text styleclass="Image Caption" translate="true"> - </text><link displaytype="text" defaultstyle="true" type="topiclink" href="Conditions_and_Loops" styleclass="Image Caption" translate="true">Conditions and Loops</link><text styleclass="Image Caption" translate="true"> - </text><link displaytype="text" defaultstyle="true" type="topiclink" href="Procedures_and_functions" styleclass="Image Caption" translate="true">Procedures and Functions</link><text styleclass="Image Caption" translate="true"> - </text><link displaytype="text" defaultstyle="true" type="topiclink" href="Comments" styleclass="Image Caption" translate="true">Comments</link></para>
+  </body>
+</topic>

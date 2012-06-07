@@ -1,0 +1,21 @@
+<topic template="Default" status="Needs Review" lasteditedby="Georg Kiehne" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../helpproject.xsd">
+  <title translate="true">Home</title>
+  <body>
+    <header>
+      <para styleclass="Heading1"><text styleclass="Heading1" translate="true">Apophysis 7X</text></para>
+    </header>
+    <para styleclass="Normal"><table styleclass="Default" rowcount="1" colcount="1" style="width:654px;">
+      <tr style="vertical-align:top">
+        <td style="width:642px;">
+          <para styleclass="Normal"><text styleclass="Normal" translate="true">Apophysis 7X is an improved version of the famous fractal flame editor Apophysis  which is used by artists all over the world to generate stunning abstract images and cosmic animations. Apophysis is based on an algorithm introduced by Scott Draves. </text></para>
+          <para styleclass="Normal"></para>
+          <para styleclass="Normal"><text styleclass="Normal" translate="true">This file is bundled with Apophysis 7X since Release 13. It was written in 2010 by Georg Kiehne and last updated on June 18 2010. It does neither claim to be a full reference nor a beginners tutorial. If you are looking for a detailed starter tutorial, check the introduction written by Tara Roys </text><link displaytype="text" defaultstyle="true" type="weblink" href="http://www.deviantart.com/users/outgoing?https://netfiles.uiuc.edu/troys2/www/tutorials/tutoriallist.xhtml" target="_blank" styleclass="Normal" translate="true">here</link><text styleclass="Normal" translate="true">.</text></para>
+        </td>
+      </tr>
+    </table></para>
+    <para styleclass="Normal"></para>
+    <para styleclass="Heading2"><text styleclass="Heading2" translate="true">Acknowledgements</text></para>
+    <para styleclass="Heading2"></para>
+    <para styleclass="Heading2" style="text-indent:12px; margin-right:0px; margin-left:0px;"><snippet src="Acknowledgements"/></para>
+  </body>
+</topic>

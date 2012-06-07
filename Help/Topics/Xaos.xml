@@ -1,0 +1,24 @@
+<topic template="Default" lasteditedby="Georg Kiehne" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../helpproject.xsd" status="Needs Review">
+  <title translate="true">Xaos</title>
+  <a-keywords>
+    <a-keyword>Fractal Flames Transform Xaos Weight</a-keyword>
+  </a-keywords>
+  <body>
+    <header>
+      <para styleclass="Heading1"><text styleclass="Heading1" translate="true">Xaos</text></para>
+    </header>
+    <para styleclass="Normal"><table styleclass="Default" rowcount="1" colcount="1" style="width:654px;">
+      <tr style="vertical-align:top">
+        <td>
+          <para styleclass="Normal"><text styleclass="Normal" translate="true">Xaos is a relatively new feature in Apophysis. The artificial word &quot;Xaos&quot; abstracts either the term &quot;controlled chaos&quot; or &quot;weight modifier&quot; which is also describing this feature. In addition to setting a single weight to a transform you can also tell the algorithm how much a transform is visible to other transforms. This is done on the Xaos-tab within the editor window. Apophysis uses a so called &quot;Chaos game&quot; to determine the order in which the transforms are applied into the overall calculations. During this, a random transform is selected and its transformation matrix and variations are applied to the recently plotted point to determine the next point to be plotted. With Xaos, you can take influence on this selection. </text></para>
+          <para styleclass="Normal"></para>
+          <para styleclass="Normal"><text styleclass="Normal" translate="true">You can view the Xaos-links through two point of views. The default mode is showing how much visible the current transform is to other transforms while the alternate mode (&quot;View as from&quot;) shows the opposite direction - how much visible other transforms are to the current transform. </text></para>
+          <para styleclass="Normal"></para>
+          <para styleclass="Normal"><text styleclass="Normal" translate="true">Xaos is mainly used to manipulate the output of transforms. The main use however is advertised through a feature called linked transforms. Linked transforms act as an additional layer which &quot;represents&quot; the source transform after a new set of variations and transformations were applied. A linked transform is much like a post-transform but with the additional possibility to add variations to it.</text></para>
+        </td>
+      </tr>
+    </table></para>
+    <para styleclass="Normal"></para>
+    <para styleclass="Image Caption"><text styleclass="Image Caption" translate="true">Jump to: </text><link displaytype="text" defaultstyle="true" type="topiclink" href="Transforms" styleclass="Image Caption" translate="true">Transforms</link><text styleclass="Image Caption" translate="true"> - </text><link displaytype="text" defaultstyle="true" type="topiclink" href="Variations" styleclass="Image Caption" translate="true">Variations</link><text styleclass="Image Caption" translate="true"> - </text><link displaytype="text" defaultstyle="true" type="topiclink" href="Coloring" styleclass="Image Caption" translate="true">Coloring</link><text styleclass="Image Caption" translate="true"> - </text><link displaytype="text" defaultstyle="true" type="topiclink" href="Xaos" styleclass="Image Caption" translate="true">Xaos</link></para>
+  </body>
+</topic>
