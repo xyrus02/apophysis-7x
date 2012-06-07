@@ -80,7 +80,7 @@
       </config-group>
     </config-group>
     <config-group name="chm">
-      <config-value name="outputfile">.\Release\Apophysis7x.chm</config-value>
+      <config-value name="outputfile">..\..\..\out\help\Apophysis7x.chm</config-value>
       <config-value name="deletetemp">1</config-value>
     </config-group>
     <config-group name="HTML">
@@ -143,10 +143,10 @@
       <config-group name="TOPICSIMPLEBUTTON3">
         <config-value name="CAPTION" translate="true">Next</config-value>
       </config-group>
-      <config-value name="outputfile">.\HTML\index.html</config-value>
+      <config-value name="outputfile">..\..\..\out\help\html\index.html</config-value>
     </config-group>
     <config-group name="pdf">
-      <config-value name="outputfile">apophysis-7x.pdf</config-value>
+      <config-value name="outputfile">..\..\..\out\help\apophysis-7x.pdf</config-value>
       <config-value name="template">C:\Program Files (x86)\EC Software\HelpAndManual5\Templates\pdf\Standard_manual.mnl</config-value>
     </config-group>
     <variables/>
