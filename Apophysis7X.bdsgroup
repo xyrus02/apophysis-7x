@@ -1,0 +1,18 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<BorlandProject>
+	<PersonalityInfo>
+		<Option>
+			<Option Name="Personality">Default.Personality</Option>
+			<Option Name="ProjectType"></Option>
+			<Option Name="Version">1.0</Option>
+			<Option Name="GUID">{240CB8A4-C80E-4D29-8DFD-AAD1FF4F135F}</Option>
+		</Option>
+	</PersonalityInfo>
+	<Default.Personality>  <Projects>
+      <Projects Name="Apophysis7X.exe">Apophysis7X.bdsproj</Projects>
+      <Projects Name="">C:\DOKUME~1\GEORGK~1\LOKALE~1\Temp\Apophysis7X.dpr-rev30.svn000.tmp.bdsproj</Projects>
+      <Projects Name="Targets">Apophysis7X.exe </Projects>
+    </Projects>
+    <Dependencies/>
+  </Default.Personality>
+</BorlandProject>

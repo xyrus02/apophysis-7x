@@ -1,0 +1,34 @@
+{$IFDEF VER150}
+  {$DEFINE Delphi7}
+  {$DEFINE Delphi7_UP}
+{$ENDIF}
+
+{$IFDEF VER170}
+  {$DEFINE Delphi2005}
+  {$DEFINE Delphi7_UP}
+  {$DEFINE Delphi2005_UP}
+{$ENDIF}
+
+{$IFDEF VER180}
+  {$DEFINE Delphi2006}
+  {$DEFINE Delphi7_UP}
+  {$DEFINE Delphi2005_UP}
+  {$DEFINE Delphi2006_UP}
+{$ENDIF}
+
+{$IFDEF VER185}
+  {$DEFINE Delphi2007}
+  {$DEFINE Delphi7_UP}
+  {$DEFINE Delphi2005_UP}
+  {$DEFINE Delphi2006_UP}
+  {$DEFINE Delphi2007_UP}
+{$ENDIF}
+
+{$IFDEF VER200}
+  {$DEFINE Delphi2009}
+  {$DEFINE Delphi7_UP}
+  {$DEFINE Delphi2005_UP}
+  {$DEFINE Delphi2006_UP}
+  {$DEFINE Delphi2007_UP}
+  {$DEFINE Delphi2009_UP}
+{$ENDIF}
