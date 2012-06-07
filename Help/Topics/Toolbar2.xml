@@ -1,0 +1,77 @@
+<topic template="Default" lasteditedby="Georg Kiehne" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../helpproject.xsd" status="Needs Review">
+  <title translate="true">Editor toolbar</title>
+  <body>
+    <header>
+      <para styleclass="Heading1"><text styleclass="Heading1" translate="true">Editor toolbar</text></para>
+    </header>
+    <para styleclass="Normal" style="text-indent:0px; margin-right:670px; margin-left:0px;"><table styleclass="Default" rowcount="1" colcount="1" style="width:654px;">
+      <tr style="vertical-align:top">
+        <td style="width:651px;">
+          <para styleclass="Normal" style="text-indent:0px; margin-right:0px; margin-left:0px;"><image src="new_xform.png" scale="100.00%" styleclass="Normal" style="text-decoration:underline;"></image><text styleclass="Normal" style="text-decoration:underline;" translate="true"> Erase flame</text></para>
+          <para styleclass="Normal" style="text-indent:0px; margin-right:0px; margin-left:0px;"><text styleclass="Normal" translate="true">Replaces the currently selected flame with a blank flame.</text></para>
+          <para styleclass="Normal" style="text-indent:0px; margin-right:0px; margin-left:0px;"></para>
+          <para styleclass="Normal" style="text-indent:0px; margin-right:0px; margin-left:0px;"><image src="add_xform.png" scale="100.00%" styleclass="Normal" style="text-decoration:underline;"></image><text styleclass="Normal" style="text-decoration:underline;" translate="true"> Add transform</text></para>
+          <para styleclass="Normal" style="text-indent:0px; margin-right:0px; margin-left:0px;"><text styleclass="Normal" translate="true">Adds a new transform.</text></para>
+          <para styleclass="Normal" style="text-indent:0px; margin-right:0px; margin-left:0px;"></para>
+          <para styleclass="Normal" style="text-indent:0px; margin-right:0px; margin-left:0px;"><image src="duplicate_xform.png" scale="100.00%" styleclass="Normal" style="text-decoration:underline;"></image><text styleclass="Normal" style="text-decoration:underline;" translate="true"> Duplicate transform</text></para>
+          <para styleclass="Normal" style="text-indent:0px; margin-right:0px; margin-left:0px;"><text styleclass="Normal" translate="true">Duplicates the currently selected transform.</text></para>
+          <para styleclass="Normal" style="text-indent:0px; margin-right:0px; margin-left:0px;"></para>
+          <para styleclass="Normal" style="text-indent:0px; margin-right:0px; margin-left:0px;"><image src="remove_xform.png" scale="100.00%" styleclass="Normal" style="text-decoration:underline;"></image><text styleclass="Normal" style="text-decoration:underline;" translate="true"> Delete transform</text></para>
+          <para styleclass="Normal" style="text-indent:0px; margin-right:0px; margin-left:0px;"><text styleclass="Normal" translate="true">Removes the currently selected transform.</text></para>
+          <para styleclass="Normal" style="text-indent:0px; margin-right:0px; margin-left:0px;"></para>
+          <para styleclass="Normal" style="text-indent:0px; margin-right:0px; margin-left:0px;"><image src="Edit_UndoHS.png" scale="100.00%" styleclass="Normal" style="text-decoration:underline;"></image><text styleclass="Normal" style="text-decoration:underline;" translate="true"> Undo</text></para>
+          <para styleclass="Normal" style="text-indent:0px; margin-right:0px; margin-left:0px;"><text styleclass="Normal" translate="true">Undoes the last performed action.</text></para>
+          <para styleclass="Normal" style="text-indent:0px; margin-right:0px; margin-left:0px;"></para>
+          <para styleclass="Normal" style="text-indent:0px; margin-right:0px; margin-left:0px;"><image src="Edit_RedoHS.png" scale="100.00%" styleclass="Normal" style="text-decoration:underline;"></image><text styleclass="Normal" style="text-decoration:underline;" translate="true"> Redo</text></para>
+          <para styleclass="Normal" style="text-indent:0px; margin-right:0px; margin-left:0px;"><text styleclass="Normal" translate="true">Redoes the last undone action.</text></para>
+          <para styleclass="Normal" style="text-indent:0px; margin-right:0px; margin-left:0px;"></para>
+          <para styleclass="Normal" style="text-indent:0px; margin-right:0px; margin-left:0px;"><image src="CopyHS.png" scale="100.00%" styleclass="Normal" style="text-decoration:underline;"></image><text styleclass="Normal" style="text-decoration:underline;" translate="true"> Copy transform coordinates</text></para>
+          <para styleclass="Normal" style="text-indent:0px; margin-right:0px; margin-left:0px;"><text styleclass="Normal" translate="true">Copies the coordinates of the currently selected transform into the clipboard.</text></para>
+          <para styleclass="Normal" style="text-indent:0px; margin-right:0px; margin-left:0px;"></para>
+          <para styleclass="Normal" style="text-indent:0px; margin-right:0px; margin-left:0px;"><image src="PasteHS.png" scale="100.00%" styleclass="Normal" style="text-decoration:underline;"></image><text styleclass="Normal" style="text-decoration:underline;" translate="true"> Paste transform coordinates</text></para>
+          <para styleclass="Normal" style="text-indent:0px; margin-right:0px; margin-left:0px;"><text styleclass="Normal" translate="true">Pastes the transform coordinates from the clipboard into the currently selected transform. This feature will only work if there is valid data in the clipboard.</text></para>
+          <para styleclass="Normal" style="text-indent:0px; margin-right:0px; margin-left:0px;"></para>
+          <para styleclass="Normal" style="text-indent:0px; margin-right:0px; margin-left:0px;"><image src="PointerHS.png" scale="100.00%" styleclass="Normal" style="text-decoration:underline;"></image><text styleclass="Normal" style="text-decoration:underline;" translate="true"> Default mode</text></para>
+          <para styleclass="Normal" style="text-indent:0px; margin-right:0px; margin-left:0px;"><text styleclass="Normal" translate="true">If toggled on, the default edit mode is active.</text></para>
+          <para styleclass="Normal" style="text-indent:0px; margin-right:0px; margin-left:0px;"></para>
+          <para styleclass="Normal" style="text-indent:0px; margin-right:0px; margin-left:0px;"><image src="move_stufft.png" scale="100.00%" styleclass="Normal" style="text-decoration:underline;"></image><text styleclass="Normal" style="text-decoration:underline;" translate="true"> Move mode</text></para>
+          <para styleclass="Normal" style="text-indent:0px; margin-right:0px; margin-left:0px;"><text styleclass="Normal" translate="true">If toggled on, dragging and dropping a transform triangle will move it.</text></para>
+          <para styleclass="Normal" style="text-indent:0px; margin-right:0px; margin-left:0px;"></para>
+          <para styleclass="Normal" style="text-indent:0px; margin-right:0px; margin-left:0px;"><image src="rotate.png" scale="100.00%" styleclass="Normal" style="text-decoration:underline;"></image><text styleclass="Normal" style="text-decoration:underline;" translate="true"> Rotate mode</text></para>
+          <para styleclass="Normal" style="text-indent:0px; margin-right:0px; margin-left:0px;"><text styleclass="Normal" translate="true">If toggled on, dragging and dropping a transform triangle will rotate it.</text></para>
+          <para styleclass="Normal" style="text-indent:0px; margin-right:0px; margin-left:0px;"></para>
+          <para styleclass="Normal" style="text-indent:0px; margin-right:0px; margin-left:0px;"><image src="scale.png" scale="100.00%" styleclass="Normal" style="text-decoration:underline;"></image><text styleclass="Normal" style="text-decoration:underline;" translate="true"> Scale mode</text></para>
+          <para styleclass="Normal" style="text-indent:0px; margin-right:0px; margin-left:0px;"><text styleclass="Normal" translate="true">If toggled on, dragging and dropping a transform triangle will scale it.</text></para>
+          <para styleclass="Normal" style="text-indent:0px; margin-right:0px; margin-left:0px;"></para>
+          <para styleclass="Normal" style="text-indent:0px; margin-right:0px; margin-left:0px;"><image src="world_pivot.png" scale="100.00%" styleclass="Normal" style="text-decoration:underline;"></image><text styleclass="Normal" style="text-decoration:underline;" translate="true"> Enable world pivot mode</text></para>
+          <para styleclass="Normal" style="text-indent:0px; margin-right:0px; margin-left:0px;"><text styleclass="Normal" translate="true">If toggled on, the pivot point for drag and drop-operations in the editor panel is the point 0,0, otherwise it is the point O of the currently selected transform.</text></para>
+          <para styleclass="Normal" style="text-indent:0px; margin-right:0px; margin-left:0px;"></para>
+          <para styleclass="Normal" style="text-indent:0px; margin-right:0px; margin-left:0px;"><image src="rotate_left.png" scale="100.00%" styleclass="Normal" style="text-decoration:underline;"></image><text styleclass="Normal" style="text-decoration:underline;" translate="true"> Rotate transform counterclockwise</text></para>
+          <para styleclass="Normal" style="text-indent:0px; margin-right:0px; margin-left:0px;"><text styleclass="Normal" translate="true">Rotates the currently selected transform by 90 degrees counterclockwise.</text></para>
+          <para styleclass="Normal" style="text-indent:0px; margin-right:0px; margin-left:0px;"></para>
+          <para styleclass="Normal" style="text-indent:0px; margin-right:0px; margin-left:0px;"><image src="rotate_right.png" scale="100.00%" styleclass="Normal" style="text-decoration:underline;"></image><text styleclass="Normal" style="text-decoration:underline;" translate="true"> Rotate transform clockwise</text></para>
+          <para styleclass="Normal" style="text-indent:0px; margin-right:0px; margin-left:0px;"><text styleclass="Normal" translate="true">Rotates the currently selected transform by 90 degrees clockwise.</text></para>
+          <para styleclass="Normal" style="text-indent:0px; margin-right:0px; margin-left:0px;"></para>
+          <para styleclass="Normal" style="text-indent:0px; margin-right:0px; margin-left:0px;"><image src="h_flip.png" scale="100.00%" styleclass="Normal" style="text-decoration:underline;"></image><text styleclass="Normal" style="text-decoration:underline;" translate="true"> Flip transform horizontally</text></para>
+          <para styleclass="Normal" style="text-indent:0px; margin-right:0px; margin-left:0px;"><text styleclass="Normal" translate="true">Flips the currently selected transform horizontally.</text></para>
+          <para styleclass="Normal" style="text-indent:0px; margin-right:0px; margin-left:0px;"></para>
+          <para styleclass="Normal" style="text-indent:0px; margin-right:0px; margin-left:0px;"><image src="v_flip.png" scale="100.00%" styleclass="Normal" style="text-decoration:underline;"></image><text styleclass="Normal" style="text-decoration:underline;" translate="true"> Flip transform vertically</text></para>
+          <para styleclass="Normal" style="text-indent:0px; margin-right:0px; margin-left:0px;"><text styleclass="Normal" translate="true">Flips the currently selected transform vertically.</text></para>
+          <para styleclass="Normal" style="text-indent:0px; margin-right:0px; margin-left:0px;"></para>
+          <para styleclass="Normal" style="text-indent:0px; margin-right:0px; margin-left:0px;"><image src="preview_xform.png" scale="100.00%" styleclass="Normal" style="text-decoration:underline;"></image><text styleclass="Normal" style="text-decoration:underline;" translate="true"> Toggle variation preview</text></para>
+          <para styleclass="Normal" style="text-indent:0px; margin-right:0px; margin-left:0px;"><text styleclass="Normal" translate="true">Enables or disables a preview grid of the currently applied variations on the currently selected transform.</text></para>
+          <para styleclass="Normal" style="text-indent:0px; margin-right:0px; margin-left:0px;"></para>
+          <para styleclass="Normal" style="text-indent:0px; margin-right:0px; margin-left:0px;"><image src="mode_px.png" scale="100.00%" styleclass="Normal" style="text-decoration:underline;"></image><text styleclass="Normal" style="text-decoration:underline;" translate="true"> Toggle post-transform</text></para>
+          <para styleclass="Normal" style="text-indent:0px; margin-right:0px; margin-left:0px;"><text styleclass="Normal" translate="true">If toggled on, drag and drop operations in the editor panel refer to the post-transform triangle of the currently selected transform.</text></para>
+          <para styleclass="Normal" style="text-indent:0px; margin-right:0px; margin-left:0px;"></para>
+          <para styleclass="Normal" style="text-indent:0px; margin-right:0px; margin-left:0px;"><image src="mode_fx.png" scale="100.00%" styleclass="Normal" style="text-decoration:underline;"></image><text styleclass="Normal" style="text-decoration:underline;" translate="true"> Toggle final-transform</text></para>
+          <para styleclass="Normal" style="text-indent:0px; margin-right:0px; margin-left:0px;"><text styleclass="Normal" translate="true">Enables or disables the final transform triangle.</text></para>
+          <para styleclass="Normal" style="text-indent:0px; margin-right:0px; margin-left:0px;"></para>
+          <para styleclass="Normal" style="text-indent:0px; margin-right:0px; margin-left:0px;"><image src="add_linked_xform.png" scale="100.00%" styleclass="Normal" style="text-decoration:underline;"></image><text styleclass="Normal" style="text-decoration:underline;" translate="true"> Add linked transform</text></para>
+          <para styleclass="Normal" style="text-indent:0px; margin-right:0px; margin-left:0px;"><text styleclass="Normal" translate="true">Adds a new transform which is linked to the currently selected transform by Xaos.</text></para>
+          <para styleclass="Normal" style="text-indent:0px; margin-right:0px; margin-left:0px;"></para>
+        </td>
+      </tr>
+    </table></para>
+  </body>
+</topic>

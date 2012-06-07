@@ -1,0 +1,39 @@
+﻿<topic template="Default" status="Needs Review" lasteditedby="Georg Kiehne" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../helpproject.xsd">
+  <title translate="true">Acknowledgements</title>
+  <body>
+    <header>
+      <para styleclass="Heading1"><text styleclass="Heading1" translate="true">Acknowledgements</text></para>
+    </header>
+    <para styleclass="Normal"><table styleclass="Default" rowcount="1" colcount="1" style="width:654px;">
+      <tr style="vertical-align:top">
+        <td style="width:654px;">
+          <para styleclass="Normal"><text styleclass="Normal" translate="true">The Fractal Flame algorithm was originally written by Scott Draves in 1992. A component from his flame software suite is supplied with Apophysis. The original source code is available here. Scott also wrote the paper on the Fractal Flame algorithm that is located </text><link displaytype="text" defaultstyle="true" type="weblink" href="http://www.flam3.com/flame_draves.pdf" target="_blank" styleclass="Normal" translate="true">here</link><text styleclass="Normal" translate="true">. Visit the Cosmic Recursive Fractal Flames Web site.</text></para>
+          <para styleclass="Normal"></para>
+          <para styleclass="Normal"><text styleclass="Normal" translate="true">Apophysis relies heavily on the code of the screen saver written by Ronald Hordijk for Delphi.</text></para>
+          <para styleclass="Normal"></para>
+          <para styleclass="Normal"><text styleclass="Normal" translate="true">Doug Nelson is the author of Fractal Designer, which supplied inspiration and code.</text></para>
+          <para styleclass="Normal"></para>
+          <para styleclass="Normal"><text styleclass="Normal" translate="true">Erik Reckase wrote the Ultra Fractal formula and helped code crucial parts of the programs.</text></para>
+          <para styleclass="Normal"></para>
+          <para styleclass="Normal"><text styleclass="Normal" translate="true">Damien Jones generously hosts www.apophysis.org and the Apophysis mailing list.</text></para>
+          <para styleclass="Normal"></para>
+          <para styleclass="Normal"><text styleclass="Normal" translate="true">Peter Sdobnov and Piotr Borys continued the development of Apophysis since 2005.</text></para>
+          <para styleclass="Normal"></para>
+          <para styleclass="Normal"><text styleclass="Normal" translate="true">The Apophysis 3D hack (which is the base of Apophysis 7X) was also written by Peter Sdobnov.</text></para>
+          <para styleclass="Normal"></para>
+          <para styleclass="Normal"><text styleclass="Normal" translate="true">Apophysis 7X was initiated and developed by Georg Kiehne in 2009. </text></para>
+          <para styleclass="Normal"></para>
+          <para styleclass="Normal"><link displaytype="text" defaultstyle="true" type="weblink" href="http://www.tmssoftware.com/site/scriptstudio.asp" target="_blank" styleclass="Normal" translate="true">Scripter Studio</link><text styleclass="Normal" translate="true"> is legal property of tmssoftware.</text></para>
+          <para styleclass="Normal"></para>
+          <para styleclass="Normal"><text styleclass="Normal" translate="true">ImageLib is used to save image files.</text></para>
+          <para styleclass="Normal"></para>
+          <para styleclass="Normal"><text styleclass="Normal" translate="true">XML Parser was wtitten by Stefan Heymann.</text></para>
+          <para styleclass="Normal"></para>
+          <para styleclass="Normal"><text styleclass="Normal" translate="true">The </text><link displaytype="text" defaultstyle="true" type="topiclink" href="Operations" styleclass="Normal" translate="true">Windows 7 controls for Delphi<title translate="true">http://www.gumpi.com/Blog/2009/01/20/Alpha1OfWindows7ControlsForDelphi.aspx</title></link><text styleclass="Normal" translate="true"> were written by Daniel Wischnewski.</text></para>
+          <para styleclass="Normal"></para>
+          <para styleclass="Normal"><text styleclass="Normal" translate="true">Internet capabilies supplied by Indy Internet components.</text></para>
+        </td>
+      </tr>
+    </table></para>
+  </body>
+</topic>

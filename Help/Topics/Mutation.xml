@@ -1,0 +1,28 @@
+<topic template="Default" lasteditedby="Georg Kiehne" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../helpproject.xsd" status="Needs Review">
+  <title translate="true">Mutation window</title>
+  <a-keywords>
+    <a-keyword>Window Interface Program Mutate Mutation</a-keyword>
+  </a-keywords>
+  <body>
+    <header>
+      <para styleclass="Heading1"><text styleclass="Heading1" translate="true">Mutation window</text></para>
+    </header>
+    <para styleclass="Normal"><image src="mutate.jpg" scale="100.00%" styleclass="Image Caption"></image></para>
+    <para styleclass="Image Caption"><text styleclass="Image Caption" translate="true">The mutation window</text></para>
+    <para styleclass="Normal"></para>
+    <para styleclass="Normal"><table styleclass="Default" rowcount="1" colcount="1" style="width:654px;">
+      <tr style="vertical-align:top">
+        <td style="width:642px;">
+          <para styleclass="Normal"><text styleclass="Normal" translate="true">The mutation window offers an easy way to change the appearance of your flame. This feature is a remainder of older versions of Apophysis and is not used commonly anymore as you have relatively less influence on how your flame looks later compared to the editor window.</text></para>
+          <para styleclass="Normal"></para>
+          <para styleclass="Normal"><text styleclass="Normal" translate="true">The client of this window consists of nine fields where the one in the middle contains a preview of your current flame. The fields around the middle offer you possibilities of mutation directions. Click one of them to apply the shown mutation to your current flame. Click the center to generate a new set of mutation directions.</text></para>
+          <para styleclass="Normal"></para>
+          <para styleclass="Normal"><text styleclass="Normal" translate="true">With the slider captioned &quot;speed&quot; on the bottom you can specify the amount of which the flame changes after each mutation while the drop down below offers you a list of variations you can base the mutation on. This list contains all currently loaded variations plus an entry captioned &quot;random&quot; which makes the mutation select a random variation to apply for each direction in each set. </text></para>
+          <para styleclass="Normal"><text styleclass="Normal" translate="true">If you check &quot;same no. of transforms&quot; the variations will be applied on the existing set of transforms, elsewise a new transform will be added for the mutation.</text></para>
+        </td>
+      </tr>
+    </table></para>
+    <para styleclass="Normal"></para>
+    <para styleclass="Image Caption"><text styleclass="Image Caption" translate="true">Jump to: </text><link displaytype="text" defaultstyle="true" type="topiclink" href="Main_window" styleclass="Image Caption" translate="true">Main window</link><text styleclass="Image Caption" translate="true"> - </text><link displaytype="text" defaultstyle="true" type="topiclink" href="Editor_window" styleclass="Image Caption" translate="true">Editor window</link><text styleclass="Image Caption" translate="true"> - </text><link displaytype="text" defaultstyle="true" type="topiclink" href="Adjustment" styleclass="Image Caption" translate="true">Adjustment window</link><text styleclass="Image Caption" translate="true"> - </text><link displaytype="text" defaultstyle="true" type="topiclink" href="Rendering" styleclass="Image Caption" translate="true">Rendering window</link><text styleclass="Image Caption" translate="true"> - </text><link displaytype="text" defaultstyle="true" type="topiclink" href="Mutation" styleclass="Image Caption" translate="true">Mutation window</link><text styleclass="Image Caption" translate="true"> - </text><link displaytype="text" defaultstyle="true" type="topiclink" href="Options" styleclass="Image Caption" translate="true">Options window</link></para>
+  </body>
+</topic>

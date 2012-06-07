@@ -1,0 +1,17 @@
+﻿<topic template="Default" status="Needs Review" lasteditedby="Georg Kiehne" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../helpproject.xsd">
+  <title translate="true">Transform interface</title>
+  <body>
+    <header>
+      <para styleclass="Heading1"><text styleclass="Heading1" translate="true">Transform interface</text></para>
+    </header>
+    <para styleclass="Heading2"><text styleclass="Heading2" translate="true">Properties</text></para>
+    <para styleclass="Heading2"></para>
+    <para styleclass="Heading2" style="text-indent:12px; margin-right:0px; margin-left:0px;"><snippet src="Properties2"/></para>
+    <para styleclass="Heading2"></para>
+    <para styleclass="Heading2"><text styleclass="Heading2" translate="true">Operations</text></para>
+    <para styleclass="Heading2"></para>
+    <para styleclass="Heading2" style="text-indent:12px; margin-right:0px; margin-left:0px;"><snippet src="Operations"/></para>
+    <para styleclass="Heading2" style="text-indent:12px; margin-right:0px; margin-left:0px;"></para>
+    <para styleclass="Image Caption"><text styleclass="Image Caption" translate="true">Jump to: </text><link displaytype="text" defaultstyle="true" type="topiclink" href="Language" styleclass="Image Caption" translate="true">Language</link><text styleclass="Image Caption" translate="true"> - </text><link displaytype="text" defaultstyle="true" type="topiclink" href="General_interface" styleclass="Image Caption" translate="true">Pre-defined procedures</link><text styleclass="Image Caption" translate="true"> - </text><link displaytype="text" defaultstyle="true" type="topiclink" href="Flame_interface" styleclass="Image Caption" translate="true">Flame interface</link><text styleclass="Image Caption" translate="true"> - </text><link displaytype="text" defaultstyle="true" type="topiclink" href="Transform_interface" styleclass="Image Caption" translate="true">Transform interface</link></para>
+  </body>
+</topic>
