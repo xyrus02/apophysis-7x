@@ -18,27 +18,44 @@
 
 typedef struct
 {
-    double example_variable;
+	/* DEFINE VARIABLE NAMES HERE:
+	   e.g. double pluginname_varname;
+    */
 } Variables;
 
 #include "apoplugin.h"
 
-APO_PLUGIN("example");
+/* SET PLUGIN NAME HERE:
+   e.g. name-me
+*/
+APO_PLUGIN("julia");
+
 APO_VARIABLES(
-    VAR_REAL(example_variable, 1.0);
+	/* DEFINE VARIABLES HERE:
+       e.g. VAR_REAL(pluginname_varname, 1.0);
+       Second parameter is default value
+    */
 );
 
+/* DO PREPARE STUFF HERE:
+   You must call the argument "vp"
+*/
 int PluginVarPrepare(Variation* vp)
 {
-    return TRUE; 
+    return TRUE; // Always return TRUE.
 }
 
+/* DO CALC STUFF HERE:
+   You must call the argument "vp"
+*/
 int PluginVarCalc(Variation* vp)
 {
-	// example calculation:
-    FPx += VVAR * FTx;	// Xout = weight * Xin
-	FPx += VVAR * FTy;	// Yout = weight * Yout
-	TC   = fmod(fabs(sqrt(sqr(FTx)+sqr(FTy))), 1.0); // Color [0..1]
+      double r, sina, cosa;
+
+      fsincos(atan2(FTy, FTx)/2 + M_PI*(rand() % 2), &sina, &cosa);
+      r = VVAR * sqrt(sqrt(FTx*FTx+FTy*FTy));
+      FPx = FPx + r * cosa;
+      FPy = FPy + r * sina;
 
     return TRUE;
 }
