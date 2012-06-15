@@ -777,7 +777,11 @@ begin
       if Registry.ValueExists('PluginPath') then begin
         PluginPath := Registry.ReadString('PluginPath');
       end else begin
+        {$ifdef Apo7X64}
+        PluginPath := '';
+        {$else}
         PluginPath := ExtractFilePath(Application.ExeName) + 'Plugins\';
+        {$endif}
       end;
 
       {if Registry.ValueExists('SingleBuffer') then begin
@@ -790,7 +794,11 @@ begin
     begin
 //      ReferenceMode := 0;
       //SingleBuffer := false;
+      {$ifdef Apo7X64}
+      PluginPath := '';
+      {$else}
       PluginPath := ExtractFilePath(Application.ExeName) + 'Plugins\';
+      {$endif}
       StartupCheckForUpdates := true;
       AlwaysCreateBlankFlame := false;
       MainForm_RotationMode := 0;
