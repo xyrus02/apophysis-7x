@@ -483,7 +483,7 @@ function LoadXMLFlameText(filename, name: string) : string;
 
 var
   MainForm: TMainForm;
-  pname, ptime: string;
+  pname, ptime: String;
   nxform: integer;
   TbBreakWidth: integer;
 
@@ -3259,7 +3259,7 @@ begin
   ListXmlScanner := TEasyXmlScanner.Create(nil);
   XmlScanner := TXmlScanner.Create(nil);
 
-  MainForm.ListXmlScanner.Normalize := True;
+  MainForm.ListXmlScanner.Normalize := False;
   MainForm.ListXmlScanner.OnStartTag := ListXmlScannerStartTag;
 
   MainForm.XmlScanner.Normalize := False;
@@ -6892,7 +6892,7 @@ begin
         p := Pos('<flame ', LowerCase(FStrings[i]));
         if (p <> 0) then
         begin
-          MainForm.ListXMLScanner.LoadFromBuffer(PANSICHAR(AnsiString(FSTrings[i])));
+          MainForm.ListXMLScanner.LoadFromBuffer(TCharType(TStringType(FSTrings[i])));
           MainForm.ListXMLScanner.Execute;
 
           if Trim(pname) = '' then
