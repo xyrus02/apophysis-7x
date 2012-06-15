@@ -1649,7 +1649,7 @@ begin
       begin
         MainForm.ListXMLScanner.LoadFromBuffer(PANSICHAR(AnsiString(FStrings[i])));
         MainForm.ListXMLScanner.Execute;
-        if FileList[index] = pname then
+        if FileList[index] = (pname) then
           break;
       end;
     end;

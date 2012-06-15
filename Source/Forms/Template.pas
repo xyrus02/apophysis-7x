@@ -232,7 +232,7 @@ begin
           MainForm.ListXMLScanner.LoadFromBuffer(PAnsiChar(AnsiString(FSTrings[i])));
           MainForm.ListXMLScanner.Execute;
 
-          if Trim(pname) = '' then
+          if Length(pname) = 0 then
             Title := '*untitled ' + ptime
           else
             Title := Trim(pname);
