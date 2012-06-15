@@ -1074,7 +1074,7 @@ object EditForm: TEditForm
                     Height = 21
                     Anchors = [akLeft, akTop, akRight]
                     AutoSelect = False
-                    TabOrder = 2
+                    TabOrder = 4
                     Text = '0'
                     OnExit = CornerEditExit
                     OnKeyPress = CornerEditKeyPress
@@ -1086,7 +1086,7 @@ object EditForm: TEditForm
                     Height = 21
                     Anchors = [akLeft, akTop, akRight]
                     AutoSelect = False
-                    TabOrder = 3
+                    TabOrder = 5
                     Text = '0'
                     OnExit = CornerEditExit
                     OnKeyPress = CornerEditKeyPress
@@ -1098,7 +1098,7 @@ object EditForm: TEditForm
                     Height = 21
                     Anchors = [akLeft, akTop, akRight]
                     AutoSelect = False
-                    TabOrder = 4
+                    TabOrder = 2
                     Text = '0'
                     OnExit = CornerEditExit
                     OnKeyPress = CornerEditKeyPress
@@ -1110,7 +1110,7 @@ object EditForm: TEditForm
                     Height = 21
                     Anchors = [akLeft, akTop, akRight]
                     AutoSelect = False
-                    TabOrder = 5
+                    TabOrder = 3
                     Text = '0'
                     OnExit = CornerEditExit
                     OnKeyPress = CornerEditKeyPress
@@ -2206,7 +2206,7 @@ object EditForm: TEditForm
     Left = 313
     Top = 40
     Bitmap = {
-      494C010120003000180010001000FFFFFFFFFF10FFFFFFFFFFFFFFFF424D3600
+      494C0101200030001C0010001000FFFFFFFFFF10FFFFFFFFFFFFFFFF424D3600
       0000000000003600000028000000400000009000000001002000000000000090
       0000000000000000000000000000000000000000000000000000000000000000
       0000000000000000000000000000000000000000000000000000000000000000
