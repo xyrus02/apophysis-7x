@@ -39,7 +39,7 @@ unit varGenericPlugin;
 interface
 
 uses
-  BaseVariation,  XFormMan,
+  BaseVariation,  XFormMan,  Settings,
   Classes,  //TStrings/TStringList
   SysUtils, //FindFirst/FindNext/FindClose
   Forms;  //MessageBox
@@ -249,21 +249,7 @@ var
 begin
   NumBuiltinVars := NRLOCVAR + GetNrRegisteredVariations;
 
-  Registry := TRegistry.Create;
-  try
-    Registry.RootKey := HKEY_CURRENT_USER;
-    { Defaults }
-    if Registry.OpenKey('Software\' + APP_NAME + '\Defaults', False) then
-      if Registry.ValueExists('PluginPath') then begin
-        PluginPath := Registry.ReadString('PluginPath');
-      end else begin
-        PluginPath := ExtractFilePath(Application.ExeName) + 'Plugins\';
-      end
-    else PluginPath := ExtractFilePath(Application.ExeName) + 'Plugins\';
-    Registry.CloseKey;
-  finally
-    Registry.Free;
-  end;
+  PluginPath := ReadPluginDir;
 
   // Try to find regular files matching *.dll in the plugins dir
   if FindFirst(PluginPath + '*.dll', faAnyFile, searchResult) = 0 then

@@ -502,7 +502,7 @@ var
 implementation
 
 uses
-  Editor, Options, Regstry, Template,
+  Editor, Options, Settings, Template,
   FullScreen, FormRender, Mutate, Adjust, Browser, Save, About, CmapData,
   {$ifdef DisableScripting}
   {$else}

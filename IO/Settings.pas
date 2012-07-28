@@ -20,18 +20,19 @@
      along with this program; if not, write to the Free Software
      Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
 }
-unit Regstry;
+unit Settings;
 
 interface
 
-uses graphics, Messages;
+uses graphics, Messages, Translation;
 
+function ReadPluginDir: string;
 procedure ReadSettings;
 procedure SaveSettings;
 
 implementation
 
-uses Windows, SysUtils, Forms, Registry, Global, Dialogs, XFormMan;
+uses Windows, Classes, SysUtils, Forms, Registry, Global, Dialogs, XFormMan;
 
 (*
 procedure UnpackVariations(v: int64);
@@ -43,6 +44,57 @@ begin
     Variations[i] := boolean(v shr i and 1);
 end;
 *)
+
+function ReadPluginDir: string;
+var
+  settingFileName: string;
+  sl : TStringList;
+begin
+  sl := TStringList.Create;
+
+  settingFileName := ExtractFilePath(Application.ExeName) + 'ApoPluginSrc.dat';
+  if FileExists(settingFileName) then
+    sl.LoadFromFile(settingFileName)
+  else begin
+    settingFileName := GetEnvVarValue('APPDATA') + '\ApoPluginSrc.dat';
+
+    if FileExists(settingFileName) then
+      sl.LoadFromFile(settingFileName)
+    else
+      sl.Text := ExtractFilePath(Application.ExeName) + 'Plugins';
+  end;
+
+  if Trim(sl.Text) = '' then
+    sl.Text := ExtractFilePath(Application.ExeName) + 'Plugins';
+
+  Result := Trim(sl.Text);
+  sl.Destroy;
+end;
+
+procedure SavePluginDir(data: string);
+var
+  settingFileName: string;
+  sl : TStringList;
+begin
+  settingFileName := ExtractFilePath(Application.ExeName) + 'ApoPluginSrc.dat';
+  sl := TStringList.Create;
+  sl.Text := PluginPath;
+
+  try
+    sl.SaveToFile(settingFileName);
+    sl.Destroy;
+  except
+    // not elevated?
+    settingFileName := GetEnvVarValue('APPDATA') + '\ApoPluginSrc.dat';
+    try
+      sl.SaveToFile(settingFileName);
+    except
+      MessageBox(0, PCHAR(TextByKey('main-status-pluginpath-ioerror')),
+        PCHAR('Apophysis'), MB_ICONWARNING);
+    end;
+    sl.Destroy;
+  end;
+end;
 
 procedure ReadSettings;
 var
@@ -773,32 +825,9 @@ begin
       end else begin
         UseX64IfPossible := false;
       end;
-
-      if Registry.ValueExists('PluginPath') then begin
-        PluginPath := Registry.ReadString('PluginPath');
-      end else begin
-        {$ifdef Apo7X64}
-        PluginPath := '';
-        {$else}
-        PluginPath := ExtractFilePath(Application.ExeName) + 'Plugins\';
-        {$endif}
-      end;
-
-      {if Registry.ValueExists('SingleBuffer') then begin
-        SingleBuffer := Registry.ReadBool('SingleBuffer');
-      end else begin
-        SingleBuffer := false;
-      end;}
     end
     else
     begin
-//      ReferenceMode := 0;
-      //SingleBuffer := false;
-      {$ifdef Apo7X64}
-      PluginPath := '';
-      {$else}
-      PluginPath := ExtractFilePath(Application.ExeName) + 'Plugins\';
-      {$endif}
       StartupCheckForUpdates := true;
       AlwaysCreateBlankFlame := false;
       MainForm_RotationMode := 0;
@@ -1316,6 +1345,8 @@ begin
   finally
     Registry.Free;
   end;
+
+  PluginPath := ReadPluginDir;
 end;
 
 procedure SaveSettings;
@@ -1323,6 +1354,8 @@ var
   Registry: TRegistry;
   i: integer;
 begin
+  SavePluginDir(PluginPath);
+
   Registry := TRegistry.Create;
   try
     Registry.RootKey := HKEY_CURRENT_USER;
@@ -1357,8 +1390,6 @@ begin
       Registry.WriteString('ChaoticaPath', ChaoticaPath);
       Registry.WriteString('ChaoticaPath64', ChaoticaPath64);
       Registry.WriteBool('UseX64IfPossible', UseX64IfPossible);
-      Registry.WriteString('PluginPath', PluginPath);
-      //Registry.WriteBool('SingleBuffer', SingleBuffer);
 
       Registry.WriteBool('ConfirmDelete', ConfirmDelete);
       Registry.WriteBool('OldPaletteFormat', OldPaletteFormat);

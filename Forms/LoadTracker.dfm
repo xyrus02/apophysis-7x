@@ -1,11 +1,11 @@
 object LoadForm: TLoadForm
   Left = 443
   Top = 274
-  Width = 678
-  Height = 426
   ActiveControl = Button1
   Anchors = [akLeft, akTop, akRight, akBottom]
   Caption = 'Messages'
+  ClientHeight = 388
+  ClientWidth = 662
   Color = clBtnFace
   Constraints.MinHeight = 275
   Constraints.MinWidth = 550
@@ -56,8 +56,8 @@ object LoadForm: TLoadForm
   OnCreate = FormCreate
   OnResize = FormResize
   DesignSize = (
-    670
-    399)
+    662
+    388)
   PixelsPerInch = 96
   TextHeight = 13
   object Bevel1: TBevel

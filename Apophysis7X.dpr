@@ -49,7 +49,7 @@ uses
   Global in 'Core\Global.pas',
   CommandLine in 'IO\CommandLine.pas',
   MissingPlugin in 'IO\MissingPlugin.pas',
-  Regstry in 'IO\Regstry.pas',
+  Settings in 'IO\Settings.pas',
   Translation in 'Core\Translation.pas',
   Chaotica in 'Core\Chaotica.pas',
   ParameterIO in 'IO\ParameterIO.pas',
