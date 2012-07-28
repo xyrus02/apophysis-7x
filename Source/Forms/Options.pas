@@ -744,7 +744,7 @@ begin
   {$else}
   UseX64IfPossible := cbC64.Checked;
   PluginPath := txtPluginFolder.Text;
-  if (RightStr(PluginPath, 1) <> '\') then
+  if (RightStr(PluginPath, 1) <> '\') and (PluginPath <> '') then
     PluginPath := PluginPath + '\';
   {$endif}
 
