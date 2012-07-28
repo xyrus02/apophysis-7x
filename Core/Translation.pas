@@ -635,6 +635,7 @@ begin
 	Add('main-status-nohelpfile', 'Please specify a help file path in the options dialog first.');
 	Add('main-status-variationsorvariables', 'variations or variables');
 	Add('main-status-plugins', 'plugins');
+  Add('main-status-pluginpath-ioerror', 'Failed to write the setting for the plugin directory. Apophysis will use the default setting.');
 	Add('main-status-noloadingerrors', 'Flame loaded without errors');
 	Add('main-status-loadingerrorcount', '%d errors in flame');
 	Add('main-status-morepluginsneeded', 'The flame "%s" requires the following additional %s:');

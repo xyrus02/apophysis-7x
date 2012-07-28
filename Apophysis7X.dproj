@@ -84,10 +84,9 @@
 		<PropertyGroup Condition="'$(Base_Win64)'!=''">
 			<DCC_ExeOutput>..\..\Out\x64\</DCC_ExeOutput>
 			<DCC_DcuOutput>..\..\Out\x64\dcu\</DCC_DcuOutput>
-			<DCC_Define>DisableScripting;Apo7X64;$(DCC_Define)</DCC_Define>
+			<DCC_Define>Apo7X64;$(DCC_Define)</DCC_Define>
 			<DCC_Namespace>Data.Win;Datasnap.Win;Web.Win;Soap.Win;Xml.Win;$(DCC_Namespace)</DCC_Namespace>
 			<VerInfo_IncludeVerInfo>true</VerInfo_IncludeVerInfo>
-			<Manifest_File>$(BDS)\bin\default_app.manifest</Manifest_File>
 		</PropertyGroup>
 		<PropertyGroup Condition="'$(Base_Win32)'!=''">
 			<DCC_ExeOutput>..\..\Out\x86\</DCC_ExeOutput>
@@ -136,20 +135,16 @@
 			<DCCReference Include="System\LibXmlParser.pas"/>
 			<DCCReference Include="System\Windows7.pas"/>
 			<DCCReference Include="System\RegexHelper.pas"/>
-			<DCCReference Include="System\CurvesControl.pas">
-				<Form>$else</Form>
-			</DCCReference>
+			<DCCReference Include="System\CurvesControl.pas"/>
 			<DCCReference Include="System\AsmRandom.pas"/>
 			<DCCReference Include="Core\Global.pas"/>
 			<DCCReference Include="IO\CommandLine.pas"/>
 			<DCCReference Include="IO\MissingPlugin.pas"/>
-			<DCCReference Include="IO\Regstry.pas"/>
+			<DCCReference Include="IO\Settings.pas"/>
 			<DCCReference Include="Core\Translation.pas"/>
 			<DCCReference Include="Core\Chaotica.pas"/>
 			<DCCReference Include="IO\ParameterIO.pas"/>
-			<DCCReference Include="Core\Bezier.pas">
-				<Form>-- FLAME --</Form>
-			</DCCReference>
+			<DCCReference Include="Core\Bezier.pas"/>
 			<DCCReference Include="Flame\RndFlame.pas"/>
 			<DCCReference Include="Flame\ControlPoint.pas"/>
 			<DCCReference Include="ColorMap\cmapdata.pas"/>

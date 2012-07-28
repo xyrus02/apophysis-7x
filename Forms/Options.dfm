@@ -211,10 +211,6 @@ object OptionsForm: TOptionsForm
     object GeneralPage: TTabSheet
       HelpContext = 1
       Caption = 'General'
-      ExplicitLeft = 0
-      ExplicitTop = 0
-      ExplicitWidth = 0
-      ExplicitHeight = 0
       DesignSize = (
         467
         368)
@@ -592,10 +588,6 @@ object OptionsForm: TOptionsForm
     object EditorPage: TTabSheet
       Caption = 'Editor'
       ImageIndex = 8
-      ExplicitLeft = 0
-      ExplicitTop = 0
-      ExplicitWidth = 0
-      ExplicitHeight = 0
       DesignSize = (
         467
         368)
@@ -889,10 +881,6 @@ object OptionsForm: TOptionsForm
     end
     object DisplayPage: TTabSheet
       Caption = 'Display'
-      ExplicitLeft = 0
-      ExplicitTop = 0
-      ExplicitWidth = 0
-      ExplicitHeight = 0
       DesignSize = (
         467
         368)
@@ -1186,10 +1174,6 @@ object OptionsForm: TOptionsForm
     end
     object RandomPage: TTabSheet
       Caption = 'Random'
-      ExplicitLeft = 0
-      ExplicitTop = 0
-      ExplicitWidth = 0
-      ExplicitHeight = 0
       DesignSize = (
         467
         368)
@@ -1590,10 +1574,6 @@ object OptionsForm: TOptionsForm
     object VariationsPage: TTabSheet
       Caption = 'Variations'
       ImageIndex = 4
-      ExplicitLeft = 0
-      ExplicitTop = 0
-      ExplicitWidth = 0
-      ExplicitHeight = 0
       DesignSize = (
         467
         368)
@@ -1634,10 +1614,6 @@ object OptionsForm: TOptionsForm
     object TabSheet1: TTabSheet
       Caption = 'Gradient'
       ImageIndex = 5
-      ExplicitLeft = 0
-      ExplicitTop = 0
-      ExplicitWidth = 0
-      ExplicitHeight = 0
       DesignSize = (
         467
         368)
@@ -1990,10 +1966,6 @@ object OptionsForm: TOptionsForm
     object TabSheet6: TTabSheet
       Caption = 'UPR'
       ImageIndex = 5
-      ExplicitLeft = 0
-      ExplicitTop = 0
-      ExplicitWidth = 0
-      ExplicitHeight = 0
       DesignSize = (
         467
         368)
@@ -2237,10 +2209,6 @@ object OptionsForm: TOptionsForm
       Enabled = False
       ImageIndex = 6
       TabVisible = False
-      ExplicitLeft = 0
-      ExplicitTop = 0
-      ExplicitWidth = 0
-      ExplicitHeight = 0
       object GroupBox6: TGroupBox
         Left = 8
         Top = 6
@@ -2323,10 +2291,6 @@ object OptionsForm: TOptionsForm
     object PathsPage: TTabSheet
       Caption = 'Environment'
       ImageIndex = 7
-      ExplicitLeft = 0
-      ExplicitTop = 0
-      ExplicitWidth = 0
-      ExplicitHeight = 0
       DesignSize = (
         467
         368)

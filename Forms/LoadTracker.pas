@@ -27,7 +27,7 @@ interface
 
 uses
   Windows, Messages, SysUtils, Variants, Classes, Graphics, Controls, Forms,
-  Dialogs, StdCtrls, Global, Regstry, ExtCtrls, Translation;
+  Dialogs, StdCtrls, Global, Settings, ExtCtrls, Translation;
 
 type
   TLoadForm = class(TForm)
