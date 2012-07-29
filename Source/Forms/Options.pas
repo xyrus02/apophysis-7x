@@ -740,13 +740,13 @@ begin
   ChaoticaPath := txtChaotica.text;
   ChaoticaPath64 := txtChaotica64.text;
 
-  {$ifdef Apo7X64}
-  {$else}
+  //{$ifdef Apo7X64}
+  //{$else}
   UseX64IfPossible := cbC64.Checked;
   PluginPath := txtPluginFolder.Text;
   if (RightStr(PluginPath, 1) <> '\') and (PluginPath <> '') then
     PluginPath := PluginPath + '\';
-  {$endif}
+  //{$endif}
 
   AutoSaveEnabled := cbEnableAutosave.Checked;
   AutoSavePath := txtDefaultSaveFile.Text;
@@ -1093,12 +1093,12 @@ begin
   grpEditorColors.Caption := TextByKey('editor-tab-color-title');
 
   {$ifdef Apo7X64}
-  Panel50.Enabled := false;
+  {Panel50.Enabled := false;
   btnPluginPath.Enabled := false;
   txtPluginFolder.Enabled := false;
   Panel50.Font.Color := clGrayText;
   cbc64.Enabled := false;
-  cbc64.Font.Color := clGrayText;
+  cbc64.Font.Color := clGrayText;  }
   {$endif}
 
   for i:= 0 to NRVAR - 1 do begin
