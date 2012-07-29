@@ -8,7 +8,7 @@
 			<AppType>Application</AppType>
 			<FrameworkType>VCL</FrameworkType>
 			<ProjectVersion>13.4</ProjectVersion>
-			<Platform Condition="'$(Platform)'==''">Win32</Platform>
+			<Platform Condition="'$(Platform)'==''">Win64</Platform>
 		</PropertyGroup>
 		<PropertyGroup Condition="'$(Config)'=='Base' or '$(Base)'!=''">
 			<Base>true</Base>
@@ -135,8 +135,9 @@
 			<DCCReference Include="System\LibXmlParser.pas"/>
 			<DCCReference Include="System\Windows7.pas"/>
 			<DCCReference Include="System\RegexHelper.pas"/>
-			<DCCReference Include="System\CurvesControl.pas"/>
-			<DCCReference Include="System\AsmRandom.pas"/>
+			<DCCReference Include="System\CurvesControl.pas">
+				<Form>$endif</Form>
+			</DCCReference>
 			<DCCReference Include="Core\Global.pas"/>
 			<DCCReference Include="IO\CommandLine.pas"/>
 			<DCCReference Include="IO\MissingPlugin.pas"/>
