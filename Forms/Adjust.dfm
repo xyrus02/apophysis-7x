@@ -171,7 +171,7 @@ object AdjustForm: TAdjustForm
     Top = 157
     Width = 451
     Height = 130
-    ActivePage = TabSheet6
+    ActivePage = TabSheet3
     Anchors = [akLeft, akTop, akRight, akBottom]
     Images = MainForm.Buttons
     TabOrder = 1
@@ -590,7 +590,7 @@ object AdjustForm: TAdjustForm
       end
       object btnMenu: TSpeedButton
         Left = 4
-        Top = 42
+        Top = 41
         Width = 109
         Height = 21
         Hint = 'Click for menu'
@@ -641,7 +641,7 @@ object AdjustForm: TAdjustForm
       end
       object btnOpen: TSpeedButton
         Left = 396
-        Top = 67
+        Top = 66
         Width = 23
         Height = 21
         Hint = 'Open Gradient Browser'
@@ -681,7 +681,7 @@ object AdjustForm: TAdjustForm
       end
       object btnSmoothPalette: TSpeedButton
         Left = 419
-        Top = 67
+        Top = 66
         Width = 23
         Height = 21
         Hint = 'Smooth Palette'
@@ -721,7 +721,7 @@ object AdjustForm: TAdjustForm
       end
       object btnPaste: TSpeedButton
         Left = 373
-        Top = 67
+        Top = 66
         Width = 23
         Height = 21
         Hint = 'Paste gradient from clipboard'
@@ -761,7 +761,7 @@ object AdjustForm: TAdjustForm
       end
       object btnCopy: TSpeedButton
         Left = 350
-        Top = 67
+        Top = 66
         Width = 23
         Height = 21
         Hint = 'Copy gradient to clipboard'
@@ -801,7 +801,7 @@ object AdjustForm: TAdjustForm
       end
       object btnColorPreset: TSpeedButton
         Left = 4
-        Top = 68
+        Top = 67
         Width = 109
         Height = 21
         Hint = 'Click to choose random preset'
@@ -816,7 +816,7 @@ object AdjustForm: TAdjustForm
         Left = 0
         Top = 0
         Width = 443
-        Height = 39
+        Height = 38
         Align = alTop
         Anchors = [akLeft, akTop, akRight, akBottom]
         BevelInner = bvRaised
@@ -828,7 +828,7 @@ object AdjustForm: TAdjustForm
           Left = 2
           Top = 2
           Width = 435
-          Height = 31
+          Height = 30
           Cursor = crHandPoint
           Align = alClient
           PopupMenu = GradientPopup
@@ -842,7 +842,7 @@ object AdjustForm: TAdjustForm
       end
       object ScrollBar: TScrollBar
         Left = 120
-        Top = 45
+        Top = 44
         Width = 179
         Height = 15
         Anchors = [akLeft, akRight, akBottom]
@@ -856,7 +856,7 @@ object AdjustForm: TAdjustForm
       end
       object cmbPalette: TComboBox
         Left = 120
-        Top = 68
+        Top = 67
         Width = 227
         Height = 21
         BevelInner = bvLowered
@@ -965,7 +965,7 @@ object AdjustForm: TAdjustForm
       end
       object txtVal: TEdit
         Left = 306
-        Top = 42
+        Top = 41
         Width = 49
         Height = 21
         Anchors = [akRight, akBottom]
@@ -976,7 +976,7 @@ object AdjustForm: TAdjustForm
       end
       object btnReset: TButton
         Left = 363
-        Top = 42
+        Top = 41
         Width = 79
         Height = 21
         Anchors = [akRight, akBottom]
@@ -1002,7 +1002,7 @@ object AdjustForm: TAdjustForm
         Left = 184
         Top = 4
         Width = 138
-        Height = 93
+        Height = 92
         Anchors = [akLeft, akTop, akRight, akBottom]
         Shape = bsFrame
         ExplicitHeight = 94
@@ -1202,7 +1202,7 @@ object AdjustForm: TAdjustForm
         Left = 336
         Top = 10
         Width = 99
-        Height = 40
+        Height = 39
         Alignment = taLeftJustify
         Anchors = [akLeft, akTop, akRight, akBottom]
         Caption = 'Resize Main Window'
