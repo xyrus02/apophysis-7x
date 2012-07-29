@@ -2005,6 +2005,8 @@ begin
 
   ScrollBar.Position := StrToInt(Trim(txtVal.Text));
   txtVal.Text := Trim(txtVal.Text);
+
+  UpdateFlame;
 end;
 
 procedure TAdjustForm.txtSizeKeyPress(Sender: TObject; var Key: Char);
