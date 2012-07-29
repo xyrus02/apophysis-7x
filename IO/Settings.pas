@@ -32,7 +32,7 @@ procedure SaveSettings;
 
 implementation
 
-uses Windows, Classes, SysUtils, Forms, Registry, Global, Dialogs, XFormMan;
+uses Windows, Classes, SysUtils, StrUtils, Forms, Registry, Global, Dialogs, XFormMan;
 
 (*
 procedure UnpackVariations(v: int64);
@@ -61,13 +61,16 @@ begin
     if FileExists(settingFileName) then
       sl.LoadFromFile(settingFileName)
     else
-      sl.Text := ExtractFilePath(Application.ExeName) + 'Plugins';
+      sl.Text := ExtractFilePath(Application.ExeName) + 'Plugins\';
   end;
 
   if Trim(sl.Text) = '' then
-    sl.Text := ExtractFilePath(Application.ExeName) + 'Plugins';
+    sl.Text := ExtractFilePath(Application.ExeName) + 'Plugins\';
 
   Result := Trim(sl.Text);
+  if (RightStr(Result, 1) <> '\') and (Result <> '') then
+    Result := Result + '\';
+
   sl.Destroy;
 end;
 

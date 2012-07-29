@@ -109,6 +109,14 @@ type
   end;
 
 procedure InitializePlugins;
+
+const CurrentPlatform =
+{$ifdef Apo7X64}
+  $00000040
+{$else}
+  $00000020
+{$endif};
+
   //////////////////////////////////////////////////////////////////////
 
 implementation
@@ -237,18 +245,55 @@ begin
   end;
 end;
 
+function GetPlatformOf(dllPath: string): integer;
+var
+  fs: TFilestream;
+  signature: DWORD;
+  dos_header: IMAGE_DOS_HEADER;
+  pe_header: IMAGE_FILE_HEADER;
+  opt_header: IMAGE_OPTIONAL_HEADER;
+begin
+  fs := TFilestream.Create(dllPath, fmOpenread or fmShareDenyNone);
+  try
+    fs.read(dos_header, SizeOf(dos_header));
+    if dos_header.e_magic <> IMAGE_DOS_SIGNATURE then
+    begin
+      Result := 0;
+      Exit;
+    end;
+
+    fs.seek(dos_header._lfanew, soFromBeginning);
+    fs.read(signature, SizeOf(signature));
+    if signature <> IMAGE_NT_SIGNATURE then
+    begin
+      Result := 0;
+      Exit;
+    end;
+
+    fs.read(pe_header, SizeOf(pe_header));
+    case pe_header.Machine of
+      IMAGE_FILE_MACHINE_I386: Result := $00000020;
+      IMAGE_FILE_MACHINE_AMD64: Result := $00000040;
+    else
+      Result := 0;
+  end; { Case }
+
+  finally
+    fs.Free;
+  end;
+end;
+
 ///////////////////////////////////////////////////////////////////////////////
 procedure InitializePlugins;
 var
   Registry: TRegistry;
   searchResult: TSearchRec;
-  name, msg: string;
+  dllPath, name, msg: string;
   PluginData : TPluginData;
   errno:integer;
   errstr:string;
 begin
   NumBuiltinVars := NRLOCVAR + GetNrRegisteredVariations;
-
   PluginPath := ReadPluginDir;
 
   // Try to find regular files matching *.dll in the plugins dir
@@ -256,8 +301,14 @@ begin
   begin
     repeat
       with PluginData do begin
+        dllPath := PluginPath + searchResult.Name;
+
+        //Check plugin platform
+         if CurrentPlatform <> GetPlatformOf(dllPath)
+         then continue;
+
         //Load DLL and initialize plugins!
-        PluginHandle := LoadLibrary(PChar(PluginPath + searchResult.Name));
+        PluginHandle := LoadLibrary(PChar(dllPath));
         if PluginHandle<>0 then begin
           @PluginVarGetName := GetProcAddress(PluginHandle,'PluginVarGetName');
           if @PluginVarGetName = nil then begin  // Must not be a valid plugin!

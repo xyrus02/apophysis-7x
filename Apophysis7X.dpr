@@ -162,10 +162,7 @@ uses
   {$endif}
 
 begin
-  {$ifdef Apo7X64}
-  {$else}
   InitializePlugins;
-  {$endif}
 
   SplashWindow := TSplashWindow.Create(Application);
   SplashWindow.Show;
