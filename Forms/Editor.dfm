@@ -481,7 +481,7 @@ object EditForm: TEditForm
           ActivePage = tabVariations
           Anchors = [akLeft, akTop, akRight, akBottom]
           MultiLine = True
-          TabOrder = 1
+          TabOrder = 3
           TabStop = False
           object TriangleTab: TTabSheet
             Caption = 'Triangle'
@@ -503,7 +503,7 @@ object EditForm: TEditForm
                 290
                 420)
               object TrianglePanel: TPanel
-                Left = 0
+                Left = 1
                 Top = 0
                 Width = 284
                 Height = 321
@@ -522,7 +522,7 @@ object EditForm: TEditForm
                   EdgeInner = esNone
                   EdgeOuter = esNone
                   Images = EditorTB
-                  TabOrder = 0
+                  TabOrder = 3
                   object tbCopyTriangle: TToolButton
                     Left = 0
                     Top = 0
@@ -956,7 +956,7 @@ object EditForm: TEditForm
                     Height = 21
                     AutoComplete = False
                     ItemIndex = 1
-                    TabOrder = 0
+                    TabOrder = 2
                     Text = '125'
                     OnExit = txtValidateValue
                     OnKeyPress = txtValKeyPress
@@ -974,7 +974,7 @@ object EditForm: TEditForm
                     Width = 65
                     Height = 21
                     AutoComplete = False
-                    TabOrder = 1
+                    TabOrder = 0
                     Text = '15'
                     OnExit = txtValidateValue
                     OnKeyPress = txtValKeyPress
@@ -996,7 +996,7 @@ object EditForm: TEditForm
                     Height = 21
                     AutoComplete = False
                     ItemIndex = 3
-                    TabOrder = 2
+                    TabOrder = 1
                     Text = '0.1'
                     OnExit = txtValidateValue
                     OnKeyPress = txtValKeyPress
@@ -1018,7 +1018,7 @@ object EditForm: TEditForm
                   Height = 105
                   Ctl3D = True
                   ParentCtl3D = False
-                  TabOrder = 2
+                  TabOrder = 0
                   DesignSize = (
                     209
                     105)
@@ -1049,7 +1049,6 @@ object EditForm: TEditForm
                     Width = 83
                     Height = 21
                     Anchors = [akLeft, akTop, akRight]
-                    AutoSelect = False
                     TabOrder = 0
                     Text = '0'
                     OnExit = CornerEditExit
@@ -1061,7 +1060,6 @@ object EditForm: TEditForm
                     Width = 86
                     Height = 21
                     Anchors = [akLeft, akTop, akRight]
-                    AutoSelect = False
                     TabOrder = 1
                     Text = '0'
                     OnExit = CornerEditExit
@@ -1073,7 +1071,6 @@ object EditForm: TEditForm
                     Width = 83
                     Height = 21
                     Anchors = [akLeft, akTop, akRight]
-                    AutoSelect = False
                     TabOrder = 4
                     Text = '0'
                     OnExit = CornerEditExit
@@ -1085,7 +1082,6 @@ object EditForm: TEditForm
                     Width = 86
                     Height = 21
                     Anchors = [akLeft, akTop, akRight]
-                    AutoSelect = False
                     TabOrder = 5
                     Text = '0'
                     OnExit = CornerEditExit
@@ -1097,7 +1093,6 @@ object EditForm: TEditForm
                     Width = 83
                     Height = 21
                     Anchors = [akLeft, akTop, akRight]
-                    AutoSelect = False
                     TabOrder = 2
                     Text = '0'
                     OnExit = CornerEditExit
@@ -1109,81 +1104,78 @@ object EditForm: TEditForm
                     Width = 86
                     Height = 21
                     Anchors = [akLeft, akTop, akRight]
-                    AutoSelect = False
                     TabOrder = 3
                     Text = '0'
                     OnExit = CornerEditExit
                     OnKeyPress = CornerEditKeyPress
                   end
                 end
-              end
-              object GroupBox3: TGroupBox
-                Left = 6
-                Top = 248
-                Width = 209
-                Height = 65
-                Caption = 'Pivot Point'
-                TabOrder = 1
-                object btnResetPivot: TSpeedButton
+                object GroupBox3: TGroupBox
                   Left = 6
-                  Top = 40
-                  Width = 17
-                  Height = 17
-                  Hint = 'Reset pivot point to (0, 0)'
-                  Caption = 'R'
-                  ParentShowHint = False
-                  ShowHint = True
-                  OnClick = btnResetPivotClick
-                end
-                object btnPickPivot: TSpeedButton
-                  Left = 184
-                  Top = 40
-                  Width = 16
-                  Height = 17
-                  Hint = 'Pick pivot point using mouse'
-                  Caption = 'P'
-                  ParentShowHint = False
-                  ShowHint = True
-                  OnClick = btnPickPivotClick
-                end
-                object btnPivotMode: TSpeedButton
-                  Left = 24
-                  Top = 40
-                  Width = 160
-                  Height = 17
-                  Hint = 'Toggle pivot point mode'
-                  Caption = 'Local Pivot'
-                  ParentShowHint = False
-                  ShowHint = True
-                  OnClick = btnPivotModeClick
-                end
-                object editPivotY: TEdit
-                  Left = 110
-                  Top = 16
-                  Width = 93
-                  Height = 21
-                  Hint = 'Pivot point coordinates in chosen coordinate system'
-                  AutoSelect = False
-                  ParentShowHint = False
-                  ShowHint = True
-                  TabOrder = 1
-                  Text = '0'
-                  OnExit = PivotValidate
-                  OnKeyPress = PivotKeyPress
-                end
-                object editPivotX: TEdit
-                  Left = 6
-                  Top = 16
-                  Width = 99
-                  Height = 21
-                  Hint = 'Pivot point coordinates in chosen coordinate system'
-                  AutoSelect = False
-                  ParentShowHint = False
-                  ShowHint = True
-                  TabOrder = 0
-                  Text = '0'
-                  OnExit = PivotValidate
-                  OnKeyPress = PivotKeyPress
+                  Top = 248
+                  Width = 209
+                  Height = 65
+                  Caption = 'Pivot Point'
+                  TabOrder = 2
+                  object btnResetPivot: TSpeedButton
+                    Left = 6
+                    Top = 40
+                    Width = 17
+                    Height = 17
+                    Hint = 'Reset pivot point to (0, 0)'
+                    Caption = 'R'
+                    ParentShowHint = False
+                    ShowHint = True
+                    OnClick = btnResetPivotClick
+                  end
+                  object btnPickPivot: TSpeedButton
+                    Left = 184
+                    Top = 40
+                    Width = 16
+                    Height = 17
+                    Hint = 'Pick pivot point using mouse'
+                    Caption = 'P'
+                    ParentShowHint = False
+                    ShowHint = True
+                    OnClick = btnPickPivotClick
+                  end
+                  object btnPivotMode: TSpeedButton
+                    Left = 24
+                    Top = 40
+                    Width = 160
+                    Height = 17
+                    Hint = 'Toggle pivot point mode'
+                    Caption = 'Local Pivot'
+                    ParentShowHint = False
+                    ShowHint = True
+                    OnClick = btnPivotModeClick
+                  end
+                  object editPivotY: TEdit
+                    Left = 111
+                    Top = 13
+                    Width = 93
+                    Height = 21
+                    Hint = 'Pivot point coordinates in chosen coordinate system'
+                    ParentShowHint = False
+                    ShowHint = True
+                    TabOrder = 1
+                    Text = '0'
+                    OnExit = PivotValidate
+                    OnKeyPress = PivotKeyPress
+                  end
+                  object editPivotX: TEdit
+                    Left = 6
+                    Top = 16
+                    Width = 99
+                    Height = 21
+                    Hint = 'Pivot point coordinates in chosen coordinate system'
+                    ParentShowHint = False
+                    ShowHint = True
+                    TabOrder = 0
+                    Text = '0'
+                    OnExit = PivotValidate
+                    OnKeyPress = PivotKeyPress
+                  end
                 end
               end
             end
@@ -1310,8 +1302,8 @@ object EditForm: TEditForm
                   OnKeyPress = CoefKeyPress
                 end
                 object txtF: TEdit
-                  Left = 128
-                  Top = 60
+                  Left = 127
+                  Top = 63
                   Width = 89
                   Height = 21
                   TabOrder = 5
@@ -1533,7 +1525,7 @@ object EditForm: TEditForm
                   Caption = ' Color speed:'
                   ParentShowHint = False
                   ShowHint = True
-                  TabOrder = 3
+                  TabOrder = 7
                   OnDblClick = DragPanelDblClick
                   OnMouseDown = DragPanelMouseDown
                   OnMouseMove = DragPanelMouseMove
@@ -1551,7 +1543,7 @@ object EditForm: TEditForm
                   BorderStyle = bsSingle
                   ParentShowHint = False
                   ShowHint = True
-                  TabOrder = 1
+                  TabOrder = 6
                   OnDblClick = DragPanelDblClick
                   OnMouseDown = DragPanelMouseDown
                   OnMouseMove = DragPanelMouseMove
@@ -1572,7 +1564,7 @@ object EditForm: TEditForm
                   Width = 192
                   Height = 21
                   Anchors = [akLeft, akTop, akRight]
-                  TabOrder = 2
+                  TabOrder = 0
                   OnExit = txtXFormColorExit
                   OnKeyPress = txtXFormColorKeyPress
                 end
@@ -1582,7 +1574,7 @@ object EditForm: TEditForm
                   Width = 168
                   Height = 21
                   Anchors = [akLeft, akTop, akRight]
-                  TabOrder = 4
+                  TabOrder = 2
                   Text = '0'
                   OnExit = txtSymmetrySet
                   OnKeyPress = txtSymmetrKeyPress
@@ -1596,7 +1588,7 @@ object EditForm: TEditForm
                   BevelOuter = bvLowered
                   BorderStyle = bsSingle
                   Color = clAppWorkSpace
-                  TabOrder = 5
+                  TabOrder = 8
                   OnMouseUp = ColorBarMouseUp
                   object ColorBarPicture: TImage
                     Left = 1
@@ -1617,7 +1609,7 @@ object EditForm: TEditForm
                   LargeChange = 10
                   Max = 1000
                   PageSize = 0
-                  TabOrder = 0
+                  TabOrder = 1
                   OnChange = scrlXFormColorChange
                   OnScroll = scrlXFormColorScroll
                 end
@@ -1632,7 +1624,7 @@ object EditForm: TEditForm
                   Caption = ' Opacity:'
                   ParentShowHint = False
                   ShowHint = True
-                  TabOrder = 6
+                  TabOrder = 9
                   OnDblClick = DragPanelDblClick
                   OnMouseDown = DragPanelMouseDown
                   OnMouseMove = DragPanelMouseMove
@@ -1644,7 +1636,7 @@ object EditForm: TEditForm
                   Width = 168
                   Height = 21
                   Anchors = [akLeft, akTop, akRight]
-                  TabOrder = 7
+                  TabOrder = 3
                   Text = '1'
                   OnExit = txtOpacitySet
                   OnKeyPress = txtOpacityKeyPress
@@ -1656,7 +1648,7 @@ object EditForm: TEditForm
                   Height = 17
                   Anchors = [akLeft, akTop, akRight]
                   Caption = 'Solo'
-                  TabOrder = 8
+                  TabOrder = 5
                   OnClick = chkXformSoloClick
                 end
                 object pnlDC: TPanel
@@ -1682,7 +1674,7 @@ object EditForm: TEditForm
                   Width = 168
                   Height = 21
                   Anchors = [akLeft, akTop, akRight]
-                  TabOrder = 9
+                  TabOrder = 4
                   Text = '1'
                   OnExit = txtDCSet
                   OnKeyPress = txtDCKeyPress
@@ -1732,8 +1724,7 @@ object EditForm: TEditForm
                   PageSize = 1
                   Position = 2
                   ShowHint = True
-                  TabOrder = 0
-                  TabStop = False
+                  TabOrder = 2
                   ThumbLength = 15
                   OnChange = trkVarPreviewDensityChange
                 end
@@ -1749,8 +1740,7 @@ object EditForm: TEditForm
                   PageSize = 1
                   Position = 2
                   ShowHint = True
-                  TabOrder = 1
-                  TabStop = False
+                  TabOrder = 0
                   ThumbLength = 15
                   OnChange = trkVarPreviewRangeChange
                 end
@@ -1766,8 +1756,7 @@ object EditForm: TEditForm
                   PageSize = 1
                   Position = 1
                   ShowHint = True
-                  TabOrder = 2
-                  TabStop = False
+                  TabOrder = 1
                   ThumbLength = 15
                   OnChange = trkVarPreviewDepthChange
                 end
@@ -1809,7 +1798,7 @@ object EditForm: TEditForm
               Anchors = [akLeft, akBottom]
               Caption = 'Load variation...'
               Enabled = False
-              TabOrder = 3
+              TabOrder = 4
               Visible = False
               OnClick = btnLoadVVARClick
             end
@@ -1821,7 +1810,7 @@ object EditForm: TEditForm
               Anchors = [akLeft, akTop, akRight, akBottom]
               DefaultColWidth = 90
               ScrollBars = ssVertical
-              TabOrder = 0
+              TabOrder = 1
               TitleCaptions.Strings = (
                 'Variation'
                 'Value')
@@ -1838,13 +1827,13 @@ object EditForm: TEditForm
                 194)
             end
             object chkCollapseVariations: TCheckBox
-              Left = 0
-              Top = 372
+              Left = 1
+              Top = 373
               Width = 291
               Height = 17
               Anchors = [akLeft, akRight, akBottom]
               Caption = 'Hide non-used variations'
-              TabOrder = 1
+              TabOrder = 2
               OnClick = chkCollapseVariationsClick
             end
             object bClear: TBitBtn
@@ -1854,16 +1843,16 @@ object EditForm: TEditForm
               Height = 25
               Anchors = [akLeft, akRight, akBottom]
               Caption = 'Clear'
-              TabOrder = 2
+              TabOrder = 3
               OnClick = bClearClick
             end
             object txtSearchBox: TEdit
-              Left = 48
+              Left = 45
               Top = 5
               Width = 217
               Height = 21
               Anchors = [akLeft, akTop, akRight]
-              TabOrder = 4
+              TabOrder = 0
               OnChange = txtSearchBoxChange
             end
           end
@@ -1945,7 +1934,8 @@ object EditForm: TEditForm
               Height = 17
               Anchors = [akLeft, akRight, akBottom]
               Caption = 'View links as "from"'
-              TabOrder = 1
+              TabOrder = 2
+              TabStop = True
               OnClick = mnuChaosViewFromClick
             end
             object optTo: TRadioButton
@@ -1956,7 +1946,7 @@ object EditForm: TEditForm
               Anchors = [akLeft, akRight, akBottom]
               Caption = 'View links as "to"'
               Checked = True
-              TabOrder = 2
+              TabOrder = 1
               TabStop = True
               OnClick = mnuChaosViewToClick
             end
@@ -1973,7 +1963,7 @@ object EditForm: TEditForm
           Caption = ' Weight:'
           ParentShowHint = False
           ShowHint = True
-          TabOrder = 3
+          TabOrder = 4
           OnDblClick = DragPanelDblClick
           OnMouseDown = DragPanelMouseDown
           OnMouseMove = DragPanelMouseMove
@@ -1995,7 +1985,7 @@ object EditForm: TEditForm
           ParentFont = False
           ParentShowHint = False
           ShowHint = True
-          TabOrder = 4
+          TabOrder = 5
         end
         object Panel2: TPanel
           Left = 8
@@ -2007,7 +1997,7 @@ object EditForm: TEditForm
           Caption = ' Name:'
           ParentShowHint = False
           ShowHint = True
-          TabOrder = 5
+          TabOrder = 6
         end
         object txtName: TEdit
           Left = 128
@@ -2015,7 +2005,7 @@ object EditForm: TEditForm
           Width = 163
           Height = 21
           Anchors = [akLeft, akTop, akRight]
-          TabOrder = 6
+          TabOrder = 1
           OnExit = txtNameExit
           OnKeyPress = txtNameKeyPress
         end
@@ -2206,7 +2196,7 @@ object EditForm: TEditForm
     Left = 313
     Top = 40
     Bitmap = {
-      494C0101200030001C0010001000FFFFFFFFFF10FFFFFFFFFFFFFFFF424D3600
+      494C010120003000200010001000FFFFFFFFFF10FFFFFFFFFFFFFFFF424D3600
       0000000000003600000028000000400000009000000001002000000000000090
       0000000000000000000000000000000000000000000000000000000000000000
       0000000000000000000000000000000000000000000000000000000000000000

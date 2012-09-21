@@ -132,12 +132,6 @@ type
     tbAxisLock: TToolButton;
     tbAutoWeights: TToolButton;
     tb2PostXswap: TToolButton;
-    GroupBox3: TGroupBox;
-    btnResetPivot: TSpeedButton;
-    btnPickPivot: TSpeedButton;
-    btnPivotMode: TSpeedButton;
-    editPivotY: TEdit;
-    editPivotX: TEdit;
     tabXForm: TTabSheet;
     tabColors: TTabSheet;
     GroupBox4: TGroupBox;
@@ -246,6 +240,12 @@ type
     ToolButton13: TToolButton;
     ToolButton14: TToolButton;
     SpeedButton1: TSpeedButton;
+    GroupBox3: TGroupBox;
+    btnResetPivot: TSpeedButton;
+    btnPickPivot: TSpeedButton;
+    btnPivotMode: TSpeedButton;
+    editPivotY: TEdit;
+    editPivotX: TEdit;
     procedure ToolButton12Click(Sender: TObject);
     procedure btnResetSearchClick(Sender: TObject);
     procedure txtSearchBoxKeyPress(Sender: TObject; var Key: Char);
