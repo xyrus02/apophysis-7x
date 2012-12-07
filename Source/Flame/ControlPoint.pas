@@ -896,8 +896,8 @@ begin
   ParseValues := TStringList.Create;
   ParseValues.CommaText := AString;
 
-  OldDecimalSperator := DecimalSeparator;
-  DecimalSeparator := '.';
+  OldDecimalSperator := FormatSettings.DecimalSeparator;
+  FormatSettings.DecimalSeparator := '.';
 
   CurrentXForm := 0;
 
@@ -1183,7 +1183,7 @@ begin
 
   ParseValues.Free;
 
-  DecimalSeparator := OldDecimalSperator;
+  FormatSettings.DecimalSeparator := OldDecimalSperator;
 end;
 
 
@@ -1851,8 +1851,8 @@ var
   str: string;
   curves: string;
 begin
-  OldDecimalSperator := DecimalSeparator;
-  DecimalSeparator := '.';
+  OldDecimalSperator := FormatSettings.DecimalSeparator;
+  FormatSettings.DecimalSeparator := '.';
 
   sl.add(format('time %f', [time]));
   if cmapindex >= 0 then
@@ -1951,7 +1951,7 @@ begin
       sl.Add(format('var_color %g', [pluginColor]));
 
     end;
-  DecimalSeparator := OldDecimalSperator;
+  FormatSettings.DecimalSeparator := OldDecimalSperator;
 end;
 
 procedure WriteDoubles(const handle: File; data: array of double);
