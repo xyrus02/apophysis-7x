@@ -1,0 +1,340 @@
+﻿	<Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+		<PropertyGroup>
+			<ProjectGuid>{AC01F3AB-4101-4C09-A648-1CC8E2C412D5}</ProjectGuid>
+			<MainSource>Apophysis7X.dpr</MainSource>
+			<Base>True</Base>
+			<Config Condition="'$(Config)'==''">Debug</Config>
+			<TargetedPlatforms>3</TargetedPlatforms>
+			<AppType>Application</AppType>
+			<FrameworkType>VCL</FrameworkType>
+			<ProjectVersion>13.4</ProjectVersion>
+			<Platform Condition="'$(Platform)'==''">Win64</Platform>
+		</PropertyGroup>
+		<PropertyGroup Condition="'$(Config)'=='Base' or '$(Base)'!=''">
+			<Base>true</Base>
+		</PropertyGroup>
+		<PropertyGroup Condition="('$(Platform)'=='Win64' and '$(Base)'=='true') or '$(Base_Win64)'!=''">
+			<Base_Win64>true</Base_Win64>
+			<CfgParent>Base</CfgParent>
+			<Base>true</Base>
+		</PropertyGroup>
+		<PropertyGroup Condition="('$(Platform)'=='Win32' and '$(Base)'=='true') or '$(Base_Win32)'!=''">
+			<Base_Win32>true</Base_Win32>
+			<CfgParent>Base</CfgParent>
+			<Base>true</Base>
+		</PropertyGroup>
+		<PropertyGroup Condition="'$(Config)'=='Release' or '$(Cfg_1)'!=''">
+			<Cfg_1>true</Cfg_1>
+			<CfgParent>Base</CfgParent>
+			<Base>true</Base>
+		</PropertyGroup>
+		<PropertyGroup Condition="('$(Platform)'=='Win64' and '$(Cfg_1)'=='true') or '$(Cfg_1_Win64)'!=''">
+			<Cfg_1_Win64>true</Cfg_1_Win64>
+			<CfgParent>Cfg_1</CfgParent>
+			<Cfg_1>true</Cfg_1>
+			<Base>true</Base>
+		</PropertyGroup>
+		<PropertyGroup Condition="'$(Config)'=='Debug' or '$(Cfg_2)'!=''">
+			<Cfg_2>true</Cfg_2>
+			<CfgParent>Base</CfgParent>
+			<Base>true</Base>
+		</PropertyGroup>
+		<PropertyGroup Condition="('$(Platform)'=='Win64' and '$(Cfg_2)'=='true') or '$(Cfg_2_Win64)'!=''">
+			<Cfg_2_Win64>true</Cfg_2_Win64>
+			<CfgParent>Cfg_2</CfgParent>
+			<Cfg_2>true</Cfg_2>
+			<Base>true</Base>
+		</PropertyGroup>
+		<PropertyGroup Condition="('$(Platform)'=='Win32' and '$(Cfg_2)'=='true') or '$(Cfg_2_Win32)'!=''">
+			<Cfg_2_Win32>true</Cfg_2_Win32>
+			<CfgParent>Cfg_2</CfgParent>
+			<Cfg_2>true</Cfg_2>
+			<Base>true</Base>
+		</PropertyGroup>
+		<PropertyGroup Condition="'$(Base)'!=''">
+			<VerInfo_Keys>CompanyName=;FileDescription=;FileVersion=1.0.0.0;InternalName=;LegalCopyright=;LegalTrademarks=;OriginalFilename=;ProductName=;ProductVersion=1.0.0.0</VerInfo_Keys>
+			<Manifest_File>$(BDS)\bin\default_app.manifest</Manifest_File>
+			<Icon_MainIcon>Apophysis7X_Icon.ico</Icon_MainIcon>
+			<DCC_IOChecking>false</DCC_IOChecking>
+			<VerInfo_Build>1325</VerInfo_Build>
+			<DCC_COMBINING_SIGNED_UNSIGNED>false</DCC_COMBINING_SIGNED_UNSIGNED>
+			<DCC_UsePackage>vcl;rtl;dbrtl;adortl;vcldb;vclx;bdertl;vcldbx;dsnap;cds;bdecds;teeui;teedb;tee;dss;visualclx;visualdbclx;dsnapcrba;dsnapcon;VclSmp;vclie;xmlrtl;inet;inetdbbde;inetdbxpress;inetdb;nmfast;webdsnap;websnap;soaprtl;dbexpress;dbxcds;dclOffice2k;FlatStyle_D6;S303_R60;RzLPDB60;RzLPND60;vclshlctrls;B302vr60;VirtualTreesD6;o403_r60;ibxpress;CSP20I60;Rz30Ctls60;Rz30DBCtls60;indy;Indy60;vclactnband;$(DCC_UsePackage)</DCC_UsePackage>
+			<DCC_ImageBase>00400000</DCC_ImageBase>
+			<DCC_Hints>false</DCC_Hints>
+			<DCC_COMPARING_SIGNED_UNSIGNED>false</DCC_COMPARING_SIGNED_UNSIGNED>
+			<VerInfo_MajorVer>2</VerInfo_MajorVer>
+			<DCC_UNIT_DEPRECATED>false</DCC_UNIT_DEPRECATED>
+			<DCC_Namespace>Vcl;Vcl.Imaging;Vcl.Touch;Vcl.Samples;Vcl.Shell;System;Xml;Data;Datasnap;Web;Soap;Winapi;System.Win;$(DCC_Namespace)</DCC_Namespace>
+			<DCC_SYMBOL_PLATFORM>false</DCC_SYMBOL_PLATFORM>
+			<DCC_ExeOutput>..\..\out</DCC_ExeOutput>
+			<DCC_UnitSearchPath>$(BDS)\lib\Debug;$(BDS)\Lib\Debug\Indy10;$(DELPHI)\Lib\Debug;$(DCC_UnitSearchPath)</DCC_UnitSearchPath>
+			<DCC_S>false</DCC_S>
+			<DCC_N>true</DCC_N>
+			<DCC_K>false</DCC_K>
+			<DCC_SYMBOL_DEPRECATED>false</DCC_SYMBOL_DEPRECATED>
+			<VerInfo_Release>9</VerInfo_Release>
+			<DCC_UNIT_PLATFORM>false</DCC_UNIT_PLATFORM>
+			<DCC_F>false</DCC_F>
+			<DCC_DcuOutput>..\..\out\dcu</DCC_DcuOutput>
+			<DCC_COMPARISON_TRUE>false</DCC_COMPARISON_TRUE>
+			<DCC_E>false</DCC_E>
+			<VerInfo_Locale>1033</VerInfo_Locale>
+			<DCC_COMPARISON_FALSE>false</DCC_COMPARISON_FALSE>
+		</PropertyGroup>
+		<PropertyGroup Condition="'$(Base_Win64)'!=''">
+			<DCC_ExeOutput>..\..\Out\x64\</DCC_ExeOutput>
+			<DCC_DcuOutput>..\..\Out\x64\dcu\</DCC_DcuOutput>
+			<DCC_Define>Apo7X64;$(DCC_Define)</DCC_Define>
+			<DCC_Namespace>Data.Win;Datasnap.Win;Web.Win;Soap.Win;Xml.Win;$(DCC_Namespace)</DCC_Namespace>
+			<VerInfo_IncludeVerInfo>true</VerInfo_IncludeVerInfo>
+		</PropertyGroup>
+		<PropertyGroup Condition="'$(Base_Win32)'!=''">
+			<DCC_ExeOutput>..\..\Out\x86\</DCC_ExeOutput>
+			<DCC_DcuOutput>..\..\Out\x86\dcu\</DCC_DcuOutput>
+			<DCC_Namespace>Data.Win;Datasnap.Win;Web.Win;Soap.Win;Xml.Win;Bde;$(DCC_Namespace)</DCC_Namespace>
+			<Manifest_File>$(BDS)\bin\default_app.manifest</Manifest_File>
+		</PropertyGroup>
+		<PropertyGroup Condition="'$(Cfg_1)'!=''">
+			<DCC_LocalDebugSymbols>false</DCC_LocalDebugSymbols>
+			<DCC_DebugInformation>false</DCC_DebugInformation>
+			<DCC_SymbolReferenceInfo>0</DCC_SymbolReferenceInfo>
+			<DCC_Define>RELEASE;$(DCC_Define)</DCC_Define>
+		</PropertyGroup>
+		<PropertyGroup Condition="'$(Cfg_1_Win64)'!=''">
+			<Manifest_File>$(BDS)\bin\default_app.manifest</Manifest_File>
+		</PropertyGroup>
+		<PropertyGroup Condition="'$(Cfg_2)'!=''">
+			<DCC_Define>DEBUG;$(DCC_Define)</DCC_Define>
+			<DCC_Optimize>false</DCC_Optimize>
+			<DCC_GenerateStackFrames>true</DCC_GenerateStackFrames>
+		</PropertyGroup>
+		<PropertyGroup Condition="'$(Cfg_2_Win64)'!=''">
+			<VerInfo_Keys>CompanyName=;FileDescription=;FileVersion=1.0.0.0;InternalName=;LegalCopyright=;LegalTrademarks=;OriginalFilename=;ProductName=;ProductVersion=1.0.0.0</VerInfo_Keys>
+			<VerInfo_IncludeVerInfo>true</VerInfo_IncludeVerInfo>
+			<Icon_MainIcon>Resources\MAINICON.ico</Icon_MainIcon>
+			<Manifest_File>$(BDS)\bin\default_app.manifest</Manifest_File>
+			<DCC_DebugInfoInExe>true</DCC_DebugInfoInExe>
+			<DCC_IMPLICIT_STRING_CAST>false</DCC_IMPLICIT_STRING_CAST>
+			<DCC_RemoteDebug>true</DCC_RemoteDebug>
+		</PropertyGroup>
+		<PropertyGroup Condition="'$(Cfg_2_Win32)'!=''">
+			<Manifest_File>$(BDS)\bin\default_app.manifest</Manifest_File>
+			<DCC_DebugInfoInExe>true</DCC_DebugInfoInExe>
+		</PropertyGroup>
+		<ItemGroup>
+			<DelphiCompile Include="$(MainSource)">
+				<MainSource>MainSource</MainSource>
+			</DelphiCompile>
+			<DCCReference Include="System\FastMM4.pas"/>
+			<DCCReference Include="System\FastMM4Messages.pas"/>
+			<DCCReference Include="IO\Binary.pas"/>
+			<DCCReference Include="IO\Base64.pas"/>
+			<DCCReference Include="System\sdStringTable.pas"/>
+			<DCCReference Include="System\CustomDrawControl.pas"/>
+			<DCCReference Include="System\LibXmlComps.pas"/>
+			<DCCReference Include="System\LibXmlParser.pas"/>
+			<DCCReference Include="System\Windows7.pas"/>
+			<DCCReference Include="System\RegexHelper.pas"/>
+			<DCCReference Include="System\CurvesControl.pas">
+				<Form>$endif</Form>
+			</DCCReference>
+			<DCCReference Include="Core\Global.pas"/>
+			<DCCReference Include="IO\CommandLine.pas"/>
+			<DCCReference Include="IO\MissingPlugin.pas"/>
+			<DCCReference Include="IO\Settings.pas"/>
+			<DCCReference Include="Core\Translation.pas"/>
+			<DCCReference Include="Core\Chaotica.pas"/>
+			<DCCReference Include="IO\ParameterIO.pas"/>
+			<DCCReference Include="Core\Bezier.pas"/>
+			<DCCReference Include="Flame\RndFlame.pas"/>
+			<DCCReference Include="Flame\ControlPoint.pas"/>
+			<DCCReference Include="ColorMap\cmapdata.pas"/>
+			<DCCReference Include="ColorMap\cmap.pas"/>
+			<DCCReference Include="ColorMap\GradientHlpr.pas"/>
+			<DCCReference Include="Core\XFormMan.pas"/>
+			<DCCReference Include="Flame\XForm.pas"/>
+			<DCCReference Include="Core\BaseVariation.pas"/>
+			<DCCReference Include="Rendering\RenderingCommon.pas"/>
+			<DCCReference Include="Rendering\RenderingInterface.pas"/>
+			<DCCReference Include="Rendering\RenderingImplementation.pas"/>
+			<DCCReference Include="Rendering\BucketFillerThread.pas"/>
+			<DCCReference Include="Rendering\RenderThread.pas"/>
+			<DCCReference Include="Rendering\ImageMaker.pas"/>
+			<DCCReference Include="Variations\varHemisphere.pas"/>
+			<DCCReference Include="Variations\varLog.pas"/>
+			<DCCReference Include="Variations\varPolar2.pas"/>
+			<DCCReference Include="Variations\varRings2.pas"/>
+			<DCCReference Include="Variations\varFan2.pas"/>
+			<DCCReference Include="Variations\varCross.pas"/>
+			<DCCReference Include="Variations\varWedge.pas"/>
+			<DCCReference Include="Variations\varEpispiral.pas"/>
+			<DCCReference Include="Variations\varBwraps.pas"/>
+			<DCCReference Include="Variations\varPDJ.pas"/>
+			<DCCReference Include="Variations\varJuliaN.pas"/>
+			<DCCReference Include="Variations\varJuliaScope.pas"/>
+			<DCCReference Include="Variations\varJulia3Djf.pas"/>
+			<DCCReference Include="Variations\varJulia3Dz.pas"/>
+			<DCCReference Include="Variations\varCurl.pas"/>
+			<DCCReference Include="Variations\varCurl3D.pas"/>
+			<DCCReference Include="Variations\varRadialBlur.pas"/>
+			<DCCReference Include="Variations\varBlurCircle.pas"/>
+			<DCCReference Include="Variations\varBlurZoom.pas"/>
+			<DCCReference Include="Variations\varBlurPixelize.pas"/>
+			<DCCReference Include="Variations\varFalloff2.pas"/>
+			<DCCReference Include="Variations\varRectangles.pas"/>
+			<DCCReference Include="Variations\varSplits.pas"/>
+			<DCCReference Include="Variations\varSeparation.pas"/>
+			<DCCReference Include="Variations\varBipolar.pas"/>
+			<DCCReference Include="Variations\varLoonie.pas"/>
+			<DCCReference Include="Variations\varEscher.pas"/>
+			<DCCReference Include="Variations\varScry.pas"/>
+			<DCCReference Include="Variations\varNGon.pas"/>
+			<DCCReference Include="Variations\varFoci.pas"/>
+			<DCCReference Include="Variations\varLazysusan.pas"/>
+			<DCCReference Include="Variations\varMobius.pas"/>
+			<DCCReference Include="Variations\varCrop.pas"/>
+			<DCCReference Include="Variations\varElliptic.pas"/>
+			<DCCReference Include="Variations\varWaves2.pas"/>
+			<DCCReference Include="Variations\varAuger.pas"/>
+			<DCCReference Include="Variations\varPreSpherical.pas"/>
+			<DCCReference Include="Variations\varPreSinusoidal.pas"/>
+			<DCCReference Include="Variations\varPreDisc.pas"/>
+			<DCCReference Include="Variations\varPreBwraps.pas"/>
+			<DCCReference Include="Variations\varPreCrop.pas"/>
+			<DCCReference Include="Variations\varPreFalloff2.pas"/>
+			<DCCReference Include="Variations\varPostBwraps.pas"/>
+			<DCCReference Include="Variations\varPostCurl.pas"/>
+			<DCCReference Include="Variations\varPostCurl3D.pas"/>
+			<DCCReference Include="Variations\varPostCrop.pas"/>
+			<DCCReference Include="Variations\varPostFalloff2.pas"/>
+			<DCCReference Include="Variations\varGenericPlugin.pas"/>
+			<DCCReference Include="Forms\Main.pas">
+				<Form>MainForm</Form>
+			</DCCReference>
+			<DCCReference Include="Forms\Tracer.pas">
+				<Form>TraceForm</Form>
+			</DCCReference>
+			<DCCReference Include="Forms\About.pas">
+				<Form>AboutForm</Form>
+			</DCCReference>
+			<DCCReference Include="Forms\Adjust.pas">
+				<Form>AdjustForm</Form>
+			</DCCReference>
+			<DCCReference Include="Forms\Browser.pas">
+				<Form>GradientBrowser</Form>
+			</DCCReference>
+			<DCCReference Include="Forms\Editor.pas">
+				<Form>EditForm</Form>
+			</DCCReference>
+			<DCCReference Include="Forms\FormExport.pas">
+				<Form>ExportDialog</Form>
+			</DCCReference>
+			<DCCReference Include="Forms\formPostProcess.pas">
+				<Form>frmPostProcess</Form>
+			</DCCReference>
+			<DCCReference Include="Forms\FormRender.pas">
+				<Form>RenderForm</Form>
+			</DCCReference>
+			<DCCReference Include="Forms\Fullscreen.pas">
+				<Form>FullscreenForm</Form>
+			</DCCReference>
+			<DCCReference Include="Forms\ImageColoring.pas">
+				<Form>frmImageColoring</Form>
+			</DCCReference>
+			<DCCReference Include="Forms\LoadTracker.pas">
+				<Form>LoadForm</Form>
+			</DCCReference>
+			<DCCReference Include="Forms\Mutate.pas">
+				<Form>MutateForm</Form>
+			</DCCReference>
+			<DCCReference Include="Forms\Options.pas">
+				<Form>OptionsForm</Form>
+			</DCCReference>
+			<DCCReference Include="Forms\Save.pas">
+				<Form>SaveForm</Form>
+			</DCCReference>
+			<DCCReference Include="Forms\SavePreset.pas">
+				<Form>SavePresetForm</Form>
+			</DCCReference>
+			<DCCReference Include="Forms\SplashForm.pas">
+				<Form>SplashWindow</Form>
+			</DCCReference>
+			<DCCReference Include="Forms\Template.pas">
+				<Form>TemplateForm</Form>
+			</DCCReference>
+			<DCCReference Include="Forms\Curves.pas">
+				<Form>CurvesForm</Form>
+			</DCCReference>
+			<DCCReference Include="Forms\Preview.pas">
+				<Form>PreviewForm</Form>
+			</DCCReference>
+			<DCCReference Include="Forms\FormFavorites.pas">
+				<Form>FavoritesForm</Form>
+			</DCCReference>
+			<DCCReference Include="Forms\ScriptForm.pas">
+				<Form>ScriptEditor</Form>
+			</DCCReference>
+			<DCCReference Include="Forms\ScriptRender.pas"/>
+			<None Include="Apophysis7X.todo"/>
+			<BuildConfiguration Include="Debug">
+				<Key>Cfg_2</Key>
+				<CfgParent>Base</CfgParent>
+			</BuildConfiguration>
+			<BuildConfiguration Include="Base">
+				<Key>Base</Key>
+			</BuildConfiguration>
+			<BuildConfiguration Include="Release">
+				<Key>Cfg_1</Key>
+				<CfgParent>Base</CfgParent>
+			</BuildConfiguration>
+		</ItemGroup>
+		<ProjectExtensions>
+			<Borland.Personality>Delphi.Personality.12</Borland.Personality>
+			<Borland.ProjectType/>
+			<BorlandProject>
+				<Delphi.Personality>
+					<Source>
+						<Source Name="MainSource">Apophysis7X.dpr</Source>
+					</Source>
+					<Excluded_Packages>
+						<Excluded_Packages Name="$(BDSBIN)\dcloffice2k160.bpl">Microsoft Office 2000 Sample Automation Server Wrapper Components</Excluded_Packages>
+						<Excluded_Packages Name="$(BDSBIN)\dclofficexp160.bpl">Microsoft Office XP Sample Automation Server Wrapper Components</Excluded_Packages>
+					</Excluded_Packages>
+					<VersionInfo>
+						<VersionInfo Name="IncludeVerInfo">False</VersionInfo>
+						<VersionInfo Name="AutoIncBuild">False</VersionInfo>
+						<VersionInfo Name="MajorVer">1</VersionInfo>
+						<VersionInfo Name="MinorVer">0</VersionInfo>
+						<VersionInfo Name="Release">0</VersionInfo>
+						<VersionInfo Name="Build">0</VersionInfo>
+						<VersionInfo Name="Debug">False</VersionInfo>
+						<VersionInfo Name="PreRelease">False</VersionInfo>
+						<VersionInfo Name="Special">False</VersionInfo>
+						<VersionInfo Name="Private">False</VersionInfo>
+						<VersionInfo Name="DLL">False</VersionInfo>
+						<VersionInfo Name="Locale">1031</VersionInfo>
+						<VersionInfo Name="CodePage">1252</VersionInfo>
+					</VersionInfo>
+					<VersionInfoKeys>
+						<VersionInfoKeys Name="CompanyName"/>
+						<VersionInfoKeys Name="FileDescription"/>
+						<VersionInfoKeys Name="FileVersion">1.0.0.0</VersionInfoKeys>
+						<VersionInfoKeys Name="InternalName"/>
+						<VersionInfoKeys Name="LegalCopyright"/>
+						<VersionInfoKeys Name="LegalTrademarks"/>
+						<VersionInfoKeys Name="OriginalFilename"/>
+						<VersionInfoKeys Name="ProductName"/>
+						<VersionInfoKeys Name="ProductVersion">1.0.0.0</VersionInfoKeys>
+						<VersionInfoKeys Name="Comments"/>
+					</VersionInfoKeys>
+				</Delphi.Personality>
+				<Platforms>
+					<Platform value="Win64">True</Platform>
+					<Platform value="Win32">True</Platform>
+				</Platforms>
+			</BorlandProject>
+			<ProjectFileVersion>12</ProjectFileVersion>
+		</ProjectExtensions>
+		<Import Condition="Exists('$(BDS)\Bin\CodeGear.Delphi.Targets')" Project="$(BDS)\Bin\CodeGear.Delphi.Targets"/>
+		<Import Condition="Exists('$(APPDATA)\Embarcadero\$(BDSAPPDATABASEDIR)\$(PRODUCTVERSION)\UserTools.proj')" Project="$(APPDATA)\Embarcadero\$(BDSAPPDATABASEDIR)\$(PRODUCTVERSION)\UserTools.proj"/>
+	</Project>
