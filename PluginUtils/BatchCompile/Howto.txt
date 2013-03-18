@@ -1,0 +1,5 @@
+1) Make sure .NET 4 and VC++2010 redist is installed (for MSBuild) - you can just install VC++2010 Express
+2) Copy ".c"-files into "todo"-folder
+3) Double click "compile.cmd"
+4) In case of error, consult the printed log file path
+5) Harvest mass compiled plugins from "done"-folder
