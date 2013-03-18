@@ -1,0 +1,16 @@
+LIBRARY
+EXPORTS
+	PluginVarPrepare
+	PluginVarCalc
+	PluginVarResetVariable
+	PluginVarGetVariableNameAt
+	PluginVarGetVariable
+	PluginVarSetVariable
+	PluginVarGetNrVariables
+	PluginVarGetName
+	PluginVarGetArchitecture
+	PluginVarCreate
+	PluginVarDestroy
+	PluginVarInit
+	PluginVarInit3D
+	PluginVarInitDC
