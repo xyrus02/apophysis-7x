@@ -39,7 +39,7 @@ uses
   LibXmlParser, LibXmlComps, PngImage, XPMan,
   StrUtils, LoadTracker, CheckLst,
   CommandLine, RegularExpressionsCore, MissingPlugin, Base64, Translation,
-  RegexHelper, Chaotica;//, WinInet;
+  RegexHelper, Chaotica, System.ImageList;//, WinInet;
 
 const
   PixelCountMax = 32768;

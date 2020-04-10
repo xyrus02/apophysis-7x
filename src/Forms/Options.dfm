@@ -353,8 +353,8 @@ object OptionsForm: TOptionsForm
         TabOrder = 8
       end
       object cbNrTheads: TComboBox
-        Left = 112
-        Top = 92
+        Left = 117
+        Top = 93
         Width = 113
         Height = 21
         Style = csDropDownList
@@ -373,7 +373,27 @@ object OptionsForm: TOptionsForm
           '9'
           '10'
           '11'
-          '12')
+          '12'
+          '13'
+          '14'
+          '15'
+          '16'
+          '17'
+          '18'
+          '19'
+          '20'
+          '21'
+          '22'
+          '23'
+          '24'
+          '25'
+          '26'
+          '27'
+          '28'
+          '29'
+          '30'
+          '31'
+          '32')
       end
       object pnlPNGTransparency: TPanel
         Left = 8
@@ -2980,8 +3000,8 @@ object OptionsForm: TOptionsForm
     end
   end
   object btnOK: TButton
-    Left = 304
-    Top = 409
+    Left = 305
+    Top = 410
     Width = 86
     Height = 25
     Anchors = [akRight, akBottom]
