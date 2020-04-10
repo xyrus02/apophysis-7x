@@ -205,7 +205,7 @@ begin
   {$endif}
 
   Application.UpdateFormatSettings := False;
-  DecimalSeparator := '.';
+  FormatSettings.DecimalSeparator := '.';
   Application.Run;
 end.
 

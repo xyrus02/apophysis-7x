@@ -419,6 +419,26 @@ begin
       10: cbNrTheads.ItemIndex := 9;
       11: cbNrTheads.ItemIndex := 10;
       12: cbNrTheads.ItemIndex := 11;
+      13: cbNrTheads.ItemIndex := 12;
+      14: cbNrTheads.ItemIndex := 13;
+      15: cbNrTheads.ItemIndex := 14;
+      16: cbNrTheads.ItemIndex := 15;
+      17: cbNrTheads.ItemIndex := 16;
+      18: cbNrTheads.ItemIndex := 17;
+      19: cbNrTheads.ItemIndex := 18;
+      20: cbNrTheads.ItemIndex := 19;
+      21: cbNrTheads.ItemIndex := 20;
+      22: cbNrTheads.ItemIndex := 21;
+      23: cbNrTheads.ItemIndex := 22;
+      24: cbNrTheads.ItemIndex := 23;
+      25: cbNrTheads.ItemIndex := 24;
+      26: cbNrTheads.ItemIndex := 25;
+      27: cbNrTheads.ItemIndex := 26;
+      28: cbNrTheads.ItemIndex := 27;
+      29: cbNrTheads.ItemIndex := 28;
+      30: cbNrTheads.ItemIndex := 29;
+      31: cbNrTheads.ItemIndex := 30;
+      32: cbNrTheads.ItemIndex := 31;
     end;
   end;
 
