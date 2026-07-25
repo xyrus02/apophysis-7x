@@ -1,3 +1,5 @@
+> This repository was relocated to [Codeberg](https://codeberg.org/xyrus02/apophysis-7x)
+
 # Apophysis 7X
 Apophysis was written with Delphi 5.0 and is now developed using Delphi XE2
 
